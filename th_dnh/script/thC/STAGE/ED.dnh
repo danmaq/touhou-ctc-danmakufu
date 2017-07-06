@@ -1,0 +1,377 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ENDING / STAFFROLL
+//
+//		※ステージライブラリから自動的にインクルードされます
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数
+//////////////////////////////////////////////////////////////////////
+
+/**	読み込むステージ固有のその他グラフィックです。 */
+let ENDING_LOAD_LIST_GRAPHIC = [
+	IMAGE_THC_WHITE_FRAME,
+	IMAGE_THC_ED_BG_FRAME,
+	IMAGE_THC_ED_BG_FIELD
+];
+/**	読み込むステージ固有の効果音です。 */
+let ENDING_LOAD_LIST_SOUND = [
+];
+let ENDING_TALK_LINES = 50;
+let ENDING_STAFFROLL_LINES = 19;
+let ENDING_STAFFROLL_START_Y = GetCenterY() + 24;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	エンディングIDが格納されます。 */
+let m_nEndingID = 0;
+
+let m_anStaffRollDstX		= CreateArray( ENDING_STAFFROLL_LINES, GetClipMinX() + 16 );
+let m_anStaffRollDstY		= CreateArray( ENDING_STAFFROLL_LINES, ENDING_STAFFROLL_START_Y );
+let m_anStaffRollDstAlpha	= CreateArray( ENDING_STAFFROLL_LINES, 0 );
+let m_anEDTalkDstX			= CreateArray( ENDING_TALK_LINES, GetCenterX() );
+let m_anEDTalkDstY			= CreateArray( ENDING_TALK_LINES, GetCenterX() );
+let m_anEDTalkAlpha			= CreateArray( ENDING_TALK_LINES, 0 );
+let m_anEDTalkColorCode		= CreateArray( ENDING_TALK_LINES, 0 );
+let m_nEDBGMAlpha = 0;
+let m_nEDSkipAlpha = 0;
+let m_nEDMasterAlpha = 255;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	固有処理部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+/**
+*	ステージ固有の初期化処理です。
+*/
+function EndingInitialize(){
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, false );
+	ClearByteCodeCache();
+	LoadResource( ENDING_LOAD_LIST_GRAPHIC, ENDING_LOAD_LIST_SOUND );
+	LoadTTC( CL_CDID_ED );
+	PlayMusicEx( 38 );
+	SetStage( 9 );
+	SetRenderFrame( false );
+	SetDefaultStatusVisible( false );
+}
+
+/**
+*	ステージ中のタスクです。
+*	ここにステージ本体の動作が記述されます。
+*/
+task EndingMainTask(){
+	let nTime = 0;
+	EDSkip();
+	BGCloudTask();
+	EndingStaffRollTask();
+	WaitRealTime( 37000 );
+	BGMTitleTask();
+	WaitRealTime( 13000 );
+	alternative( m_nEndingID )
+	case( 0 ){ Ending1(); }
+	case( 1 ){ Ending2(); }
+	case( 2 ){ Ending3(); }
+}
+
+
+task EDSkip(){
+	let nKeyHoldTime = -1;
+	let nTime = 0;
+	let anBlackOutObj = CreateFillScreenEffectObject( IMAGE_CL_BLACK, IMAGE_THC_BLACK_FRAME );
+	let nStartTime = GetTime();
+	while( nTime < 140000 ){
+		nTime = GetTime() - nStartTime;
+		if( GetKeyState( VK_SKIP ) != KEY_HOLD ){
+			nKeyHoldTime = -1;
+			m_nEDSkipAlpha -= 10;
+		}
+		else if( nKeyHoldTime == -1 ){ nKeyHoldTime = nTime; }
+		else{
+			m_nEDSkipAlpha += 10;
+			if( nTime > nKeyHoldTime + 5000 ){
+				__EDFadeOut();
+				FadeOutMusic( bgmList[ 38 ], 3 );
+				WaitRealTime( 22000 );
+				PlayMusicEx( 0 );
+				yield;
+				Clear();
+				yield;
+			}
+		}
+		m_nEDSkipAlpha = MinMax( m_nEDSkipAlpha, 0, 255 );
+		yield;
+	}
+}
+
+task EDFadeOut(){
+	let nTime = 0;
+	let anBlackOutObj = CreateFillScreenEffectObject( IMAGE_CL_BLACK, IMAGE_THC_BLACK_FRAME );
+	let nStartTime = GetTime();
+	while( nTime < 20000 ){
+		nTime = GetTime() - nStartTime;
+		let nAlpha = Accelerate( 0, 255, nTime, 19999 );
+		SetFillScreenEffectObjectColor( anBlackOutObj, nAlpha, 255, 255, 255 );
+		yield;
+	}
+}
+
+task __EDFadeOut(){
+	let nTime = 0;
+	let anBlackOutObj = CreateFillScreenEffectObject( IMAGE_CL_BLACK, IMAGE_THC_BLACK_FRAME );
+	let nStartTime = GetTime();
+	while( nTime < 20000 ){
+		nTime = GetTime() - nStartTime;
+		m_nEDMasterAlpha = Accelerate( 0, 255, nTime, 19999 );
+		SetFillScreenEffectObjectColor( anBlackOutObj, m_nEDMasterAlpha, 255, 255, 255 );
+		m_nEDMasterAlpha = 255 - m_nEDMasterAlpha;
+		yield;
+	}
+}
+
+task Ending1(){
+	EndingTalk( 0,	56,		GetCenterY() + 144, 0, 16,	255,	1, 2000, 5000,	0 );
+	EndingTalk( 1,	64,		GetCenterY() + 128, 0, 0,	255,	0, 4000, 7000,	10000 );
+	EndingTalk( 2,	64,		GetCenterY() + 128, 0, 0,	255,	0, 4000, 7000,	24000 );
+	EndingTalk( 3,	56,		GetCenterY() + 144, 0, 16,	255,	1, 3000, 5000,	36000 );
+	EndingTalk( 4,	56,		GetCenterY() + 144, 0, 16,	255,	1, 3000, 5000,	45000 );
+	EndingTalk( 5,	56,		GetCenterY() + 144, 0, 16,	255,	1, 4000, 5000,	55000 );
+	EndingTalk( 6,	56,		GetCenterY() + 144, 0, 16,	255,	1, 3000, 5000,	68000 );
+	EndingTalk( 7,	56,		GetCenterY() + 144, 0, 16,	255,	1, 3000, 5000,	82000 );
+	EndingTalk( 8,	56,		GetCenterY() + 144, 0, 16,	255,	1, 3000, 5000,	93000 );
+	EndingTalk( 9,	56,		GetCenterY() + 144, 0, 16,	255,	1, 3000, 6000,	105000 );
+	EndingTalk( 10,	128,	GetCenterY() + 112, 0, 20,	255,	4, 3000, 5000,	120000 );
+	EndingTalk( 11,	56,		GetCenterY() + 144, 0, 16,	255,	1, 3000, 5000,	132000 );
+	EndingTalk( 12,	64,		GetCenterY() + 128, 0, 0,	255,	0, 4000, 6000,	146000 );
+	EndingTalk( 13,	64,		GetCenterY() + 128, 0, 0,	255,	0, 4000, 8000,	159000 );
+	EndingTalk( 14,	160,	GetCenterY() + 200, 0, 0,	255,	0, 5000, 7000,	168000 );
+	EndingTalk( 15,	96,		GetCenterY() + 112, 0, 24,	48,		3, 1800, 10,	190000 );
+	WaitRealTime( 173000 );
+	EDFadeOut();
+	FadeOutMusic( bgmList[ 38 ], 3 );
+	WaitRealTime( 21000 );
+	PlayMusicEx( 0 );
+	yield;
+	Clear();
+}
+
+task Ending2(){
+	EndingTalk( 0,	64,		GetCenterY() + 128,	0, 0,	255,	0, 3500, 5000, 0 );
+	EndingTalk( 1,	64,		GetCenterY() + 128,	0, 0,	255,	0, 4000, 6000, 9500 );
+	EndingTalk( 2,	56,		GetCenterY() + 144,	0, 12,	255,	1, 3000, 5000, 22000 );
+	EndingTalk( 3,	92,		GetCenterY() + 112,	0, 12,	255,	2, 3000, 5000, 32000 );
+	EndingTalk( 4,	56,		GetCenterY() + 144,	0, 12,	255,	1, 3000, 4000, 41000 );
+	EndingTalk( 5,	56,		GetCenterY() + 144,	0, 12,	255,	1, 3000, 4000, 47000 );
+	EndingTalk( 6,	92,		GetCenterY() + 112,	0, 12,	255,	2, 3000, 6000, 56000 );
+	EndingTalk( 7,	56,		GetCenterY() + 144,	0, 12,	255,	1, 3000, 6000, 68000 );
+	EndingTalk( 8,	92,		GetCenterY() + 112,	0, 12,	255,	2, 3000, 6000, 80000 );
+	EndingTalk( 9,	92,		GetCenterY() + 96,	0, 12,	255,	3, 3000, 6000, 94000 );
+	EndingTalk( 10,	56,		GetCenterY() + 144,	0, 20,	255,	1, 3000, 6000, 104000 );
+	EndingTalk( 11,	92,		GetCenterY() + 96,	0, 12,	255,	3, 3000, 6000, 114000 );
+	EndingTalk( 12,	56,		GetCenterY() + 144,	0, 20,	255,	1, 3000, 6500, 124000 );
+	EndingTalk( 13,	92,		GetCenterY() + 96,	0, 16,	255,	3, 3000, 5000, 136500 );
+	EndingTalk( 14,	92,		GetCenterY() + 96,	0, 12,	255,	3, 3000, 6000, 146000 );
+	EndingTalk( 15,	56,		GetCenterY() + 144,	0, 20,	255,	1, 3000, 4500, 155000 );
+	EndingTalk( 16,	128,	GetCenterY() + 96,	0, 24,	255,	3, 3000, 4500, 161000 );
+	EndingTalk( 17,	64,		GetCenterY() + 128,	0, 0,	255,	0, 3000, 5000, 169000 );
+	EndingTalk( 18,	64,		GetCenterY() + 128,	0, 0,	255,	0, 3000, 5000, 179000 );
+	EndingTalk( 19,	64,		GetCenterY() + 128,	0, 0,	255,	0, 5500, 13000, 190500 );
+	EndingTalk( 20,	160,	GetCenterY() + 200,	0, 0,	255,	0, 5500, 5000, 200000 );
+	WaitRealTime( 185000 );
+	EDFadeOut();
+	WaitRealTime( 15000 );
+	FadeOutMusic( bgmList[ 38 ], 3 );
+	WaitRealTime( 19000 );
+	PlayMusicEx( 0 );
+	yield;
+	Clear();
+}
+
+task Ending3(){
+	EndingTalk( 0,	56,		GetCenterY() + 144,	0, 12,	255,	1, 3000, 5000, 0 );
+	EndingTalk( 1,	92,		GetCenterY() + 112,	0, 16,	255,	2, 3000, 5000, 8000 );
+	EndingTalk( 2,	56,		GetCenterY() + 144,	0, 12,	255,	1, 3000, 5000, 17000 );
+	EndingTalk( 3,	92,		GetCenterY() + 112,	0, 12,	255,	2, 3000, 5000, 25000 );
+	EndingTalk( 4,	56,		GetCenterY() + 144,	0, 12,	255,	1, 3000, 6000, 34000 );
+	EndingTalk( 5,	104,	GetCenterY() + 112,	0, 20,	255,	2, 3000, 4000, 42000 );
+	EndingTalk( 6,	56,		GetCenterY() + 144,	0, 12,	255,	1, 3000, 5000, 50000 );
+	EndingTalk( 7,	92,		GetCenterY() + 112,	0, 16,	255,	2, 3000, 5000, 59000 );
+	EndingTalk( 8,	56,		GetCenterY() + 144,	0, 12,	255,	1, 3000, 5000, 68000 );
+	EndingTalk( 9,	56,		GetCenterY() + 144,	0, 20,	255,	1, 3000, 5000, 78000 );
+	EndingTalk( 10,	92,		GetCenterY() + 112,	0, 12,	255,	2, 3000, 5000, 86000 );
+	EndingTalk( 11,	56,		GetCenterY() + 144,	0, 16,	255,	1, 3000, 5500, 94000 );
+	EndingTalk( 12,	92,		GetCenterY() + 112,	0, 20,	255,	2, 3000, 5000, 102000 );
+	EndingTalk( 13,	56,		GetCenterY() + 144,	0, 10,	255,	1, 3000, 5500, 110000 );
+	EndingTalk( 14,	92,		GetCenterY() + 112,	0, 20,	255,	2, 3000, 5000, 120000 );
+	EndingTalk( 15,	56,		GetCenterY() + 144,	0, 12,	255,	1, 3000, 5000, 129000 );
+	EndingTalk( 16,	56,		GetCenterY() + 144,	0, 10,	255,	1, 3000, 5000, 139000 );
+	EndingTalk( 17,	92,		GetCenterY() + 112,	0, 12,	255,	2, 3000, 5000, 148000 );
+	EndingTalk( 18,	56,		GetCenterY() + 144,	0, 12,	255,	1, 3000, 5500, 158000 );
+	EndingTalk( 19,	92,		GetCenterY() + 112,	0, 12,	255,	2, 3000, 5500, 168000 );
+	EndingTalk( 20,	56,		GetCenterY() + 144,	0, 12,	255,	1, 3000, 5500, 178000 );
+	EndingTalk( 21,	92,		GetCenterY() + 112,	0, 10,	255,	2, 2500, 4000, 184000 );
+	EndingTalk( 22,	64,		GetCenterY() + 104,	0, 0,	255,	3, 5500, 13000, 191000 );
+	EndingTalk( 23,	160,	GetCenterY() + 200,	0, 0,	255,	0, 5500, 5000, 200500 );
+	WaitRealTime( 185000 );
+	EDFadeOut();
+	WaitRealTime( 15500 );
+	FadeOutMusic( bgmList[ 38 ], 3 );
+	WaitRealTime( 19000 );
+	PlayMusicEx( 0 );
+	yield;
+	Clear();
+}
+
+task EndingTalk( let nTalkID, let nX, let nY, let nXMove, let nYMove, let nAlphaMax, let nColorCode, let nFadeTime, let nSustainTime, let nDelay ){
+	m_anEDTalkColorCode[ nTalkID ] = nColorCode;
+	WaitRealTime( nDelay );
+	let nTime = 0;
+	let nStartTime = GetTime();
+	let nLimit = nFadeTime * 2 + nSustainTime;
+	while( nTime < nLimit ){
+		nTime = GetTime() - nStartTime;
+		if( nTime <= nFadeTime ){ m_anEDTalkAlpha[ nTalkID ] = SlowDown( 0, nAlphaMax, nTime, nFadeTime ); }
+		else if( nTime >= nLimit - nFadeTime ){ m_anEDTalkAlpha[ nTalkID ] = Accelerate( nAlphaMax, 0, nTime - nLimit + nFadeTime, nFadeTime ); }
+		m_anEDTalkDstX[ nTalkID ] = Smooth( nX, nX + nXMove, nTime, nLimit );
+		m_anEDTalkDstY[ nTalkID ] = Smooth( nY, nY + nYMove, nTime, nLimit );
+		yield;
+	}
+	m_anEDTalkAlpha[ nTalkID ] = 0;
+}
+
+/**
+*	背景タスクです。
+*/
+task BGCloudTask(){
+	let nTime = 0;
+	let anWhiteOutObj = CreateFillScreenEffectObject( IMAGE_CL_WHITE, IMAGE_THC_WHITE_FRAME );
+	WaitRealTime( 600 );
+	let anEDBGObj = CreateFillScreenEffectObject( IMAGE_THC_ED_BG_FIELD, IMAGE_THC_ED_BG_FRAME );
+	let nStartTime = GetTime();
+	while( nTime < 20000 ){
+		nTime = GetTime() - nStartTime;
+		let nAlpha = Accelerate( 0, 255, nTime, 19999 );
+		SetFillScreenEffectObjectColor( anEDBGObj, nAlpha, 255, 255, 255 );
+		yield;
+	}
+	ascent( let i in 0..2 ){ Obj_Delete( anWhiteOutObj[ i ] ); }
+	WaitRealTime( 5000 );
+}
+
+/**
+*	スタッフロールタスクです。
+*/
+task EndingStaffRollTask(){
+	WaitRealTime( 20000 );
+	ascent( let i in 0..ENDING_STAFFROLL_LINES ){
+		EndingStaffRollTaskCluster( i );
+		WaitRealTime( 10300 );
+	}
+}
+
+/**
+*	スタッフロールタスクです。
+*/
+task EndingStaffRollTaskCluster( let nID ){
+	let nTime = 0;
+	let nStartTime = GetTime();
+	while( nTime < 36000 ){
+		nTime = GetTime() - nStartTime;
+		if( nTime <= 10000 ){		m_anStaffRollDstAlpha[ nID ]	= Accelerate(	0, 192, nTime, 10000 ); }
+		else{
+			if( nTime >= 24000 ){	m_anStaffRollDstAlpha[ nID ]	= Accelerate(	192, 0, nTime - 24000, 12000 ); }
+			if( nTime <= 20000 ){	m_anStaffRollDstY[ nID ]		= Accelerate(	ENDING_STAFFROLL_START_Y,	GetCenterY() - 32, nTime - 10000, 10000 ); }
+			else{					m_anStaffRollDstY[ nID ]		= Smooth(		GetCenterY() - 32,		GetClipMinY() + 16, nTime - 20000, 16000 ); }
+		}
+		yield;
+	}
+	m_anStaffRollDstAlpha[ nID ] = 0;
+}
+
+/**
+*	BGM表示タスクです。
+*/
+task BGMTitleTask(){
+	let nTime = 0;
+	let nStartTime = GetTime();
+	while( nTime < 15000 ){
+		nTime = GetTime() - nStartTime;
+		if( nTime <= 5000 ){		m_nEDBGMAlpha = SlowDown(	0, 255, nTime, 5000 ); }
+		else if( nTime >= 10000 ){	m_nEDBGMAlpha = Accelerate(	255, 0, nTime - 10000, 5000 ); }
+		yield;
+	}
+	m_nEDBGMAlpha = 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	共通処理部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	固有動作のタスクです。
+*	スクリプト開始1フレーム後にステージスクリプト本体より呼び出されます。
+*
+*	@param bGoodEnding グッドエンディングかどうか
+*/
+task Ending( let bGoodEnding ){
+	m_nEndingID = [ 0, 1 ][ bGoodEnding ];
+	if( m_nEndingID == 1 ){ m_nEndingID = ( GetClearHistory( [], [], [ 6 ], [], 0, 0, 0 ) % 2 ) + 1; }
+	EndingInitialize();
+	EndingMainTask();
+}
+
+/**
+*	上位レイヤ絵画時に呼ばれます。
+*/
+function EDDrawTopObject(){
+	descent( let i in 0..ENDING_STAFFROLL_LINES ){
+		if( m_anStaffRollDstAlpha[ i ] > 0 ){
+			SetAlpha( Min( m_anStaffRollDstAlpha[ i ], m_nEDMasterAlpha ) );
+			DrawTexTextOnCache( CL_TTHBASE_STAFFROLL + i, -1, -5, m_anStaffRollDstX[ i ], m_anStaffRollDstY[ i ] );
+			alternative( i )
+			case( 5, 6, 7, 8, 9, 10, 11 ){
+				DrawTexTextOnCache( CL_TTHBASE_STAFFTASK + i - 5, -1, -4, m_anStaffRollDstX[ i ] + 16, m_anStaffRollDstY[ i ] + 16 );
+			}
+		}
+	}
+	if( m_nEDBGMAlpha > 0 ){
+		SetAlpha( Min( m_nEDBGMAlpha, m_nEDMasterAlpha ) );
+		DrawTexTextOnCache( CL_TTH_MUSIC_MARKER, 0, 0, GetCenterX() - 112, GetClipMaxY() - 16 );
+		DrawTexTextOnCache( CL_TTHBASE_BGM_TITLE + m_nStageMusicIndex, -2, 0, GetCenterX() - 96, GetClipMaxY() - 16 );
+	}
+	descent( let i in 0..ENDING_TALK_LINES ){
+		if( m_anEDTalkAlpha[ i ] > 0 ){
+			SetColor(
+				[ 255, 112, 255, 255, 112, 112, 255 ][ m_anEDTalkColorCode[ i ] ],
+				[ 255, 112, 112, 112, 255, 255, 255 ][ m_anEDTalkColorCode[ i ] ],
+				[ 255, 255, 112, 255, 112, 255, 112 ][ m_anEDTalkColorCode[ i ] ]
+			);
+			SetAlpha( Min( m_anEDTalkAlpha[ i ], m_nEDMasterAlpha ) );
+			DrawTexTextOnCache(
+				CL_TTHBASE_TALK + i + [ CL_TTH_TALK_ED_1, CL_TTH_TALK_ED_2, CL_TTH_TALK_ED_3 ][ m_nEndingID ],
+				-1, -1, m_anEDTalkDstX[ i ], m_anEDTalkDstY[ i ]
+			);
+		}
+	}
+	SetColor( 255, 255, 255 );
+	if( m_nEDSkipAlpha > 0 ){
+		SetAlpha( Min( m_nEDSkipAlpha, m_nEDMasterAlpha ) );
+		DrawTexTextOnCache( CL_TTH_SKIP, 0, 0, GetCenterX() - 96, GetClipMinY() + 16 );
+	}
+	SetAlpha( 255 );
+}

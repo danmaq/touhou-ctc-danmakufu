@@ -1,0 +1,814 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Common" file="common">
+	<category caption="概要" link="true">
+		<paragraph>
+			全てのスクリプトから呼び出し可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/COMMON/</path>となります。
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+		<define key="FLAN_HEX_TABLE" type="var">
+			<paragraph>
+				16進文字列テーブルです。
+			</paragraph>
+		</define>
+		<define key="FLAN_ASCII_TYPE" type="var">
+			<paragraph>
+				ASCIIコード識別用値の配列です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ASCII_TYPE_CC" type="var">
+			<paragraph>
+				文字制御コードを示す文字タイプです。
+			</paragraph>
+		</define>
+		<define key="FLAN_ASCII_TYPE_NUMERIC" type="var">
+			<paragraph>
+				数値を示す文字タイプです。
+			</paragraph>
+		</define>
+		<define key="FLAN_ASCII_TYPE_UPPER" type="var">
+			<paragraph>
+				大文字を示す文字タイプです。
+			</paragraph>
+		</define>
+		<define key="FLAN_ASCII_TYPE_LOWER" type="var">
+			<paragraph>
+				小文字を示す文字タイプです。
+			</paragraph>
+		</define>
+		<define key="FLAN_ASCII_TYPE_SJIS" type="var">
+			<paragraph>
+				SJIS2バイトコードを示す文字タイプです。
+			</paragraph>
+		</define>
+		<define key="FLAN_ASCII_TYPE_UNKNOWN" type="var">
+			<paragraph>
+				記号その他を示す文字タイプです。
+			</paragraph>
+		</define>
+		<define key="FLAN_STACK_HANDLE_INVALID" type="var">
+			<paragraph>
+				無効なスタックハンドルを示す定数。
+				<code>ReleaseStack</code>した後はこれを代入しておくとより安全です。
+			</paragraph>
+		</define>
+		<define key="FLAN_COMMON_BR_CODE" type="var">
+			<paragraph>
+				改行コードです。
+			</paragraph>
+		</define>
+		<define key="FLAN_COMMON_VERSION" type="var">
+			<paragraph>
+				FLANのバージョン情報です。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="書換可能定数" link="true">
+	</category>
+	<category caption="メンバ変数" link="true">
+		<define key="m_abFlanStackCacheEnable" type="var">
+			<paragraph>
+				スタックキャッシュヘッダ。
+			</paragraph>
+		</define>
+		<define key="m_anFlanStackCacheData" type="var">
+			<paragraph>
+				スタックキャッシュ本体。
+			</paragraph>
+		</define>
+		<define key="m_aszFlanHashKeys" type="var">
+			<paragraph>
+				ハッシュキーを格納します。
+			</paragraph>
+		</define>
+		<define key="m_anFlanHashValues" type="var">
+			<paragraph>
+				ハッシュ値を格納します。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="ロード関連">
+		<paragraph>
+			主にディスクリソースを読み込む関数群です。
+		</paragraph>
+		<define key="LoadGraphicList">
+			<argument>複数画像ファイル名からなる配列</argument>
+			<paragraph>
+				<caption>配列にある画像ファイルを一気に読み出し</caption>ます。
+			</paragraph>
+		</define>
+		<define key="LoadSEList">
+			<argument>複数効果音ファイル名からなる配列</argument>
+			<paragraph>
+				<caption>配列にある効果音ファイルを一気に読み出し</caption>ます。
+			</paragraph>
+		</define>
+		<define key="LoadResource">
+			<argument>複数画像ファイル名からなる配列</argument>
+			<argument>複数効果音ファイル名からなる配列</argument>
+			<paragraph>
+				<caption>配列にある画像/効果音ファイルを一気に読み出し</caption>ます。<br />
+				<code>LoadGraphicList</code>/<code>LoadSEList</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="DeleteGraphicList">
+			<argument>複数画像ファイル名からなる配列</argument>
+			<paragraph>
+				<caption>配列にある画像ファイルを一気にメモリ上から解放</caption>します。
+			</paragraph>
+		</define>
+		<define key="DeleteSEList">
+			<argument>複数効果音ファイル名からなる配列</argument>
+			<paragraph>
+				<caption>配列にある効果音ファイルを一気にメモリ上から解放</caption>します。
+			</paragraph>
+		</define>
+		<define key="DeleteResource">
+			<argument>複数画像ファイル名からなる配列</argument>
+			<argument>複数効果音ファイル名からなる配列</argument>
+			<paragraph>
+				<caption>配列にある画像/効果音ファイルを一気にメモリ上から解放</caption>します。<br />
+				<code>DeleteGraphicList</code>/<code>DeleteSEList</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="算術関連">
+		<paragraph>
+			主に補正系中心の算術関数群です。
+		</paragraph>
+		<define key="IsOdd">
+			<argument>対象値</argument>
+			<return>奇数の場合<value>true</value></return>
+			<paragraph>
+				<caption>奇数かどうかを判定</caption>します。
+			</paragraph>
+		</define>
+		<define key="GetSign">
+			<argument>対象値</argument>
+			<return>負数の場合<value>-1</value>、正の整数の場合<value>1</value>、0の場合<value>0</value></return>
+			<paragraph>
+				<caption>数値符号を返します</caption>。
+			</paragraph>
+		</define>
+		<define key="CopySign">
+			<argument>対象値1(変更される値)</argument>
+			<argument>対象値2</argument>
+			<return>対象値2の符号が付けられた対象値1</return>
+			<paragraph>
+				<caption>対象値の符号を他方に付けて返します</caption>。
+			</paragraph>
+		</define>
+		<define key="Near">
+			<argument>対象値1</argument>
+			<argument>対象値2</argument>
+			<argument>誤差</argument>
+			<return>二つの対象値が指定した誤差の範囲内なら<value>true</value></return>
+			<paragraph>
+				二値の<caption>誤差が一定以内かどうかを判定</caption>します。
+			</paragraph>
+		</define>
+		<define key="truncCutout">
+			<argument>対象値</argument>
+			<argument>切り捨てる桁(負数で小数位も指定出来ます)</argument>
+			<return>指定桁以下を切り捨てられた対象値</return>
+			<paragraph>
+				<caption>指定桁以下を切り捨て</caption>ます。
+			</paragraph>
+		</define>
+		<define key="truncOverhead">
+			<argument>対象値</argument>
+			<argument>切り捨てる桁(負数で小数位も指定出来ます)</argument>
+			<return>指定桁以上を切り捨てられた対象値</return>
+			<paragraph>
+				<caption>指定桁以上を切り捨て</caption>ます。
+			</paragraph>
+		</define>
+		<define key="truncEx">
+			<argument>対象値</argument>
+			<argument>切り捨てる単位数値</argument>
+			<return>単位数値単位で切り捨てられた対象値</return>
+			<paragraph>
+				<caption>値を特定単位で切り捨て</caption>ます。
+				<code>truncate</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Shift">
+			<argument>対象値</argument>
+			<argument>シフトするビット量</argument>
+			<return>ビットシフトされた値</return>
+			<paragraph>
+				<caption>値をビットシフト</caption>します。
+			</paragraph>
+		</define>
+		<define key="Max">
+			<argument>対象値1</argument>
+			<argument>対象値2</argument>
+			<return>大きいほうの値</return>
+			<paragraph>
+				2つの<caption>値を比較し、大きい値を返します</caption>。
+			</paragraph>
+		</define>
+		<define key="Min">
+			<argument>対象値1</argument>
+			<argument>対象値2</argument>
+			<return>小さいほうの値</return>
+			<paragraph>
+				2つの<caption>値を比較し、小さい値を返します</caption>。
+			</paragraph>
+		</define>
+		<define key="MinMax">
+			<argument>対象値</argument>
+			<argument>限界値1</argument>
+			<argument>限界値2</argument>
+			<return>限界値の範囲に補正された値</return>
+			<paragraph>
+				値を<caption>限界値の範囲内に補正</caption>します。
+				最小値と最大値が逆でも自動で認識して入れ替えられますが負荷の原因になるだけなのでなるべく避けてください。
+			</paragraph>
+		</define>
+		<define key="MinMaxLoop">
+			<argument>対象値</argument>
+			<argument>限界値1</argument>
+			<argument>限界値2</argument>
+			<return>限界値の範囲に補正された値</return>
+			<paragraph>
+				値を<caption>リミットの範囲内に補正</caption>します。
+				ただし、限界値を超えている場合、超えた分だけループします。<br />
+				<caution><code>nLimit1 &lt;= nExpr &lt; nLimit2</code>となります。</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="配列操作">
+		<paragraph>
+			主に配列操作の関数群です。
+		</paragraph>
+		<define key="CreateArray">
+			<argument>配列のサイズ</argument>
+			<argument>要素の値</argument>
+			<return>指定値が代入された指定サイズの配列</return>
+			<paragraph>
+				<caption>指定要素数の配列を作り、全ての要素を指定値で埋めます</caption>。
+			</paragraph>
+		</define>
+		<define key="CreateOrderArray">
+			<argument>配列のサイズ</argument>
+			<return>各要素番号が代入された指定サイズの配列</return>
+			<paragraph>
+				<caption>指定要素数の配列を作り、全ての要素を要素番号で埋めます</caption>。
+			</paragraph>
+		</define>
+		<define key="SortArray">
+			<argument>対象の配列</argument>
+			<return>指定した配列を昇順に並び替えた配列</return>
+			<paragraph>
+				<caption>指定した配列の全要素を昇順にソート</caption>します。<br />
+				<caution>ソートアルゴリズムに最も単純な(と同時に最も重い)バブルソート法を用いているため、極端に大きな配列を渡したりループ内で何度も繰り返してソートすると重くなることがあります。</caution>
+			</paragraph>
+		</define>
+		<define key="SearchArray">
+			<argument>対象の配列</argument>
+			<argument>値(数値・単文字)</argument>
+			<return>マッチした場合はその要素番号、しなかった場合は配列の要素数</return>
+			<paragraph>
+				<caption>指定した配列の値を検索</caption>します。
+			</paragraph>
+		</define>
+		<define key="SearchArrayRight">
+			<argument>対象の配列</argument>
+			<argument>値(数値・単文字)</argument>
+			<return>マッチした場合はその要素番号、しなかった場合は<value>-1</value></return>
+			<paragraph>
+				<caption>指定した配列の値を逆順に検索</caption>します。
+			</paragraph>
+		</define>
+		<define key="Reverse">
+			<argument>対象の配列</argument>
+			<return>指定した配列を逆順に並び替えた配列</return>
+			<paragraph>
+				<caption>配列の要素を逆順にソート</caption>します。
+			</paragraph>
+		</define>
+		<define key="Split">
+			<argument>対象の配列</argument>
+			<argument>キーとなる値</argument>
+			<return>分割された配列の配列</return>
+			<paragraph>
+				<caption>配列を特定キーワードで分割</caption>し、配列にして返します。
+				例えば<kbd>[1,2,3,4,5]</kbd>の配列を<kbd>3</kbd>をキーに分割すると戻り値は<value>[[1,2],[4,5]]</value>となります。
+				文字列の分割にも応用できます。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="文字列操作">
+		<paragraph>
+			主に文字列操作の関数群です。
+		</paragraph>
+		<define key="GetCharType">
+			<argument>対象の単文字</argument>
+			<return>文字タイプ定数</return>
+			<paragraph>
+				<caption>指定した単文字の文字種を調べます</caption>。<br />
+				<caution>文字列を1バイトずつ調べていく場合は、<var>FLAN_ASCII_TYPE_SJIS</var>を検出した際に1バイトスキップしないと誤判定します。</caution>
+			</paragraph>
+		</define>
+		<define key="StringToStringInt">
+			<argument>対象の浮動小数点文字列</argument>
+			<return>整数文字列</return>
+			<paragraph>
+				<caption>浮動小数点文字列の小数点以下を切り捨て、整数文字列に変換</caption>します。
+			</paragraph>
+		</define>
+		<define key="ToStringInt">
+			<argument>対象の数値</argument>
+			<return>整数文字列</return>
+			<paragraph>
+				数<caption>値の小数点以下を切り捨て、整数文字列に変換</caption>します。
+				<code>StringToStringInt</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="StringToStringEx">
+			<argument>対象の浮動小数点文字列</argument>
+			<return>整数文字列</return>
+			<paragraph>
+				<caption>浮動小数点文字列の小数位以下の無駄な0を省き、整数文字列に変換</caption>します。
+			</paragraph>
+		</define>
+		<define key="ToStringEx">
+			<argument>対象の数値</argument>
+			<return>整数文字列</return>
+			<paragraph>
+				数<caption>値の小数位以下の無駄な0を省き、整数文字列に変換</caption>します。
+				<code>StringToStringEx</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="ToStringIntGrade">
+			<argument>対象の数値</argument>
+			<argument>桁数</argument>
+			<return>指定最低桁以上の桁を有する整数文字列</return>
+			<paragraph>
+				数<caption>値の小数点以下を切り捨て、指定最低桁以上の桁を有する整数文字列に変換</caption>します。
+				<code>ToStringInt</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="CharToInteger">
+			<argument>対象の単文字(1～9であること)</argument>
+			<return>数値化した値</return>
+			<paragraph>
+				<caption>数字の単文字を(かなり外道なやり方で)数値化</caption>します。
+			</paragraph>
+		</define>
+		<define key="StringToInteger">
+			<argument>対象の数字文字列</argument>
+			<argument>数値化した値</argument>
+			<return>数値化した値</return>
+			<paragraph>
+				<caption>数字の文字列を数値化</caption>します。
+			</paragraph>
+		</define>
+		<define key="ToUpper">
+			<argument>対象の文字列</argument>
+			<return>変換された文字列</return>
+			<paragraph>
+				文字列に含まれる<caption>半角大文字を半角小文字に変換</caption>します。
+				<code>__ConvertString</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="ToLower">
+			<argument>対象の文字列</argument>
+			<return>変換された文字列</return>
+			<paragraph>
+				文字列に含まれる<caption>半角小文字を半角大文字に変換</caption>します。
+				<code>__ConvertString</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="__ConvertString">
+			<argument>対象の文字列</argument>
+			<argument>変換する対象となる文字タイプ</argument>
+			<argument>文字コードのシフト量</argument>
+			<return>変換された文字列</return>
+			<paragraph>
+				<caption>文字列を特定条件に従って変換</caption>します。
+				コードシフト限界は0～255です。
+				(-65536とか指定しても変換されたコードは0以下にはなりません)
+			</paragraph>
+		</define>
+		<define key="Hex">
+			<argument>対象の数値</argument>
+			<return>16進表記の文字列</return>
+			<paragraph>
+				数<caption>値を16進文字列化</caption>します。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="スタック">
+		<paragraph>
+			スタック操作の関数群です。
+			配列操作機能をさらに拡張しスタック機能を提供します。
+			<caution>スタックに登録できるのは数値型(real型)のみとなります。</caution>
+		</paragraph>
+		<define key="__PutStackError">
+			<argument>不正なスタックハンドル</argument>
+			<paragraph>
+				弾幕風システムに<caption>エラーメッセージを投げます</caption>。
+				スタックエラーが発生した際、内部から自動的に呼ばれます。<br />
+				<caution>自動的に内部から呼ばれますので直接呼び出すことは通常ありません。</caution>
+			</paragraph>
+		</define>
+		<define key="IsValidStackHandle">
+			<argument>評価するスタックハンドル</argument>
+			<return>スタックハンドルが正当なら<value>true</value></return>
+			<paragraph>
+				<caption>渡されたスタックハンドルが正当か判定</caption>します。
+			</paragraph>
+		</define>
+		<define key="GetStackInstance">
+			<argument>スタックハンドル</argument>
+			<return>スタックの実体</return>
+			<paragraph>
+				<caption>スタックの実体を返します</caption>。
+			</paragraph>
+		</define>
+		<define key="SetStackInstance">
+			<argument>スタック実体</argument>
+			<return>作成したスタックのハンドル</return>
+			<paragraph>
+				<caption>スタック実体を元に新規スタックを作成</caption>します。
+			</paragraph>
+		</define>
+		<define key="CreateStack">
+			<argument>登録する初期値</argument>
+			<return>作成したスタックのハンドル</return>
+			<paragraph>
+				新規に<caption>スタックを作成</caption>します。
+				<code>SetStackInstance</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="GetStackValue">
+			<argument>スタックハンドル</argument>
+			<return>スタックに登録された値</return>
+			<paragraph>
+				スタックに<caption>登録された値を取得</caption>します。
+			</paragraph>
+		</define>
+		<define key="PushStack">
+			<argument>スタックハンドル</argument>
+			<return>登録する値</return>
+			<paragraph>
+				スタックに<caption>値を登録</caption>します。
+			</paragraph>
+		</define>
+		<define key="ReplaceStack">
+			<argument>スタックハンドル</argument>
+			<return>登録する値</return>
+			<paragraph>
+				スタックに<caption>登録された値を上書き登録</caption>します。
+				スタックは積まれません。
+			</paragraph>
+		</define>
+		<define key="PopStack">
+			<argument>スタックハンドル</argument>
+			<return>取り除いた値</return>
+			<paragraph>
+				スタックに<caption>登録された値を新しいものから1つ取り除きます</caption>。
+			</paragraph>
+		</define>
+		<define key="ReleaseStack">
+			<argument>スタックハンドル</argument>
+			<return>解放できたら<value>true</value>、ハンドルが無効など解放に失敗したら<value>false</value></return>
+			<paragraph>
+				指定した<caption>スタックを削除解放します</caption>。<br />
+				<caution>削除解放した後は安全のため使っていたスタックハンドルに<var>FLAN_STACK_HANDLE_INVALID</var>を代入することを勧めます。</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="連想配列(ハッシュ)操作">
+		<paragraph>
+			連想配列(ハッシュ)操作の関数群です。<br />
+			<caution>ハッシュに登録できるのは数値型(real型)のみとなります。</caution>
+		</paragraph>
+		<define key="InitializeHash">
+			<paragraph>
+				ハッシュを<caption>初期化</caption>します。
+			</paragraph>
+		</define>
+		<define key="AddHash">
+			<argument>キー文字列</argument>
+			<argument>結び付けられる数値</argument>
+			<paragraph>
+				<caption>キー文字列と値を結び付けます</caption>。
+			</paragraph>
+		</define>
+		<define key="AddHashList">
+			<argument>キー文字列リスト</argument>
+			<argument>結び付けられる数値リスト</argument>
+			<return>登録に成功した場合<value>true</value></return>
+			<paragraph>
+				<caption>キー文字列リストと値リストをまとめてハッシュに登録</caption>します。
+			</paragraph>
+		</define>
+		<define key="GetHashValue">
+			<argument>キー文字列</argument>
+			<argument>対象のキー文字列が見つからなかった場合に返る値</argument>
+			<return>結び付けられた数値</return>
+			<paragraph>
+				<caption>キー文字列から対応する値を取り出します</caption>。
+			</paragraph>
+		</define>
+		<define key="SetCommonDataFromHashEx">
+			<argument>名前空間</argument>
+			<argument>キー文字列リスト</argument>
+			<argument>対象のキー文字列が見つからなかった場合に返る値</argument>
+			<paragraph>
+				<caption>ハッシュに登録されている値をCommonDataに登録</caption>します。
+			</paragraph>
+		</define>
+		<define key="SetCommonDataFromHash">
+			<argument>対象のキー文字列が見つからなかった場合に返る値</argument>
+			<paragraph>
+				<caption>ハッシュに登録されている値をCommonDataに登録</caption>します。
+				<code>SetCommonDataFromHashEx</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="GetCommonDataToHashEx">
+			<argument>名前空間</argument>
+			<argument>キー文字列リスト</argument>
+			<argument>対象のキー文字列が見つからなかった場合に返る値</argument>
+			<paragraph>
+				<caption>CommonDataに登録されている値をハッシュに登録</caption>します。
+			</paragraph>
+		</define>
+		<define key="GetCommonDataToHash">
+			<argument>キー文字列リスト</argument>
+			<argument>対象のキー文字列が見つからなかった場合に返る値</argument>
+			<paragraph>
+				<caption>CommonDataに登録されている値をハッシュに登録</caption>します。
+				<code>GetCommonDataToHashEx</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="内分カウンタ">
+		<paragraph>
+			最初の位置と最後の位置を指定すると一定時間内に対応した値を返す内分カウンタです。
+		</paragraph>
+		<define key="Smooth">
+			<argument>(現在時間==0)の時の初期値</argument>
+			<argument>最終値</argument>
+			<argument>現在時間</argument>
+			<argument>最終値に到達する時間</argument>
+			<return>初期値～最終値に対し0～到達時間の現在時間に相当する値</return>
+			<paragraph>
+				<caption>等速変化</caption>する内分カウンタです。
+			</paragraph>
+		</define>
+		<define key="Accelerate">
+			<argument>(現在時間==0)の時の初期値</argument>
+			<argument>最終値</argument>
+			<argument>現在時間</argument>
+			<argument>最終値に到達する時間</argument>
+			<return>初期値～最終値に対し0～到達時間の現在時間に相当する値</return>
+			<paragraph>
+				<caption>加速変化</caption>する内分カウンタです。
+			</paragraph>
+		</define>
+		<define key="SlowDown">
+			<argument>(現在時間==0)の時の初期値</argument>
+			<argument>最終値</argument>
+			<argument>現在時間</argument>
+			<argument>最終値に到達する時間</argument>
+			<return>初期値～最終値に対し0～到達時間の現在時間に相当する値</return>
+			<paragraph>
+				<caption>減速変化</caption>する内分カウンタです。
+			</paragraph>
+		</define>
+		<define key="SplineFakeFSF">
+			<argument>(現在時間==0)の時の初期値</argument>
+			<argument>最終値</argument>
+			<argument>現在時間</argument>
+			<argument>最終値に到達する時間</argument>
+			<return>初期値～最終値に対し0～到達時間の現在時間に相当する値</return>
+			<paragraph>
+				減速変化→加速変化を組み合わせスプラインのような動きを模する内分カウンタです。
+				<caption>高速→低速→高速</caption>と変化します。
+			</paragraph>
+		</define>
+		<define key="SplineFakeSFS">
+			<argument>(現在時間==0)の時の初期値</argument>
+			<argument>最終値</argument>
+			<argument>現在時間</argument>
+			<argument>最終値に到達する時間</argument>
+			<return>初期値～最終値に対し0～到達時間の現在時間に相当する値</return>
+			<paragraph>
+				加速変化→減速変化を組み合わせスプラインのような動きを模する内分カウンタです。
+				<caption>低速→高速→低速</caption>と変化します。
+			</paragraph>
+		</define>
+		<define key="Neville">
+			<argument>(現在時間==0)の時の初期値</argument>
+			<argument>制御点(中間値)</argument>
+			<argument>最終値</argument>
+			<argument>現在時間</argument>
+			<argument>最終値に到達する時間</argument>
+			<return>初期値～(中間値)～最終値に対し0～到達時間の現在時間に相当する値</return>
+			<paragraph>
+				<caption>ネヴィル・スプライン</caption>のシミュレータです。
+			</paragraph>
+		</define>
+		<define key="Bezier">
+			<argument>(現在時間==0)の時の初期値</argument>
+			<argument>制御点(中間値)</argument>
+			<argument>最終値</argument>
+			<argument>現在時間</argument>
+			<argument>最終値に到達する時間</argument>
+			<return>初期値～(中間値)～最終値に対し0～到達時間の現在時間に相当する値</return>
+			<paragraph>
+				<caption>ベジェ・スプライン</caption>のシミュレータです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="汎用エラーメッセージ">
+		<paragraph>
+			よく使いそうなエラーメッセージ出力機能です。
+		</paragraph>
+		<define key="ErrorIllegalNumberArea">
+			<argument>対象の値</argument>
+			<argument>許容最小値</argument>
+			<argument>許容最大値</argument>
+			<argument>解説など</argument>
+			<paragraph>
+				エラーメッセージを投げます。<br />
+				<caption>「想定外の数値が入力されました。許容範囲( 0 ～ 5 )に対し、 6」</caption>
+			</paragraph>
+		</define>
+		<define key="ErrorIllegalNumberList">
+			<argument>対象の値</argument>
+			<argument>許容値リスト</argument>
+			<argument>解説など</argument>
+			<paragraph>
+				エラーメッセージを投げます。<br />
+				<caption>「想定外の数値が入力されました。許容値( 1, 2, 3 )に対し、 6」</caption>
+			</paragraph>
+		</define>
+		<define key="ErrorIllegalStringLength">
+			<argument>対象の値</argument>
+			<argument>許容最小文字列長</argument>
+			<argument>許容最大文字列長</argument>
+			<argument>解説など</argument>
+			<paragraph>
+				エラーメッセージを投げます。<br />
+				<caption>「想定外の長さの文字列が入力されました。許容範囲( 0 ～ 5 )に対し、 6」</caption>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="共通データ(CommonData)操作">
+		<paragraph>
+			共通データ(CommonData)をより便利に扱う関数群です。
+		</paragraph>
+		<define key="SetDebugMode">
+			<paragraph>
+				<caption>デバッグモードに入ります</caption>。
+				<code>SetCommonDataEx</code>のラッパーです。<br />
+				<caution>初期化時に1度だけ設定してください。</caution>
+			</paragraph>
+		</define>
+		<define key="IsDebugMode">
+			<return>デバッグモードなら<value>true</value></return>
+			<paragraph>
+				<caption>デバッグモードかどうかを取得</caption>します。
+				<code>GetCommonDataDefaultEx</code>のラッパーです。<br />
+			</paragraph>
+		</define>
+		<define key="AddCommonData">
+			<argument>共通データのキー</argument>
+			<argument>加算する数値</argument>
+			<argument>キーに対応する値が存在しなかった場合のデフォルト値</argument>
+			<paragraph>
+				共通データに格納されている値に<caption>指定値を加算</caption>します。
+				<code>AddCommonDataEx</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="AddCommonDataEx">
+			<argument>共通データの名前空間</argument>
+			<argument>共通データのキー</argument>
+			<argument>加算する数値</argument>
+			<argument>キーに対応する値が存在しなかった場合のデフォルト値</argument>
+			<paragraph>
+				共通データに格納されている値に<caption>指定値を加算</caption>します。
+			</paragraph>
+		</define>
+		<define key="MultiplyCommonData">
+			<argument>共通データのキー</argument>
+			<argument>乗算する数値</argument>
+			<argument>キーに対応する値が存在しなかった場合のデフォルト値</argument>
+			<paragraph>
+				共通データに格納されている値に<caption>指定値を乗算</caption>します。
+				<code>MultiplyCommonDataEx</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="MultiplyCommonDataEx">
+			<argument>共通データの名前空間</argument>
+			<argument>共通データのキー</argument>
+			<argument>乗算する数値</argument>
+			<argument>キーに対応する値が存在しなかった場合のデフォルト値</argument>
+			<paragraph>
+				共通データに格納されている値に<caption>指定値を乗算</caption>します。
+			</paragraph>
+		</define>
+		<define key="CopyCommonData">
+			<argument>キーのリスト</argument>
+			<argument>転送元名前空間</argument>
+			<argument>転送先名前空間</argument>
+			<argument>転送後、転送元のデータを削除するかどうか</argument>
+			<argument>転送元にデータが存在しなかった場合のデフォルト値</argument>
+			<paragraph>
+				指定した共通データを<caption>別の名前空間に移動/コピー</caption>します。
+			</paragraph>
+		</define>
+		<define key="PopCommonData">
+			<argument>共通データのキー</argument>
+			<argument>キーに対応する値が存在しなかった場合のデフォルト値</argument>
+			<return>キーに対応する値、存在しない場合指定したデフォルト値</return>
+			<paragraph>
+				共通データに格納されている<caption>値を取り除き、その値を返します</caption>。
+				<code>PopCommonDataEx</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="PopCommonDataEx">
+			<argument>共通データの名前空間</argument>
+			<argument>共通データのキー</argument>
+			<argument>キーに対応する値が存在しなかった場合のデフォルト値</argument>
+			<return>キーに対応する値、存在しない場合指定したデフォルト値</return>
+			<paragraph>
+				共通データに格納されている<caption>値を取り除き、その値を返します</caption>。
+			</paragraph>
+		</define>
+		<define key="SetCommonDataExArray">
+			<argument>共通データの名前空間</argument>
+			<argument>共通データのキー</argument>
+			<argument>配列の要素番号</argument>
+			<argument>代入する値</argument>
+			<argument>キーに対応する内容が存在しなかった場合のデフォルト配列長</argument>
+			<argument>キーに対応する内容が存在しなかった場合のデフォルト要素値</argument>
+			<paragraph>
+				<caption>配列共通データの指定した要素に指定値を代入</caption>します。
+			</paragraph>
+		</define>
+		<define key="SetCommonDataExArrayMax">
+			<argument>共通データの名前空間</argument>
+			<argument>共通データのキー</argument>
+			<argument>配列の要素番号</argument>
+			<argument>代入する値</argument>
+			<argument>キーに対応する内容が存在しなかった場合のデフォルト配列長</argument>
+			<argument>キーに対応する内容が存在しなかった場合のデフォルト要素値</argument>
+			<paragraph>
+				<caption>配列共通データの指定した要素の値が指定値より小さかったらに指定値を代入</caption>します。
+			</paragraph>
+		</define>
+		<define key="AddCommonDataExArray">
+			<argument>共通データの名前空間</argument>
+			<argument>共通データのキー</argument>
+			<argument>配列の要素番号</argument>
+			<argument>加算する値</argument>
+			<argument>キーに対応する内容が存在しなかった場合のデフォルト配列長</argument>
+			<argument>キーに対応する内容が存在しなかった場合のデフォルト要素値</argument>
+			<paragraph>
+				<caption>配列共通データの指定した要素の値に指定値を加算</caption>します。
+			</paragraph>
+		</define>
+		<define key="PushCommonDataExArray">
+			<argument>共通データの名前空間</argument>
+			<argument>共通データのキー</argument>
+			<argument>追加する配列</argument>
+			<paragraph>
+				<caption>多重配列共通データの末尾に配列を追加登録</caption>します。
+			</paragraph>
+		</define>
+		<define key="AddCommonDataExArray2D">
+			<argument>共通データの名前空間</argument>
+			<argument>共通データのキー</argument>
+			<argument>配列の要素番号が格納された配列[階層レベル1,2]</argument>
+			<argument>加算する値</argument>
+			<argument>キーに対応する内容が存在しなかった場合のデフォルト配列長が格納された配列[階層レベル1,2]</argument>
+			<argument>キーに対応する内容が存在しなかった場合のデフォルト要素値</argument>
+			<paragraph>
+				<caption>二重配列共通データの指定した要素の値に指定値を加算</caption>します。
+			</paragraph>
+		</define>
+		<define key="AddCommonDataExArray3D">
+			<argument>共通データの名前空間</argument>
+			<argument>共通データのキー</argument>
+			<argument>配列の要素番号が格納された配列[階層レベル1,2,3]</argument>
+			<argument>加算する値</argument>
+			<argument>キーに対応する内容が存在しなかった場合のデフォルト配列長が格納された配列[階層レベル1,2,3]</argument>
+			<argument>キーに対応する内容が存在しなかった場合のデフォルト要素値</argument>
+			<paragraph>
+				<caption>三重配列共通データの指定した要素の値に指定値を加算</caption>します。
+			</paragraph>
+		</define>
+	</category>
+</contents>

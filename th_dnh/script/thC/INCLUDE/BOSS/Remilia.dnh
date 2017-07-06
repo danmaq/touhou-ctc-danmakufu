@@ -1,0 +1,56 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　レミリア・スカーレット
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossRemilia;
+let m_szImageCutIn = cutRemilia;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_REMILIA;
+let m_aszImageBGList = LOADBGLIST_REMILIA;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+
+	let i = - m_nFlanCount * 2;
+	let j = m_nFlanCount * 0.5;
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellRemi01 );
+	SetGraphicRect( i,  j, 512 + i, 512 + j );
+	SetRenderState(ADD);
+	DrawCenter( imgSpellRemi02 );
+	SetRenderState( ALPHA );
+
+}
+
+

@@ -1,0 +1,337 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		スペルプラクティス部
+//
+//		※ステージライブラリから自動的にインクルードされます
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数
+//////////////////////////////////////////////////////////////////////
+
+/**	読み込むステージ固有の背景グラフィックです。
+*	背景無効時は無視されます。
+*/
+let SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG = [];
+/**	読み込むステージ固有のその他グラフィックです。 */
+let SPELL_PRACTICE_LOAD_LIST_GRAPHIC = [];
+/**	読み込むステージ固有の敵スクリプトです。 */
+let SPELL_PRACTICE_LOAD_LIST_ENEMY = [];
+/**	読み込むステージ固有の効果音です。 */
+let SPELL_PRACTICE_LOAD_LIST_SOUND = [ seSaku0 ];
+/**	BGM毎のステージIDのリストです。 */
+let SPELL_PRACTICE_STAGE_ATBGM = [
+	1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3,
+	1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3,
+	4, 4, 5, 5, 6, 6, 6, 10, 10, 11, 11
+];
+/**	BGM毎のシナリオIDのリストです。 */
+let SPELL_PRACTICE_SCENARIO_ATBGM = [
+	0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+	2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+];
+/**	スペルIDに対応する難易度リストです。 */
+let SPELL_PRACTICE_LEVEL_LIST = [
+	2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2,
+	3, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3,
+	2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2,
+	3, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3,
+	2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2,
+	3, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3,
+	2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2,
+	3, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3,
+
+	0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 2, 3, 0, 1, 2, 3, 1, 2, 3,
+	0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3,
+	0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3, 0, 1, 2, 3,
+	0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3,
+	0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+];
+/**	スペルIDに対応する敵スクリプトのリストです。 */
+let SPELL_PRACTICE_ENEMY_LIST = [
+													bossFlandreList[ 2 ],	bossFlandreList[ 2 ],	// 紅魔郷ルート
+	bossMeirinList[ 2 ],	bossMeirinList[ 2 ],	bossMeirinList[ 2 ],	bossMeirinList[ 2 ],
+	bossMeirinList[ 4 ],	bossMeirinList[ 4 ],	bossMeirinList[ 4 ],	bossMeirinList[ 4 ],
+							bossMeirinList[ 6 ],	bossMeirinList[ 6 ],	bossMeirinList[ 6 ],
+	bossSakuyaList[ 2 ],	bossSakuyaList[ 2 ],	bossSakuyaList[ 2 ],	bossSakuyaList[ 2 ],
+	bossRemiliaList[ 2 ],	bossRemiliaList[ 2 ],	bossRemiliaList[ 2 ],	bossRemiliaList[ 2 ],
+	bossRemiliaList[ 4 ],	bossRemiliaList[ 4 ],	bossRemiliaList[ 4 ],	bossRemiliaList[ 4 ],
+	bossRemiliaList[ 5 ],	bossRemiliaList[ 5 ],	bossRemiliaList[ 5 ],	bossRemiliaList[ 5 ],
+							bossRemiliaList[ 7 ],	bossRemiliaList[ 7 ],	bossRemiliaList[ 7 ],
+	bossDevilList[ 2 ],		bossDevilList[ 2 ],		bossDevilList[ 2 ],		bossDevilList[ 2 ],
+	bossPatchouliList[ 2 ],	bossPatchouliList[ 2 ],	bossPatchouliList[ 2 ],	bossPatchouliList[ 2 ],
+	bossPatchouliList[ 4 ],	bossPatchouliList[ 4 ],	bossPatchouliList[ 4 ],	bossPatchouliList[ 4 ],
+	bossPatchouliList[ 5 ],	bossPatchouliList[ 5 ],	bossPatchouliList[ 5 ],	bossPatchouliList[ 5 ],
+	bossPatchouliList[ 6 ],	bossPatchouliList[ 6 ],	bossPatchouliList[ 6 ],	bossPatchouliList[ 6 ],
+							bossPatchouliList[ 8 ],	bossPatchouliList[ 8 ],	bossPatchouliList[ 8 ],
+													bossMokouList[ 2 ],		bossMokouList[ 2 ],	// 永夜抄ルート
+	bossKaguyaList[ 2 ],	bossKaguyaList[ 2 ],	bossKaguyaList[ 2 ],	bossKaguyaList[ 2 ],
+	bossKaguyaList[ 4 ],	bossKaguyaList[ 4 ],	bossKaguyaList[ 4 ],	bossKaguyaList[ 4 ],
+							bossKaguyaList[ 6 ],	bossKaguyaList[ 6 ],	bossKaguyaList[ 6 ],
+	bossReisenList[ 2 ],	bossReisenList[ 2 ],	bossReisenList[ 2 ],	bossReisenList[ 2 ],
+	bossEirinList[ 2 ],		bossEirinList[ 2 ],		bossEirinList[ 2 ],		bossEirinList[ 2 ],
+	bossEirinList[ 4 ],		bossEirinList[ 4 ],		bossEirinList[ 4 ],		bossEirinList[ 4 ],
+	bossEirinList[ 5 ],		bossEirinList[ 5 ],		bossEirinList[ 5 ],		bossEirinList[ 5 ],
+							bossEirinList[ 7 ],		bossEirinList[ 7 ],		bossEirinList[ 7 ],
+	bossTewiAList[ 2 ],		bossTewiAList[ 2 ],		bossTewiAList[ 2 ],		bossTewiAList[ 2 ],
+	bossTewiBList[ 2 ],		bossTewiBList[ 2 ],		bossTewiBList[ 2 ],		bossTewiBList[ 2 ],
+	bossTewiBList[ 4 ],		bossTewiBList[ 4 ],		bossTewiBList[ 4 ],		bossTewiBList[ 4 ],
+	bossTewiBList[ 5 ],		bossTewiBList[ 5 ],		bossTewiBList[ 5 ],		bossTewiBList[ 5 ],
+	bossTewiBList[ 6 ],		bossTewiBList[ 6 ],		bossTewiBList[ 6 ],		bossTewiBList[ 6 ],
+							bossTewiBList[ 8 ],		bossTewiBList[ 8 ],		bossTewiBList[ 8 ],
+													bossLilyList[ 2 ],		bossLilyList[ 2 ],	// 花映塚ルート
+	bossMedicineList[ 2 ],	bossMedicineList[ 2 ],	bossMedicineList[ 2 ],	bossMedicineList[ 2 ],
+	bossMedicineList[ 4 ],	bossMedicineList[ 4 ],	bossMedicineList[ 4 ],	bossMedicineList[ 4 ],
+							bossMedicineList[ 6 ],	bossMedicineList[ 6 ],	bossMedicineList[ 6 ],
+	bossAyaAList[ 2 ],		bossAyaAList[ 2 ],		bossAyaAList[ 2 ],		bossAyaAList[ 2 ],
+	bossAyaBList[ 2 ],		bossAyaBList[ 2 ],		bossAyaBList[ 2 ],		bossAyaBList[ 2 ],
+	bossAyaBList[ 4 ],		bossAyaBList[ 4 ],		bossAyaBList[ 4 ],		bossAyaBList[ 4 ],
+	bossAyaBList[ 5 ],		bossAyaBList[ 5 ],		bossAyaBList[ 5 ],		bossAyaBList[ 5 ],
+							bossAyaBList[ 7 ],		bossAyaBList[ 7 ],		bossAyaBList[ 7 ],
+	bossKomachiList[ 2 ],	bossKomachiList[ 2 ],	bossKomachiList[ 2 ],	bossKomachiList[ 2 ],
+	bossEikiList[ 2 ],		bossEikiList[ 2 ],		bossEikiList[ 2 ],		bossEikiList[ 2 ],
+	bossEikiList[ 4 ],		bossEikiList[ 4 ],		bossEikiList[ 4 ],		bossEikiList[ 4 ],
+	bossEikiList[ 5 ],		bossEikiList[ 5 ],		bossEikiList[ 5 ],		bossEikiList[ 5 ],
+	bossEikiList[ 6 ],		bossEikiList[ 6 ],		bossEikiList[ 6 ],		bossEikiList[ 6 ],
+							bossEikiList[ 8 ],		bossEikiList[ 8 ],		bossEikiList[ 8 ],
+													bossMimaAList[ 2 ],		bossMimaAList[ 2 ],	// 旧作ルート
+	bossMimaBList[ 2 ],		bossMimaBList[ 2 ],		bossMimaBList[ 2 ],		bossMimaBList[ 2 ],
+	bossMimaBList[ 4 ],		bossMimaBList[ 4 ],		bossMimaBList[ 4 ],		bossMimaBList[ 4 ],
+							bossMimaBList[ 6 ],		bossMimaBList[ 6 ],		bossMimaBList[ 6 ],
+	bossYukaAList[ 2 ],		bossYukaAList[ 2 ],		bossYukaAList[ 2 ],		bossYukaAList[ 2 ],
+	bossYukaBList[ 2 ],		bossYukaBList[ 2 ],		bossYukaBList[ 2 ],		bossYukaBList[ 2 ],
+	bossYukaBList[ 4 ],		bossYukaBList[ 4 ],		bossYukaBList[ 4 ],		bossYukaBList[ 4 ],
+	bossYukaBList[ 5 ],		bossYukaBList[ 5 ],		bossYukaBList[ 5 ],		bossYukaBList[ 5 ],
+							bossYukaBList[ 7 ],		bossYukaBList[ 7 ],		bossYukaBList[ 7 ],
+	bossShinkiList[ 2 ],	bossShinkiList[ 2 ],	bossShinkiList[ 2 ],	bossShinkiList[ 2 ],
+	bossAliceList[ 2 ],		bossAliceList[ 2 ],		bossAliceList[ 2 ],		bossAliceList[ 2 ],
+	bossAliceList[ 4 ],		bossAliceList[ 4 ],		bossAliceList[ 4 ],		bossAliceList[ 4 ],
+	bossAliceList[ 5 ],		bossAliceList[ 5 ],		bossAliceList[ 5 ],		bossAliceList[ 5 ],
+	bossAliceList[ 6 ],		bossAliceList[ 6 ],		bossAliceList[ 6 ],		bossAliceList[ 6 ],
+							bossAliceList[ 8 ],		bossAliceList[ 8 ],		bossAliceList[ 8 ],
+	bossChenRanList[ 0 ],	bossChenRanList[ 0 ],	bossChenRanList[ 0 ],	bossChenRanList[ 0 ],	// 妖々夢(後半)ルート
+	bossYukariList[ 2 ],	bossYukariList[ 2 ],	bossYukariList[ 2 ],	bossYukariList[ 2 ],
+	bossYukariList[ 4 ],	bossYukariList[ 4 ],	bossYukariList[ 4 ],	bossYukariList[ 4 ],
+	bossYukariList[ 5 ],	bossYukariList[ 5 ],	bossYukariList[ 5 ],	bossYukariList[ 5 ],
+													bossYukariList[ 6 ],	bossYukariList[ 6 ],
+	bossYukariList[ 7 ],	bossYukariList[ 7 ],	bossYukariList[ 7 ],	bossYukariList[ 7 ],
+							bossYukariList[ 9 ],	bossYukariList[ 9 ],	bossYukariList[ 9 ],
+	bossYoumuList[ 1 ],		bossYoumuList[ 1 ],		bossYoumuList[ 1 ],		bossYoumuList[ 1 ],
+	bossYoumuList[ 2 ],		bossYoumuList[ 2 ],		bossYoumuList[ 2 ],		bossYoumuList[ 2 ],
+	bossYoumuList[ 3 ],		bossYoumuList[ 3 ],		bossYoumuList[ 3 ],		bossYoumuList[ 3 ],
+	bossYoumuList[ 4 ],		bossYoumuList[ 4 ],		bossYoumuList[ 4 ],		bossYoumuList[ 4 ],
+	bossYuyukoList[ 2 ],	bossYuyukoList[ 2 ],	bossYuyukoList[ 2 ],	bossYuyukoList[ 2 ],
+	bossYuyukoList[ 4 ],	bossYuyukoList[ 4 ],	bossYuyukoList[ 4 ],	bossYuyukoList[ 4 ],
+	bossYuyukoList[ 5 ],	bossYuyukoList[ 5 ],	bossYuyukoList[ 5 ],	bossYuyukoList[ 5 ],
+	bossYuyukoList[ 6 ],	bossYuyukoList[ 6 ],	bossYuyukoList[ 6 ],	bossYuyukoList[ 6 ],
+	bossYuyukoList[ 7 ],	bossYuyukoList[ 7 ],	bossYuyukoList[ 7 ],	bossYuyukoList[ 7 ],
+	bossYuyukoList[ 8 ],	bossYuyukoList[ 8 ],	bossYuyukoList[ 8 ],	bossYuyukoList[ 8 ],
+							bossYuyukoList[ 10 ],	bossYuyukoList[ 10 ],	bossYuyukoList[ 10 ],
+	bossYuyukoYukariList[ 1 ],	bossYuyukoYukariList[ 1 ],	bossYuyukoYukariList[ 1 ],	bossYuyukoYukariList[ 1 ],
+	bossReimuWList[ 2 ],	bossReimuWList[ 2 ],	bossReimuWList[ 2 ],	bossReimuWList[ 2 ],
+	bossReimuWList[ 4 ],	bossReimuWList[ 4 ],	bossReimuWList[ 4 ],	bossReimuWList[ 4 ],
+	bossReimuWList[ 5 ],	bossReimuWList[ 5 ],	bossReimuWList[ 5 ],	bossReimuWList[ 5 ],
+	bossReimuWList[ 6 ],	bossReimuWList[ 6 ],	bossReimuWList[ 6 ],	bossReimuWList[ 6 ],
+	bossReimuWList[ 7 ],	bossReimuWList[ 7 ],	bossReimuWList[ 7 ],	bossReimuWList[ 7 ],
+	bossReimuXList[ 1 ],	bossReimuXList[ 1 ],	bossReimuXList[ 1 ],	bossReimuXList[ 1 ],
+	bossReimuXList[ 2 ],	bossReimuXList[ 2 ],	bossReimuXList[ 2 ],	bossReimuXList[ 2 ],
+	bossReimuXList[ 3 ],	bossReimuXList[ 3 ],	bossReimuXList[ 3 ],	bossReimuXList[ 3 ],
+	bossReimuXList[ 4 ],	bossReimuXList[ 4 ],	bossReimuXList[ 4 ],	bossReimuXList[ 4 ],
+	bossReimuXList[ 5 ],	bossReimuXList[ 5 ],	bossReimuXList[ 5 ],	bossReimuXList[ 5 ],
+	bossSuikaAList[ 0 ],	bossSuikaAList[ 1 ],	bossSuikaAList[ 2 ],	// EXPHルート
+	bossSuikaBList[ 2 ],	bossSuikaBList[ 4 ],	bossSuikaBList[ 6 ],	bossSuikaBList[ 8 ],
+	bossSuikaBList[ 10 ],	bossSuikaBList[ 12 ],	bossSuikaBList[ 14 ],	bossSuikaBList[ 16 ],
+	bossSuikaBList[ 17 ],	bossSuikaBList[ 18 ],	bossSuikaBList[ 20 ],
+	bossSuikaCList[ 0 ],	bossSuikaCList[ 1 ],	bossSuikaCList[ 2 ],
+	bossReimuRList[ 2 ],	bossReimuRList[ 4 ],	bossReimuRList[ 6 ],	bossReimuRList[ 8 ],
+	bossReimuRList[ 10 ],	bossReimuRList[ 12 ],	bossReimuRList[ 14 ],	bossReimuRList[ 16 ],
+	bossReimuRList[ 17 ],	bossReimuRList[ 18 ],	bossReimuRList[ 20 ],
+	bossLWFlandre,			bossLWMeirin,			bossLWSakuya,			bossLWRemilia,	// LASTWORD
+	bossLWDevil,			bossLWPatchouli,		bossLWMokou,			bossLWKaguya,
+	bossLWReisen,			bossLWEirin,			bossLWTewi,				bossLWLily,
+	bossLWMedicine,			bossLWAya,				bossLWKomachi,			bossLWEiki,
+	bossLWMima,				bossLWYuka,				bossLWShinki,			bossLWAlice,
+	bossLWChen,				bossLWRan,				bossLWYukari,			bossLWYoumu,
+	bossLWYuyuko,			bossLWReimuW,			bossLWSuika,			bossLWReimuR
+];
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	スペルIDが格納されます。 */
+let m_nSpellPracticeID = -1;
+/**	背景に対応するステージが格納されます。 */
+let m_nSpellPracticeBGStage = -1;
+/**	リトライメニューが表示されたフレーム時間が格納されます。 */
+let m_nSpellPracticeRetryTime = -1;
+/**	リトライメニューのカーソル状態が格納されます。 */
+let m_nSpellPracticeMenuRetry = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	固有処理部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ステージ固有の初期化処理です。
+*/
+function SpellPracticeInitialize(){
+	let nBGMIndex = 2;
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, false );
+	ForbidBomb( true );
+	ForbidShot( true );
+	ClearByteCodeCache();
+	m_nSpellPracticeID = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_CUTIN_SPELL_ID, -1 );
+	ascent( let i in 0..4 ){	// 前半ルート
+		let nID = m_nSpellPracticeID - [ CL_TTH_SPELL_KOUMA, CL_TTH_SPELL_EIYA, CL_TTH_SPELL_KAEI, CL_TTH_SPELL_LOTUS ][ i ];
+		if(			nID >= CL_TTH_SPELL_STAGE1_HALFWAY_1	&& nID < CL_TTH_SPELL_STAGE1_BOSS_1			){ nBGMIndex = i * 6 + 2; }
+		else if(	nID >= CL_TTH_SPELL_STAGE1_BOSS_1		&& nID < CL_TTH_SPELL_STAGE2_HALFWAY_1		){ nBGMIndex = i * 6 + 3; }
+		else if(	nID >= CL_TTH_SPELL_STAGE2_HALFWAY_1	&& nID < CL_TTH_SPELL_STAGE2_BOSS_1			){ nBGMIndex = i * 6 + 4; }
+		else if(	nID >= CL_TTH_SPELL_STAGE2_BOSS_1		&& nID < CL_TTH_SPELL_STAGE3_HALFWAY_1		){ nBGMIndex = i * 6 + 5; }
+		else if(	nID >= CL_TTH_SPELL_STAGE3_HALFWAY_1	&& nID < CL_TTH_SPELL_STAGE3_BOSS_1			){ nBGMIndex = i * 6 + 6; }
+		else if(	nID >= CL_TTH_SPELL_STAGE3_BOSS_1		&& nID < CL_TTH_SPELL_STAGE3_BOSS_LAST + 3	){ nBGMIndex = i * 6 + 7; }
+	}
+	if( nBGMIndex == 2 ){	// 後半ルート
+		let nID = m_nSpellPracticeID - CL_TTH_SPELL_YOUMU;
+		if(			nID >= CL_TTH_SPELL_STAGE4_HALFWAY_1	&& nID < CL_TTH_SPELL_STAGE4_BOSS_1				){ nBGMIndex = 26; }
+		else if(	nID >= CL_TTH_SPELL_STAGE4_BOSS_1		&& nID < CL_TTH_SPELL_STAGE5_HALFWAY_1			){ nBGMIndex = 27; }
+		else if(	nID >= CL_TTH_SPELL_STAGE5_HALFWAY_1	&& nID < CL_TTH_SPELL_STAGE5_BOSS_1				){ nBGMIndex = 28; }
+		else if(	nID >= CL_TTH_SPELL_STAGE5_BOSS_1		&& nID < CL_TTH_SPELL_STAGE6_HALFWAY_1			){ nBGMIndex = 29; }
+		else if(	nID >= CL_TTH_SPELL_STAGE6_HALFWAY_1	&& nID < CL_TTH_SPELL_STAGE6_BOSS_1				){ nBGMIndex = 30; }
+		else if(	nID >= CL_TTH_SPELL_STAGE6_BOSS_1		&& nID < CL_TTH_SPELL_STAGE6_BOSS_LAST_1		){ nBGMIndex = 31; }
+		else if(	nID >= CL_TTH_SPELL_STAGE6_BOSS_LAST_1	&& nID < CL_TTH_SPELL_STAGE6_BOSS_LAST_5 + 4	){ nBGMIndex = 32; }
+	}
+	if( nBGMIndex == 2 ){	// EXPHルート
+		ascent( let i in 0..2 ){
+			let nID = m_nSpellPracticeID - [ CL_TTH_SPELL_EXTRA, CL_TTH_SPELL_PHANTASM ][ i ];
+			if( nID >= 0 ){ nBGMIndex = i * 2 + [ 34, 33 ][ nID >= CL_TTH_SPELL_EXPH_HALFWAY_1 && nID < CL_TTH_SPELL_EXPH_BOSS_1 ]; }
+		}
+	}
+	m_nSpellPracticeBGStage	= SPELL_PRACTICE_STAGE_ATBGM[		nBGMIndex - 2 ];
+	m_nScenario				= SPELL_PRACTICE_SCENARIO_ATBGM[	nBGMIndex - 2 ];
+	SPELL_PRACTICE_LOAD_LIST_ENEMY = SPELL_PRACTICE_LOAD_LIST_ENEMY ~ [ SPELL_PRACTICE_ENEMY_LIST[ m_nSpellPracticeID ] ];
+	SetCommonDataEx( CL_CDNS_RESULT, CL_CD_STAGE_SCENARIO, m_nScenario );
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, SPELL_PRACTICE_LEVEL_LIST[ m_nSpellPracticeID ] );
+	alternative( m_nSpellPracticeBGStage )
+	case( 1 ){
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	~ [ STAGE_1A_LOAD_LIST_GRAPHIC_BG,	STAGE_1B_LOAD_LIST_GRAPHIC_BG,	STAGE_1C_LOAD_LIST_GRAPHIC_BG,	STAGE_1D_LOAD_LIST_GRAPHIC_BG	][ m_nScenario ];
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC		~ [ STAGE_1A_LOAD_LIST_GRAPHIC,		STAGE_1B_LOAD_LIST_GRAPHIC,		STAGE_1C_LOAD_LIST_GRAPHIC,		STAGE_1D_LOAD_LIST_GRAPHIC		][ m_nScenario ];
+	}
+	case( 2 ){
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	~ [ STAGE_2A_LOAD_LIST_GRAPHIC_BG,	STAGE_2B_LOAD_LIST_GRAPHIC_BG,	STAGE_2C_LOAD_LIST_GRAPHIC_BG,	STAGE_2D_LOAD_LIST_GRAPHIC_BG	][ m_nScenario ];
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC		~ [ STAGE_2A_LOAD_LIST_GRAPHIC,		STAGE_2B_LOAD_LIST_GRAPHIC,		STAGE_2C_LOAD_LIST_GRAPHIC,		STAGE_2D_LOAD_LIST_GRAPHIC		][ m_nScenario ];
+	}
+	case( 3 ){
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	~ [ STAGE_3A_LOAD_LIST_GRAPHIC_BG,	STAGE_3B_LOAD_LIST_GRAPHIC_BG,	STAGE_3C_LOAD_LIST_GRAPHIC_BG,	STAGE_3D_LOAD_LIST_GRAPHIC_BG	][ m_nScenario ];
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC		~ [ STAGE_3A_LOAD_LIST_GRAPHIC,		STAGE_3B_LOAD_LIST_GRAPHIC,		STAGE_3C_LOAD_LIST_GRAPHIC,		STAGE_3D_LOAD_LIST_GRAPHIC		][ m_nScenario ];
+	}
+	case( 4 ){
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	~ STAGE_4_LOAD_LIST_GRAPHIC_BG;
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC		~ STAGE_4_LOAD_LIST_GRAPHIC;
+		SPELL_PRACTICE_LOAD_LIST_SOUND		= SPELL_PRACTICE_LOAD_LIST_SOUND		~ STAGE_4_LOAD_LIST_SOUND;
+	}
+	case( 5 ){
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	~ STAGE_5_LOAD_LIST_GRAPHIC_BG;
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC		~ STAGE_5_LOAD_LIST_GRAPHIC;
+		SPELL_PRACTICE_LOAD_LIST_SOUND		= SPELL_PRACTICE_LOAD_LIST_SOUND		~ STAGE_5_LOAD_LIST_SOUND;
+	}
+	case( 6 ){
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	~ STAGE_6_LOAD_LIST_GRAPHIC_BG;
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC		~ STAGE_6_LOAD_LIST_GRAPHIC;
+		SPELL_PRACTICE_LOAD_LIST_SOUND		= SPELL_PRACTICE_LOAD_LIST_SOUND		~ STAGE_6_LOAD_LIST_SOUND;
+	}
+	case( 10 ){
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	~ STAGE_EX_LOAD_LIST_GRAPHIC_BG;
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC		~ STAGE_EX_LOAD_LIST_GRAPHIC;
+		SPELL_PRACTICE_LOAD_LIST_SOUND		= SPELL_PRACTICE_LOAD_LIST_SOUND		~ STAGE_EX_LOAD_LIST_SOUND;
+	}
+	case( 11 ){
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG	~ STAGE_EX2_LOAD_LIST_GRAPHIC_BG;
+		SPELL_PRACTICE_LOAD_LIST_GRAPHIC	= SPELL_PRACTICE_LOAD_LIST_GRAPHIC		~ STAGE_EX2_LOAD_LIST_GRAPHIC;
+		SPELL_PRACTICE_LOAD_LIST_SOUND		= SPELL_PRACTICE_LOAD_LIST_SOUND		~ STAGE_EX2_LOAD_LIST_SOUND;
+	}
+	LoadProgress(
+		STAGE_DEFAULT_LOAD_GRAPHIC	~ SPELL_PRACTICE_LOAD_LIST_GRAPHIC ~ GetBGRealLoadList( SPELL_PRACTICE_LOAD_LIST_GRAPHIC_BG ),
+		STAGE_DEFAULT_LOAD_ENEMY	~ SPELL_PRACTICE_LOAD_LIST_ENEMY,
+		STAGE_DEFAULT_LOAD_SE		~ SPELL_PRACTICE_LOAD_LIST_SOUND
+	);
+	DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_BG_PARAMETER );
+	SetStage( 7 );
+	ForbidBomb( true );
+	ForbidShot( false );
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, true );
+	PlayMusicEx( nBGMIndex );
+}
+
+/**
+*	ステージ中のタスクです。
+*	ここにステージ本体の動作が記述されます。
+*/
+task SpellPracticeMainTask(){
+	__Wait( 200 );
+	CreateEnemyBossFromFile( SPELL_PRACTICE_LOAD_LIST_ENEMY[ 0 ], 0, 0, 0, 0, 0 );
+	WaitZeroEnemy();		// 敵が消えるまで停止
+	PlaySEEx( seBossExplode );
+	__Wait( 200 );
+	ForbidBomb( true );
+	ForbidShot( true );
+	if( !IsReplay() ){
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, false );
+		ForbidShot( true );
+		m_nSpellPracticeRetryTime = m_nFlanCount;
+		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH ){
+			yield;
+			m_nSpellPracticeMenuRetry = MoveMenuCursorTHC( m_nSpellPracticeMenuRetry, 2, [] );
+		}
+		if( m_nSpellPracticeMenuRetry == 1 ){ SetResumeSpell( m_nSpellPracticeID ); }
+		yield;
+	}
+	Clear();
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	共通処理部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	固有動作のタスクです。
+*	スクリプト開始1フレーム後にステージスクリプト本体より呼び出されます。
+*/
+task SpellPractice(){
+	SpellPracticeInitialize();
+	SpellPracticeMainTask();
+}
+
+/**
+*	上位レイヤ絵画時に呼ばれます。
+*
+*	@param nCount 現在のカウンタ値
+*/
+function SpellPracticeDrawTopObject( let nCount ){
+	if( m_nSpellPracticeRetryTime < 0 ){ return; }
+	nCount -= m_nSpellPracticeRetryTime;
+	SetAlpha( Smooth( 0, 160, nCount, MENU_FADE_INTERVAL ) );
+	DrawCenterRect( IMAGE_CL_BLACK, 0, 0, 512, 512 );
+	let nScaleX = SlowDown( 3, 1, nCount, 20 );
+	let nScaleY = SlowDown( 0, 1, nCount, 20 );
+	SetGraphicScale( nScaleX, nScaleY );
+	DrawTexTextOnCache( CL_TTH_STAGE_RETRY, 0, 0, GetCenterX() - 64, GetCenterY() - 96 );
+	__DrawMenu( GetPhase(), 0, 30, 160, 224, 80, 384, -1, -3, CL_TTHBASE_BOOLEAN_YESNO, CL_TT_INVALID, 2, m_nSpellPracticeMenuRetry, [] );
+	SetGraphicScale( 1, 1 );
+	SetAlpha( 255 );
+}

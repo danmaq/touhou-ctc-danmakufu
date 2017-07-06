@@ -1,69 +1,90 @@
-//¬Œ^+’Ê‰ßŒ^-------------------------------------------------
+//g–‚‹½ƒ‹[ƒg-------------------------------------
+//A-1
+	let z_g_11 = GetCurrentScriptDirectory() ~ "g_11.dnh";	//’†Œ^ YB
+	let z_s_07 = GetCurrentScriptDirectory() ~ "s_07.dnh";	// YR
+	let z_s_10 = GetCurrentScriptDirectory() ~ "s_10.dnh";	// KW
+//A-2
+	let z_g_13 = GetCurrentScriptDirectory() ~ "g_13.dnh";	//ƒŒƒ~ƒŠƒAƒXƒg[ƒJ[ YB
+	let z_g_14 = GetCurrentScriptDirectory() ~ "g_14.dnh";	//F”²‚«’†‰Ø YG
+	let z_g_15 = GetCurrentScriptDirectory() ~ "g_15.dnh";	// YB
+	let z_o_06 = GetCurrentScriptDirectory() ~ "o_06.dnh";	//ƒMƒ~ƒbƒN
+	let z_s_08 = GetCurrentScriptDirectory() ~ "s_08.dnh";	// KB
+//A-3
+	let z_g_16 = GetCurrentScriptDirectory() ~ "g_16.dnh";	// YG
+	let z_g_18 = GetCurrentScriptDirectory() ~ "g_18.dnh";	//g‚¢–‚T‚« KO
+	let z_m_12 = GetCurrentScriptDirectory() ~ "m_12.dnh";	//ƒŒ[ƒU[’†Œ^ YB
+	let z_s_11 = GetCurrentScriptDirectory() ~ "s_11.dnh";	//‘Å‚¿•Ô‚µ—‰º’e YB
 
-let z_s_01 = GetCurrentScriptDirectory~"s_01.dnh";
-let z_s_02 = GetCurrentScriptDirectory~"s_02.dnh";
-let z_s_03 = GetCurrentScriptDirectory~"s_03.dnh";
+//‰i–é´ƒ‹[ƒg-------------------------------------
+//B-1
+	let z_g_09 = GetCurrentScriptDirectory() ~ "g_09.dnh";	//Ú‹ßG‹› YG
+	let z_m_13 = GetCurrentScriptDirectory() ~ "m_13.dnh";	//‚µ‚È‚é’e’†Œ^ YR
+	let z_m_14 = GetCurrentScriptDirectory() ~ "m_14.dnh";	// YG
+	let z_s_09 = GetCurrentScriptDirectory() ~ "s_09.dnh";	// KW
+//B-2
+	let z_m_15 = GetCurrentScriptDirectory() ~ "m_15.dnh";	//g‚¢–‚İ’u’†Œ^ YB
+	let z_o_08 = GetCurrentScriptDirectory() ~ "o_08.dnh";	//”š”­G‹› YR
+	let z_o_09 = GetCurrentScriptDirectory() ~ "o_09.dnh";	//ƒMƒ~ƒbƒN
+	let z_s_14 = GetCurrentScriptDirectory() ~ "s_14.dnh";	// KR
+//B-3
+	let z_g_22 = GetCurrentScriptDirectory() ~ "g_22.dnh";	//ƒoƒ^ƒtƒ‰ƒC’†Œ^ YR
+	let z_g_23 = GetCurrentScriptDirectory() ~ "g_23.dnh";	//‘Å‚¿•Ô‚µ YR
+	let z_m_16 = GetCurrentScriptDirectory() ~ "m_16.dnh";	//‘½í’e YR
+	let z_s_15 = GetCurrentScriptDirectory() ~ "s_15.dnh";	// YR
 
-let z_s_05 = GetCurrentScriptDirectory~"s_05.dnh";
-let z_s_06 = GetCurrentScriptDirectory~"s_06.dnh";
-let z_s_07 = GetCurrentScriptDirectory~"s_07.dnh";
-let z_s_08 = GetCurrentScriptDirectory~"s_08.dnh";
-let z_s_09 = GetCurrentScriptDirectory~"s_09.dnh";
-let z_s_10 = GetCurrentScriptDirectory~"s_10.dnh";
-let z_s_11 = GetCurrentScriptDirectory~"s_11.dnh";
+//‰Ô‰f’Ëƒ‹[ƒg-------------------------------------
+//C-1
+	let z_g_04 = GetCurrentScriptDirectory() ~ "g_04.dnh";	//—‰º’e YR
+	let z_g_20 = GetCurrentScriptDirectory() ~ "g_20.dnh";	//‰Ô YG
+	let z_m_07 = GetCurrentScriptDirectory() ~ "m_07.dnh";	//‘S•ûˆÊ’†Œ^ YG
+	let z_m_09 = GetCurrentScriptDirectory() ~ "m_09.dnh";	//ƒŒ[ƒU[’†Œ^ YR
+//C-2
+	let z_m_10 = GetCurrentScriptDirectory() ~ "m_10.dnh";	//”½Ëg‚¢–‚ YB
+	let z_o_02 = GetCurrentScriptDirectory() ~ "o_02.dnh";	//‘Å‚¿•Ô‚µORƒƒCƒhƒVƒ‡ƒbƒg YR
+	let z_o_04 = GetCurrentScriptDirectory() ~ "o_04.dnh";	//ƒMƒ~ƒbƒN
+	let z_s_03 = GetCurrentScriptDirectory() ~ "s_03.dnh";	//ƒŒ[ƒU[ KG
+//C-3
+	let z_m_17 = GetCurrentScriptDirectory() ~ "m_17.dnh";	//‘åŒ^ YG
+	let z_m_18 = GetCurrentScriptDirectory() ~ "m_18.dnh";	//˜AË’†Œ^ YB
+	let z_s_16 = GetCurrentScriptDirectory() ~ "s_16.dnh";	// KP
 
-//¬Œ^+’â~Œ^-------------------------------------------------
+//‹Œìƒ‹[ƒg-------------------------------------
+//D-1
+	let z_j_01 = GetCurrentScriptDirectory() ~ "j_01.dnh";	//–‚–@w
+	let z_m_01 = GetCurrentScriptDirectory() ~ "m_01.dnh";	//’†Œ^ YG
+	let z_s_01 = GetCurrentScriptDirectory() ~ "s_01.dnh";	// KO
+	let z_s_12 = GetCurrentScriptDirectory() ~ "s_12.dnh";	// YR
+//D-2
+	let z_j_02 = GetCurrentScriptDirectory() ~ "j_02.dnh";	//–‚–@w
+	let z_m_06 = GetCurrentScriptDirectory() ~ "m_06.dnh";	//’e•t‚«g‚¢–‚’†Œ^ YB
+	let z_o_07 = GetCurrentScriptDirectory() ~ "o_07.dnh";	//‰ñ“]oŒ»G‹› YB
+	let z_s_02 = GetCurrentScriptDirectory() ~ "s_02.dnh";	// KW
+	let z_s_13 = GetCurrentScriptDirectory() ~ "s_13.dnh";	//‘Å‚¿•Ô‚µ YR
+//D-3
+	let z_g_02 = GetCurrentScriptDirectory() ~ "g_02.dnh";	//œa¯ KG
+	let z_g_21 = GetCurrentScriptDirectory() ~ "g_21.dnh";	// KR
+	let z_j_03 = GetCurrentScriptDirectory() ~ "j_03.dnh";	//–‚–@w
+	let z_m_03 = GetCurrentScriptDirectory() ~ "m_03.dnh";	//’e‚Ì}uUvYR
+	let z_m_04 = GetCurrentScriptDirectory() ~ "m_04.dnh";	//’e‚Ì}uWvYG
 
-let z_g_01 = GetCurrentScriptDirectory~"g_01.dnh";
-let z_g_02 = GetCurrentScriptDirectory~"g_02.dnh";
-let z_g_03 = GetCurrentScriptDirectory~"g_03.dnh";
-let z_g_04 = GetCurrentScriptDirectory~"g_04.dnh";
-let z_g_05 = GetCurrentScriptDirectory~"g_05.dnh";
-let z_g_06 = GetCurrentScriptDirectory~"g_06.dnh";
-let z_g_07 = GetCurrentScriptDirectory~"g_07.dnh";
-let z_g_08 = GetCurrentScriptDirectory~"g_08.dnh";
-let z_g_09 = GetCurrentScriptDirectory~"g_09.dnh";
-let z_g_10 = GetCurrentScriptDirectory~"g_10.dnh";
-let z_g_11 = GetCurrentScriptDirectory~"g_11.dnh";
+//4
+	let z_o_03 = GetCurrentScriptDirectory() ~ "o_03.dnh";	//ò—•
+	let z_o_10 = GetCurrentScriptDirectory() ~ "o_10.dnh";	//ò—•
+	let z_g_03 = GetCurrentScriptDirectory() ~ "g_03.dnh";	// YR
+	let z_s_05 = GetCurrentScriptDirectory() ~ "s_05.dnh";	// KY
+//5
+	let z_o_01 = GetCurrentScriptDirectory() ~ "o_01.dnh";	// YR
+	let z_m_02 = GetCurrentScriptDirectory() ~ "m_02.dnh";	// YG
+	let z_g_05 = GetCurrentScriptDirectory() ~ "g_05.dnh";	// KW
+//6
+	let z_s_17 = GetCurrentScriptDirectory() ~ "s_17.dnh";	// YG
+	let z_m_05 = GetCurrentScriptDirectory() ~ "m_05.dnh";	// YR
 
-let z_g_13 = GetCurrentScriptDirectory~"g_13.dnh";
-let z_g_14 = GetCurrentScriptDirectory~"g_14.dnh";
-let z_g_15 = GetCurrentScriptDirectory~"g_15.dnh";
-let z_g_16 = GetCurrentScriptDirectory~"g_16.dnh";
-let z_g_17 = GetCurrentScriptDirectory~"g_17.dnh";
-let z_g_18 = GetCurrentScriptDirectory~"g_18.dnh";
-let z_g_19 = GetCurrentScriptDirectory~"g_19.dnh";
-let z_g_20 = GetCurrentScriptDirectory~"g_20.dnh";
-
-//’†Œ^‹@-------------------------------------------------
-
-let z_m_01 = GetCurrentScriptDirectory~"m_01.dnh";
-let z_m_02 = GetCurrentScriptDirectory~"m_02.dnh";
-let z_m_03 = GetCurrentScriptDirectory~"m_03.dnh";
-let z_m_04 = GetCurrentScriptDirectory~"m_04.dnh";
-let z_m_05 = GetCurrentScriptDirectory~"m_05.dnh";
-let z_m_06 = GetCurrentScriptDirectory~"m_06.dnh";
-let z_m_07 = GetCurrentScriptDirectory~"m_07.dnh";
-let z_m_08 = GetCurrentScriptDirectory~"m_08.dnh";
-let z_m_09 = GetCurrentScriptDirectory~"m_09.dnh";
-let z_m_10 = GetCurrentScriptDirectory~"m_10.dnh";
-let z_m_11 = GetCurrentScriptDirectory~"m_11.dnh";
-let z_m_12 = GetCurrentScriptDirectory~"m_12.dnh";
-let z_m_13 = GetCurrentScriptDirectory~"m_13.dnh";
-
-//–‚•ûw-------------------------------------------------
-
-let z_j_01 = GetCurrentScriptDirectory~"j_01.dnh";
-let z_j_02 = GetCurrentScriptDirectory~"j_02.dnh";
-let z_j_03 = GetCurrentScriptDirectory~"j_03.dnh";
-
-//‚»‚Ì‘¼-------------------------------------------------
-
-let z_o_01 = GetCurrentScriptDirectory~"o_01.dnh";
-let z_o_02 = GetCurrentScriptDirectory~"o_02.dnh";
-let z_o_03 = GetCurrentScriptDirectory~"o_03.dnh";
-let z_o_04 = GetCurrentScriptDirectory~"o_04.dnh";
-let z_o_05 = GetCurrentScriptDirectory~"o_05.dnh";
-let z_o_06 = GetCurrentScriptDirectory~"o_06.dnh";
-
+//Ex
+	let z_g_06 = GetCurrentScriptDirectory() ~ "g_06.dnh";	// YR
+	let z_m_08 = GetCurrentScriptDirectory() ~ "m_08.dnh";	// YB
+	let z_o_05 = GetCurrentScriptDirectory() ~ "o_05.dnh";	// YR
+	let z_g_10 = GetCurrentScriptDirectory() ~ "g_10.dnh";	// YG
+	let z_m_19 = GetCurrentScriptDirectory() ~ "m_19.dnh";	// YG
+	let z_g_17 = GetCurrentScriptDirectory() ~ "g_17.dnh";	// YR
 

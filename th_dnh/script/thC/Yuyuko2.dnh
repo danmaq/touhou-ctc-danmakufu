@@ -1,0 +1,456 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ5　ボス　西行寺 幽々子　通常攻撃2
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Yuyuko - 通常攻撃2]
+#Text[ステージ5 ボス
+西行寺 幽々子]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Yuyuko.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 120;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		SetTimer( 45 );
+		SetLife( 2500 );
+		SetDamageRate( 20, 20 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 121 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_YOUMU + CL_TTH_CHARACTER_NAME_YOUMU_YUYUKO;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 90;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 120 );
+
+		/** 扇展開 */
+		SetAction( ACT_SHOT_B5, 150 );
+		PlaySEEx( sePower );
+		Concentration01( 120 );
+		__Wait( 90 );
+		CreateEnemyFromScript( "Ougi", 0, 0, 0, 0, true );
+		__Wait( 90 );
+		SetDamageRate( 70, 70 );
+
+		/** ランダム弾 */
+		RandomShot();
+
+		let nAssign = 1;
+		nFrame = 90 - 15 * m_nLevel;
+
+		loop{
+
+			/** 回転弾 */
+			RollShot( nAssign );
+			__Wait( nFrame );
+
+			/** 移動 */
+			Move( 60 );
+			__Wait( 30 );
+
+			nAssign = - nAssign;
+
+		}
+
+	}
+
+	/**
+	*	回転弾
+	*	@param nAssign	割り振り係数
+	*/
+	task RollShot( let nAssign ){
+
+		let nFrame = 3;
+		let nNum = 24;
+		let nWay = 7 + m_nLevel;
+		let nSpeed = 2.8 + 0.4 * m_nLevel;
+		let nAngle = [ 90, - 90 ][ GetPlayerY() < GetY() ];
+		nAngle += 120 * nAssign;
+		if( nAssign == - 1 ){ nAngle += RandBlur( 10 ); }
+		let nNumAngle = - 10 * nAssign;
+		let nWideAngle = 11 * ( nWay - 1 );
+		let nGraphic = [ US_BALL_M_A_YELLOW, US_BALL_M_A_SKY ][ nAssign == - 1 ];
+		let nDelay = 10;
+
+		PlaySELoop( seShot1, nFrame * nNum, 8 );
+		ascent( let i in 0 .. nNum ){
+			let _nSpeed = nSpeed * Accelerate( 1, 0.5, i, nNum );
+			_WideShot01( GetX(), GetY(), _nSpeed, nAngle, nWideAngle, nWay, nGraphic, nDelay );
+			loop( nFrame ){ yield; }
+			nAngle += nNumAngle;
+		}
+
+	}
+
+	/**
+	*	ランダム弾
+	*/
+	task RandomShot{
+
+		let nFrame = 7 - m_nLevel;
+		let nSEFrame = [ nFrame, 6 ][ nFrame < 6 ];
+		let nNum = 4;
+		let nBaseX = CL_MIN_X;
+		let nNumX = ( CL_MAX_X - CL_MIN_X ) / nNum;
+		let nMinY = CL_MIN_Y + 60;
+		let nMaxY = CL_MIN_Y + 140;
+		let nMinSpeed = 0.8;
+		let nMaxSpeed = 1.6;
+		let nAccelSpeed = 0.01;
+		let nBaseAngle = 90;
+		let nRandAngle = [ 0, 0, 2, 4 ][ m_nLevel ];
+		let nGraphic = US_SCALE_PURPLE;
+		let nDelay = 18;
+		let anSort = [ 0, 2, 1, 3 ];
+
+		PlaySEDelayLoop( seShot3, nDelay, 6000, nSEFrame );
+		loop{
+			ascent( let i in 0 .. nNum ){
+				let nMinX = nBaseX + nNumX * anSort[ i ];
+				let nMaxX = nMinX + nNumX;
+				let nX = rand( nMinX, nMaxX );
+				let nY = rand( nMinY, nMaxY );
+				let _nMaxSpeed = rand( nMinSpeed, nMaxSpeed );
+				let nAngle = nBaseAngle + RandBlur( nRandAngle );
+				CreateShot02( nX, nY, 0, nAngle, nAccelSpeed, _nMaxSpeed, nGraphic, nDelay );
+				CreateShot02( nX, nY, 0, nAngle - 180, nAccelSpeed, _nMaxSpeed, nGraphic, nDelay );
+				__Wait( nFrame );
+			}
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 20;
+		let nMaxMoveX = 40;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 20;
+
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	扇
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy Ougi{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\ShadowNoHidden.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ZAKO_ACTION_EXISTBOSS = FLAN_ZAKO_EXISTBOSS_NONEACTION;
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ENEMY_COLLISION_A = 0;
+	FLAN_ENEMY_COLLISION_B = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 扇画像ファイル */
+	let m_szImageOugi = dotOugi;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		SetPosition( CL_CEN_X, CL_MIN_Y - 1000 );
+		SetLife( 1 );
+		SetDamageRateEx( 0, 0, 0, 0 );
+		m_bShadowLighting = false;
+		m_nShadowDeleteShot = 0;
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		let nLengthX = 600;
+		let nLengthY = 300;
+		let obj = CreateSquareEffectObject( m_szImageOugi, 0, 0, nLengthX, nLengthY, nLengthX, nLengthY );
+		ObjEffect_SetLayer( obj, 1 );
+
+		if( nArgv ){
+			/** 拡大 */
+			let nFrame = 45;
+			let nScaleX = 0;
+			let nScaleY = 0.2;
+			let nAddScale = ( 1 - nScaleX ) / nFrame;
+			loop( nFrame ){
+				nScaleX += nAddScale;
+				Obj_SetPosition( obj, GetEnemyX(), GetEnemyY() );
+				ObjEffect_SetScale( obj, nScaleX, nScaleY );
+				yield;
+			}
+			nFrame = 15;
+			nAddScale = ( 1 - nScaleY ) / nFrame;
+			loop( nFrame ){
+				nScaleY += nAddScale;
+				Obj_SetPosition( obj, GetEnemyX(), GetEnemyY() );
+				ObjEffect_SetScale( obj, 1, nScaleY );
+				yield;
+			}
+			PlaySEEx( seShot2 );
+			PlaySEEx( seKira1 );
+		}
+		ObjEffect_SetScale( obj, 1, 1 );
+
+		/** 当たり判定 */
+		SetDamageRateEx( 0, 0, 10, 10 );
+		let nR = 32;
+		loop{
+			let nX = GetEnemyX();
+			let nY = GetEnemyY();
+			Obj_SetPosition( obj, nX, nY );
+			SetCollisionA( nX + nR * 1.5, nY - nR, nR );
+			SetCollisionA( nX + nR * 3.5, nY - nR * 0.5, nR );
+			SetCollisionA( nX - nR * 1.5, nY - nR, nR );
+			SetCollisionA( nX - nR * 3.5, nY - nR * 0.5, nR );
+			yield;
+		}
+
+	}
+
+}

@@ -1,9 +1,9 @@
 //////////////////////////////////////////////////////////////////////
 //====================================================================
 //
-//	イベントスクリプト専用インクルードライブラリ
+//	THC Extend-Library (extends FLAN)
 //
-//		※イベントスクリプト以外からは使用出来ません。
+//		※会話スクリプト部専用です。
 //			それ以外からはインクルードしないでください。
 //
 //====================================================================
@@ -11,56 +11,173 @@
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	下位ライブラリをインクルード
-//--------------------------------------------------------------------
+//	インデックスをインクルード
 //////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\THCCL\IMAGE\OTHER\index.dnh"
 #include_function ".\IMAGE\CHAR\CUTIN\index.dnh"
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	定数
-//--------------------------------------------------------------------
+//	下位ライブラリをインクルード
 //////////////////////////////////////////////////////////////////////
 
-//　カットイン定数
-let CUT_NORMAL = 0;		//　通常
-
-//　描画矩形定数
-let RECT_CUT_LENGTH_X = 192;
-let RECT_CUT_LENGTH_Y = 256;
-let RECT_CUT_NORMAL = [ 0, 0 ];
+#include_function "\lib\FLAN\HEADER\Event.dnh"
 
 
 //////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+FLAN_EVENT_CUTIN_WIDTH = 192;
+FLAN_EVENT_CUTIN_HEIGHT = 320;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/** カットイン表情定数 - プレイヤー */
+let	CUT_PLAYER_NORMAL	= 0;	// 通常
+let	CUT_PLAYER_SMILE	= 1;	// 笑う
+let	CUT_PLAYER_BAD		= 2;	// 困る（いやまぁその）
+let	CUT_PLAYER_SERIOUS	= 3;	// 真面目に
+let	CUT_PLAYER_TEMPER	= 4;	// 苛立つ
+let	CUT_PLAYER_REGRET	= 5;	// がっかり
+let	CUT_PLAYER_UNEASY	= 6;	// 不安
+let	CUT_PLAYER_CRY		= 7;	// 泣く（半泣き）
+let	CUT_PLAYER_SURPRISE	= 8;	// 驚く（そーなのかー）
+
+/** カットイン表情定数 - ボス */
+let	CUT_ENEMY_NORMAL	= 0;	// 通常
+let	CUT_ENEMY_SMILE		= 1;	// 笑う
+let	CUT_ENEMY_AFFECT	= 2;	// 気取る（フーン）
+let	CUT_ENEMY_ANGRY		= 3;	// 怒る（軽く）
+let	CUT_ENEMY_ANGRY2	= 4;	// 怒る（強く）
+let	CUT_ENEMY_BAD		= 5;	// 困る（目を逸らす）
+let	CUT_ENEMY_TEMPER	= 6;	// 苛立つ
+let	CUT_ENEMY_SERIOUS	= 7;	// 真面目に
+let	CUT_ENEMY_DISLIKE	= 8;	// 嫌がる（えー）
+let	CUT_ENEMY_CRY		= 9;	// 泣く
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	敵カットイン画像
+*	Event冒頭で配列内容を各敵カットに書き換えること
+*	その際の並び順はカットイン表情定数を参照
+**/
+let m_aszImageCutInEnemy = [
+	cutMarisa,
+	cutMarisa,
+	cutMarisa,
+	cutMarisa,
+	cutMarisa,
+	cutMarisa,
+	cutMarisa,
+	cutMarisa,
+	cutMarisa,
+	cutMarisa
+];
+
+/** プレイヤーカットイン画像（並び順はカットイン表情定数を参照） */
+let m_aszImageCutInPlayer = [
+	cutMarisa,
+	cutMarisa2,
+	cutMarisa3,
+	cutMarisa4,
+	cutMarisa5,
+	cutMarisa6,
+	cutMarisa7,
+	cutMarisa8,
+	cutMarisa9
+];
+
+/** キー入力無効フレーム数（イベント開始後最初の一文で使用） */
+let m_nWaitFrame = 30;
+
+
+//////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	未分類
+//	カットイン表示
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	キャラカットインを会話に登場させる
-//　※motionにはカットイン定数を指定
-function ChrIn( let szTexCutin, let dir, let motion ){
-	let rect = [];
-	alternative( motion )
-	case( CUT_NORMAL ){ rect = rect ~ RECT_CUT_NORMAL; }
-	others{ return; }
-	SetChar( dir, szTexCutin );
-	SetGraphicRect( dir, rect[ 0 ], rect[ 1 ], RECT_CUT_LENGTH_X, RECT_CUT_LENGTH_Y );
+/**
+*	プレイヤーカットイン（左）を会話に登場させます。表情変化にも使います。
+*	@param nMotion	カットイン表情定数
+*/
+function InCharPlayer( let nMotion ){
+	InCharPos( m_aszImageCutInPlayer[ nMotion ], LEFT, 0, 0 );
 }
 
-//	左右キャラをを同時に下げる
-function AllBack(){ ascent( let i in 0..2 ){ MoveChar( [ RIGHT, LEFT ][ i ], BACK ); } }
+/**
+*	敵カットイン（右）を会話に登場させます。表情変化にも使います。
+*	@param nMotion	カットイン表情定数
+*/
+function InCharEnemy( let nMotion ){
+	InCharPos( m_aszImageCutInEnemy[ nMotion ], RIGHT, 0, 0 );
+}
 
-//	左右キャラの前後位置を同時に切り替える
-//	※滅多なことがない限り以下のラッパー関数を使ってください
-function _MoveChar( let bPlayer ){ ascent( let i in 0..2 ){ MoveChar( [ RIGHT, LEFT ][ i ], [ FRONT, BACK ][ [ bPlayer, !bPlayer ][ i ] ] ); } }
+/**
+*	敵の名前（右、赤）を表示します。
+*	@param szName	名前
+*	@param szText	説明文
+*/
+function SetNameFromTextEnemy( let szName, let szText ){
+	SetNameFromText( RIGHT, TEXT_RED, szName, szText );
+}
 
-/*	↓↓↓以下全て_MoveChar()のラッパー関数↓↓↓	*/
+/**
+*	敵の名前を消去します。
+*/
+function DeleteNameEnemy{
+	DeleteName( RIGHT );
+}
 
-//	プレイヤーを前に出し敵を下げる
-function Player(){ _MoveChar( true ); }
+/**
+*	プレイヤーの会話（青）を表示します。
+*	引数は通常の会話関数と同じです。
+*/
+function TextOutPlayer( let szText ){
+	Player();
+	TextOut( "\c[BLUE]" ~ szText );
+}
 
-//	敵を前に出しプレイヤーを下げる
-function Enemy(){ _MoveChar( false ); }
+function TextOutPlayerB( let nFrame, let szText ){
+	Player();
+	TextOutB( nFrame, "\c[BLUE]" ~ szText );
+}
+
+function TextOutPlayerC( let nFrame, let szText ){
+	Player();
+	TextOutC( nFrame, "\c[BLUE]" ~ szText );
+}
+
+/**
+*	敵の会話（赤）を表示します。
+*	引数は通常の会話関数と同じです。
+*/
+function TextOutEnemy( let szText ){
+	Enemy();
+	TextOut( "\c[RED]" ~ szText );
+}
+
+function TextOutEnemyB( let nFrame, let szText ){
+	Enemy();
+	TextOutB( nFrame, "\c[RED]" ~ szText );
+}
+
+function TextOutEnemyC( let nFrame, let szText ){
+	Enemy();
+	TextOutC( nFrame, "\c[RED]" ~ szText );
+}
+

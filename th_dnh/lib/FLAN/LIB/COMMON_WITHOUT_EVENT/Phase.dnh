@@ -1,0 +1,134 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	デフォルトのフェーズ値。 */
+let FLAN_PHASE_DEFAULT = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(原則書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	フェーズ用スタックハンドル。 */
+let m_nFlanPhaseHandle = FLAN_STACK_HANDLE_INVALID;
+/**	前回のフェーズ値。 */
+let m_nFlanPrevPhase = FLAN_PHASE_DEFAULT;
+/**	フェーズ変化時のカウンタ値。 */
+let m_nFlanPhaseTime = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	フェーズ操作
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	フェーズを初期化します。
+*	注意:自動で初期化されますので意図して初期化する必要はありません。
+*/
+function InitializePhase(){
+	if( m_nFlanPhaseHandle != FLAN_STACK_HANDLE_INVALID ){ __StartPhase(); }
+	ReleaseStack( m_nFlanPhaseHandle );
+	m_nFlanPhaseHandle = CreateStack( FLAN_PHASE_DEFAULT );
+}
+
+/**
+*	現在のフェーズを取得します。
+*	GetStackValueのラッパーです。
+*
+*	@return フェーズ番号
+*/
+function GetPhase(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	return anStackData[ 0 ];
+}
+
+/**
+*	現在フェーズのスタック段数を取得します。
+*	GetStackInstanceのラッパーです。
+*
+*	@return スタック段数
+*/
+function GetPhaseStack(){
+	return length( m_anFlanStackCacheData[ m_nFlanPhaseHandle ] ) - 1;
+}
+
+/**
+*	次のフェーズに移動します。
+*	スタックには積まれません(現在のスタックに上書きされます)
+*	AddPhaseのラッパーです。
+*/
+function NextPhase(){ AddPhase( 1 ); }
+
+/**
+*	指定した番号分フェーズを先送りします。
+*	スタックには積まれません(現在のスタックに上書きされます)
+*	SetPhaseのラッパーです。
+*
+*	@param nPhase 先送りするフェーズ番号
+*/
+function AddPhase( let nAdd ){ SetPhase( GetPhase() + nAdd ); }
+
+/**
+*	指定したフェーズに移動します。
+*	スタックには積まれません(現在のスタックに上書きされます)
+*
+*	@param nPhase フェーズ番号
+*/
+function SetPhase( let nPhase ){
+	__StartPhase();
+	ReplaceStack( m_nFlanPhaseHandle, nPhase );
+}
+
+/**
+*	スタックを積んで、次のフェーズへ移動します。
+*
+*	@param nPhase フェーズ番号
+*/
+function GosubPhase( let nPhase ){
+	__StartPhase();
+	PushStack( m_nFlanPhaseHandle, nPhase );
+}
+
+/**
+*	一番最後に積んだスタックを破棄し、前のフェーズに戻ります。
+*
+*	@return スタック段数があり、戻れたらtrue
+*/
+function ReturnPhase(){
+	if( GetPhaseStack() < 1 ){ return false; }
+	__StartPhase();
+	PopStack( m_nFlanPhaseHandle );
+	return true;
+}
+
+/**
+*	フェーズカウンタをリセットします。
+*	注意:内部から自動的に呼ばれる関数です。通常直接呼び出すことはありません。
+*/
+function __StartPhase(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	m_nFlanPrevPhase = anStackData[ 0 ];
+	m_nFlanPhaseTime = m_nFlanCount;
+	m_nFlanPhaseCount = 0;
+}

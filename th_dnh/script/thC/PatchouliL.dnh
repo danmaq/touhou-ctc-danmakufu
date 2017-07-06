@@ -1,216 +1,338 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ3A　ボス　パチュリー・ノーレッジ　ラストスペル
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Patchouli - ラストスペル]
+#Text[ステージ3A ボス
+パチュリー・ノーレッジ]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_enemy_main{
 
-	// 共通関数読み込み
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
 	#include_function ".\INCLUDE\Boss.dnh"
-	#include_function ".\_index_UserShot.dnh"
+	#include_function ".\INCLUDE\BOSS\Patchouli.dnh"
 
-	// 画像及び効果音ファイル
-	let userShot=shotAll;
-	let imgBoss=dotBossPatchouli;
-	let imgCutIn=cutPatchouli;
-	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
-	let imgList=[imgBoss,imgCutIn];
-	let seList=[];
 
-	// 各種設定値（難易度等）
-	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
-	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
-	Debug_SetLevel;
-	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
-	if(Lv==0){Lv=1;}
-	Lv--;
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
 
-	// -------------------------------------------------------------------------
-	@Initialize{
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
 
-		// ボス初期設定（ファイルのロード他）
-		if(!THC){
-			LoadUserShotData(userShot);
-			imgList=imgList~LOADBGLIST_PACHOULI~imgFontList;
-			seList=seList~seListEnemy;
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDeadEffect = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( m_nLevel > 0 ){ m_nLevel --; }
+		SetTimer( 61 );
+		SetLife( 500 );
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+			let nBossID = CL_TTH_CHARACTER_NAME_KOUMA + CL_TTH_CHARACTER_NAME_KOUMA_PACHOULI;
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
 		}
-		InitializeBoss(imgList,seList);
-
-		// スペルカード設定
-		SetTimer(62);
-		SetLife(500);
-		SetDamageRate(7,0);
-		SetShotAutoDeleteClip(32,32,32,32);
-		SetX(cenX);
-		SetY(minY+120);
-		LastSpellEffect(115);
-
-		// ボス基本処理、メイン処理
-		CountTimer(seTimeOut);
-		BehaviorBoss(ACT_STAND3);
-		Main;
+		else{
+			SetPosition( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y );
+			LastSpellEffect();
+		}
+		SetDamageRate( 5, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 301 );
+		BehaviorBoss( ACT_STAND3 );
 
 	}
 
-	// -------------------------------------------------------------------------
-	@MainLoop{
-		m_nSpellBonus = GetSpellCardBonusScore();
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-		// 当たり判定（自弾,体当たり）
-		if(m_nEnemyAlpha>0){Collision(32,24);}
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		// ダメージ音
-		PlayDamageSE(seDamage);
-
-		// カウンタ加算
-		m_nCount++;
-
-		yield;
+		/** 共通終了設定 */
+		FinalizeBoss();
 
 	}
 
-	// メイン処理 --------------------------------------------------------------
-	task Main{
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		SetInvincibility(302);
-		_Wait(117);
-
-		// スペルカード発動
-		let spellName=[
-			"天符「ヤコブズ・ラダー」",
-			"天符「ヤコブズ・ラダー－Ｈａｒｄ－」",
-			"天符「ヤコブズ・ラダー－Ｌｕｎａｔｉｃ－」"
-		];
-		SetCommonData(CD_SPELL_LASTSPELL,true);
-		CutInEnemy(spellName[Lv],imgCutIn,192,256);
-		SetScore(100000);
-		SetAction(ACT_SPELL5,0);
-		_Wait(125);
-
-		// 回転反射レーザー
-		SetAction(ACT_SHOT_B5,6000);
-		PlaySE(sePower);
-		Concentration01(120);
-		_Wait(120);
-		RollReflectLaser;
-		_Wait(120);
-		SetDamageRate(13,0);
-
-		// 回転弾
-		RollShot;
-		LoopPlaySE(seShot3,6000,10);
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
 
 	}
 
-	// 回転反射レーザー --------------------------------------------------------
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		if( !m_bStage || m_bSpellPractice ){
+			SetAction( ACT_MOVE, nFrame );
+			BossMoveHome( nFrame, false );
+		}
+		__Wait( 55 );
+		if( m_bDead ){ break; }
+
+		/** ボスID設定 */
+		if( m_bStage && !m_bSpellPractice ){
+			let nBossID = CL_TTH_CHARACTER_NAME_KOUMA + CL_TTH_CHARACTER_NAME_KOUMA_PACHOULI;
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		}
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_KOUMA + CL_TTH_SPELL_STAGE3_BOSS_LAST + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+		if( m_bDead ){ break; }
+
+		/** 回転反射レーザー */
+		SetAction( ACT_SHOT_B5, 6000 );
+		PlaySEEx( sePower );
+		Concentration01( 120 );
+		__Wait( 120 );
+		if( m_bDead ){ break; }
+		RollReflectLaser();
+		__Wait( 120 );
+		if( m_bDead ){ break; }
+		SetDamageRate( 12.5, 0 );
+
+		/** 回転弾 */
+		RollShot();
+		PlaySELoopEx( seShot3, 6000, 10 );
+
+	}
+
+	/**
+	*	回転反射レーザー 
+	*/
 	task RollReflectLaser{
 
-		let gapLength=20;
-		let speed=14;
-		let angle=-90;
-		let addAngle=365/210;
-		let delay=90;
-		let reflect=1;
-		let fr=4;
-		if(Lv==2){fr=3;}
+		let nFrame = 4;
+		if( m_nLevel == 2 ){ nFrame = 3; }
+		let nGapLength = 20;
+		let _nX = GetX();
+		let _nY = GetY();
+		let nSpeed = 14;
+		let nAngle = - 90;
+		let nAddAngle = 365 / 210;
+		let nDelay = 90;
+		let nReflectNum = 1;
 
 		loop{
-			let x=GetGapX(GetX,gapLength,angle);
-			let y=GetGapY(GetY,gapLength,angle);
-			ExtendReflectLaser(x,y,speed,angle,delay,reflect,true);
-			_Wait(fr);
-			angle+=addAngle*fr;
+			let nX = GetGapX( _nX, nGapLength, nAngle );
+			let nY = GetGapY( _nY, nGapLength, nAngle );
+			ExtendReflectLaser( nX, nY, nSpeed, nAngle, nDelay, nReflectNum, true );
+			__Wait( nFrame );
+			if( m_bDead ){ break; }
+			nAngle += nAddAngle * nFrame;
 		}
 
 	}
 
-	// 伸びる反射レーザー ------------------------------------------------------
-	task ExtendReflectLaser(let x, let y, let speed, let angle, let delay, let reflect, let first){
+	/**
+	*	伸びる反射レーザー
+	*	@param nX			弾源x座標
+	*	@param nY			弾源y座標
+	*	@param nSpeed		速度
+	*	@param nAngle		角度
+	*	@param nDelay		遅延フレーム数
+	*	@param nReflectNum	反射回数
+	*	@param bFirst		ボスから発射されたものか
+	*/
+	task ExtendReflectLaser( let nX, let nY, let nSpeed, let nAngle, let nDelay, let nReflectNum, let bFirst ){
 
-		// 初期設定 ----------------------------------------
-		let obj=Obj_Create(OBJ_LASER);
-		while(angle<0){angle+=360;}
-		if(angle>=360){angle%=360;}
+		let obj = Obj_Create( OBJ_LASER );
+		while( nAngle < 0 ){ nAngle += 360; }
+		if( nAngle >= 360 ){ nAngle %= 360; }
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetAngle( obj, nAngle );
+		ObjLaser_SetWidth( obj, 10 );
+		ObjShot_SetDelay( obj, 90 );
+		ObjShot_SetGraphic( obj, US_BALL_M_A_ORANGE );
+		Obj_SetAutoDelete( obj, false );
+		ObjLaser_SetSource( obj, false );
 
-		Obj_SetX(obj,x);
-		Obj_SetY(obj,y);
-		Obj_SetAngle(obj,angle);
-		ObjLaser_SetWidth(obj,10);
-		ObjShot_SetDelay(obj,90);
-		ObjShot_SetGraphic(obj,US_BALL_M_A_ORANGE);
-		Obj_SetAutoDelete(obj,false);
-		ObjLaser_SetSource(obj,false);
+		_SetLength();
 
-		// メイン処理 --------------------------------------
-		setLength;
-
-		// 反射設定
-		if(reflect>0){
-			let ref=false;
-			let fr=0;
-			let angleLU=atan2(y-minY,x-minX)+180;
-			let angleRU=atan2(y-minY,x-maxX)+180;
-			let angleLD=atan2(y-maxY,x-minX)+180;
-			let angleRD=atan2(y-maxY,x-maxX)+180;
-			if(angleRU==0){angleRU=360;}
-			if(angleRD==360){angleRD=0;}
-			if(angle>=angleRU||angle<angleRD){
-				ref=true;
-				let rLength=(maxX-x)/cos(angle);
-				fr=rLength/speed;
-				x=maxX;
-				y+=rLength*sin(angle);
-				angle=180-angle;
+		/** 反射設定 */
+		if( nReflectNum > 0 ){
+			let bReflect = false;
+			let nFrame = 0;
+			let nAngleLU = atan2( nY - CL_MIN_Y, nX - CL_MIN_X ) + 180;
+			let nAngleRU = atan2( nY - CL_MIN_Y, nX - CL_MAX_X ) + 180;
+			let nAngleLD = atan2( nY - CL_MAX_Y, nX - CL_MIN_X ) + 180;
+			let nAngleRD = atan2( nY - CL_MAX_Y, nX - CL_MAX_X ) + 180;
+			if( nAngleRU == 0 ){ nAngleRU = 360; }
+			if( nAngleRD == 360 ){ nAngleRD = 0; }
+			if( nAngle >= nAngleRU || nAngle < nAngleRD ){
+				bReflect = true;
+				let nGapLength = ( CL_MAX_X - nX ) / cos( nAngle );
+				nFrame = nGapLength / nSpeed;
+				nX = CL_MAX_X;
+				nY += nGapLength * sin( nAngle );
+				nAngle = 180 - nAngle;
 			}
-			else if(angle>=angleLD&&angle<angleLU){
-				ref=true;
-				let rLength=(minX-x)/cos(angle);
-				fr=rLength/speed;
-				x=minX;
-				y+=rLength*sin(angle);
-				angle=180-angle;
+			else if( nAngle >= nAngleLD && nAngle < nAngleLU ){
+				bReflect = true;
+				let nGapLength = ( CL_MIN_X - nX ) / cos( nAngle );
+				nFrame = nGapLength / nSpeed;
+				nX = CL_MIN_X;
+				nY += nGapLength * sin( nAngle );
+				nAngle = 180 - nAngle;
 			}
-			else if(angle>=angleLU&&angle<angleRU){
-				ref=true;
-				let rLength=(minY-y)/sin(angle);
-				fr=rLength/speed;
-				x+=rLength*cos(angle);
-				y=minY;
-				angle=-angle;
+			else if( nAngle >= nAngleLU && nAngle < nAngleRU ){
+				bReflect = true;
+				let nGapLength = ( CL_MIN_Y - nY ) / sin( nAngle );
+				nFrame = nGapLength / nSpeed;
+				nX += nGapLength * cos( nAngle );
+				nY = CL_MIN_Y;
+				nAngle = - nAngle;
 			}
-			if(ref){
-				loop(fr){yield;}
-				x-=10*speed*cos(angle);
-				y-=10*speed*sin(angle);
-				delay-=fr;
-				if(delay<0){delay=0;}
-				ExtendReflectLaser(x,y,speed,angle,delay,reflect-1,false);
+			if( bReflect ){
+				loop( nFrame ){ yield; }
+				nX -= 10 * nSpeed * cos( nAngle );
+				nY -= 10 * nSpeed * sin( nAngle );
+				nDelay -= nFrame;
+				if( nDelay < 0 ){ nDelay = 0; }
+				ExtendReflectLaser( nX, nY, nSpeed, nAngle, nDelay, nReflectNum - 1, false );
 			}
 		}
 
-		// 長さ設定 ----------------------------------------
-		task setLength{
+		/** 長さ設定 */
+		task _SetLength{
 
-			let Length=0;
-			let fr=120;
-			if(!first){fr-=10;}
-			// 伸びる
-			loop(fr){
-				Length+=speed;
-				ObjLaser_SetLength(obj,Length);
+			let nLength = 0;
+			let nFrame = 120;
+			if( !bFirst ){ nFrame -= 10; }
+			/** 伸びる */
+			loop( nFrame ){
+				nLength += nSpeed;
+				ObjLaser_SetLength( obj, nLength );
 				yield;
 			}
-			// 縮む
-			let addX=speed*cos(Obj_GetAngle(obj));
-			let addY=speed*sin(Obj_GetAngle(obj));
-			loop(15){
-				x=Obj_GetX(obj)+addX;
-				y=Obj_GetY(obj)+addY;
-				Obj_SetX(obj,x);
-				Obj_SetY(obj,y);
+			/** 縮む */
+			let nAddX = nSpeed * cos( Obj_GetAngle( obj ) );
+			let nAddY = nSpeed * sin( Obj_GetAngle( obj ) );
+			loop( 15 ){
+				nX += nAddX;
+				nY += nAddY;
+				Obj_SetPosition( obj, nX, nY );
 				yield;
 			}
-			Obj_SetAutoDelete(obj,true);
-			loop(fr-15){
-				x=Obj_GetX(obj)+addX;
-				y=Obj_GetY(obj)+addY;
-				Obj_SetX(obj,x);
-				Obj_SetY(obj,y);
+			Obj_SetAutoDelete( obj, true );
+			loop( nFrame - 15 ){
+				nX += nAddX;
+				nY += nAddY;
+				Obj_SetPosition( obj, nX, nY );
 				yield;
 			}
 
@@ -218,51 +340,28 @@ script_enemy_main{
 
 	}
 
-	// 回転弾 ------------------------------------------------------------------
+	/**
+	*	回転弾
+	*/
 	task RollShot{
 
-		let num=2;
-		let minSpeed=1;
-		let maxSpeed=1.2;
-		if(Lv>0){maxSpeed=1.6;}
-		let angle=270;
-		let addAngle=-364/60;
-		let graphic=US_BALL_S_WHITE;
-		let delay=10;
+		let nNum = 2;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 1;
+		let nMaxSpeed = 1.15;
+		if( m_nLevel > 0 ){ nMaxSpeed = 1.2; }
+		let nAngle = 270;
+		let nAddAngle  = - 364 / 60;
+		let nGraphic = US_BALL_S_WHITE;
+		let nDelay = 10;
 
 		loop{
-			LineShot(GetX,GetY,minSpeed,maxSpeed,angle,num,graphic,delay);
-			angle+=addAngle;
+			_LineShot( nX, nY, nSpeed, nMaxSpeed, nAngle, nNum, nGraphic, nDelay );
 			yield;
+			if( m_bDead ){ break; }
+			nAngle += nAddAngle;
 		}
-
-	}
-
-	// -------------------------------------------------------------------------
-	@Finalize{
-
-		// カットイン消去
-		SetCommonData(CD_CUTIN_SPELL_END,true);
-
-		// ロードしたファイルを削除
-		DeleteGraphicList(imgList,seList);
-
-	}
-
-	// -------------------------------------------------------------------------
-	@DrawLoop{
-
-		// ボス描画
-		DrawBoss(imgBoss);
-		DrawCutIn( m_nCount );
-
-	}
-
-	// -------------------------------------------------------------------------
-	@BackGround{
-
-		// 背景描画
-		OnBGPachouli;
 
 	}
 

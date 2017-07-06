@@ -1,0 +1,30 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//Å@å‹ï™çÁÇ´ÇÃç˜
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let DIR_IMAGE_MAP_CHERRY = GetCurrentScriptDirectory() ~ "IMAGE\MAP\CHERRY\";
+
+let IMAGE_CHERRY_HALF_LIST = [
+	DIR_IMAGE_MAP_CHERRY ~ "00.png",
+	DIR_IMAGE_MAP_CHERRY ~ "01.png",
+	DIR_IMAGE_MAP_CHERRY ~ "02.png",
+	DIR_IMAGE_MAP_CHERRY ~ "03.png",
+	DIR_IMAGE_MAP_CHERRY ~ "04.png",
+	DIR_IMAGE_MAP_CHERRY ~ "05.png",
+	DIR_IMAGE_MAP_CHERRY ~ "06.png",
+	DIR_IMAGE_MAP_CHERRY ~ "07.png",
+	DIR_IMAGE_MAP_CHERRY ~ "08.png",
+	DIR_IMAGE_MAP_CHERRY ~ "09.png",
+	DIR_IMAGE_MAP_CHERRY ~ "10.png",
+	DIR_IMAGE_MAP_CHERRY ~ "11.png",
+	DIR_IMAGE_MAP_CHERRY ~ "12.png",
+	DIR_IMAGE_MAP_CHERRY ~ "13.png",
+	DIR_IMAGE_MAP_CHERRY ~ "14.png",
+	DIR_IMAGE_MAP_CHERRY ~ "15.png",
+	DIR_IMAGE_MAP_CHERRY ~ "16.png",
+	DIR_IMAGE_MAP_CHERRY ~ "17.png",
+	DIR_IMAGE_MAP_CHERRY ~ "18.png",
+	DIR_IMAGE_MAP_CHERRY ~ "19.png",
+];

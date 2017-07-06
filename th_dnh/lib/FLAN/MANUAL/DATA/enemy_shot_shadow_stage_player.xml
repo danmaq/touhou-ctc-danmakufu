@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Enemy / Shot / Shadow / Stage / Player" file="enemy_shot_shadow_stage_player">
+	<category caption="概要" link="true">
+		<paragraph>
+			敵・使い魔・弾・ステージ・プレイヤースクリプトで利用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/Enemy_Shot_Shadow_Stage_Player.dnh</path>となります。
+			(関数の数が少ないので1ファイルのみの構成となります)
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+	</category>
+	<category caption="書換可能定数" link="true">
+	</category>
+	<category caption="メンバ変数" link="true">
+	</category>
+	<category caption="絵画関連">
+		<paragraph>
+			絵画関連機能です。
+			絵画時(<code>onDrawLoop</code> / <code>onBackGround</code> / <code>onBottomObject</code> / <code>onTopObject</code>)にて呼び出してください。
+		</paragraph>
+		<define key="SetGraphicRectWidth">
+			<argument>元画像のクリップする左上端のX座標</argument>
+			<argument>元画像のクリップする左上端のY座標</argument>
+			<argument>元画像のクリップする左上端からの幅</argument>
+			<argument>元画像のクリップする左上端からの高さ</argument>
+			<paragraph>
+				絵画元の<caption>切り出し位置を幅で設定</caption>します。
+				<code>SetGraphicRect</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="DrawCenterRect">
+			<argument>貼り付ける画像のファイルパス</argument>
+			<argument>元画像のクリップする左上端のX座標</argument>
+			<argument>元画像のクリップする左上端のY座標</argument>
+			<argument>元画像のクリップする左上端からの幅</argument>
+			<argument>元画像のクリップする左上端からの高さ</argument>
+			<paragraph>
+				テクスチャの内容を<caption>指定部分のみクリッピングして画面中央に絵画します</caption>。
+			</paragraph>
+		</define>
+		<define key="DrawCenter">
+			<argument>貼り付ける画像のファイルパス</argument>
+			<paragraph>
+				テクスチャの内容を<caption>画面中央に絵画</caption>します。
+			</paragraph>
+		</define>
+		<define key="DrawPlayerRect">
+			<argument>貼り付ける画像のファイルパス</argument>
+			<argument>元画像のクリップする左上端のX座標</argument>
+			<argument>元画像のクリップする左上端のY座標</argument>
+			<argument>元画像のクリップする左上端からの幅</argument>
+			<argument>元画像のクリップする左上端からの高さ</argument>
+			<paragraph>
+				テクスチャの内容を<caption>指定部分のみクリッピングしてプレイヤー位置に絵画</caption>します。
+			</paragraph>
+		</define>
+		<define key="DrawPlayer">
+			<argument>貼り付ける画像のファイルパス</argument>
+			<paragraph>
+				テクスチャの内容を<caption>プレイヤー位置に絵画</caption>します。
+			</paragraph>
+		</define>
+		<define key="__DrawChrRect">
+			<argument>貼り付ける画像のファイルパス</argument>
+			<argument>絵画する位置のX座標</argument>
+			<argument>絵画する位置のY座標</argument>
+			<argument>元画像のクリップする左上端のX座標</argument>
+			<argument>元画像のクリップする左上端のY座標</argument>
+			<argument>元画像のクリップする左上端からの幅</argument>
+			<argument>元画像のクリップする左上端からの高さ</argument>
+			<paragraph>
+				テクスチャの内容を<caption>指定部分のみクリッピングして指定位置に絵画します</caption>。
+			</paragraph>
+		</define>
+		<define key="__DrawChr">
+			<argument>貼り付ける画像のファイルパス</argument>
+			<argument>絵画する位置のX座標</argument>
+			<argument>絵画する位置のY座標</argument>
+			<paragraph>
+				テクスチャの内容を<caption>指定位置に絵画します</caption>。
+			</paragraph>
+		</define>
+	</category>
+</contents>

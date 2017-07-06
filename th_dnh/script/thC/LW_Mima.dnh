@@ -1,0 +1,249 @@
+
+#Title[Mima - ラストワード]
+#Text[魅魔]
+#BackGround[User]
+#ScriptVersion[2]
+
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\__INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossMima;
+	let imgCutIn=cutMima;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgShadow=dotCircle6s;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_MIMA~imgFontList~[imgShadow];
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(62);
+		SetLife(450);
+		SetDamageRate(10,0);
+		SetShotAutoDeleteClip(32,32,32,32);
+		SetEffectForZeroLife(60,0,0);
+		LastSpell;
+
+		// ボス基本処理、メイン処理
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// Slowキー判定
+		GetSlowCount;
+
+		// ボーナス値取得
+		m_nSpellBonus=GetSpellCardBonusScore;
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,5);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=cenY-50;
+		SlowMove(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName="仮符「？」";
+		CutInEnemy(spellName,imgCutIn,192,256);
+		SetScore(500000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(125);
+
+
+			SetAction(ACT_SHOT_B5,180);
+
+			while(1){
+				let angle=-180;
+				while(angle<180){
+					CreateEnemyFromScript("Shadow",GetX(),GetY(),0,angle,0);
+					angle+=90;
+				}
+				PlaySE(seShadow);
+				_Wait(400);
+			}
+
+
+	}
+
+
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+		// カットイン描画
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGMima;
+
+	}
+
+}
+
+// 使い魔 ----------------------------------------------------------------------
+script_enemy Shadow{
+
+	// 共通関数読み込み
+	#include_function ".\__INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let imgShadow=dotCircle6s;
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let limit=0;
+	let angle=GetAngle();
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(100);
+		SetDamageRateExDelay(90,85,85,50,50);
+		SetCoordinateType(COODINATE_TYPE_PARENT);
+
+		// 実体化時の光
+		LightShadow;
+
+		// メイン処理
+		PlayDamageSE(seDamage);
+		Main;
+		Move;
+		Sub01;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 使い魔基本処理
+		BehaviorShadow(seShadowHidden,seShadowSudden);
+
+		// 画面外で消滅
+		GoneEx(50);
+
+		// 当たり判定（自弾,体当たり）
+		CollisionShadow(24,0);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+		_Wait(150);
+		ascent(i in 0..100){
+			let speed=1+i/20;
+			LineShot(GetX(),GetY(),speed/2,speed,angle*1.12,4,[US_STAR_S_BLUE,US_STAR_S_PURPLE,US_STAR_S_RED,US_STAR_S_ORANGE,US_STAR_S_YELLOW][int(i/20)],5);
+			PlaySE(seShot3);
+			loop(4){yield;}
+		}
+	}
+
+	task Sub01{
+		_Wait(250);
+		loop(20){
+			CreateShot01(GetX(),GetY(),1.2,angle+180,US_BALL_S_A_GREEN,5);
+			PlaySE(seShot1);
+			loop(2){yield;}
+		}
+		_Wait(20);
+		loop(20){
+			CreateShot02(GetX(),GetY(),rand(1,3),angle+180,-0.1,0.7,[US_STAR_S_BLUE,US_STAR_S_PURPLE,US_STAR_S_RED,US_STAR_S_ORANGE,US_STAR_S_YELLOW,US_STAR_S_SKY][int(rand(0,100)%6)],20);
+			loop(int(rand(2,8))){yield;}
+			PlaySE(seShot3);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	task Move{
+		while(1){
+			limit=m_nCount/2;
+			angle+=2;
+			SetX(limit*cos(angle));
+			SetY(limit*sin(angle));
+			yield;
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// 弾消し
+		DestructShadow(40);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// 本体描画
+		let shadow=SHADOW_S_BLUE;
+		let angle=2*m_nCount;
+		let scale=0.8;
+		_DrawShadow(shadow,imgShadow,angle,scale,scale);
+
+	}
+
+}

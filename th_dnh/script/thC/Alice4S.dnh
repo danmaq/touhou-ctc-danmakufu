@@ -1,0 +1,680 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ3D　ボス　アリス・マーガトロイド　スペル4
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Alice - スペル4]
+#Text[ステージ3D ボス
+アリス・マーガトロイド]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\BossSub.dnh"
+	#include_function ".\INCLUDE\BOSS\Alice.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 140;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+	let CL_CD_DOLL_CLASH = "DollClash";
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** サブキャラ間隔角度 */
+	let m_nDollGapAngle = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDeadEffect = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		SetTimer( 49 );
+		SetLife( 500 );
+		SetDamageRate( 5, 5 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+		BehaviorSub( ACT_STAND3 );
+		m_nDollGapAngle = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_ANGLE, 90 );
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_DOLL_CLASH, 0 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_LOTUS + CL_TTH_CHARACTER_NAME_LOTUS_ALICE;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** サブキャラ間隔角度設定 */
+		m_nDollGapAngle -= 360 / 180;
+
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){
+			if( IsTryLastSpell() ){ DropItemTHC( 18 ); }
+		}
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+		/** 個別終了設定 */
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_DOLL_CLASH );
+		if( !m_bStage || m_bSpellPractice || !IsTryLastSpell() ){
+			DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ANGLE );
+		}
+		else{
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ANGLE, m_nDollGapAngle );
+		}
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス＆サブキャラ描画 */
+		let nDollGapLength = 24;
+		let nX = GetGapX( GetX(), nDollGapLength, m_nDollGapAngle );
+		let nY = GetGapY( GetY(), nDollGapLength * 0.4, m_nDollGapAngle );
+		if( sin( m_nDollGapAngle ) > 0 ){
+			DrawBoss( m_szImageBoss );
+			DrawSub( m_szImageBoss, CHAR_DOLL, nX, nY );
+		}
+		else{
+			DrawSub( m_szImageBoss, CHAR_DOLL, nX, nY );
+			DrawBoss( m_szImageBoss );
+		}
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 55 );
+		if( m_bDead ){ break; }
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_LOTUS + CL_TTH_SPELL_STAGE3_BOSS_4 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+		if( m_bDead ){ break; }
+
+		/** 使い魔召喚 */
+		SetAction( ACT_SHOT_B5, 190 );
+		PlaySEEx( sePower );
+		Concentration01( 120 );
+		__Wait( 120 );
+		if( m_bDead ){ break; }
+		SummonShadow();
+		__Wait( 70 );
+		if( m_bDead ){ break; }
+
+		/** 移動 */
+		nFrame = 60;
+		FLAN_BOSS_HOME_Y = CL_MIN_Y + 70;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 80 );
+		if( m_bDead ){ break; }
+		SetDamageRate( 14.5, 14.5 );
+
+		/** 扇状弾 */
+		WideShotEx();
+
+	}
+
+	/**
+	*	扇状弾
+	*/
+	task WideShotEx{
+
+		let nWay = 15 + 3 * m_nLevel;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed0 = 6;
+		let nSpeed1 = 1.2 + 0.4 * m_nLevel;
+		let nFrame1 = 20;
+		let nWayAngle = 150 / ( nWay - 1 );
+		let nGraphic = US_RICE_S_RED;
+		let nDelay = 5;
+		let nFrame = 90;
+		let nShotFrame = 5;
+
+		loop{
+			let nNum = ( GetCommonDataEx( CL_CDNS_TEMP, CL_CD_DOLL_CLASH ) - 1 ) * 2;
+			let nAngle = GetAngleToPlayer() + RandBlur( nWayAngle / 2 ) - nWayAngle * ( nWay - 1 ) / 2;
+			if( nNum > 0 ){
+				SetAction( ACT_SHOT_A4, nShotFrame * nNum + 15 );
+				PlaySEEx( seShot1 );
+			}
+			loop( nNum ){
+				let _nAngle = nAngle;
+				loop( nWay ){
+					CreateShotA( 0, nX, nY, nDelay );
+					SetShotDataA( 0, 0, nSpeed0, _nAngle, 0, 0, 0, nGraphic );
+					SetShotDataA( 0, 1, nSpeed1, _nAngle, 0, 0, 0, nGraphic );
+					FireShot( 0 );
+					_nAngle += nWayAngle;
+				}
+				__Wait( nShotFrame );
+				if( m_bDead ){ break; }
+			}
+			__Wait( nFrame - nShotFrame * nNum );
+			if( m_bDead ){ break; }
+		}
+
+	}
+
+	/**
+	*	使い魔召喚
+	*/
+	task SummonShadow{
+
+		let nFrame = 10;
+		let nX = GetX();
+		let nY = GetY();
+
+		ascent( let i in 0 .. 8 ){
+			CreateEnemyFromScript( "Shadow", nX, nY, 0, 0, i );
+			PlaySEEx( seShadow );
+			__Wait( nFrame );
+			if( m_bDead ){ break; }
+		}
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	使い魔
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy Shadow{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\ShadowNoHidden.dnh"
+	#include_function ".\INCLUDE\ShadowAnimation.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ZAKO_ACTION_EXISTBOSS = FLAN_ZAKO_EXISTBOSS_NONEACTION;
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ENEMY_COLLISION_A = 24;
+	FLAN_ENEMY_COLLISION_B = 18;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+	let CL_CD_DOLL_CLASH = "DollClash";
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 使い魔番号 */
+	let m_nNumber;
+
+	/** 初期待ちフレーム数 */
+	let m_nWaitFrame;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		m_nNumber = nArgv;
+		m_nWaitFrame = 150 - 10 * m_nNumber;
+		SetLife( 100 );
+		_SetDamageRateDelayEx( 14, 14, 40, 40, m_nWaitFrame );
+		CheckBossLife();
+		m_bShadowLighting = false;
+		BehaviorShadow( CHAR_SHADOW_MAID );
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 弾消し */
+		if( m_nNumber >= 2 && m_nNumber <= 5 ){ DeleteEnemyShotToItem( CHILD ); }
+
+		/** 個別終了設定 */
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_DOLL_CLASH, GetCommonDataEx( CL_CDNS_TEMP, CL_CD_DOLL_CLASH ) + 1 );
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 使い魔描画 */
+		let nShadowImage = SHADOW_IMAGE_6S;
+		let nShadowColor = SHADOW_COLOR_WHITE;
+		let nAngle = 2 * m_nFlanCount;
+		let nScale = 0.8;
+		DrawShadow( nShadowImage, nShadowColor, nAngle, nScale );
+		__DrawShadowChar( GetX(), GetY(), 0, nScale );
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 移動 */
+		Move();
+		loop( m_nWaitFrame ){ yield; }
+
+		alternative( m_nNumber )
+		/** 回転直線弾 */
+		case( 0, 7 ){ RollLineShot(); }
+		/** 回転全方向弾 */
+		case( 1, 6 ){ RollRoundShot(); }
+		/** 狙い弾 */
+		case( 2, 5 ){ SearchShot(); }
+		/** レーザー */
+		others{ Laser(); }
+
+	}
+
+	/**
+	*	回転直線弾
+	*/
+	task RollLineShot{
+
+		let nWay = 19 + 4 * m_nLevel;
+		let nX = GetX();
+		let nY = GetY();
+		let nWayAngle = 270 / ( nWay - 1 );
+		let nAngle=0;
+		if( m_nNumber == 0 ){
+			nWayAngle = - nWayAngle;
+			nAngle = 180;
+		}
+		let nFrame = 540;
+		let nShotFrame = 6;
+
+		if( m_nNumber == 0 ){
+			loop( nFrame / 2 ){ yield; }
+		}
+		loop( 180 ){ yield; }
+		loop{
+			let _nAngle = nAngle + RandBlur( nWayAngle / 2 );
+			loop( nWay ){
+				LineShotEx( nX, nY, _nAngle );
+				PlaySEEx( seShot2 );
+				loop( nShotFrame ){ yield; }
+				_nAngle += nWayAngle;
+			}
+			loop( nFrame - nShotFrame * nWay ){ yield; }
+		}
+
+	}
+
+	/**
+	*	直線弾
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nAngle	角度
+	*/
+	function LineShotEx( let nX, let nY, let nAngle ){
+
+		let nNum = 8 + m_nLevel;
+		let nSpeed = 1.5;
+		let nMaxSpeed = 4 + 0.5 * m_nLevel;
+		let nGraphic = US_SCALE_BLUE;
+		let nDelay = 10;
+
+		_LineShot( nX, nY, nSpeed, nMaxSpeed, nAngle, nNum, nGraphic, nDelay );
+
+	}
+
+	/**
+	*	回転全方向弾
+	*/
+	task RollRoundShot{
+
+		let nWay = 7;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 1 + 0.2 * m_nLevel;
+		let anAngle = [ 90, 90 ];
+		let nGraphic = US_RICE_S_YELLOW;
+		let nDelay = 10;
+		let nFrame = 60;
+		let nShotFrame = 3;
+		let nNum = [ 1, 2, 4, 6 ][ m_nLevel ];
+
+		_SetAngle();
+		loop{
+			PlaySEEx( seShot1 );
+			loop( nNum ){
+				_RoundShot01( nX, nY, nSpeed, anAngle[ 0 ], nWay, nGraphic, nDelay );
+				_RoundShot01( nX, nY, nSpeed, anAngle[ 1 ], nWay, nGraphic, nDelay );
+				loop( nShotFrame ){ yield; }
+			}
+			loop( nFrame - nShotFrame * nNum ){ yield; }
+		}
+
+		/** 角度設定 */
+		task _SetAngle{
+			let nAddAngle = 360 / 840;
+			loop{
+				yield;
+				anAngle = anAngle + [ nAddAngle, - nAddAngle ];
+			}
+		}
+
+	}
+
+	/**
+	*	狙い弾
+	*/
+	task SearchShot{
+
+		let nWay = 8;
+		let nX = GetX();
+		let nY = GetY();
+		let nWayAngle = 360 / nWay;
+		let nFrame = 210 - 15 * m_nLevel;
+
+		if( m_nNumber == 5 ){
+			loop( nFrame / 2 ){ yield; }
+		}
+		loop( 45 ){ yield; }
+		loop{
+			let nAngle = rand( 0, 360 );
+			loop( nWay ){
+				_SearchShot( nX, nY, nAngle );
+				nAngle += nWayAngle;
+			}
+			PlaySEEx( seShot1 );
+			__Wait( nFrame );
+		}
+
+	}
+
+	/**
+	*	狙い弾（1発）
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nAngle	角度
+	*/
+	task _SearchShot( let nX, let nY, let nAngle ){
+
+		let obj = Obj_Create( OBJ_SHOT );
+		let nGraphic = US_BALL_BS_GREEN;
+		let nDelay = 10;
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetAngle( obj, nAngle );
+		ObjShot_SetGraphic( obj, nGraphic );
+		ObjShot_SetDelay( obj, nDelay );
+
+		/** 遅延 */
+		loop( nDelay ){ yield; }
+
+		/** 初期移動 */
+		let nFrame = 30;
+		let nSpeed = 2.5 + 0.5 * m_nLevel;
+		let nAccelSpeed = - nSpeed / nFrame;
+		loop( nFrame ){
+			if( Obj_BeDeleted( obj ) ){ break; }
+			nSpeed += nAccelSpeed;
+			Obj_SetSpeed( obj, nSpeed );
+			yield;
+		}
+
+		/** 狙い弾 */
+		if( !Obj_BeDeleted( obj ) ){
+			nX = Obj_GetX( obj );
+			nY = Obj_GetY( obj );
+			nSpeed = 2.4 + 0.4 * m_nLevel;
+			if( m_nLevel == 3 ){ nSpeed += 0.4; }
+			nAngle = GetGapAngle( nX, nY, GetPlayerX(), GetPlayerY() );
+			CreateShot01( nX, nY, nSpeed, nAngle, nGraphic, 0 );
+			Obj_Delete( obj );
+		}
+
+	}
+
+	/**
+	*	レーザー
+	*/
+	task Laser{
+
+		let nX = GetX();
+		let nY = GetY();
+		let nWidth = 36 + 12 * m_nLevel;
+		let nGraphic = US_BEAM_SKY;
+		let nDelay = 90 - 10 * m_nLevel;
+		let nAddFrame = 30;
+		let nKill = 150;
+		let nAngle = 90;
+		let nAddLength = 400 / nAddFrame;
+		let nFrame = 360 - 40 * m_nLevel;
+
+		loop{
+			CreateLaserA( 0, nX, nY, 0, nWidth, nGraphic, nDelay );
+			SetLaserDataA( 0, 0, nAngle, 0, nAddLength, 0, 0 );
+			SetLaserDataA( 0, nAddFrame, NULL, 0, 0, 0, 0 );
+			SetShotKillTime( 0, nKill );
+			FireShot( 0 );
+			PlaySEEx( seLaser1 );
+			PlaySEDelay( seLaser2, nDelay );
+			loop( nFrame ){ yield; }
+		}
+
+	}
+
+	/**
+	*	移動
+	*/
+	task Move{
+
+		let nNum = 8;
+		let nX = [ CL_MIN_X + 40, CL_MIN_X + 70, CL_CEN_X - 80, CL_CEN_X - 20, CL_CEN_X + 20, CL_CEN_X + 80, CL_MAX_X - 70, CL_MAX_X - 40 ][ m_nNumber ];
+		let nY = [ CL_MIN_Y + 50, CL_MIN_Y + 140, CL_MIN_Y + 70, CL_MIN_Y + 110, CL_MIN_Y + 110, CL_MIN_Y + 70, CL_MIN_Y + 140, CL_MIN_Y + 50 ][ m_nNumber ];
+		let nForce1 = 800;
+		let nAngle1 = 180 / ( nNum - 1 ) * m_nNumber;
+		let nForce2 = 200;
+		let nAngle2 = - 90;
+		let nFrame = 59;
+		SetMovePositionHermite( nX, nY, nForce1, nAngle1, nForce2, nAngle2, nFrame );
+		loop( nFrame ){ yield; }
+		SetMovePosition02( nX, nY, 1);
+
+	}
+
+}

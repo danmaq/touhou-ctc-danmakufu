@@ -1,136 +1,283 @@
-script_enemy_main
-{
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 4(橙・藍前半)
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
-#include_function ".\INCLUDE\Enemy.dnh"
 
-//変数宣言--------------------------------------
-	let count=0;
-	let Level=GetCommonData("Level");
-	let angle_b=GetAngleToPlayer();
-//タスクの作成----------------------------------
-task MainAction()
-{
-	yield;
-	CreateEnemyFromScript("t_ma_01",GetX(),GetY(),GetSpeed(),GetAngle(),0);
-	_Wait(100+[0,rand(70,150),rand(10,50),rand(0,30)][Level]);
-	if(Level>0)
-	{
-		loop([0,1,5,10][Level])
-		{
-			CreateShot02(GetX(),GetY(),0,rand(0,360),0.002,[0,0.3,0.2,0.1][Level],[RED05,GREEN05,BLUE05,YELLOW05,PURPLE05,AQUA05,ORANGE05][int(rand(0,6))],0);
+//////////////////////////////////////////////////////////////////////
+//	スクリプトここから
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	THCELをインクルード
+//	(FLAN/THCELへのインクルードはTHCELが勝手にやってくれます)
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\Zako.dnh"
+#include_function ".\INCLUDE\BossAnimation.dnh"
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	/**	デフォルトアイテムの落下量を設定します。 */
+	ENEMY_ITEMEX_NUM_DEFAULT = 0;
+	/**	被弾判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_A = 15;
+	/**	接触判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_B = 3;
+	/**	onMainLoopへ処理をまわさないよう設定します。(まわしても何の処理も無い) */
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+	FLAN_ESS_NOGONE = true;
+
+//////////////////////////////////////////////////////////////////////
+//	定数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数宣言
+//////////////////////////////////////////////////////////////////////
+
+/** 絵画のz軸回転角度 */
+let m_nEnemyAngle = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有動作実装部  ボス個別ライブラリからのコピペ
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	回転付きボス描画
+*	DrawBossの代わりに使用する
+*	@param szImageFile	ボス画像ファイル
+*/
+function DrawChenRan( let szImageFile ){
+	SetGraphicAngle( 0, 0, m_nEnemyAngle );
+	_DrawBoss( szImageFile, GetX(), GetY() );
+	SetGraphicAngle( 0, 0, 0 );
+}
+
+/**
+*	回転設定（回転力減衰）
+*	移動開始＋SetAction後に同時に呼び出すこと
+*	終了際に回転力が落ちる（通常はこちら）
+*	@param nFrame	回転（移動）完了までのフレーム数
+*/
+task SetRoll( let nFrame ){
+	let nCount = m_nFlanCount;
+	loop( nFrame ){
+		if( GetSpeed() > 0.1 ){ break; }
+		yield;
+	}
+	nFrame -= m_nFlanCount - nCount;
+	if( nFrame < 1 ){ break; }
+ 	let nAssign = 1;
+	alternative( m_nAction )
+	case( ACT_MOVE ){
+		if( cos( GetAngle() ) < 0 ){ nAssign = - nAssign; }
+	}
+	case( ACT_MOVE_L ){ nAssign = - nAssign; }
+	case( ACT_MOVE_R ){ }
+	others{ nAssign = 0; }
+	let nMinRollAngle = 12;
+	let nMaxRollAngle = 24;
+	ascent( let i in nMinRollAngle .. nMinRollAngle + nFrame ){
+		let j = i;
+		if( j > nMaxRollAngle ){ j = nMaxRollAngle; }
+		m_nEnemyAngle -= j * nAssign;
+	}
+	descent( let i in nMinRollAngle .. nMinRollAngle + nFrame ){
+		let j = i;
+		if( j > nMaxRollAngle ){ j = nMaxRollAngle; }
+		m_nEnemyAngle += j * nAssign;
+		yield;
+	}
+	m_nEnemyAngle = 0;
+}
+
+/**
+*	回転設定（回転力一定）
+*	移動開始＋SetAction後に同時に呼び出すこと
+*	終了際に回転力が落ちない（画面外への移動等に使用）
+*	@param nFrame	回転（移動）完了までのフレーム数
+*/
+task SetRollConstant( let nFrame ){
+	let nCount = m_nFlanCount;
+	loop( nFrame ){
+		if( GetSpeed() > 0.1 ){ break; }
+		yield;
+	}
+	nFrame -= m_nFlanCount - nCount;
+	if( nFrame < 1 ){ break; }
+	let nRollAngle = 24;
+	alternative( m_nAction )
+	case( ACT_MOVE ){
+		if( cos( GetAngle() ) < 0 ){ nRollAngle = - nRollAngle; }
+	}
+	case( ACT_MOVE_L ){ nRollAngle = - nRollAngle; }
+	case( ACT_MOVE_R ){ }
+	others{ nRollAngle = 0; }
+	loop( nFrame ){
+		m_nEnemyAngle += nRollAngle;
+		yield;
+	}
+	m_nEnemyAngle = 0;
+}
+
+//////////////////////////////////////////////////////////////////////
+//	共通動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵固有のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nArgv, let nLevel ){
+		yield;
+		SetAction(ACT_MOVE,100);
+		SetRoll(100);
+		SetShotDirectionType(ABSOLUTE);
+		SetMovePositionHermite(GetCenterX(),GetCenterY()/2,0,90,600,90,100);
+		__Wait(100);
+		SetAction(ACT_SHOT_B5,340);
+		__Wait(50);
+		ascent( n in 0..4){
+			SetAction(ACT_MOVE,440);
+			SetRoll(440);
+			SetAngle(rand(-10,-20));
+			ascent(i in 0..100){
+				SetSpeed(Accelerate(0,10,i,100));
+				yield;
+			}
+			loop(3){
+				SetX(GetClipMaxX()+20);
+				SetY(GetCenterY()/2+rand(0,100));
+				SetAngle(180+rand(10,20));
+				SetSpeed(15);
+				let shot_Stime=rand(5,10);
+				__Wait(shot_Stime);
+				ascent( i in 0..[6,10,12,22][nLevel]){
+					CreateShot02(GetX(),GetY(),0,GetAngleToPlayer(),0.025,3,[US_SCALE_YELLOW,US_SCALE_YELLOW,US_BILL_ORANGE,US_BILL_ORANGE][nLevel],10);
+					CreateShot02(GetX(),GetY(),0,GetAngleToPlayer()+180,0.025,3,[US_SCALE_YELLOW,US_SCALE_YELLOW,US_BILL_ORANGE,US_BILL_ORANGE][nLevel],10);
+					ascent( n in 0..2){
+						CreateShot01(GetX(),GetY(),2+n,GetAngle()+150+i*4.3,[US_SCALE_YELLOW,US_SCALE_YELLOW,US_BILL_ORANGE,US_BILL_ORANGE][nLevel],10);
+						CreateShot01(GetX(),GetY(),2+n,GetAngle()+210-i*4.3,[US_SCALE_YELLOW,US_SCALE_YELLOW,US_BILL_ORANGE,US_BILL_ORANGE][nLevel],10);
+					}
+					PlaySEEx(seShot1);
+					yield;
+				}
+				__Wait(40-shot_Stime-[6,10,12,22][nLevel]);
+				SetX(GetClipMinX()+20);
+				SetY(GetCenterY()/2+rand(0,100));
+				SetAngle(rand(-10,-20));
+				SetSpeed(15);
+				let shot_Stime=rand(5,10);
+				__Wait(shot_Stime);
+				ascent( i in 0..[6,10,12,22][nLevel]){
+					CreateShot02(GetX(),GetY(),0,GetAngleToPlayer(),0.025,3,[US_SCALE_YELLOW,US_SCALE_YELLOW,US_BILL_ORANGE,US_BILL_ORANGE][nLevel],10);
+					CreateShot02(GetX(),GetY(),0,GetAngleToPlayer()+180,0.025,3,[US_SCALE_YELLOW,US_SCALE_YELLOW,US_BILL_ORANGE,US_BILL_ORANGE][nLevel],10);
+					ascent( n in 0..2){
+						CreateShot01(GetX(),GetY(),2+n,GetAngle()+150+i*4.3,[US_SCALE_YELLOW,US_SCALE_YELLOW,US_BILL_ORANGE,US_BILL_ORANGE][nLevel],10);
+						CreateShot01(GetX(),GetY(),2+n,GetAngle()+210-i*4.3,[US_SCALE_YELLOW,US_SCALE_YELLOW,US_BILL_ORANGE,US_BILL_ORANGE][nLevel],10);
+					}
+					PlaySEEx(seShot1);
+					yield;
+				}
+				__Wait(40-shot_Stime-[6,10,12,22][nLevel]);
+			}
+			SetX(GetCenterX());
+			SetY(GetClipMinY()-50);
+			SetMovePositionHermite(GetCenterX(),[GetCenterY()/2,GetCenterY()-50][n==3],0,90,600,90,100);
+			__Wait(100);
+			SetAction(ACT_SHOT_B5,240);
+			__Wait(50);
+			Concentration01(50);
+			__Wait(50);
+			let angle=rand(0,360);
+			loop([3,5,8,10][nLevel]){
+				_RoundShot01(GetX(),GetY(),[3,4,4,5][nLevel],angle,[18,24,30,36][nLevel],[US_RICE_M_RED,US_RICE_M_RED,US_KUNAI_SKY,US_KUNAI_SKY][nLevel],20);
+				if(nLevel>1){_RoundShot01(GetX(),GetY(),[0,0,1,1][nLevel],angle,[12,16,24,36][nLevel],[US_RICE_M_RED,US_RICE_M_RED,US_KUNAI_BLUE,US_KUNAI_BLUE][nLevel],20);}
+				PlaySEEx(seShot2);
+				__Wait([10,6,4,3][nLevel]);
+			}
+			__Wait(60);
 		}
+		//退却---------------
+		DropItemTHC( int((65000-GetLife())/50) );
+		__Wait(60);
+		/** 個別終了設定 */
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_X, GetX() );
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, GetY() );
+		VanishEnemy();
 	}
 
-
-}
-task SubAction01()
-{
-	yield;
-	let spmax=GetSpeed();
-	let i=0;
-	loop(100)
-	{
-		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
-		i++;
-		yield;
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( let nArgv, let nLevel ){
+//		CreateDebugWindow();
+		let imgboss=[dotBossChen,dotBossChen,dotBossRan,dotBossRan][nLevel];
+		LoadGraphic(imgboss);
+		SetLife(65000);
+		SetInvincibility( 1500 );
+		BehaviorBoss(ACT_STAND3);
 	}
-	SetMovePosition01(GetX(),GetClipMinY()-40,0.2);
 
-}
-
-//実行部分---------------------------------------
-
-	@Initialize
-	{
-		SetLife(20);
-		SetInvincibility( 100 );
-		SetAngle( GetAngle() );
-		MainAction();
-		SubAction01();
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	}
-	
-	@MainLoop
-	{
-		Gone();
-		Deletemine();
-		yield;
-		if(count>100){Collision(16 , 12);}
-		count++;
-		//敵画像代わり------------------------------------
-		if(int(count/2)==count/2 && count>100)
-		{
-			CreateShotA(0,GetX(),GetY(),0);
-			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
-			SetShotKillTime(0,2);
-			FireShot(0);
-		}
-		//------------------------------------------------
 
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	}
-	@DrawLoop
-	{
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		let imgboss=[dotBossChen,dotBossChen,dotBossRan,dotBossRan][nLevel];
+		DrawChenRan( imgboss );
 	}
-	@Finalize
-	{
-		DropItem( 1 , 20 );
-
-	}
-}
-
-////////////////////////////////////////////////////////////////////////
-//仮の使い魔、使い魔の書式の統一が必要なので雛形の作成をお願いします
-////////////////////////////////////////////////////////////////////////
-
-script_enemy t_ma_01
-{
-
-#include_function ".\INCLUDE\Shadow.dnh"
-
-	let count=0;
-
-task SubAction01()
-{
-	yield;
-	let spmax=GetSpeed();
-	let i=0;
-	loop(100)
-	{
-		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
-		i++;
-		yield;
-	}
-	VanishEnemy();
 
 }
 
-	@Initialize
-	{	
-		SetLife(30);
-		SetInvincibility( 120 );
-		LoadGraphic(dotCircle6s);
-		SubAction01();
-	}
-	@MainLoop
-	{
-		Deletemine();
-		Gone();
-		BehaviorShadow( 0,0 );
-		count++;
-	
-		yield;
-	}
-	@DrawLoop
-	{
-		SetTexture(dotCircle6s);
-		SetGraphicRect(0,0,64,64);
-		SetAlpha(127);
-		SetGraphicScale(0.8,0.8);
-		SetColor(255,255,255);
-		SetGraphicAngle(0,0,count*2);
-		DrawGraphic(GetX,GetY);
-	}
-	@Finalize
-	{
-		DestructShadow( 40 );
-	}
-}

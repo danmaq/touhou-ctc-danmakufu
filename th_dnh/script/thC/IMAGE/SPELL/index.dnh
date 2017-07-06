@@ -3,13 +3,17 @@
 //　スペルカード背景
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
-let dirImageSpell = GetCurrentScriptDirectory ~ "IMAGE\SPELL\";
+let dirImageSpell = GetCurrentScriptDirectory() ~ "IMAGE\SPELL\";
 
 let imgSpellBamboo = dirImageSpell ~ "Bamboo.png";
+let imgSpellBamboo2 = dirImageSpell ~ "Bamboo2.png";
+let imgSpellBamboo3 = dirImageSpell ~ "Bamboo3.png";
 let imgSpellBlood = dirImageSpell ~ "Blood.png";
 let imgSpellP1 = dirImageSpell ~ "p1.png";
 let imgSpellP2 = dirImageSpell ~ "p2.png";
 let imgSpellRedMoon = dirImageSpell ~ "Moon.png";
+let imgSpellBlueMoon = dirImageSpell ~ "Moon2.png";
+let imgSpellNormalMoon = dirImageSpell ~ "moon3.png";
 let imgSpellRedWall = dirImageSpell ~ "RedWall.png";
 let imgSpellRiverside = dirImageSpell ~ "Riverside.png";
 let imgSpellRotateStone = dirImageSpell ~ "RotateStone.png";
@@ -18,6 +22,48 @@ let imgSpellAya1 = dirImageSpell ~ "Aya1.png";
 let imgSpellAya2 = dirImageSpell ~ "Aya2.png";
 let imgSpellLittle1 = dirImageSpell ~ "Little1.png";
 let imgSpellLittle2 = dirImageSpell ~ "Little2.png";
+let imgSpellLight = dirImageSpell ~ "Light.png";
+let imgSpellYuka01 = dirImageSpell ~ "yuka01.png";
+let imgSpellYuka02 = dirImageSpell ~ "yuka02.png";
+let imgSpellBlack = dirImageSpell ~ "Black.png";
+let imgSpellMima01 = dirImageSpell ~ "mima01.png";
+let imgSpellRing = dirImageSpell ~ "Ring.png";
+let imgSpellRing2 = dirImageSpell ~ "Ring2.png";
+let imgSpellShinki01 = dirImageSpell ~ "Shinki01.png";
+let imgSpellShinki02 = dirImageSpell ~ "Shinki02.png";
+let imgSpellUdon01 = dirImageSpell ~ "Udon01.png";
+let imgSpellUdon02 = dirImageSpell ~ "Udon02.png";
+let imgSpellUdon03 = dirImageSpell ~ "Udon03.png";
+let imgSpellEirin01 = dirImageSpell ~ "Eirin01.png";
+let imgSpellEirin02 = dirImageSpell ~ "Eirin02.png";
+let imgSpellEirin03 = dirImageSpell ~ "Eirin03.png";
+let imgSpellMountain = dirImageSpell ~ "Mountain.png";
+let imgSpellFlame = dirImageSpell ~ "Flame.png";
+let imgSpellAlice01 = dirImageSpell ~ "Alice01.png";
+let imgSpellAlice02 = dirImageSpell ~ "Alice02.png";
+let imgSpellRemi01 = dirImageSpell ~ "Forest.png";
+let imgSpellRemi02 = dirImageSpell ~ "Fog.png";
+let imgSpellYamada01 = dirImageSpell ~ "yamada01.png";
+let imgSpellYamada02 = dirImageSpell ~ "yamada02.png";
+let imgSpellLeaf = dirImageSpell ~ "leaf.png";
+let imgSpellYukari01 = dirImageSpell ~ "yukari01.png";
+let imgSpellYukari02 = dirImageSpell ~ "yukari02.png";
+let imgSpellSakura01 = dirImageSpell ~ "sakura01.png";
+let imgSpellSakura02 = dirImageSpell ~ "sakura02.png";
+let imgSpellSakura03 = dirImageSpell ~ "sakura03.png";
+let imgSpellYoumu = dirImageSpell ~ "youmu.png";
+let imgSpellNoize01 = dirImageSpell ~ "noize01.png";
+let imgSpellNoize02 = dirImageSpell ~ "noize02.png";
+let imgSpellNoize03 = dirImageSpell ~ "noize03.png";
+let imgSpellNightSky = dirImageSpell ~ "NightSky.png";
+let imgSpellEimu = dirImageSpell ~ "Eimu.png";
+let imgSpellReimu = dirImageSpell ~ "Reimu.png";
+let imgSpellReimu2 = dirImageSpell ~ "Reimu2.png";
+let imgSpellReimu3 = dirImageSpell ~ "Reimu3.png";
+let imgSpellReimu4 = dirImageSpell ~ "Reimu4.png";
+let imgSpellTree = dirImageSpell ~ "Tree.png";
+let imgSpellStoneTile = dirImageSpell ~ "StoneTile.png";
+let imgSpellSuika01 = dirImageSpell ~ "suika01.png";
 
 
 //////////////////////////////////////////////////////////////////////
@@ -27,7 +73,7 @@ let imgSpellLittle2 = dirImageSpell ~ "Little2.png";
 let LOADBGLIST_FRANDRE = [ imgSpellRedMoon, imgSpellRedWall ];
 let LOADBGLIST_MEIRIN = [ imgSpellRotateStone ];
 let LOADBGLIST_SAKUYA = [ imgSpellRotateStone, imgSpellBlood ];
-let LOADBGLIST_REMILIA = LOADBGLIST_FRANDRE;
+let LOADBGLIST_REMILIA = [ imgSpellRemi01 , imgSpellRemi02  ];
 let LOADBGLIST_LITTLE = [ imgSpellLittle1 , imgSpellLittle2 ];
 let LOADBGLIST_PACHOULI = [ imgSpellScrollStone ];
 
@@ -36,11 +82,11 @@ let LOADBGLIST_PACHOULI = [ imgSpellScrollStone ];
 //	読み込みスペル背景画像リスト 永ルート
 //////////////////////////////////////////////////////////////////////
 
-let LOADBGLIST_KAGUYA = [];
-let LOADBGLIST_MOKOU = [];
-let LOADBGLIST_REISEN = [];
-let LOADBGLIST_EIRIN = [];
-let LOADBGLIST_TEWI = [];
+let LOADBGLIST_KAGUYA = [ imgSpellMountain,imgSpellUdon02 ];
+let LOADBGLIST_MOKOU = [ imgSpellFlame,imgSpellUdon02 ];
+let LOADBGLIST_REISEN = [ imgSpellUdon01,imgSpellUdon02,imgSpellUdon03,imgSpellBlueMoon,imgSpellBlack ];
+let LOADBGLIST_EIRIN = [ imgSpellEirin01,imgSpellEirin02,imgSpellEirin03,imgSpellBamboo2 ];
+let LOADBGLIST_TEWI = [imgSpellBamboo2,imgSpellLight];
 
 
 //////////////////////////////////////////////////////////////////////
@@ -51,20 +97,35 @@ let LOADBGLIST_LILY = [ imgSpellBamboo ];
 let LOADBGLIST_MEDICINE = [ imgSpellP1, imgSpellP2 ];
 let LOADBGLIST_AYA = [ imgSpellAya1 , imgSpellAya2 ];
 let LOADBGLIST_KOMACHI = [ imgSpellRiverside, imgSpellBlood ];
-let LOADBGLIST_EIKI = [ imgSpellRiverside, imgSpellBlood ];
+let LOADBGLIST_EIKI = [ imgSpellYamada01,imgSpellYamada02 ];
 
 
 //////////////////////////////////////////////////////////////////////
 //	読み込みスペル背景画像リスト 旧作ルート
 //////////////////////////////////////////////////////////////////////
 
-let LOADBGLIST_MIMA = [];
-let LOADBGLIST_YUKA = [];
-let LOADBGLIST_SHINKI = [];
-let LOADBGLIST_ALICE = [];
+let LOADBGLIST_MIMA = [ imgSpellRing,imgSpellMima01 ];
+let LOADBGLIST_YUKA = [ imgSpellYuka01,imgSpellYuka02,imgSpellBlack ];
+let LOADBGLIST_SHINKI = [ imgSpellShinki01,imgSpellShinki02 ];
+let LOADBGLIST_ALICE = [ imgSpellAlice01,imgSpellAlice02,imgSpellBlack ];
 
 
 //////////////////////////////////////////////////////////////////////
 //	読み込みスペル背景画像リスト 後半・EX
 //////////////////////////////////////////////////////////////////////
 
+let LOADBGLIST_CHENRAN = [ imgSpellLeaf , imgSpellAlice02 ];
+let LOADBGLIST_YUKARI = [ imgSpellYukari01 , imgSpellYukari02 ];
+let LOADBGLIST_YOUMU = [ imgSpellSakura02 , imgSpellYoumu ];
+let LOADBGLIST_YUYUKO = [ imgSpellSakura01 , imgSpellRemi02 ];
+let LOADBGLIST_YUYUKOYUKARI = [ imgSpellSakura03, imgSpellNoize01, imgSpellNoize02, imgSpellNoize03 ];
+let LOADBGLIST_REIMU_W = [
+	imgSpellLittle1 , imgSpellRedMoon , imgSpellNoize01, imgSpellNoize02, imgSpellNoize03,
+	imgSpellTree, imgSpellStoneTile,
+	imgSpellBamboo3, imgSpellNightSky, imgSpellBlueMoon,
+	imgSpellEimu, imgSpellYamada01,
+	imgSpellReimu, imgSpellRing2,
+	imgSpellReimu2, imgSpellSakura02
+];
+let LOADBGLIST_SUIKA = [ imgSpellSuika01 , imgSpellRemi02 ];
+let LOADBGLIST_REIMU = [ imgSpellReimu3 , imgSpellReimu4 ];

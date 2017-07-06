@@ -1,0 +1,795 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージPh　ボス　博麗 霊夢　スペル1
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Reimu - スペル1]
+#Text[ステージPh ボス
+博麗 霊夢]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Reimu.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 80;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 120;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** サークル画像 */
+	let m_szImageCircle = IMAGE_CL_CIRCLE_8S;
+
+	/** サークル間隔角度 */
+	let m_anGapAngle = [];
+
+	/** サークル間隔長さ */
+	let m_nGapLength = 60;
+
+	/** サークル回転速度 */
+	let m_nRollAngle = 0.25;
+
+	/** 色弾順序 */
+	let m_anColor = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage ){ LoadGraphic( m_szImageCircle ); }
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		SetTimer( 64 );
+		SetLife( 500 );
+		SetDamageRate( 5, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+		Barrier();
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_EXPH + CL_TTH_CHARACTER_NAME_EXPH_REIMU;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){ DropItemTHC( 24 ); }
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		SetBlur( nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_PHANTASM + CL_TTH_SPELL_EXPH_BOSS_1;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		/** 使い魔召喚 */
+		SetAction( ACT_SHOT_C, 120 );
+		PlaySEEx( sePower );
+		Concentration01( 120 );
+		__Wait( 120 );
+		SummonShadow();
+		__Wait( 60 );
+		SetCircleLocation();
+		SetDamageRate( 11.5, 0 );
+
+		nFrame = 74;
+		let nMinFrame = 42;
+		let nAddFrame = - 8;
+		let nShotFrame = 74;
+		let nMinShotFrame = 50;
+		let nAddShotFrame = - 4;
+		let nTurn = 0;
+
+		loop( 35 ){
+
+			/** 扇状弾 */
+			SetAction( ACT_SHOT_A5, 60 + nFrame );
+			ascent( let i in 0 .. 2 ){
+				Flash( nTurn + i );
+				__Wait( 30 );
+			}
+			ascent( let i in 0 .. 2 ){
+				WideShotEx( nTurn + i, nShotFrame );
+				__Wait( nFrame );
+			}
+
+			if( nFrame > nMinFrame ){ nFrame += nAddFrame; }
+			if( nShotFrame > nMinShotFrame ){ nShotFrame += nAddShotFrame; }
+
+			nTurn += 2;
+
+		}
+
+	}
+
+	/**
+	*	扇状弾
+	*	@param nTurn	ターン数
+	*	@param nFrame	弾がサークルに到達するフレーム数
+	*/
+	task WideShotEx( let nTurn, let nFrame ){
+
+		let nX = GetX();
+		let nY = GetY();
+		let nColor = m_anColor[ nTurn ];
+		let anXY = GetCircleLocation( nColor, nFrame );
+		let nSpeed = GetGapLength( anXY[ 0 ], anXY[ 1 ], nX, nY ) / nFrame;
+		let nAngle = GetGapAngle( anXY[ 0 ], anXY[ 1 ], nX, nY );
+		let nWideAngle = 345;
+		let nWay = 98;
+		let nGraphic = [ US_BALL_M_WHITE, US_BALL_M_RED, US_BALL_M_GREEN, US_BALL_M_BLUE, US_BALL_M_YELLOW, US_BALL_M_PURPLE, US_BALL_M_ORANGE ][ nColor ];
+
+		PlaySEEx( seShot2 );
+		_WideShot01( nX, nY, nSpeed, nAngle, nWideAngle, nWay, nGraphic, 0 );
+
+	}
+
+	/**
+	*	閃光
+	*	@param nTurn	ターン数
+	*/
+	task Flash( let nTurn ){
+
+		let nColor = m_anColor[ nTurn ];
+		let nR = [ 255, 223, 63, 63, 255, 255, 255 ][ nColor ];
+		let nG = [ 255, 0, 255, 63, 255, 63, 159 ][ nColor ];
+		let nB = [ 255, 0, 63, 255, 63, 255, 95 ][ nColor ];
+
+		SetColor( nR, nG, nB );
+		Concentration01( 30 );
+		SetColor( 255, 255, 255 );
+
+	}
+
+	/**
+	*	使い魔召喚
+	*/
+	task SummonShadow{
+
+		let nNum = 7;
+		let nX = GetX();
+		let nY = GetY();
+		let _nX = 140;
+		let _nY = CL_MIN_Y + 120;
+		let anColor = [ 2, 4, 6, 1, 3, 5, 0, 3, 6, 2, 5, 1, 4, 0 ];
+		m_anColor = m_anColor ~ anColor[ rand_int( 0, 13 ) .. 14 ];
+		loop( 5 ){
+			m_anColor = m_anColor ~ anColor;
+		}
+
+		let __nX = CL_CEN_X;
+		let __nY = CL_MAX_Y - 80;
+		let nGapAngle = - 90;
+		let nWayGapAngle = 360 / nNum;
+		loop( nNum ){
+			m_anGapAngle = m_anGapAngle ~ [ nGapAngle ];
+			nGapAngle += nWayGapAngle;
+		}
+
+		SetAction( ACT_SHOT_A5, 60 );
+		PlaySEEx( seShadow );
+		CreateEnemyFromScript( "Shadow", nX, nY, 0, 0, [ [ CL_CEN_X + _nX, _nY ], m_anColor, m_anGapAngle, [ m_nGapLength, m_nRollAngle ] ] );
+		CreateEnemyFromScript( "Shadow", nX, nY, 0, 0, [ [ CL_CEN_X - _nX, _nY ], m_anColor, m_anGapAngle, [ m_nGapLength, m_nRollAngle ] ] );
+		CreateShotFromScript( "Circle", nX, nY, 0, 0, 0, [ [ __nX, __nY ], m_anGapAngle, [ m_nGapLength, m_nRollAngle ] ] );
+
+	}
+
+	/**
+	*	サークル位置設定
+	*/
+	task SetCircleLocation{
+
+		loop{
+			ascent( let i in 0 .. 7 ){
+				m_anGapAngle[ i ] = m_anGapAngle[ i ] + m_nRollAngle;
+			}
+			yield;
+		}
+
+	}
+
+	/**
+	*	サークル位置取得
+	*	@param nColor	サークルの色
+	*	@param nFrame	弾がサークルに到達するフレーム数
+	*/
+	function GetCircleLocation( let nColor, let nFrame ){
+
+		let nX = CL_CEN_X;
+		let nY = CL_MAX_Y - 80;
+		let nGapAngle = m_anGapAngle[ nColor ] + m_nRollAngle * nFrame;
+		let _nX = GetGapX( nX, m_nGapLength, nGapAngle );
+		let _nY = GetGapY( nY, m_nGapLength, nGapAngle );
+
+		return [ _nX, _nY ];
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	使い魔
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy Shadow{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\ShadowNoHidden.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ZAKO_ACTION_EXISTBOSS = FLAN_ZAKO_EXISTBOSS_NONEACTION;
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ENEMY_COLLISION_A = 0;
+	FLAN_ENEMY_COLLISION_B = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 設置座標 */
+	let m_nX;
+	let m_nY;
+
+	/** 色弾順序 */
+	let m_anColor;
+
+	/** サークル間隔角度 */
+	let m_anGapAngle;
+
+	/** サークル間隔長さ */
+	let m_nGapLength;
+
+	/** サークル回転速度 */
+	let m_nRollAngle;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		SetLife( 1 );
+		m_nX = nArgv[ 0 ][ 0 ];
+		m_nY = nArgv[ 0 ][ 1 ];
+		m_anColor = nArgv[ 1 ];
+		m_anGapAngle = nArgv[ 2 ];
+		m_nGapLength = nArgv[ 3 ][ 0 ];
+		m_nRollAngle = nArgv[ 3 ][ 1 ];
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 魔法陣描画 */
+		let nShadowImage = SHADOW_IMAGE_6S;
+		let nShadowColor = SHADOW_COLOR_WHITE;
+		let nAngle = 2 * m_nFlanCount;
+		let nScale = 0.8;
+		DrawShadow( nShadowImage, nShadowColor, nAngle, nScale );
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 移動 */
+		SlowMove( m_nX, m_nY, 45 );
+		loop( 60 ){ yield; }
+		SetCircleLocation();
+
+		let nFrame = 74;
+		let nMinFrame = 42;
+		let nAddFrame = - 8;
+		let nShotFrame = 74;
+		let nMinShotFrame = 50;
+		let nAddShotFrame = - 4;
+		let nTurn = 0;
+
+		loop( 35 ){
+
+			/** 扇状弾 */
+			ascent( let i in 0 .. 2 ){
+				Flash( nTurn + i );
+				loop( 30 ){ yield; }
+			}
+			ascent( let i in 0 .. 2 ){
+				WideShotEx( nTurn + i, nShotFrame );
+				loop( nFrame ){ yield; }
+			}
+
+			if( nFrame > nMinFrame ){ nFrame += nAddFrame; }
+			if( nShotFrame > nMinShotFrame ){ nShotFrame += nAddShotFrame; }
+
+			nTurn += 2;
+
+		}
+
+	}
+
+	/**
+	*	扇状弾
+	*	@param nTurn	ターン数
+	*	@param nFrame	弾がサークルに到達するフレーム数
+	*/
+	task WideShotEx( let nTurn, let nFrame ){
+
+		let nColor = m_anColor[ nTurn ];
+		let anXY = GetCircleLocation( nColor, nFrame );
+		let nSpeed = GetGapLength( anXY[ 0 ], anXY[ 1 ], m_nX, m_nY ) / nFrame;
+		let nAngle = GetGapAngle( anXY[ 0 ], anXY[ 1 ], m_nX, m_nY );
+		let nWideAngle = 345;
+		let nWay = 98;
+		let nGraphic = [ US_BALL_M_WHITE, US_BALL_M_RED, US_BALL_M_GREEN, US_BALL_M_BLUE, US_BALL_M_YELLOW, US_BALL_M_PURPLE, US_BALL_M_ORANGE ][ nColor ];
+
+		PlaySEEx( seShot2 );
+		_WideShot01( m_nX, m_nY, nSpeed, nAngle, nWideAngle, nWay, nGraphic, 0 );
+
+	}
+
+	/**
+	*	閃光
+	*	@param nTurn	ターン数
+	*/
+	task Flash( let nTurn ){
+
+		let nColor = m_anColor[ nTurn ];
+		let nR = [ 255, 223, 63, 63, 255, 255, 255 ][ nColor ];
+		let nG = [ 255, 0, 255, 63, 255, 63, 159 ][ nColor ];
+		let nB = [ 255, 0, 63, 255, 63, 255, 95 ][ nColor ];
+
+		SetColor( nR, nG, nB );
+		Concentration01( 30 );
+
+	}
+
+	/**
+	*	サークル位置設定
+	*/
+	task SetCircleLocation{
+
+		loop{
+			ascent( let i in 0 .. 7 ){
+				m_anGapAngle[ i ] = m_anGapAngle[ i ] + m_nRollAngle;
+			}
+			yield;
+		}
+
+	}
+
+	/**
+	*	サークル位置取得
+	*	@param nColor	サークルの色
+	*	@param nFrame	弾がサークルに到達するフレーム数
+	*/
+	function GetCircleLocation( let nColor, let nFrame ){
+
+		let nX = CL_CEN_X;
+		let nY = CL_MAX_Y - 80;
+		let nGapAngle = m_anGapAngle[ nColor ] + m_nRollAngle * nFrame;
+		let _nX = GetGapX( nX, m_nGapLength, nGapAngle );
+		let _nY = GetGapY( nY, m_nGapLength, nGapAngle );
+
+		return [ _nX, _nY ];
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	サークル
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_shot Circle{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Shot.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** サークル画像 */
+	let m_szImageCircle = IMAGE_CL_CIRCLE_8S;
+
+	/** 中心座標 */
+	let m_nBaseX;
+	let m_nBaseY;
+
+	/** サークル座標 */
+	let m_anX;
+	let m_anY;
+
+	/** サークル間隔角度 */
+	let m_anGapAngle;
+
+	/** サークル間隔長さ */
+	let m_nGapLength;
+
+	/** サークル回転速度 */
+	let m_nRollAngle;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		m_bShadow = true;
+		m_bShadowDead = true;
+		m_nBaseX = nArgv[ 0 ][ 0 ];
+		m_nBaseY = nArgv[ 0 ][ 1 ];
+		m_anGapAngle = nArgv[ 1 ];
+		m_nGapLength = nArgv[ 2 ][ 0 ];
+		m_nRollAngle = nArgv[ 2 ][ 1 ];
+		m_anX = CreateArray( 7, m_nBaseX );
+		m_anY = CreateArray( 7, m_nBaseY );
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 魔法陣描画 */
+		let nAngle = - 5 * m_nFlanCount;
+		let nScale = 0.8;
+		if( m_nFlanCount < 30 ){ DrawShadowEx( SHADOW_IMAGE_6S, SHADOW_COLOR_WHITE, nAngle, nScale ); }
+		else{ _DrawShadowEx( nAngle, nScale ); }
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 移動 */
+		SlowMove( m_nBaseX, m_nBaseY, 30 );
+		loop( 30 ){ yield; }
+		m_bShadowLighting = false;
+
+		/** 色分裂＋回転 */
+		SplitColor();
+
+	}
+
+	/**
+	*	色分裂＋回転
+	*/
+	task SplitColor{
+
+		let nFrame = 30;
+		ascent( let i in 0 .. nFrame ){
+			ascent( let j in 0 .. 7 ){
+				let nX = GetGapX( m_nBaseX, m_nGapLength, m_anGapAngle[ j ] );
+				let nY = GetGapY( m_nBaseY, m_nGapLength, m_anGapAngle[ j ] );
+				m_anX[ j ] = SlowDown( m_nBaseX, nX, i, nFrame );
+				m_anY[ j ] = SlowDown( m_nBaseY, nY, i, nFrame );
+			}
+			yield;
+		}
+
+		loop{
+			ascent( let i in 0 .. 7 ){
+				m_anX[ i ] = GetGapX( m_nBaseX, m_nGapLength, m_anGapAngle[ i ] );
+				m_anY[ i ] = GetGapY( m_nBaseY, m_nGapLength, m_anGapAngle[ i ] );
+			}
+			yield;
+			ascent( let i in 0 .. 7 ){
+				m_anGapAngle[ i ] = m_anGapAngle[ i ] + m_nRollAngle;
+			}
+		}
+
+	}
+
+	/**
+	*	魔法陣描画
+	*	@param nAngle		描画角度
+	*	@param nScale		描画倍率
+	*/
+	function _DrawShadowEx( let nAngle, let nScale ){
+
+		let nRectLength = 64;
+		let anRectX = [ 0, 1, 2, 3, 0, 1, 2 ];
+		let anRectY = [ 0, 0, 0, 0, 1, 1, 1 ];
+
+		SetAlpha( 255 );
+		SetGraphicScale( nScale, nScale );
+		SetGraphicAngle( 0, 0, nAngle );
+		ascent( let i in 0 .. 7 ){
+			__DrawChrRect( m_szImageCircle, m_anX[ i ], m_anY[ i ], nRectLength * anRectX[ i ], nRectLength * anRectY[ i ], nRectLength, nRectLength );
+		}
+
+	}
+
+}

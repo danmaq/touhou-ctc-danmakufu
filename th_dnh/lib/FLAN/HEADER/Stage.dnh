@@ -1,0 +1,91 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※ステージスクリプト用
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	下位ライブラリをインクルードする
+//////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\FLAN\LIB\Common.dnh"
+#include_function "\lib\FLAN\LIB\Common_without_Event.dnh"
+#include_function "\lib\FLAN\LIB\Enemy_Shot_Shadow_Stage_Player.dnh"
+#include_function "\lib\FLAN\LIB\Stage_Enemy_Shot_Shadow.dnh"
+#include_function "\lib\FLAN\LIB\Stage_Player_Spell.dnh"
+#include_function "\lib\FLAN\LIB\Stage.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	初期化処理(コンストラクタ)
+//////////////////////////////////////////////////////////////////////
+
+@Initialize(){
+	__FlanCommonSPSInitialize();
+	let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
+	onInitialize( nStage, m_nFlanLevel );
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE_ENABLE, true );
+	__SetPlayerDefaultPosition();
+	__SetSlowKeyStateDelayLoop();
+	__MainTask();
+	__PointExtendLoop();
+	__DrawCountLoop();
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	毎フレーム呼ばれる処理
+//////////////////////////////////////////////////////////////////////
+
+@MainLoop(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	onMainLoop( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ), m_nFlanCount - m_nFlanStageTime, m_nFlanLevel, m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase );
+	if( PopCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE_NEXTPHASE, false ) ){ NextPhase(); }
+	yield;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	終了処理(デストラクタ)
+//////////////////////////////////////////////////////////////////////
+
+@Finalize(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	onFinalize( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ), m_nFlanCount - m_nFlanStageTime, m_nFlanLevel, m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	背景絵画処理
+//////////////////////////////////////////////////////////////////////
+
+@BackGround(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	onBackGround( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ), m_nFlanCount - m_nFlanStageTime, m_nFlanLevel, m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	下位レイヤ絵画処理
+//////////////////////////////////////////////////////////////////////
+
+@DrawBottomObject(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	onDrawBottomObject( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ), m_nFlanCount - m_nFlanStageTime, m_nFlanLevel, m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	上位レイヤ絵画処理
+//////////////////////////////////////////////////////////////////////
+
+@DrawTopObject(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	onDrawTopObject( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ), m_nFlanCount - m_nFlanStageTime, m_nFlanLevel, m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase );
+}

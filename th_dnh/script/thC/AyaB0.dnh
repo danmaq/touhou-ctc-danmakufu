@@ -1,163 +1,260 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ2C　ボス　射命丸 文　戦闘前
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#BackGround[User]
+#ScriptVersion[2]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_enemy_main{
 
-	// 共通関数読み込み
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
 	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Aya.dnh"
 
-	// 画像及び効果音ファイル
-	let imgBoss=dotBossAya;
-	let imgCutInEnemy=cutAya;
-	let imgCutInPlayer=cutMarisa;
-	let imgList=[imgBoss,imgCutInEnemy,imgCutInPlayer];
-	let seList=[];
 
-	// 各種設定値
-	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
-	Debug_SetLevel;
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
 
-	// -------------------------------------------------------------------------
-	@Initialize{
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
 
-		// ボス初期設定（ファイルのロード他）
-		if(!THC){seList=seList~seListEnemy;}
-		InitializeBoss(imgList,seList);
-		DeleteEnemyShotToItem(ALL);
 
-		// スペルカード設定
-		SetLife(1);
-		SetDamageRate(0,0);
-		SetX(maxX+128);
-		SetY(minY+50);
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
 
-		// ボス基本処理、メイン処理
-		BehaviorBoss(ACT_STAND3);
-		Main;
 
-	}
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
 
-	// -------------------------------------------------------------------------
-	@MainLoop{
 
-		// 当たり判定（自弾,体当たり）
-		Collision(32,24);
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
 
-		// ダメージ音
-		PlayDamageSE(seDamage);
 
-		// カウンタ加算
-		m_nCount++;
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
 
-		yield;
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
 
-	}
+		/** 共通初期設定 */
+		m_bDemo = true;
+		InitializeBoss();
 
-	// メイン処理 --------------------------------------------------------------
-	task Main{
-
-		yield;
-
-		move(cenX,minY+120+RandBlur(0.1),60);
-		_Wait(60);
-
-		// 会話開始
-		CreateEventFromScript("Talk");
-		SetCommonData(CD_STAGE_EVENT,true);
-		while(GetEventStep!=1){yield;}
-
-		// BGM
-		DeleteMusic( bgmList[ 16 ] );
-		_PlayMusicEx( bgmList[ 17 ], "" );
-		let bgmCount=m_nCount;
-		while(OnEvent||m_nCount-bgmCount<=30){yield;}
-		DeleteCommonData(CD_STAGE_EVENT);
-
-		AddLife(-1);
+		/** 個別初期設定 */
+		SetLife( 1 );
+		SetDamageRate( 0, 0 );
+		BehaviorBoss( ACT_STAND3 );
+		SetPosition( CL_MAX_X + 140, CL_MIN_Y + 50 );
 
 	}
 
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-	// 移動 --------------------------------------------------------------------
-	function move(let x, let y, let fr){
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		SetMovePosition02(x,y,fr);
-		SetAction(ACT_MOVE,fr);
+		/** 共通終了設定 */
+		FinalizeBoss();
 
 	}
 
-	// -------------------------------------------------------------------------
-	@Finalize{
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		// ロードしたファイルを削除
-		DeleteGraphicList(imgList,seList);
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
 
 	}
 
-	// -------------------------------------------------------------------------
-	@DrawLoop{
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-		// ボス描画
-		DrawBoss(imgBoss);
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 移動＋ボスID設定 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		let nBossID = CL_TTH_CHARACTER_NAME_KAEI + CL_TTH_CHARACTER_NAME_KAEI_AYA;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		__Wait( 70 );
+
+		/** 会話開始 */
+		CreateEventFromScript( "Talk" );
+		while( GetEventStep() != 1 ){ yield; }
+
+		/** BGM */
+		PlayMusicEx( 17 );
+		nFrame = 30;
+		let nEventCount = m_nFlanCount;
+		while( OnEvent() || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** 戦闘開始 */
+		AddLife( - 1 );
 
 	}
 
 }
 
-// 会話 ------------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	会話
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_event Talk{
 
-	// 共通関数読み込み
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
 	#include_function ".\INCLUDE\Event.dnh"
 
-	// 画像及び効果音ファイル
-	let imgCutInEnemy=cutAya;
-	let imgCutInPlayer=cutMarisa;
 
-	// -------------------------------------------------------------------------
-	@Initialize{
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
 
-		// メイン処理
-		Main;
+	/** 敵カットイン画像 */
+	m_aszImageCutInEnemy = [
+		cutAya,
+		cutAya,
+		cutAya2,
+		cutAya,
+		cutAya,
+		cutAya,
+		cutAya,
+		cutAya,
+		cutAya,
+		cutAya	
+	];
 
-	}
 
-	// -------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
 	@MainLoop{
 
-		yield;
-
-	}
-
-	// メイン処理 --------------------------------------------------------------
-	task Main{
-
-		ChrIn(imgCutInEnemy,RIGHT,CUT_NORMAL);
-		Enemy;
-		TextOut("\c[RED]あ、ご無沙汰してます…えっと、白黒さん");
-		ChrIn(imgCutInPlayer,LEFT,CUT_NORMAL);
-		Player;
-		TextOut("\c[BLUE]なんだよ自分の名前も覚えてないのか？");
-		Enemy;
-		TextOut("\c[RED]あなたのことですよあなたの");
-		Player;
-		TextOut("\c[BLUE]見る限り、お前の方が白黒率が高い気がするんだが");
-		SetNameFromText(RIGHT,TEXT_RED,"射命丸 文","伝統の幻想ブン屋");
-		Enemy;
-		TextOut("\c[RED]その話は置いといてなんかいいネタないですか～？");
-		Player;
-		TextOut("\c[BLUE]つくづく都合のいいやつだ、取って置きのネタがあるぜ");
-		TextOut("\c[BLUE]博麗神社の霊夢がいなくなっちまったんだ");
-		Enemy;
-		TextOut("\c[RED]大事件ですね…でもそれはあなたにとって、であって");
-		TextOut("\c[RED]私にとっては三流記事にも満たないですけど");
-		TextOut("\c[RED]ま、三面の片隅にひっそりと載せておきますね、「迷い犬探してます」って");
-		Player;
-		TextOut("\c[BLUE]…やたら気に障ること言って来るな今日のお前");
-		SetStep(1);
-		TextOut("\c[BLUE]いいぜやる気なら相手してやるよ");
-		Enemy;
-		TextOut("\c[RED]景品は「神の犬」でしょうかね？");
-		Player;
-		TextOut("\c[BLUE]お前に美しい弾幕を撮られる前に潰してやる！");
-		End;
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemyC( m_nWaitFrame, "あ、ご無沙汰してます\n…えっと、白黒さん" );
+		InCharPlayer( CUT_PLAYER_BAD );
+		TextOutPlayer( "なんだよ自分の名前も覚えてないのか？" );
+		InCharEnemy( CUT_ENEMY_AFFECT );
+		TextOutEnemy( "あなたのことですよあなたの" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "見る限り\nお前の方が白黒率が高い気がするんだが" );
+		SetNameFromTextEnemy( "射命丸 文", "伝統の幻想ブン屋" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "その話は置いといて\nなんかいいネタないですか～？" );
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "つくづく都合のいいやつだ\n取って置きのネタがあるぜ" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "博麗神社の霊夢がいなくなっちまったんだ" );
+		DeleteNameEnemy();
+		TextOutEnemy( "大事件ですね…でもそれは\nあなたにとって、であって" );
+		TextOutEnemy( "私にとっては\n三流記事にすら満たないですけど" );
+		InCharEnemy( CUT_ENEMY_AFFECT );
+		TextOutEnemy( "ま、三面の片隅にでも載せておきますね\n「迷い犬探してます」って" );
+		InCharPlayer( CUT_PLAYER_TEMPER );
+		TextOutPlayer( "…やたら気に障ること言って来るな\n今日のお前" );
+		SetStep( 1 );
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "いいぜやる気なら相手してやるよ" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "景品は「神の犬」でしょうかね？" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "お前に美しい弾幕を撮られる前に\n潰してやる！" );
+		End();
 
 	}
 

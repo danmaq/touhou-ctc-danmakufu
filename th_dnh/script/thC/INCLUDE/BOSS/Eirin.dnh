@@ -1,0 +1,72 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　八意 永琳
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossEirin;
+let m_szImageCutIn = cutEirin;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_EIRIN;
+let m_aszImageBGList = LOADBGLIST_EIRIN;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+
+	let i = - m_nFlanCount * 0.5;
+	SetGraphicRect( 0, i, 512, 512 + i );
+	DrawCenter( imgSpellEirin03 );
+
+	i = m_nFlanCount * 3;
+	SetAlpha( 130 );
+	SetGraphicScale( 0.5, 1 );
+	SetGraphicRect( 0, i, 512, 512 + i );
+	__DrawChr( imgSpellBamboo2, CL_CEN_X - 130, CL_CEN_Y );
+	__DrawChr( imgSpellBamboo2, CL_CEN_X + 130, CL_CEN_Y );
+	SetGraphicScale( 1, 1 );
+	SetAlpha( 255 );
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellEirin01 );
+
+	SetRenderState( ADD );
+	SetGraphicRect( 0, 0, 512, 512 );
+	SetGraphicScale( 0.9, 0.9 );
+	SetColor( 80, 80, 80 );
+	__DrawChr( imgSpellEirin02, CL_CEN_X, CL_CEN_Y - 70 );
+	SetColor( 255, 255, 255 );
+	SetRenderState( ALPHA );
+	SetGraphicScale( 1, 1 );
+
+}
+
+

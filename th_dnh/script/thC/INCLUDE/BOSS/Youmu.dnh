@@ -1,0 +1,64 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　魂魄 妖夢
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossYoumu;
+let m_szImageCutIn = cutYoumu;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_YOUMU;
+let m_aszImageBGList = LOADBGLIST_YOUMU;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+/** スロー中か */
+let m_bSlow = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellYoumu );
+	SetAlpha( [ 10, 255 ][ m_bSlow ] );
+	SetRenderState( [ ALPHA, ADD ][ m_bSlow ] );
+	ascent( let i in 0 .. [ 1, 4 ][ m_bSlow ] ){
+		if( m_bSlow ){
+			let j = Smooth( 40, 10, i, 3 );
+			SetColor( j, j, j );
+		}
+		SetGraphicAngle( 0, 0, ( m_nFlanCount - i * 4 ) * 0.6 );
+		DrawCenter( imgSpellSakura02 );
+	}
+	SetAlpha( 255 );
+	SetColor( 255, 255, 255 );
+	SetGraphicAngle( 0, 0, 0 );
+	SetRenderState( ALPHA );
+}
+

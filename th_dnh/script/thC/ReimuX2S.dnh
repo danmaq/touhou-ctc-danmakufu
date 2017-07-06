@@ -1,0 +1,462 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ6　ボス　博麗 霊夢（真）　スペル2
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[ReimuX - スペル2]
+#Text[ステージ6 ボス
+博麗 霊夢（真）]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\ReimuX.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 140;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 120;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 結界レーザーオブジェクト配列 */
+	let m_aobjBorder = [];
+
+	/** 反射したか */
+	let m_bReflect = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetTimer( 29 );
+		SetLife( 250 );
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		else{ LastSpell(); }
+		SetDamageRate( 2, 0 );
+		SetDamageRateDelay( 40, 0, 780 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 301 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_YOUMU + CL_TTH_CHARACTER_NAME_YOUMU_REIMU;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+		/** 前スペルでミスした場合は終了 */
+		if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_DEAD, false ) ){ VanishEnemy(); }
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){
+			if( GotSpellCardBonus() ){ DropItemTHC( 24 ); }
+		}
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+		/** 個別終了設定 */
+		if( m_bStage && !m_bSpellPractice ){
+			if( GotSpellCardBonus() || IsTimeOut() ){
+				SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_DEAD, false );
+			}
+			else{
+				SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_DEAD, true );
+			}
+		}
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 残像描画 */
+		DrawBlur( m_szImageBoss );
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		SetBlur( nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_YOUMU + CL_TTH_SPELL_STAGE6_BOSS_LAST_2 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		/** 結界レーザー */
+		SetAction( ACT_SHOT_B5, 120 );
+		Concentration01( 60 );
+		BorderLaser();
+		__Wait( 60 );
+		Explosion01( GetX(), GetY(), 255 / 60, 0.25, 60 );
+		__Wait( 60 );
+
+		/** 反射SE */
+		ReflectSE();
+
+		loop{
+
+			/** 全方向転送弾 */
+			RoundWarpShot();
+			__Wait( 90 );
+
+			/** 移動 */
+			Move( 60 );
+			__Wait( 60 );
+
+		}
+
+	}
+
+	/**
+	*	全方向転送弾
+	*/
+	task RoundWarpShot{
+
+		let nFrame = 10;
+		let nNum = 5;
+		let nWay = 20 + 6 * m_nLevel;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 1.4;
+		let nNumSpeed = ( 2.7 + 0.3 * m_nLevel - nSpeed ) / ( nNum - 1 );
+		let nAngle = rand( 0, 360 );
+		let nWayAngle = 360 / nWay;
+
+		SetAction( ACT_SHOT_A5, 75 );
+		loop( nNum ){
+			let _nAngle = nAngle;
+			loop( nWay ){
+				SearchShot( nX, nY, nSpeed, _nAngle );
+				_nAngle += nWayAngle;
+			}
+			PlaySEEx( seShot1 );
+			__Wait( nFrame );
+			nSpeed += nNumSpeed;
+		}
+
+	}
+
+	/**
+	*	転送弾
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nSpeed	速度
+	*	@param nAngle	角度
+	*/
+	task SearchShot( let nX, let nY, let nSpeed, let nAngle ){
+
+		let obj = Obj_Create( OBJ_SHOT );
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetSpeed( obj, nSpeed );
+		Obj_SetAngle( obj, nAngle );
+		ObjShot_SetGraphic( obj, US_BILL_WHITE );
+		ObjShot_SetDelay( obj, 5 );
+
+		while( !Obj_BeDeleted( obj ) ){
+			ascent( let i in 0 .. 3 ){
+				if( Collision_Obj_Obj( obj, m_aobjBorder[ i ] ) ){
+					nX = Obj_GetX( obj );
+					nY = Obj_GetY( obj );
+					let _nX = 0;
+					let _nY = CL_MAX_Y - 10;
+					nSpeed *= 0.9;
+					let nGraphic = US_BILL_GREEN;
+					let nDelay = 10;
+					alternative( i )
+					case( 0 ){
+						_nX = CL_MIN_X + ( CL_MAX_X - CL_MIN_X ) * ( nY - CL_MIN_Y ) / ( CL_MAX_Y - CL_MIN_Y );
+						nAngle = 90 - nAngle;
+					}
+					case( 1 ){
+						_nX = CL_MAX_X - ( CL_MAX_X - CL_MIN_X ) * ( nY - CL_MIN_Y  ) / ( CL_MAX_Y - CL_MIN_Y );
+						nAngle = 270 - nAngle;
+					}
+					others{
+						_nX = CL_MAX_X - ( nX - CL_MIN_X );
+						nAngle = 180 - nAngle;
+					}
+					let nFrame = 20;
+					WarpLaser( nX, nY, _nX, _nY, nFrame );
+					m_bReflect = true;
+					Obj_Delete( obj );
+					loop( nFrame ){ yield; }
+					CreateShot01( _nX, _nY, nSpeed, nAngle, nGraphic, nDelay );
+					break;
+				}
+			}
+			yield;
+		}
+
+	}
+
+	/**
+	*	転送レーザー
+	*	@param nX		レーザー源x座標
+	*	@param nY		レーザー源y座標
+	*	@param _nX		レーザー終端x座標
+	*	@param _nY		レーザー終端y座標
+	*	@param nFrame	転送完了までのフレーム数
+	*/
+	task WarpLaser( let nX, let nY, let _nX, let _nY, let nFrame ){
+
+		let obj = Obj_Create( OBJ_LASER );
+		let nAngle = GetGapAngle( nX, nY, _nX, _nY );
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetAngle( obj, nAngle );
+		ObjLaser_SetWidth( obj, 12 );
+		ObjShot_SetGraphic( obj, US_BEAM_GREEN );
+		ObjShot_SetDelay( obj, nFrame );
+		Obj_SetCollisionToPlayer( obj, false );
+		ObjShot_ToItem( obj, false );
+		ObjLaser_SetSource( obj, false );
+
+		let _nFrame = nFrame / 2;
+		let nLength = 0;
+		let nAddLength = GetGapLength( nX, nY, _nX, _nY ) / _nFrame;
+		loop( _nFrame ){
+			nLength += nAddLength;
+			ObjLaser_SetLength( obj, nLength );
+			yield;
+		}
+
+		let nAddX = ( _nX - nX ) / _nFrame;
+		let nAddY = ( _nY - nY ) / _nFrame;
+		loop( _nFrame ){
+			nX += nAddX;
+			nY += nAddY;
+			Obj_SetPosition( obj, nX, nY );
+			yield;
+		}
+
+		Obj_Delete( obj );
+
+	}
+
+	/**
+	*	結界レーザー
+	*/
+	task BorderLaser(){
+
+		let anX = [ CL_MIN_X + 1, CL_MIN_X - 1, CL_MAX_X - 1, CL_MAX_X + 1 ];
+		let anY = [ CL_MAX_Y + 1, CL_MIN_Y + 1, CL_MIN_Y - 1, CL_MAX_Y - 1 ];
+		let nLengthX = CL_MAX_X - CL_MIN_X + 2;
+		let nLengthY = CL_MAX_Y - CL_MIN_Y + 2;
+		let anLength = [ nLengthY, nLengthX, nLengthY, nLengthX ];
+		let anAngle = [ 270, 0, 90, 180 ];
+		let nDelay = 60;
+
+		_BorderLaser( anX[ 0 ], anY[ 0 ], anAngle[ 0 ], anLength[ 0 ], nDelay, false );
+		_BorderLaser( anX[ 2 ], anY[ 2 ], anAngle[ 2 ], anLength[ 2 ], nDelay, false );
+		PlaySEEx( seLaser2 );
+		__Wait( 30 );
+		nDelay -= 30;
+		_BorderLaser( anX[ 1 ], anY[ 1 ], anAngle[ 1 ], anLength[ 1 ], nDelay, false );
+		_BorderLaser( anX[ 3 ], anY[ 3 ], anAngle[ 3 ], anLength[ 3 ], nDelay, true );
+		PlaySEEx( seLaser2 );
+		PlaySEDelay( seKira1, nDelay );
+
+	}
+
+	/**
+	*	結界レーザー（1本）
+	*	@param nX			レーザー源x座標
+	*	@param nY			レーザー源y座標
+	*	@param nAngle		角度
+	*	@param nMaxLength	長さ
+	*	@param nDelay		遅延フレーム数
+	*	@param bColor		色付きか
+	*/
+	task _BorderLaser( let nX, let nY, let nAngle, let nMaxLength, let nDelay, let bColor ){
+
+		let nGraphic = [ US_BEAM_WHITE, US_BEAM_GREEN ][ bColor ];
+		if( bColor ){ SetShotColor( 127, 255, 127 ); }
+		let obj = Obj_Create( OBJ_LASER );
+		if( bColor ){ SetShotColor( 255, 255, 255 ); }
+		m_aobjBorder = m_aobjBorder ~ [ obj ];
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetAngle( obj, nAngle );
+		ObjShot_SetGraphic( obj, nGraphic );
+		ObjShot_SetDelay( obj, nDelay );
+		ObjLaser_SetWidth( obj, 30 );
+		Obj_SetAutoDelete( obj, false );
+		Obj_SetAlpha( obj, 200 );
+		Obj_SetCollisionToPlayer( obj, false );
+		ObjLaser_SetSource( obj, false );
+
+		let nFrame = 30;
+		let nLength = 0;
+		let nAddLength = nMaxLength / nFrame;
+		loop( nFrame ){
+			nLength += nAddLength;
+			ObjLaser_SetLength( obj, nLength );
+			yield;
+		}
+
+	}
+
+	/**
+	*	反射SE
+	*/
+	task ReflectSE{
+
+		let nCount = m_nFlanCount;
+		let nWaitCount = 6 - m_nLevel;
+		loop{
+			if( m_bReflect ){
+				if( nCount < m_nFlanCount ){
+					PlaySEEx( seKira2 );
+					nCount = m_nFlanCount + nWaitCount;
+				}
+				m_bReflect = false;
+			}
+			yield;
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 30;
+		let nMaxMoveX = 60;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 15;
+
+		SetAction( ACT_MOVE, nFrame );
+		SetBlur( nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

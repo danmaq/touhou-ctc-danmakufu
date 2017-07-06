@@ -1,0 +1,165 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　橙、藍
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossChen;
+let m_szImageBoss2 = dotBossRan;
+let m_szImageCutIn = cutChen;
+let m_szImageCutIn2 = cutRan;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_CHEN ~ IMAGE_LIST_RAN;
+let m_aszImageBGList = LOADBGLIST_CHENRAN;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+/** 絵画のz軸回転角度 */
+let m_nEnemyAngle = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+	let i = - m_nFlanCount * 0.2;
+	let j = - m_nFlanCount * 0.8;
+	SetColor( 60, 50, 30 );
+	SetGraphicRect( i, j, 512 + i, 512 + j );
+	DrawCenter( imgSpellAlice02 );
+	i = m_nFlanCount * 0.21;
+	j = m_nFlanCount * 1.5;
+	SetColor( 255, 255, 255 );
+	SetGraphicRect( i, j, 512 + i, 512 + j );
+	DrawCenter( imgSpellLeaf );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	描画関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	回転付きボス描画
+*	DrawBossの代わりに使用する
+*	@param szImageFile	ボス画像ファイル
+*/
+function DrawChenRan( let szImageFile ){
+	SetGraphicAngle( 0, 0, m_nEnemyAngle );
+	_DrawBoss( szImageFile, GetX(), GetY() );
+	SetGraphicAngle( 0, 0, 0 );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	未分類
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	回転設定（回転力減衰）
+*	移動開始＋SetAction後に同時に呼び出すこと
+*	終了際に回転力が落ちる（通常はこちら）
+*	@param nFrame	回転（移動）完了までのフレーム数
+*/
+task SetRoll( let nFrame ){
+	let nCount = m_nFlanCount;
+	loop( nFrame ){
+		if( GetSpeed() > 0.1 ){ break; }
+		yield;
+	}
+	nFrame -= m_nFlanCount - nCount;
+	if( nFrame < 1 ){ break; }
+ 	let nAssign = 1;
+	alternative( m_nAction )
+	case( ACT_MOVE ){
+		if( cos( GetAngle() ) < 0 ){ nAssign = - nAssign; }
+	}
+	case( ACT_MOVE_L ){ nAssign = - nAssign; }
+	case( ACT_MOVE_R ){ }
+	others{ nAssign = 0; }
+	let nMinRollAngle = 12;
+	let nMaxRollAngle = 24;
+	ascent( let i in nMinRollAngle .. nMinRollAngle + nFrame ){
+		let j = i;
+		if( j > nMaxRollAngle ){ j = nMaxRollAngle; }
+		m_nEnemyAngle -= j * nAssign;
+	}
+	descent( let i in nMinRollAngle .. nMinRollAngle + nFrame ){
+		let j = i;
+		if( j > nMaxRollAngle ){ j = nMaxRollAngle; }
+		m_nEnemyAngle += j * nAssign;
+		yield;
+	}
+	m_nEnemyAngle = 0;
+}
+
+/**
+*	回転設定（回転力一定）
+*	移動開始＋SetAction後に同時に呼び出すこと
+*	終了際に回転力が落ちない（画面外への移動等に使用）
+*	@param nFrame	回転（移動）完了までのフレーム数
+*/
+task SetRollConstant( let nFrame ){
+	let nCount = m_nFlanCount;
+	loop( nFrame ){
+		if( GetSpeed() > 0.1 ){ break; }
+		yield;
+	}
+	nFrame -= m_nFlanCount - nCount;
+	if( nFrame < 1 ){ break; }
+	let nRollAngle = 24;
+	alternative( m_nAction )
+	case( ACT_MOVE ){
+		if( cos( GetAngle() ) < 0 ){ nRollAngle = - nRollAngle; }
+	}
+	case( ACT_MOVE_L ){ nRollAngle = - nRollAngle; }
+	case( ACT_MOVE_R ){ }
+	others{ nRollAngle = 0; }
+	loop( nFrame ){
+		m_nEnemyAngle += nRollAngle;
+		yield;
+	}
+	m_nEnemyAngle = 0;
+}
+
+/**
+*	当たり判定を無くし、指定したフレーム経過後に当たり判定を再設定します。
+*	@param nFrame	当たり判定が無くなるフレーム数
+*/
+task SetCollisionDelay( let nFrame ){
+	let nCollisionA = FLAN_ENEMY_COLLISION_A;
+	let nCollisionB = FLAN_ENEMY_COLLISION_B;
+	FLAN_ENEMY_COLLISION_A = 0;
+	FLAN_ENEMY_COLLISION_B = 0;
+	loop( nFrame ){ yield; }
+	FLAN_ENEMY_COLLISION_A = nCollisionA;
+	FLAN_ENEMY_COLLISION_B = nCollisionB;
+}

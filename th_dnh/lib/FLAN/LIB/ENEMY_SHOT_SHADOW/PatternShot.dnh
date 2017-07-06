@@ -1,0 +1,338 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定型弾A
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	指定した座標から全方位弾を発射します。
+*	加速度・最大速度によってCreateShot01かCreateSHot02かを判別します。
+*	__RoundShot02のラッパーです。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nDelay 遅延フレーム時間
+*	@param nSpeed 初速度
+*	@param nAccelerate 加速度
+*	@param nMaxSpeed 最大速度
+*	@param nWay Way数
+*	@param nBaseAngle 基本角度
+*	@param nType 弾種
+*/
+function RoundShot( let nX, let nY, let nDelay, let nSpeed, let nAccelerate, let nMaxSpeed, let nWay, let nBaseAngle, let nType ){
+	__RoundShot02(
+		nX,				nX,				[],
+		nY,				nY,				[],
+		nDelay,			nDelay,			[],
+		nSpeed,			nSpeed,			[],
+		nAccelerate,	nAccelerate,	[],
+		nMaxSpeed,		nMaxSpeed,		[],
+		nWay,			[],
+		nBaseAngle,		nType
+	);
+}
+
+/**
+*	発射座標アニメーション付きで全方位弾を発射します。
+*	加速度・最大速度によってCreateShot01かCreateSHot02かを判別します。
+*	__RoundShot02のラッパーです。
+*
+*	@param nStartX モーション開始時のX座標
+*	@param nEndX モーション終了時のX座標
+*	@param anXParameter X座標変化のパラメータリスト
+*	@param nStartY モーション開始時のY座標
+*	@param nEndY モーション終了時のY座標
+*	@param anYParameter Y座標変化のパラメータリスト
+*	@param nDelay 遅延フレーム時間
+*	@param nSpeed 初速度
+*	@param nAccelerate 加速度
+*	@param nMaxSpeed 最大速度
+*	@param nWay Way数
+*	@param nBaseAngle 基本角度
+*	@param nType 弾種
+*/
+function RoundShotAnimationPos(
+	let nStartX,	let nEndX,		let anXParameter,
+	let nStartY,	let nEndY,		let anYParameter,
+	let nDelay,		let nSpeed,		let nAccelerate,	let nMaxSpeed,
+	let nWay,		let nBaseAngle,	let nType
+){
+	__RoundShot02(
+		nStartX,		nEndX,			anXParameter,
+		nStartY,		nEndY,			anYParameter,
+		nDelay,			nDelay,			[],
+		nSpeed,			nSpeed,			[],
+		nAccelerate,	nAccelerate,	[],
+		nMaxSpeed,		nMaxSpeed,		[],
+		nWay,			[],
+		nBaseAngle,		nType
+	);
+}
+
+/**
+*	指定した座標から遅延フレーム時間アニメーション付きで全方位弾を発射します。
+*	加速度・最大速度によってCreateShot01かCreateSHot02かを判別します。
+*	__RoundShot02のラッパーです。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nStartDelay モーション開始時遅延フレーム数
+*	@param nEndDelay モーション終了時の遅延フレーム数
+*	@param anDelayParameter 遅延フレーム数変化のパラメータリスト
+*	@param nSpeed 初速度
+*	@param nAccelerate 加速度
+*	@param nMaxSpeed 最大速度
+*	@param nWay Way数
+*	@param nBaseAngle 基本角度
+*	@param nType 弾種
+*/
+function RoundShotAnimationDelay(
+	let nX,				let nY,
+	let nStartDelay,	let nEndDelay,		let anDelayParameter,
+	let nSpeed,			let nAccelerate,	let nMaxSpeed,
+	let nWay,			let nBaseAngle,		let nType
+){
+	__RoundShot02(
+		nX,				nX,				[],
+		nY,				nY,				[],
+		nStartDelay,	nEndDelay,		anDelayParameter,
+		nSpeed,			nSpeed,			[],
+		nAccelerate,	nAccelerate,	[],
+		nMaxSpeed,		nMaxSpeed,		[],
+		nWay,			[],
+		nBaseAngle,		nType
+	);
+}
+
+/**
+*	指定した座標から速度アニメーション付きで全方位弾を発射します。
+*	加速度・最大速度によってCreateShot01かCreateSHot02かを判別します。
+*	__RoundShot02のラッパーです。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nDelay 遅延フレーム時間
+*	@param nStartSpeed モーション開始時の速度
+*	@param nEndSpeed モーション終了時の速度
+*	@param anSpeedParameter 速度変化のパラメータリスト
+*	@param nStartAccelerate モーション開始時の加速度
+*	@param nEndAccelerate モーション終了時の加速度
+*	@param anAccelerateParameter 加速度変化のパラメータリスト
+*	@param nStartMaxSpeed モーション開始時の最大速度
+*	@param nEndMaxSpeed モーション終了時の最大速度
+*	@param anMaxSpeedParameter 最大速度変化のパラメータリスト
+*	@param nWay Way数
+*	@param nBaseAngle 基本角度
+*	@param nType 弾種
+*/
+function RoundShotAnimationSpeed(
+	let nX,					let nY,				let nDelay,
+	let nStartSpeed,		let nEndSpeed,		let anSpeedParameter,
+	let nStartAccelerate,	let nEndAccelerate,	let anAccelerateParameter,
+	let nStartMaxSpeed,		let nEndMaxSpeed,	let anMaxSpeedParameter,
+	let nWay,				let nBaseAngle,		let nType
+){
+	__RoundShot02(
+		nX,					nX,				[],
+		nY,					nY,				[],
+		nDelay,				nDelay,			[],
+		nStartSpeed,		nEndSpeed,		anSpeedParameter,
+		nStartAccelerate,	nEndAccelerate,	anAccelerateParameter,
+		nStartMaxSpeed,		nEndMaxSpeed,	anMaxSpeedParameter,
+		nWay,				[],
+		nBaseAngle,			nType
+	);
+}
+
+/**
+*	指定した座標からWay弾を発射します。
+*	加速度・最大速度によってCreateShot01かCreateSHot02かを判別します。
+*	__WayShot02のラッパーです。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nDelay 遅延フレーム時間
+*	@param nSpeed 初速度
+*	@param nAccelerate 加速度
+*	@param nMaxSpeed 最大速度
+*	@param nWay Way数
+*	@param nTotalWayWidth Wayの射程に含まれる角度幅
+*	@param nBaseAngle 基本角度
+*	@param nType 弾種
+*/
+function WayShot( let nX, let nY, let nDelay, let nSpeed, let nAccelerate, let nMaxSpeed, let nWay, let nTotalWayWidth, let nBaseAngle, let nType ){
+	__WayShot02(
+		nX,				nX,				[],
+		nY,				nY,				[],
+		nDelay,			nDelay,			[],
+		nSpeed,			nSpeed,			[],
+		nAccelerate,	nAccelerate,	[],
+		nMaxSpeed,		nMaxSpeed,		[],
+		nWay,			nTotalWayWidth,	[],
+		nBaseAngle,		nType
+	);
+}
+
+
+/**
+*	発射座標アニメーション付きで全方位弾を発射します。
+*	加速度・最大速度によってCreateShot01かCreateSHot02かを判別します。
+*	__WayShot02のラッパーです。
+*
+*	@param nStartX モーション開始時のX座標
+*	@param nEndX モーション終了時のX座標
+*	@param anXParameter X座標変化のパラメータリスト
+*	@param nStartY モーション開始時のY座標
+*	@param nEndY モーション終了時のY座標
+*	@param anYParameter Y座標変化のパラメータリスト
+*	@param nDelay 遅延フレーム時間
+*	@param nSpeed 初速度
+*	@param nAccelerate 加速度
+*	@param nMaxSpeed 最大速度
+*	@param nWay Way数
+*	@param nTotalWayWidth Wayの射程に含まれる角度
+*	@param nBaseAngle 基本角度
+*	@param nType 弾種
+*/
+function WayShotAnimationPos(
+	let nStartX,	let nEndX,			let anXParameter,
+	let nStartY,	let nEndY,			let anYParameter,
+	let nDelay,		let nSpeed,			let nAccelerate,	let nMaxSpeed,
+	let nWay,		let nTotalWayWidth,	let nBaseAngle,		let nType
+){
+	__WayShot02(
+		nStartX,		nEndX,			anXParameter,
+		nStartY,		nEndY,			anYParameter,
+		nDelay,			nDelay,			[],
+		nSpeed,			nSpeed,			[],
+		nAccelerate,	nAccelerate,	[],
+		nMaxSpeed,		nMaxSpeed,		[],
+		nWay,			nTotalWayWidth,	[],
+		nBaseAngle,		nType
+	);
+}
+
+/**
+*	指定した座標から遅延フレーム時間アニメーション付きで全方位弾を発射します。
+*	加速度・最大速度によってCreateShot01かCreateSHot02かを判別します。
+*	__WayShot02のラッパーです。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nStartDelay モーション開始時遅延フレーム数
+*	@param nEndDelay モーション終了時の遅延フレーム数
+*	@param anDelayParameter 遅延フレーム数変化のパラメータリスト
+*	@param nSpeed 初速度
+*	@param nAccelerate 加速度
+*	@param nMaxSpeed 最大速度
+*	@param nWay Way数
+*	@param nTotalWayWidth Wayの射程に含まれる角度
+*	@param nBaseAngle 基本角度
+*	@param nType 弾種
+*/
+function WayShotAnimationDelay(
+	let nX,				let nY,
+	let nStartDelay,	let nEndDelay,		let anDelayParameter,
+	let nSpeed,			let nAccelerate,	let nMaxSpeed,
+	let nWay,			let nTotalWayWidth,	let nBaseAngle,		let nType
+){
+	__WayShot02(
+		nX,				nX,				[],
+		nY,				nY,				[],
+		nStartDelay,	nEndDelay,		anDelayParameter,
+		nSpeed,			nSpeed,			[],
+		nAccelerate,	nAccelerate,	[],
+		nMaxSpeed,		nMaxSpeed,		[],
+		nWay,			nTotalWayWidth,	[],
+		nBaseAngle,		nType
+	);
+}
+
+/**
+*	指定した座標から速度アニメーション付きで全方位弾を発射します。
+*	加速度・最大速度によってCreateShot01かCreateSHot02かを判別します。
+*	__WayShot02のラッパーです。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nDelay 遅延フレーム時間
+*	@param nStartSpeed モーション開始時の速度
+*	@param nEndSpeed モーション終了時の速度
+*	@param anSpeedParameter 速度変化のパラメータリスト
+*	@param nStartAccelerate モーション開始時の加速度
+*	@param nEndAccelerate モーション終了時の加速度
+*	@param anAccelerateParameter 加速度変化のパラメータリスト
+*	@param nStartMaxSpeed モーション開始時の最大速度
+*	@param nEndMaxSpeed モーション終了時の最大速度
+*	@param anMaxSpeedParameter 最大速度変化のパラメータリスト
+*	@param nWay Way数
+*	@param nTotalWayWidth Wayの射程に含まれる角度
+*	@param nBaseAngle 基本角度
+*	@param nType 弾種
+*/
+function WayShotAnimationSpeed(
+	let nX,					let nY,				let nDelay,
+	let nStartSpeed,		let nEndSpeed,		let anSpeedParameter,
+	let nStartAccelerate,	let nEndAccelerate,	let anAccelerateParameter,
+	let nStartMaxSpeed,		let nEndMaxSpeed,	let anMaxSpeedParameter,
+	let nWay,				let nTotalWayWidth,	let nBaseAngle,				let nType
+){
+	__WayShot02(
+		nX,					nX,				[],
+		nY,					nY,				[],
+		nDelay,				nDelay,			[],
+		nStartSpeed,		nEndSpeed,		anSpeedParameter,
+		nStartAccelerate,	nEndAccelerate,	anAccelerateParameter,
+		nStartMaxSpeed,		nEndMaxSpeed,	anMaxSpeedParameter,
+		nWay,				nTotalWayWidth,	[],
+		nBaseAngle,			nType
+	);
+}
+
+
+/**
+*	重力で加速する弾を発射します。
+*	CreateShot12のラッパーです。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nSpeed 弾速度
+*	@param nAngle 基本角度
+*	@param nGravitySpeed 重力の強さ
+*	@param nGravityAngle 重力の方向
+*	@param nType 弾種
+*	@param nDelay 遅延フレーム時間
+*/
+function GravityShot( let nX, let nY, let nSpeed, let nAngle, let nGravitySpeed, let nGravityAngle, let nType, let nDelay ){
+	let nAccelerateSpeedX = nGravitySpeed * cos( nGravityAngle );
+	let nAccelerateSpeedY = nGravitySpeed * sin( nGravityAngle );
+	CreateShot12( nX, nY, nSpeed * cos( nAngle ), nSpeed * sin( nAngle ), nAccelerateSpeedX, nAccelerateSpeedY, 99 * [ 1, -1 ][ nAccelerateSpeedX < 0 ], 99 * [ 1, -1 ][ nAccelerateSpeedY < 0 ], nType, nDelay );
+}

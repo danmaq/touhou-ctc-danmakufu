@@ -1,0 +1,710 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ3B　ボス　因幡 てゐ　ラストスペル
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[TewiB - ラストスペル]
+#Text[ステージ3B ボス
+因幡 てゐ]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Tewi.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+	/** 分身が生きているか配列 */
+	let CL_CD_MIRAGE_ALIVE = "MirageAlive";
+
+	/** 分身の座標配列 */
+	let CL_CD_MIRAGE_X = "MirageX";
+	let CL_CD_MIRAGE_Y = "MirageY";
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 本体が憑依している分身 */
+	let m_nHount = 2;
+	/** 本体を描画するか */
+	let m_bVanish = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDeadEffect = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( m_nLevel > 0 ){ m_nLevel --; }
+		SetTimer( 60 );
+		SetLife( 500 );
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+			let nBossID = CL_TTH_CHARACTER_NAME_EIYA + CL_TTH_CHARACTER_NAME_EIYA_TEWI;
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		}
+		else{
+			SetPosition( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y );
+			LastSpellEffect();
+		}
+		SetDamageRate( 16, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 361 );
+		BehaviorBoss( ACT_STAND3 );
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_ALIVE, [ false, false, false ] );
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_X, [ 0, 0, 0 ] );
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_Y, [ 0, 0, 0 ] );
+		VanishCheck();
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+		/** 個別終了設定 */
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_ALIVE );
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_X );
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_Y );
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		if( !m_bVanish ){ DrawBoss( m_szImageBoss ); }
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		if( !m_bStage || m_bSpellPractice ){
+			SetAction( ACT_MOVE, nFrame );
+			BossMoveHome( nFrame, false );
+		}
+		__Wait( 55 );
+		if( m_bDead ){ break; }
+
+		/** ボスID設定 */
+		if( m_bStage && !m_bSpellPractice ){
+			let nBossID = CL_TTH_CHARACTER_NAME_EIYA + CL_TTH_CHARACTER_NAME_EIYA_TEWI;
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		}
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_EIYA + CL_TTH_SPELL_STAGE3_BOSS_LAST + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+		if( m_bDead ){ break; }
+
+		let nAssign = 1;
+
+		/** 分身 */
+		SetAction( ACT_SHOT_B5, 120 );
+		PlaySEEx( sePower );
+		Concentration01( 120 );
+		__Wait( 120 );
+		if( m_bDead ){ break; }
+		SummonMirage( nAssign );
+		nAssign = - nAssign;
+
+		/** 憑依 */
+		HountMove( m_nHount );
+		MirageAliveCheck();
+		__Wait( 60 );
+
+		loop{
+
+			__Wait( 360 );
+			if( m_bDead ){ break; }
+
+			/** 分身 */
+			Concentration01( 60 );
+			__Wait( 60 );
+			if( m_bDead ){ break; }
+			SummonMirage( nAssign );
+			nAssign = - nAssign;
+			__Wait( 60 );
+			if( m_bDead ){ break; }
+
+		}
+
+	}
+
+	/**
+	*	分身
+	*	@param nAssign	割り振り係数
+	*/
+	task SummonMirage( let nAssign ){
+
+		let _nX = GetX();
+		let _nY = GetY();
+		let _nNumX = ( CL_MAX_X - CL_MIN_X ) / 3;
+		let nBaseX = CL_MIN_X + _nNumX / 2;
+		let anNumX = [ 0, _nNumX * 2, _nNumX ];
+		if( nAssign == - 1 ){ anNumX = [ _nNumX * 2, 0, _nNumX ]; }
+		let nBaseY = CL_MIN_Y;
+		let anNumY = [ 120, 120, 80 ];
+		let abMirageAlive = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_ALIVE );
+		let anMirageX = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_X );
+		let anMirageY = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_Y );
+		let _nReal = rand_int( 0, 2 );
+
+		PlaySEEx( seShadow );
+		ascent( let i in 0 .. 3 ){
+			let nX = nBaseX + anNumX[ i ];
+			let nY = nBaseY + anNumY[ i ];
+			CreateEnemyFromScript( "MirageTewi", _nX, _nY, 0, 0, [ nX, nY, i, _nReal ] );
+			abMirageAlive[ i ] = true;
+			anMirageX[ i ] = GetX();
+			anMirageY[ i ] = GetY();
+		}
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_ALIVE, abMirageAlive );
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_X, anMirageX );
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_Y, anMirageY );
+
+	}
+
+	/**
+	*	分身生存チェック
+	*/
+	task MirageAliveCheck{
+
+		loop{
+			let abMirageAlive = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_ALIVE );
+			if( !abMirageAlive[ m_nHount ] ){
+				loop( 2 ){
+					m_nHount ++;
+					if( m_nHount == 3 ){ m_nHount = 0; }
+					if( abMirageAlive[ m_nHount ] ){
+						_HountMove( m_nHount );
+						break;
+					}
+				}
+			}
+			yield;
+		}
+
+	}
+
+	/**
+	*	憑依先移動
+	*	@param _nHount	憑依先
+	*/
+	task _HountMove( let _nHount ){
+
+		descent( let i in 0 .. 15 ){
+			let nX = GetX();
+			let nY = GetY();
+			let abMirageAlive = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_ALIVE );
+			if( !abMirageAlive[ _nHount ] ){ break; }
+			let anMirageX = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_X );
+			let anMirageY = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_Y );
+			let nGapLength = GetGapLength( nX, nY, anMirageX[ _nHount ], anMirageY[ _nHount ] );
+			let nGapAngle = GetGapAngle( nX, nY, anMirageX[ _nHount ], anMirageY[ _nHount ] );
+			SetPosition( nX + nGapLength / i * cos( nGapAngle ), nY + nGapLength / i * sin( nGapAngle ) );
+			yield;
+		}
+		let abMirageAlive = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_ALIVE );
+		if( abMirageAlive[ _nHount ] ){ HountMove( _nHount ); }
+
+	}
+
+	/**
+	*	憑依
+	*	@param _nHount	憑依先
+	*/
+	task HountMove( let _nHount ){
+
+		loop{
+			let abMirageAlive = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_ALIVE );
+			if( !abMirageAlive[ _nHount ] || m_nHount != _nHount ){ break; }
+			let anMirageX = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_X );
+			let anMirageY = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_Y );
+			SetPosition( anMirageX[ _nHount ], anMirageY[ _nHount ] );
+			yield;
+		}
+
+	}
+
+	/**
+	*	消滅チェック
+	*/
+	task VanishCheck{
+
+		loop( 301 ){ yield; }
+		m_bVanish = true;
+		FLAN_ENEMY_COLLISION_A = 0;
+		FLAN_ENEMY_COLLISION_B = 0;
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	分身
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy MirageTewi{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\BossAnimation.dnh"
+	#include_function ".\INCLUDE\ShadowNoHidden.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ZAKO_ACTION_EXISTBOSS = FLAN_ZAKO_EXISTBOSS_NONEACTION;
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ENEMY_COLLISION_A = 32;
+	FLAN_ENEMY_COLLISION_B = 16;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+	/** 分身が生きているか配列 */
+	let CL_CD_MIRAGE_ALIVE = "MirageAlive";
+
+	/** 分身の座標配列 */
+	let CL_CD_MIRAGE_X = "MirageX";
+	let CL_CD_MIRAGE_Y = "MirageY";
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** ボス画像ファイル */
+	let m_szImageBoss = dotBossTewi;
+
+	/** 分身基本座標 */
+	let m_nX;
+	let m_nY;
+
+	/** 分身番号 */
+	let m_nNumber;
+
+	/** 本体が憑依している分身番号 */
+	let m_nReal;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		if( m_nLevel > 0 ){ m_nLevel --; }
+		m_bShadowLighting = false;
+		m_nShadowDeleteShot = 0;
+		m_nX = nArgv[ 0 ];
+		m_nY = nArgv[ 1 ];
+		m_nNumber = nArgv[ 2 ];
+		m_nReal = nArgv[ 3 ];
+		if( m_nNumber == m_nReal ){ SetLife( 500 ); }
+		else{ SetLife( 80 ); }
+		_SetDamageRateDelayEx( 16, 0, 100, 0, 60 );
+		BehaviorBoss( ACT_STAND3 );
+		_CheckBossLife();
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 返し弾 */
+		if( GetLife() <= 0 && GetEnemyLife() > 0 ){ ReturnShot(); }
+
+		/** ステータス設定 */
+		if( m_nNumber != m_nReal ){
+			let abMirageAlive = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_ALIVE );
+			abMirageAlive[ m_nNumber ] = false;
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_ALIVE, abMirageAlive );
+		}
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		if( m_nNumber != m_nReal ){
+			let scale = 0.6 + GetLife() / 80 * 0.4;
+			SetGraphicScale( scale, scale );
+		}
+		DrawBoss( m_szImageBoss );
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** ステータス設定 */
+		SetStatus();
+		_CheckBossLife();
+
+		/** 初期移動 */
+		_Move( m_nX, m_nY, 45 );
+		loop( 60 + 20 * m_nNumber ){ yield; }
+		if( m_bDead ){ break; }
+
+		loop( 4 ){
+
+			/** 全方向弾 */
+			RoundShotEx();
+			loop( 30 ){ yield; }
+			if( m_bDead ){ break; }
+
+			/** 移動 */
+			Move( 30 );
+			loop( 30 ){ yield; }
+			if( m_bDead ){ break; }
+
+		}
+		if( m_bDead ){ break; }
+
+		/** 全方向扇状直線弾 */
+		RoundWideLineShotEx();
+		loop( 120 - 20 * m_nNumber ){ yield; }
+		if( m_bDead ){ break; }
+
+		/** 消滅 */
+		if( m_nNumber == m_nReal ){
+			SetAction( ACT_SHOT_B5, 60 );
+			SetDamageRateEx( 16, 0, 10, 0 );
+			loop( 60 ){ yield; }
+		}
+		else{
+			let nFrame = 30;
+			let nDecelAlpha = 255 / nFrame;
+			let nAccelScale = 0.2;
+			Explosion01( GetX(), GetY(), nDecelAlpha, nAccelScale, nFrame );
+		}
+		if( m_bDead ){ break; }
+		VanishEnemy();
+
+	}
+
+	/**
+	*	全方向弾
+	*/
+	function RoundShotEx{
+
+		let nWay = 44 + 6 * m_nLevel;
+		let nSpeed = 6 + m_nLevel;
+		let nMaxSpeed = 1.5;
+		let nAccelSpeed = ( nMaxSpeed - nSpeed ) / 30;
+		let nAngle = rand( 0, 360 );
+		let nGraphic = [ US_RICE_S_RED, US_RICE_S_YELLOW, US_RICE_S_PURPLE ][ m_nNumber ];
+		let nDelay = 10;
+
+		SetAction( ACT_SHOT_A5, 60 );
+		PlaySEEx( seShot1 );
+		_RoundShot02( GetX(), GetY(), nSpeed, nAccelSpeed, nMaxSpeed, nAngle, nWay, nGraphic, nDelay );
+
+	}
+
+	/**
+	*	全方向扇状直線弾
+	*/
+	function RoundWideLineShotEx{
+
+		let nRoundWay = 8;
+		let nWideWay = 2 + m_nLevel;
+		let nNum = 8;
+		let nSpeed = 1.2;
+		let nMaxSpeed = 4 + 0.5 * m_nLevel;
+		let nAngle = 90 + RandBlur( 15 );
+		let nWideAngle = 3 * ( nWideWay - 1 );
+		let nGraphic = US_RICE_M_ORANGE;
+		let nDelay = 10;
+
+		SetAction( ACT_SHOT_A5, 60 );
+		PlaySEEx( seShot2 );
+		_RoundWideLineShot( GetX(), GetY(), nSpeed, nMaxSpeed, nAngle, nWideAngle, nWideWay, nRoundWay, nNum, nGraphic, nDelay );
+
+	}
+
+	/**
+	*	返し弾
+	*/
+	function ReturnShot{
+
+		let nNum = 3;
+		if( m_nLevel == 2 ){ nNum = 4; }
+		let nWay = 72;
+		let nBaseSpeed = 5;
+		let nAccelSpeed = - nBaseSpeed / 30;
+		let nWayAngle = 360 / nWay;
+
+		loop( nNum ){
+			let nAngle = rand( 0, 360 );
+			ascent( let i in 0 .. nWay ){
+				let nX = GetX();
+				let nY = GetY();
+				let nMaxSpeed = rand( 0.8, 2.4 );
+				let nSpeed = nBaseSpeed + nMaxSpeed;
+				CreateShot02( nX, nY, nSpeed, nAngle, nAccelSpeed, nMaxSpeed, US_BALL_SS_WHITE, 0 );
+				CreateShot02( nX + 10 * cos( nAngle ), nY + 10 * sin( nAngle ), nSpeed, nAngle, nAccelSpeed, nMaxSpeed, US_BALL_S_WHITE, 0 );
+				nAngle += nWayAngle;
+			}
+		}
+
+	}
+
+	/**
+	*	ステータス設定
+	*/
+	task SetStatus{
+
+		loop{
+			let anMirageX = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_X );
+			let anMirageY = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_Y );
+			anMirageX[ m_nNumber ] = GetX();
+			anMirageY[ m_nNumber ] = GetY();
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_X, anMirageX );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_MIRAGE_Y, anMirageY );
+			yield;
+		}
+
+	}
+
+	/**
+	*	ボスライフチェック
+	*/
+	task _CheckBossLife{
+
+		while( GetEnemyLife() > 0 ){ yield; }
+		FLAN_ENEMY_COLLISION_A = 0;
+		FLAN_ENEMY_COLLISION_B = 0;
+		m_bDead = true;
+
+	}
+
+	/**
+	*	基本移動
+	*	@param nFrame	移動完了までのフレーム数
+	*/
+	task Move( let nFrame ){
+
+		let _nX = GetX();
+		let _nY = GetY();
+		let nMoveX = rand( 20, 40 );
+		let nMoveY = rand( 0, 20 );
+		if( _nX >= m_nX ){ nMoveX = - nMoveX; }
+		if( _nY >= m_nY ){ nMoveY = - nMoveY; }
+		let nX = _nX + nMoveX;
+		let nY = _nY + nMoveY;
+		_Move( nX, nY, nFrame );
+
+	}
+
+	/**
+	*	移動
+	*	@param nX		移動先x座標
+	*	@param nY		移動先y座標
+	*	@param nFrame	移動完了までのフレーム数
+	*/
+	task _Move( let nX, let nY, let nFrame ){
+
+		let _nX = GetX();
+		let _nY = GetY();
+		let nForce = GetGapLength( _nX, _nY, nX, nY ) * 2;
+		let nAngle = GetGapAngle( _nX, _nY, nX, nY );
+
+		SetAction( ACT_MOVE, nFrame );
+		SetMovePositionHermite( nX, nY, nForce, nAngle, 0, 0, nFrame - 1 );
+		loop( nFrame - 1 ){ yield; }
+		if( m_bDead ){ break; }
+		SetMovePosition02( nX, nY, 1 );
+
+	}
+
+}

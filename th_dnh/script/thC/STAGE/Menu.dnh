@@ -16,22 +16,117 @@
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-let MENU_PHASE_MAIN				= 0;
-let MENU_PHASE_LEVEL			= 1;
-let MENU_PHASE_EXTRA			= 2;
-let MENU_PHASE_PRACTICE			= 3;
-let MENU_PHASE_RESULT			= 4;
-let MENU_PHASE_MUSIC			= 5;
-let MENU_PHASE_CONFIG			= 6;
-let MENU_PHASE_PRACTICE_STAGE	= 7;
-let MENU_PHASE_PRACTICE_SPELL	= 8;
-let MENU_PHASE_PRACTICE_BOSS	= 9;
-let MENU_PHASE_CONFIG_GRAPHIC	= 10;
-let MENU_PHASE_CONFIG_SOUND		= 11;
-let MENU_PHASE_CONFIG_BUTTON	= 12;
-let MENU_PHASE_RESET_CONFIG		= 13;
-let MENU_PHASE_RESET_ALL		= 14;
-let MENU_PHASE_SCENARIO			= 15;
+/**	タイトル画面背景フェードインのフレーム時間を定義します。 */
+let MENU_LOGO_FADEIN = 200;
+/**	タイトル画面メニューのフェードするフレーム時間を定義します。 */
+let MENU_FADE_INTERVAL = 50;
+/**	メニューがスクロール状態におけるタイトルの行位置を定義します。 */
+let MENU_SCROLL_TARGET = 4;
+
+
+//--------------------------------------------------------------------
+//	読み込むリソース関連のを定義します。
+//--------------------------------------------------------------------
+
+/**	メニューシーンで必要となる画像のリストです。 */
+let MENU_RESOURCE_LOAD_GRAPHIC = [
+	IMAGE_CL_WHITE,
+	imgSystemProgress,
+	IMAGE_CL_FONT_ASCII,
+	IMAGE_THC_LOGO_BG_FRAME,
+	IMAGE_THC_LOGO_BG_FIELD,
+	imgSystemLogo,
+	IMAGE_THC_LOGO_BG_MARISA
+] ~ IMAGE_CL_FONT_SJIS16;
+/**	メニューシーンで必要となる効果音のリストです。 */
+let MENU_RESOURCE_LOAD_SOUND = seListSystem;
+
+
+//--------------------------------------------------------------------
+//	メニューに対応するフェーズを定義します。
+//--------------------------------------------------------------------
+
+let MENU_PHASE_MAIN						= 1;
+let MENU_PHASE_LEVEL					= 2;
+let MENU_PHASE_LEVEL_EX					= 3;
+let MENU_PHASE_PRACTICE					= 4;
+let MENU_PHASE_MUSIC					= 5;
+let MENU_PHASE_CONFIG					= 6;
+let MENU_PHASE_PRACTICE_STAGE			= 7;
+let MENU_PHASE_PRACTICE_SPELL			= 8;
+let MENU_PHASE_CONFIG_GRAPHIC			= 9;
+let MENU_PHASE_CONFIG_SOUND				= 10;
+let MENU_PHASE_CONFIG_GAME				= 11;
+let MENU_PHASE_RESET_CONFIG				= 12;
+let MENU_PHASE_RESET_ALL				= 13;
+let MENU_PHASE_SCENARIO					= 14;
+let MENU_PHASE_PRACTICE_SPELL_ALL		= 15;
+let MENU_PHASE_PRACTICE_SPELL_CHAR		= 16;
+let MENU_PHASE_PRACTICE_SPELL_LEVEL		= 17;
+let MENU_PHASE_PRACTICE_SPELL_GOT		= 18;
+let MENU_PHASE_PRACTICE_SPELL_UNBEATEN	= 19;
+let MENU_PHASE_LAUNCH					= 20;
+let MENU_PHASE_LAUNCH_EX				= 21;
+let MENU_PHASE_LAUNCH_SPELL				= 22;
+
+
+//--------------------------------------------------------------------
+//	メニューの行数を定義します。
+//--------------------------------------------------------------------
+
+let MENU_SIZE_BOOLEAN				= 2;
+let MENU_SIZE_MAIN					= 5;
+let MENU_SIZE_LEVEL					= 4;
+let MENU_SIZE_LEVEL_EX				= 2;
+let MENU_SIZE_PRACTICE				= 2;
+let MENU_SIZE_STAGE					= 6;
+let MENU_SIZE_CONFIG				= 4;
+let MENU_SIZE_SPELL_SORT			= 5;
+let MENU_SIZE_MUSIC					= 38;
+let MENU_SIZE_CONFIG_GRAPHIC		= 5;
+let MENU_SIZE_CONFIG_SOUND			= 2;
+let MENU_SIZE_CONFIG_GAME			= 2;
+let MENU_SIZE_SCENARIO				= 4;
+let MENU_SIZE_PRACTICE_SPELL_ALL	= 360;
+
+
+//--------------------------------------------------------------------
+//	各メニューのロックを定義します。
+//--------------------------------------------------------------------
+
+let MENU_LOCK_MAIN					= [];	// 自動制御されるので空にしておく
+let MENU_LOCK_LEVEL					= [];
+let MENU_LOCK_LEVEL_EX				= [];
+let MENU_LOCK_PRACTICE				= [];
+let MENU_LOCK_STAGE					= [];
+let MENU_LOCK_CONFIG				= [ 4 ];
+let MENU_LOCK_SPELL_SORT			= [ 1, 2, 3, 4 ];
+let MENU_LOCK_MUSIC					= [];
+let MENU_LOCK_CONFIG_GRAPHIC		= [];
+let MENU_LOCK_CONFIG_SOUND			= [];
+let MENU_LOCK_CONFIG_GAME			= [];
+let MENU_LOCK_SCENARIO				= [];	// 自動制御されるので空にしておく
+let MENU_LOCK_PRACTICE_SPELL_ALL	= [];	// 自動制御されるので空にしておく
+
+
+//--------------------------------------------------------------------
+//	設定に対応するCommonDataのキーを定義します。
+//--------------------------------------------------------------------
+
+let MENU_CONFIG_KEY_GRAPHIC		= [ CL_CD_CONFIG_BGG, CL_CD_CONFIG_BGG_EFFECT, CL_CD_CONFIG_BGG_FOG, CL_CD_CONFIG_BGG_CLIP, CL_CD_CONFIG_FONT_PRERENDER ];
+let MENU_CONFIG_KEY_SOUND		= [ CL_CD_CONFIG_BGM, CL_CD_CONFIG_SE ];
+let MENU_CONFIG_KEY_GAME		= [ CL_CD_CONFIG_PLAYER, CL_CD_CONFIG_CONTINUE ];
+
+
+//--------------------------------------------------------------------
+//	CommonDataのキーに対応するデフォルト値を定義します。
+//--------------------------------------------------------------------
+
+let MENU_CONFIG_VALUE_GRAPHIC	= [ true, true, true, false, true ];
+let MENU_CONFIG_VALUE_SOUND		= [ true, true ];
+let MENU_CONFIG_VALUE_GAME		= [ 3, 1 ];
+let MENU_CONFIG_VALUE_MIN_GAME	= [ 1, 0 ];
+let MENU_CONFIG_VALUE_MAX_GAME	= [ 7, 6 ];
 
 
 //////////////////////////////////////////////////////////////////////
@@ -40,278 +135,378 @@ let MENU_PHASE_SCENARIO			= 15;
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	テキストテーブル
-let m_aszMainMenu = [ "Dream Start", "Extra Start", "Practice", "Result", "Music Room", "Configure" ];
-let m_aszLevel = [ "Easy", "Normal", "Hard", "Lunatic" ];
-let m_aszExLevel = [ "Extra", "Phantasm" ];
-let m_aszPractice = [ "Stage", "Spell", "Boss" ];
-let m_aszConfig = [ "Graphic Setting", "Sound Setting", "Button Setting", "Setting Reset", "Game Data All Reset" ];
-let m_aszStage = [ "1", "2", "3", "4", "5", "6" ];
-let m_aszScenario = [ "A", "B", "C", "D" ];
-let m_aszSpellSort = [ "All", "Char", "Level", "Got", "Unbeaten" ];
-let m_aszConfigGraphic = [ "BackGround Graphic", "BackGround Effect" ];
-let m_aszConfigSound = [ "BackGround Music", "Sound Effect", "Surround SE" ];
-let m_aszConfigButton = [ "Charge", "Enter", "Cancel" ];
+/**	メニューにおいて一番最初のフェードインかどうかが格納されます。 */
+let m_bMenuFirstFadeIn	= true;
+/**	プラクティスモードかどうかが格納されます。 */
+let m_bMenuPractice = false;
+/**	設定を変更したかどうかが格納されます。 */
+let m_bMenuModified = false;
+/**	スペルプラクティスにおける各スペルの解禁レベルのリストが格納されます。 */
+let m_anMenuSpellRelease;
 
-let m_aszCopyright = [ "(c)2006 danmaq", "All right reserved" ];
+let m_anTTHMenuSpellHistoryHiScore = [];
+let m_anTTHMenuSpellHistoryPercentage = [];
+let m_anTTHMenuSpellHistoryTry = [];
+let m_anTTHMenuSpellHistoryGet = [];
 
-let m_aszMenuDeleteFileListGraphic = [ imgSystemLogo ];
 
-//	メニューテキストハンドル
-let m_nTexTextHandleTitle = [];			//	タイトル画面
-let m_nTexTextHandleLevel = [];			//	難易度
-let m_nTexTextHandleExLevel = [];		//	エキストラ
-let m_nTexTextHandlePractice = [];		//	プラクティス
-let m_nTexTextHandleConfig = [];		//	コンフィグ
-let m_nTexTextHandleConfigGraphic = [];	//	グラフィック設定
-let m_nTexTextHandleConfigSound = [];	//	サウンド設定
-let m_nTexTextHandleConfigButton = [];	//	ボタン設定
-let m_nTexTextHandleStage = [];			//	ステージ名
-let m_nTexTextHandleSpellSort = [];		//	スペルソート
-let m_nTexTextHandleScenario = [];		//	シナリオセレクト
-let m_nTexTextHandleCopyright = [];		//	著作権表示
+//--------------------------------------------------------------------
+//	各メニューのカーソル位置を格納します。
+//--------------------------------------------------------------------
 
-//	メニューセレクト
-let m_nSelectMain = 0;
-let m_nSelectLevel = 1;
-let m_nSelectExLevel = 0;
-let m_nSelectPractice = 0;
-let m_nSelectConfig = 0;
-let m_nSelectStage = 0;
-let m_nSelectSpellSort = 0;
-let m_nSelectConfigGraphic = 0;
-let m_nSelectConfigSound = 0;
-let m_nSelectConfigButton = 0;
-let m_nSelectScenario = 0;
-
-//	メニューロック
-let m_anLockSelectMain = [ 1, 3, 4, 5 ];
-let m_anLockSelectLevel = [];
-let m_anLockSelectExLevel = [ 1 ];
-let m_anLockSelectPractice = [ 1, 2 ];
-let m_anLockSelectConfig = [];
-let m_anLockSelectStage = [ 3, 4, 5 ];
-let m_anLockSelectSpellSort = [];
-let m_anLockSelectConfigGraphic = [];
-let m_anLockSelectConfigSound = [];
-let m_anLockSelectConfigButton = [];
-let m_anLockSelectScenario = [ 1, 3 ];
-
-let m_bPractice = false;
+let m_nMenuCursorMain			= 0;
+let m_nMenuCursorLevel			= 1;
+let m_nMenuCursorLevelEx		= 0;
+let m_nMenuCursorPractice		= 0;
+let m_nMenuCursorConfig			= 0;
+let m_nMenuCursorStage			= 0;
+let m_nMenuCursorSpellSort		= 0;
+let m_nMenuCursorMusic			= 0;
+let m_nMenuCursorConfigGraphic	= 0;
+let m_nMenuCursorConfigSound	= 0;
+let m_nMenuCursorConfigGame		= 0;
+let m_nMenuCursorAllReset		= 1;
+let m_nMenuCursorScenario		= 0;
+let m_nMenuCursorSpellAll		= 0;
 
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	内部処理
+//	固有処理
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	タイトル背景を絵画する
-task ViewTitleBack(){
-	let objFill = Obj_Create( OBJ_EFFECT );
-	Obj_SetAutoDelete( objFill, false );
-	ObjEffect_SetTexture( objFill, imgSystemLogoBG );
-	ObjEffect_SetRenderState( objFill, ALPHA );
-	ObjEffect_SetPrimitiveType( objFill, PRIMITIVE_TRIANGLESTRIP );
-	ObjEffect_SetLayer( objFill, 8 );
-	ObjEffect_CreateVertex( objFill, 4 );
-	ascent( let i in 0..4 ){
-		ObjEffect_SetVertexXY( objFill, i, [ 0, 640 ][ trunc( i / 2 ) ], [ 0, 480 ][ i % 2 ] );
-		ObjEffect_SetVertexUV( objFill, i, [ 0, 640 ][ trunc( i / 2 ) ], [ 0, 480 ][ i % 2 ] );
-		ObjEffect_SetVertexColor( objFill, i, 255, 255, 255, 255 );
-	}
-	Obj_SetPosition( objFill, 0, 0 );
-
-	let objMarisa = Obj_Create( OBJ_EFFECT );
-	Obj_SetAutoDelete( objMarisa, false );
-	ObjEffect_SetTexture( objMarisa, imgSystemLogoMarisa );
-	ObjEffect_SetRenderState( objMarisa, ALPHA );
-	ObjEffect_SetPrimitiveType( objMarisa, PRIMITIVE_TRIANGLESTRIP );
-	ObjEffect_SetLayer( objMarisa, 8 );
-	ObjEffect_CreateVertex( objMarisa, 4 );
-	ascent( let i in 0..4 ){
-		ObjEffect_SetVertexXY( objMarisa, i, [ 0, 307 ][ trunc( i / 2 ) ], [ 0, 512 ][ i % 2 ] );
-		ObjEffect_SetVertexUV( objMarisa, i, [ 0, 384 ][ trunc( i / 2 ) ], [ 0, 640 ][ i % 2 ] );
-	}
-	Obj_SetPosition( objMarisa, 384, -32 );
-
-	let objLogo = Obj_Create( OBJ_EFFECT );
-	Obj_SetAutoDelete( objLogo, false );
-	ObjEffect_SetTexture( objLogo, imgSystemLogo );
-	ObjEffect_SetRenderState( objLogo, ALPHA );
-	ObjEffect_SetPrimitiveType( objLogo, PRIMITIVE_TRIANGLESTRIP );
-	ObjEffect_SetLayer( objLogo, 8 );
-	ObjEffect_CreateVertex( objLogo, 4 );
-	ascent( let i in 0..4 ){
-		ObjEffect_SetVertexXY( objLogo, i, [ 0, 256 ][ trunc( i / 2 ) ], [ 0, 128 ][ i % 2 ] );
-		ObjEffect_SetVertexUV( objLogo, i, [ 0, 256 ][ trunc( i / 2 ) ], [ 0, 128 ][ i % 2 ] );
-		ObjEffect_SetVertexColor( objLogo, i, 255, 255, 255, 255 );
-	}
-	Obj_SetPosition( objLogo, 128, 64 );
-
-	while( m_nStage == 0 ){ yield; }
-	Obj_Delete( objLogo );
-	Obj_Delete( objFill );
-	Obj_Delete( objMarisa );
-	DeleteGraphicList( m_aszMenuDeleteFileListGraphic, [] );
-}
-
-//	初期化
-function MainMenuInitialize(){
+/**
+*	メインメニュー用に特化した時間差ローダです。
+*
+*	@param aszGraphicFileList 画像ファイルのリスト
+*	@param aszEnemyFileList 敵スクリプトファイルのリスト
+*	@param aszSEFileList 効果音ファイルのリスト
+*/
+function LoadProgressMenu( let aszGraphicFileList, let aszEnemyFileList, let aszSEFileList ){
+	let anFrameObj = CreateFillScreenEffectObject( IMAGE_CL_BLACK, IMAGE_THC_BLACK_FRAME );
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, false );
+	SetRenderFrame( false );
+	SetDefaultStatusVisible( false );
 	ForbidBomb( true );
 	ForbidShot( true );
-	LoadProgress(
-		m_aszMenuDeleteFileListGraphic ~ [ imgSystemFontSmall, imgSystemProgress, imgSystemFont, imgMapWhite, imgSystemLogo, imgSystemLogoBG, imgSystemLogoMarisa ] ~ imgSystemFontSJIS16,
-		[ _enemyExtend ],
-		[ seCancel, seOk, seSelect ], imgSystemProgress, imgMapBlack
-	);
-	SetDefaultStatusVisible( false );
-	SetStage( 0 );
-	ViewTitleBack();
-	FontInitialize( imgSystemFontSmall, imgSystemFont, imgSystemFontSJIS16 );
-	ascent( let i in 0..length( m_aszMainMenu )			){ m_nTexTextHandleTitle			= m_nTexTextHandleTitle ~			[ CreateTexText48CacheObj( m_aszMainMenu[ i ] )					]; }
-	ascent( let i in 0..length( m_aszLevel )			){ m_nTexTextHandleLevel			= m_nTexTextHandleLevel ~			[ CreateTexText48CacheObj( m_aszLevel[ i ] )					]; }
-	ascent( let i in 0..length( m_aszExLevel )			){ m_nTexTextHandleExLevel			= m_nTexTextHandleExLevel ~			[ CreateTexText48CacheObj(  m_aszExLevel[ i ] )					]; }
-	ascent( let i in 0..length( m_aszPractice )			){ m_nTexTextHandlePractice			= m_nTexTextHandlePractice ~		[ CreateTexText48CacheObj( m_aszPractice[ i ] ~ " Practice" )	]; }
-	ascent( let i in 0..length( m_aszConfig )			){ m_nTexTextHandleConfig			= m_nTexTextHandleConfig ~			[ CreateTexText32CacheObj( m_aszConfig[ i ] )					]; }
-	ascent( let i in 0..length( m_aszStage )			){ m_nTexTextHandleStage			= m_nTexTextHandleStage ~			[ CreateTexText32CacheObj( "Stage " ~ m_aszStage[ i ] )			]; }
-	ascent( let i in 0..length( m_aszScenario )			){ m_nTexTextHandleScenario			= m_nTexTextHandleScenario ~		[ CreateTexText32CacheObj( "Scenario " ~ m_aszScenario[ i ] )	]; }
-	ascent( let i in 0..length( m_aszSpellSort )		){ m_nTexTextHandleSpellSort		= m_nTexTextHandleSpellSort ~		[ CreateTexText48CacheObj( m_aszSpellSort[ i ] )				]; }
-	ascent( let i in 0..length( m_aszConfigGraphic )	){ m_nTexTextHandleConfigGraphic	= m_nTexTextHandleConfigGraphic ~	[ CreateTexText32CacheObj( m_aszConfigGraphic[ i ] )			]; }
-	ascent( let i in 0..length( m_aszConfigSound )		){ m_nTexTextHandleConfigSound		= m_nTexTextHandleConfigSound ~		[ CreateTexText32CacheObj( m_aszConfigSound[ i ] )				]; }
-	ascent( let i in 0..length( m_aszConfigButton )		){ m_nTexTextHandleConfigButton		= m_nTexTextHandleConfigButton ~	[ CreateTexText32CacheObj( m_aszConfigButton[ i ] )				]; }
-	ascent( let i in 0..length( m_aszCopyright )		){ m_nTexTextHandleCopyright		= m_nTexTextHandleCopyright ~		[ CreateTexText16CacheObj( m_aszCopyright[ i ] )				]; }
-	PlayMusicEx( 1, "" );
+	let bEnableSE = GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_SE, true );
+	GosubPhase( PROGRESS_PHASE );
+	LoadResourceProgress( aszGraphicFileList, aszEnemyFileList, aszSEFileList );
+	while( m_nFlanLoadResourcePercentage != -1 ){
+		m_nFlanLoadResourcePercentage /= 10;
+		yield;
+	}
+	let anSpellHistoryInitializeList = CreateArray( CL_SPELL_TOTAL, 0 );
+	let anSpellHistoryHiScore	= GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_HISCORE,		anSpellHistoryInitializeList );
+	let anSpellHistoryTry		= GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_COUNT_TRY,	anSpellHistoryInitializeList );
+	let anSpellHistoryGet		= GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_COUNT_GET,	anSpellHistoryInitializeList );
+	m_anMenuSpellRelease		= GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_RELEASE,		anSpellHistoryInitializeList );
+	let nTTHZero = CreateTexText24Cache( "0" );
+	ascent( let i in 0..CL_SPELL_TOTAL ){
+		if( anSpellHistoryTry[ i ] == 0 ){ MENU_LOCK_PRACTICE_SPELL_ALL = MENU_LOCK_PRACTICE_SPELL_ALL ~ [ i ]; }
+		let nPercentage = truncate( anSpellHistoryGet[ i ] / Max( anSpellHistoryTry[ i ], 1 ) * 100 );
+		if( nPercentage					== 0 ){	m_anTTHMenuSpellHistoryPercentage	= m_anTTHMenuSpellHistoryPercentage	~ [ nTTHZero ]; }
+		else{									m_anTTHMenuSpellHistoryPercentage	= m_anTTHMenuSpellHistoryPercentage	~ [ CreateTexText24Cache( ToStringInt( nPercentage					) ) ]; }
+		if( anSpellHistoryHiScore[ i ]	== 0 ){	m_anTTHMenuSpellHistoryHiScore		= m_anTTHMenuSpellHistoryHiScore	~ [ nTTHZero ]; }
+		else{									m_anTTHMenuSpellHistoryHiScore		= m_anTTHMenuSpellHistoryHiScore	~ [ CreateTexText24Cache( ToStringInt( anSpellHistoryHiScore[ i	]	) ) ]; }
+		if( anSpellHistoryTry[ i ]		== 0 ){	m_anTTHMenuSpellHistoryTry			= m_anTTHMenuSpellHistoryTry		~ [ nTTHZero ]; }
+		else{									m_anTTHMenuSpellHistoryTry			= m_anTTHMenuSpellHistoryTry		~ [ CreateTexText24Cache( ToStringInt( anSpellHistoryTry[ i		]	) ) ]; }
+		if( anSpellHistoryGet[ i ]		== 0 ){	m_anTTHMenuSpellHistoryGet			= m_anTTHMenuSpellHistoryGet		~ [ nTTHZero ]; }
+		else{									m_anTTHMenuSpellHistoryGet			= m_anTTHMenuSpellHistoryGet		~ [ CreateTexText24Cache( ToStringInt( anSpellHistoryGet[ i		]	) ) ]; }
+		m_nFlanLoadResourcePercentage = Smooth( 10, 100, i, CL_SPELL_TOTAL );
+		if( GetFps() < 30 || i % 20 == 0 ){ yield; }
+	}
+	if( length( MENU_LOCK_PRACTICE_SPELL_ALL ) >= CL_SPELL_TOTAL ){ MENU_LOCK_PRACTICE = MENU_LOCK_PRACTICE ~ [ 1 ]; }
+	ascent( let i in 0..length( anFrameObj ) ){ Obj_Delete( anFrameObj[ i ] ); }
+	MovePlayerDefaultPosition();
+	ReturnPhase();
+	m_nFlanLoadResourcePercentage = -1;
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, true );
+	ForbidBomb( false );
+	ForbidShot( false );
 }
 
-//	フェーズごとのメニュー処理
-function MainMenuPhase(){
-	//	愚痴 : 弾幕風に変数の参照渡し機能があればここ超スマートに書けるんだが…orz
+/**
+*	メインメニューの初期化処理をします。
+*/
+function MainMenuInitialize(){
+	LoadProgressMenu( MENU_RESOURCE_LOAD_GRAPHIC, [], MENU_RESOURCE_LOAD_SOUND );
+	ForbidShot( true );
+	SetStage( 0 );
+	PlayMusicEx( 1 );
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, false );
+	if( !IsCanTryStageEX2() ){ MENU_LOCK_LEVEL_EX = MENU_LOCK_LEVEL_EX ~ [ 1 ]; }
+	if( !IsCanTryStageEX() ){ MENU_LOCK_MAIN = MENU_LOCK_MAIN ~ [ 1 ]; }
+	let nPlayerID = GetPlayerID();
+	ascent( let i in 1..6 ){	// ステージ1は無条件でロックしない
+		if( GetTryHistory( [ nPlayerID, PLAYER_OTHER ], [], [ i + 1 ], [], 0 ) == 0 ){ MENU_LOCK_STAGE = MENU_LOCK_STAGE ~ [ i ]; }
+	}
+	let anBGMList = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_HISTORY_BGM, CreateArray( length( bgmList ), 0 ) );
+	ascent( let i in 2..length( bgmList ) ){	// タイトルBGMは無条件でロックしない
+		if( anBGMList[ i ] == 0 ){ MENU_LOCK_MUSIC = MENU_LOCK_MUSIC ~ [ i - 1 ] };
+	}
+}
+
+/**
+*	メインメニューの終了処理をします。
+*/
+function MainMenuFinalize(){
+}
+
+/**
+*	タイトル画面の演出シーンの処理です。
+*	アニメ中も最初からメニュー選択可能となるのでマイクロスレッドとして並列動作させます。
+*/
+task DoMenuLogoPhase(){
+//	CreateFillScreenEffectObject( IMAGE_CL_BLACK, IMAGE_THC_BLACK_FRAME );
+	let anLogoBGObj = CreateFillScreenEffectObject( IMAGE_THC_LOGO_BG_FIELD, IMAGE_THC_LOGO_BG_FRAME );
+	DoAnimationMarisa();
+//	ascent( let i in 0..2 ){ ObjEffect_SetRenderState( anLogoBGObj[ i ], ADD ); }
+	loop( MENU_LOGO_FADEIN ){
+		let nBright = Accelerate( 0, 384, m_nFlanCount - m_nFlanStageTime, MENU_LOGO_FADEIN );
+		let nBrightR = MinMax( nBright,			0, 255 );
+		let nBrightG = MinMax( nBright - 96,	0, 255 );
+		let nBrightB = MinMax( nBright - 40,	0, 255 );
+		ascent( let j in 0..2 ){
+			ascent( let i in 0..4 ){
+				ObjEffect_SetVertexColor( anLogoBGObj[ j ], i, 255, nBrightR, nBrightG, nBrightB );
+			}
+		}
+		yield;
+	}
+//	while( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) == 0 ){ yield; }
+//	Obj_Delete( anLogoBGObj );
+}
+
+/**
+*	タイトル画面の魔理沙アニメーションの処理です。
+*	アニメ中も最初からメニュー選択可能となるのでマイクロスレッドとして並列動作させます。
+*/
+task DoAnimationMarisa(){
+	let nLogoBGMarisaObj = CreateSquareEffectObject( IMAGE_THC_LOGO_BG_MARISA, 320, 0, 308, 492, 308, 492 );
+	Obj_SetPosition( nLogoBGMarisaObj, 528, GetCenterY() );
+	ObjEffect_SetLayer( nLogoBGMarisaObj, 8 );
+	let nCount = 0;
+	loop{
+		__Wait( [ rand_int( 80, 360 ), 360 ][ nCount == 0 ] );
+		ascent( let i in 0..4 ){
+			ObjEffect_SetVertexUV( nLogoBGMarisaObj, i, 320 + [ 0, 320 ][ truncate( i / 2 ) ], [ 0, 492 ][ i % 2 ] );
+		}
+		__Wait( 5 );
+		ascent( let i in 0..4 ){
+			ObjEffect_SetVertexUV( nLogoBGMarisaObj, i, 640 + [ 0, 320 ][ truncate( i / 2 ) ], [ 0, 492 ][ i % 2 ] );
+		}
+		__Wait( rand_int( 1, 5 ) );
+		ascent( let i in 0..4 ){
+			ObjEffect_SetVertexUV( nLogoBGMarisaObj, i, [ 0, 320 ][ truncate( i / 2 ) ], [ 0, 492 ][ i % 2 ] );
+		}
+		nCount++;
+	}
+	Obj_Delete( nLogoBGMarisaObj );
+}
+
+/**
+*	タイトル画面のメニュー処理をします。
+*/
+function DoMenuSelectPhase(){
+	let nPlayerID = GetPlayerID();
+	//	愚痴 : 弾幕風に変数の参照渡し機能があればここ超スマートに書けそうなんだが…orz
 	alternative( GetPhase() )
-	case( MENU_PHASE_MAIN ){
+	case( MENU_PHASE_MAIN ){	// ◆メインメニュー
+		let m_nMenuFadeTime__ = MENU_FADE_INTERVAL;
+		if( m_bMenuFirstFadeIn ){
+			MENU_FADE_INTERVAL = 160;
+			m_bMenuFirstFadeIn = false;
+		}
 		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH ){
-			m_nSelectMain = MenuSelect( m_nSelectMain, seSelect, length( m_nTexTextHandleTitle ), m_anLockSelectMain );
 			yield;
+			m_nMenuCursorMain = MoveMenuCursorTHC( m_nMenuCursorMain, MENU_SIZE_MAIN, MENU_LOCK_MAIN );
 		}
-		IsMenuEnter( seOk, seCancel );
-		GosubPhase( m_nSelectMain + MENU_PHASE_LEVEL );
+		MENU_FADE_INTERVAL = m_nMenuFadeTime__;
+		IsSubmitMenuTHC();
+		GosubPhase( MENU_PHASE_LEVEL + m_nMenuCursorMain );
 	}
-	case( MENU_PHASE_LEVEL ){
-		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
-			m_nSelectLevel = MenuSelect( m_nSelectLevel, seSelect, length( m_nTexTextHandleLevel ), m_anLockSelectLevel );
+	case( MENU_PHASE_LEVEL ){	// ◆通常ステージ難易度選択
+		MENU_LOCK_SCENARIO = MENU_LOCK_SCENARIO[ 0..0 ];
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
 			yield;
+			m_nMenuCursorLevel = MoveMenuCursorTHC( m_nMenuCursorLevel, MENU_SIZE_LEVEL, MENU_LOCK_LEVEL );
 		}
-		if( !IsMenuEnter( seOk, seCancel ) ){ ReturnPhase(); }
-		else{ GosubPhase( MENU_PHASE_SCENARIO ); }
+		if( IsSubmitMenuTHC() ){
+			if( GetPlayerType() != USER_PLAYER || nPlayerID == PLAYER_OTHER ){ GosubPhase( MENU_PHASE_SCENARIO ); }
+			else{
+				m_nMenuCursorScenario = nPlayerID;
+				if( !m_bMenuPractice ){
+					ascent( let i in 0..4 ){
+						if( i != nPlayerID && GetClearHistory( [], [ i ], [ 6 ], [ m_nMenuCursorLevel ], 0, 0, 0 ) == 0 ){ MENU_LOCK_SCENARIO = MENU_LOCK_SCENARIO ~ [ i ]; }
+					}
+				}
+				else{
+					ascent( let i in 0..4 ){
+						if( i != nPlayerID && GetTryHistory( [ nPlayerID, PLAYER_OTHER ], [ i ], [ m_nMenuCursorStage ], [ m_nMenuCursorLevel ], 0 ) == 0 ){ MENU_LOCK_SCENARIO = MENU_LOCK_SCENARIO ~ [ i ]; }
+					}
+				}
+				GosubPhase( [ MENU_PHASE_LAUNCH, MENU_PHASE_SCENARIO ][ length( MENU_LOCK_SCENARIO ) < 3 || ( IsDebugMode() && m_bFlanKeySlow ) ] );
+			}
+		}
+		else{ ReturnPhase(); }
 	}
-	case( MENU_PHASE_EXTRA ){
-		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
-			m_nSelectExLevel = MenuSelect( m_nSelectExLevel, seSelect, length( m_nTexTextHandleExLevel ), m_anLockSelectExLevel );
+	case( MENU_PHASE_LEVEL_EX ){	// ◆エキストラステージ選択
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
 			yield;
+			m_nMenuCursorLevelEx = MoveMenuCursorTHC( m_nMenuCursorLevelEx, MENU_SIZE_LEVEL_EX, MENU_LOCK_LEVEL_EX );
 		}
-		IsMenuEnter( seOk, seCancel );
-		ReturnPhase();
+		if( IsSubmitMenuTHC() ){ SetPhase( MENU_PHASE_LAUNCH_EX ); }
+		else{ ReturnPhase(); }
 	}
-	case( MENU_PHASE_PRACTICE ){
-		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
-			m_nSelectPractice = MenuSelect( m_nSelectPractice, seSelect, length( m_nTexTextHandlePractice ), m_anLockSelectPractice );
+	case( MENU_PHASE_PRACTICE ){	// ◆プラクティスモード選択
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
 			yield;
+			m_nMenuCursorPractice = MoveMenuCursorTHC( m_nMenuCursorPractice, MENU_SIZE_PRACTICE, MENU_LOCK_PRACTICE );
 		}
-		if( !IsMenuEnter( seOk, seCancel ) ){
-			m_bPractice = false;
+		m_bMenuPractice = IsSubmitMenuTHC();
+		if( m_bMenuPractice ){ GosubPhase( [ MENU_PHASE_PRACTICE_STAGE, MENU_PHASE_PRACTICE_SPELL_ALL ][ m_nMenuCursorPractice ] ); }
+		else{ ReturnPhase(); }
+	}
+	case( MENU_PHASE_MUSIC ){	// ◆音楽室
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
+			yield;
+			m_nMenuCursorMusic = MoveMenuCursorTHC( m_nMenuCursorMusic, MENU_SIZE_MUSIC, MENU_LOCK_MUSIC );
+		}
+		if( IsSubmitMenuTHC() ){
+			PlayMusicEx( m_nMenuCursorMusic + 1 );
+			m_bMenuModified = true;
+		}
+		else{
+			if( m_bMenuModified ){
+				PlayMusicEx( 1 );
+				m_bMenuModified = false;
+			}
 			ReturnPhase();
 		}
-		else{
-			m_bPractice = true;
-			GosubPhase( m_nSelectPractice + MENU_PHASE_PRACTICE_STAGE );
-		}
 	}
-	case( MENU_PHASE_RESULT ){ ReturnPhase(); }
-	case( MENU_PHASE_MUSIC ){ ReturnPhase(); }
-	case( MENU_PHASE_CONFIG ){
-		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
-			m_nSelectConfig = MenuSelect( m_nSelectConfig, seSelect, length( m_nTexTextHandleConfig ), m_anLockSelectConfig );
+	case( MENU_PHASE_CONFIG ){	// ◆設定-メイン
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
 			yield;
+			m_nMenuCursorConfig = MoveMenuCursorTHC( m_nMenuCursorConfig, MENU_SIZE_CONFIG, MENU_LOCK_CONFIG );
 		}
-		if( !IsMenuEnter( seOk, seCancel ) ){ ReturnPhase(); }
-		else{ GosubPhase( m_nSelectConfig + MENU_PHASE_CONFIG_GRAPHIC ); }
+		if( IsSubmitMenuTHC() ){ GosubPhase( MENU_PHASE_CONFIG_GRAPHIC + m_nMenuCursorConfig ); }
+		else{ ReturnPhase(); }
 	}
-	case( MENU_PHASE_PRACTICE_STAGE ){
-		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
-			m_nSelectStage = MenuSelect( m_nSelectStage, seSelect, length( m_nTexTextHandleStage ), m_anLockSelectStage );
+	case( MENU_PHASE_PRACTICE_STAGE ){	// ◆ステージプラクティス
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
 			yield;
+			m_nMenuCursorStage = MoveMenuCursorTHC( m_nMenuCursorStage, MENU_SIZE_STAGE, MENU_LOCK_STAGE );
 		}
-		if( !IsMenuEnter( seOk, seCancel ) ){ ReturnPhase(); }
-		else{ GosubPhase( MENU_PHASE_LEVEL ); }
-	}
-	case( MENU_PHASE_PRACTICE_SPELL ){
-		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
-			m_nSelectSpellSort = MenuSelect( m_nSelectSpellSort, seSelect, length( m_nTexTextHandleSpellSort ), m_anLockSelectSpellSort );
-			yield;
-		}
-		IsMenuEnter( seOk, seCancel );
-		ReturnPhase();
-	}
-	case( MENU_PHASE_PRACTICE_BOSS ){ ReturnPhase(); }
-	case( MENU_PHASE_CONFIG_GRAPHIC ){
-		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
-			m_nSelectConfigGraphic = MenuSelect( m_nSelectConfigGraphic, seSelect, length( m_nTexTextHandleConfigGraphic ), m_anLockSelectConfigGraphic );
-			yield;
-		}
-		IsMenuEnter( seOk, seCancel );
-		ReturnPhase();
-	}
-	case( MENU_PHASE_CONFIG_SOUND ){
-		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
-			m_nSelectConfigSound = MenuSelect( m_nSelectConfigSound, seSelect, length( m_nTexTextHandleConfigSound ), m_anLockSelectConfigSound );
-			yield;
-		}
-		IsMenuEnter( seOk, seCancel );
-		ReturnPhase();
-	}
-	case( MENU_PHASE_CONFIG_BUTTON ){
-		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
-			m_nSelectConfigButton = MenuSelect( m_nSelectConfigButton, seSelect, length( m_nTexTextHandleConfigButton ), m_anLockSelectConfigButton );
-			yield;
-		}
-		IsMenuEnter( seOk, seCancel );
-		ReturnPhase();
-	}
-	case( MENU_PHASE_RESET_CONFIG ){ ReturnPhase(); }
-	case( MENU_PHASE_RESET_ALL ){ ReturnPhase(); }
-	case( MENU_PHASE_SCENARIO ){
-		//	TODO : 体験版までには自機魔理沙における分岐に置き換える
-		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
-			m_nSelectScenario = MenuSelect( m_nSelectScenario, seSelect, length( m_nTexTextHandleScenario ), m_anLockSelectScenario );
-			yield;
-		}
-		if( !IsMenuEnter( seOk, seCancel ) ){ ReturnPhase(); }
-		else{
-			m_nStageLevel = m_nSelectLevel;
-			m_nScenario = m_nSelectScenario;
-			SetCommonData( CD_STAGE_SCENARIO, m_nScenario );
-			m_hTTCacheStageLevel = CreateTexText16Cache( m_aszLevel[ m_nStageLevel ] );
-			SetDefaultStatusVisible( true );
-			ClearPhase();
-			SetCommonData( CD_STAGE_PRACTICE, m_bPractice );
-			ClearTexTextHandleObj();
-			InitializeResult();
-			StopMusic();
-			if( !m_bPractice ){ Stage1(); }
-			else{
-				SetCommonData( CD_ITEM_POWER, 128 );
-				ExtendPlayer( 8 - GetPlayerLife() );
-				AddBomb( 7 - GetPlayerBomb() );
-				alternative( m_nSelectStage )
-				case( 0 ){ Stage1(); }
-				case( 1 ){ Stage2(); }
-				case( 2 ){ Stage3(); }
-				case( 3 ){ Stage4(); }
-				case( 4 ){ Stage5(); }
-				case( 5 ){ Stage6(); }
+		if( IsSubmitMenuTHC() ){
+			ascent( let i in 1..4 ){	// EASYは無条件でロックしない
+				if( GetTryHistory( [ nPlayerID, PLAYER_OTHER ], [], [ m_nMenuCursorStage ], [ i ], 0 ) == 0 ){
+					MENU_LOCK_LEVEL = MENU_LOCK_LEVEL ~ [ i ];
+				}
 			}
-			return false;
+			GosubPhase( MENU_PHASE_LEVEL );
 		}
+		else{ ReturnPhase(); }
+	}
+	case( MENU_PHASE_PRACTICE_SPELL ){	// ◆スペルプラクティス
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
+			yield;
+			m_nMenuCursorSpellSort = MoveMenuCursorTHC( m_nMenuCursorSpellSort, MENU_SIZE_SPELL_SORT, MENU_LOCK_SPELL_SORT );
+		}
+		if( IsSubmitMenuTHC() ){ GosubPhase( MENU_PHASE_PRACTICE_SPELL_ALL + m_nMenuCursorSpellSort ); }
+		else{ ReturnPhase(); }
+	}
+	case( MENU_PHASE_CONFIG_GRAPHIC ){	// ◆設定-グラフィック
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
+			yield;
+			m_nMenuCursorConfigGraphic = MoveMenuCursorTHC( m_nMenuCursorConfigGraphic, MENU_SIZE_CONFIG_GRAPHIC, MENU_LOCK_CONFIG_GRAPHIC );
+		}
+		if( IsSubmitMenuTHC() ){
+			MenuBooleanConfigSubmit( m_nMenuCursorConfigGraphic, CL_CDNS_CONFIG, MENU_CONFIG_KEY_GRAPHIC, MENU_CONFIG_VALUE_GRAPHIC );
+			m_bMenuModified = true;
+		}
+		else{
+			if( m_bMenuModified ){
+				SaveCommonDataEx( CL_CDNS_CONFIG, CL_CDFILE_CONFIG );
+				m_bMenuModified = false;
+			}
+			ReturnPhase();
+		}
+	}
+	case( MENU_PHASE_CONFIG_SOUND ){	// ◆設定-サウンド
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
+			yield;
+			m_nMenuCursorConfigSound = MoveMenuCursorTHC( m_nMenuCursorConfigSound, MENU_SIZE_CONFIG_SOUND, MENU_LOCK_CONFIG_SOUND );
+		}
+		if( IsSubmitMenuTHC() ){
+			MenuBooleanConfigSubmit( m_nMenuCursorConfigSound, CL_CDNS_CONFIG, MENU_CONFIG_KEY_SOUND, MENU_CONFIG_VALUE_SOUND );
+			m_bMenuModified = true;
+		}
+		else{
+			if( m_bMenuModified ){
+				SaveCommonDataEx( CL_CDNS_CONFIG, CL_CDFILE_CONFIG );
+				m_bMenuModified = false;
+			}
+			ReturnPhase();
+		}
+	}
+	case( MENU_PHASE_CONFIG_GAME ){	// ◆設定-ゲーム
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
+			yield;
+			m_nMenuCursorConfigGame = MoveMenuCursorTHC( m_nMenuCursorConfigGame, MENU_SIZE_CONFIG_GAME, MENU_LOCK_CONFIG_GAME );
+		}
+		if( IsSubmitMenuTHC() ){
+			MenuRealConfigSubmit( m_nMenuCursorConfigGame, CL_CDNS_CONFIG, MENU_CONFIG_KEY_GAME, MENU_CONFIG_VALUE_GAME, MENU_CONFIG_VALUE_MIN_GAME, MENU_CONFIG_VALUE_MAX_GAME );
+			m_bMenuModified = true;
+		}
+		else{
+			if( m_bMenuModified ){
+				SaveCommonDataEx( CL_CDNS_CONFIG, CL_CDFILE_CONFIG );
+				m_bMenuModified = false;
+			}
+			ReturnPhase();
+		}
+	}
+	case( MENU_PHASE_RESET_CONFIG ){	// ◆設定-設定リセット
+		ClearCommonDataEx( CL_CDNS_CONFIG );
+		SaveCommonDataEx( CL_CDNS_CONFIG, CL_CDFILE_CONFIG );
+		__Wait( MENU_FADE_INTERVAL + 10 );
+		ReturnPhase();
+	}
+	case( MENU_PHASE_SCENARIO ){	// ◆シナリオ選択
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
+			yield;
+			m_nMenuCursorScenario = MoveMenuCursorTHC( m_nMenuCursorScenario, MENU_SIZE_SCENARIO, MENU_LOCK_SCENARIO );
+		}
+		if( IsSubmitMenuTHC() ){ SetPhase( MENU_PHASE_LAUNCH ); }
+		else{ ReturnPhase(); }
+	}
+	case( MENU_PHASE_PRACTICE_SPELL_ALL ){	// ◆スペルプラクティス全検索
+		let anLockList;
+		if( IsDebugMode() ){ anLockList = []; }
+		else{ anLockList = MENU_LOCK_PRACTICE_SPELL_ALL; }
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
+			yield;
+			m_nMenuCursorSpellAll = MoveMenuCursorTHC( m_nMenuCursorSpellAll, MENU_SIZE_PRACTICE_SPELL_ALL, anLockList );
+		}
+		if( IsSubmitMenuTHC() ){ SetPhase( MENU_PHASE_LAUNCH_SPELL ); }
+		else{ ReturnPhase(); }
+	}
+	case( MENU_PHASE_LAUNCH ){	// ◆ステージをレジュームに入れて再起動
+		FadeOutMusic( bgmList[ 1 ], 100 );
+		__Wait( MENU_FADE_INTERVAL + 10 );
+		SetResume( m_nMenuCursorScenario, m_nMenuCursorStage, m_nMenuCursorLevel, m_bMenuPractice );
+	}
+	case( MENU_PHASE_LAUNCH_EX ){	// ◆ステージをレジュームに入れて再起動
+		FadeOutMusic( bgmList[ 1 ], 100 );
+		__Wait( MENU_FADE_INTERVAL + 10 );
+		SetResume( 0, m_nMenuCursorLevelEx + 10, m_nMenuCursorLevelEx, false );
+	}
+	case( MENU_PHASE_LAUNCH_SPELL ){	// ◆ステージをレジュームに入れて再起動
+		FadeOutMusic( bgmList[ 1 ], 100 );
+		__Wait( MENU_FADE_INTERVAL + 10 );
+		SetResumeSpell( m_nMenuCursorSpellAll );
 	}
 	return true;
 }
@@ -319,47 +514,122 @@ function MainMenuPhase(){
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	メイン部
+//	固有処理(絵画)
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	メインタスク
+/**
+*	各種メニューの絵画処理です。
+*
+*	@param nPhase
+*	@param nPhaseCount
+*	@param nCount
+*/
+function DrawMenu( let nPhase, let nPhaseCount, let nCount ){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	let nNowPhase = anStackData[ 0 ];
+	alternative( nPhase )
+	case( MENU_PHASE_MAIN				){ __DrawMenu( MENU_PHASE_MAIN,					8, 30, 96,	208, 80, 384, -1, -3,	CL_TTHBASE_MENU_MAIN,					CL_TTHBASE_DESCRIPTION_MAIN,				MENU_SIZE_MAIN,					m_nMenuCursorMain,			MENU_LOCK_MAIN			); }
+	case( MENU_PHASE_LEVEL				){ __DrawMenu( MENU_PHASE_LEVEL,				8, 30, 96,	208, 80, 384, -1, -3,	CL_TTHBASE_MENU_LEVEL,					CL_TTHBASE_DESCRIPTION_LEVEL,				MENU_SIZE_LEVEL,				m_nMenuCursorLevel,			MENU_LOCK_LEVEL			); }
+	case( MENU_PHASE_LEVEL_EX			){ __DrawMenu( MENU_PHASE_LEVEL_EX,				8, 30, 96,	208, 80, 384, -1, -3,	CL_TTHBASE_MENU_LEVEL_EX,				CL_TTHBASE_DESCRIPTION_LEVEL_EX,			MENU_SIZE_LEVEL_EX,				m_nMenuCursorLevelEx,		MENU_LOCK_LEVEL_EX		); }
+	case( MENU_PHASE_PRACTICE			){ __DrawMenu( MENU_PHASE_PRACTICE,				8, 30, 96,	208, 80, 384, -1, -3,	CL_TTHBASE_MENU_PRACTICE,				CL_TTHBASE_DESCRIPTION_PRACTICE,			MENU_SIZE_PRACTICE,				m_nMenuCursorPractice,		MENU_LOCK_PRACTICE		); }
+	case( MENU_PHASE_CONFIG				){ __DrawMenu( MENU_PHASE_CONFIG,				0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG,					CL_TTHBASE_DESCRIPTION_CONFIG,				MENU_SIZE_CONFIG,				m_nMenuCursorConfig,		MENU_LOCK_CONFIG		); }
+	case( MENU_PHASE_PRACTICE_STAGE		){ __DrawMenu( MENU_PHASE_PRACTICE_STAGE,		8, 30, 96,	208, 48, 384, -1, -2,	CL_TTHBASE_STAGE,						CL_TT_INVALID,								MENU_SIZE_STAGE,				m_nMenuCursorStage,			MENU_LOCK_STAGE			); }
+	case( MENU_PHASE_PRACTICE_SPELL		){ __DrawMenu( MENU_PHASE_PRACTICE_SPELL,		8, 30, 96,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_PRACTICE_SPELL_SORT,	CL_TTHBASE_DESCRIPTION_PRACTICE_SPELL_SORT,	MENU_SIZE_SPELL_SORT,			m_nMenuCursorSpellSort,		MENU_LOCK_SPELL_SORT	); }
+	case( MENU_PHASE_SCENARIO			){ __DrawMenu( MENU_PHASE_SCENARIO,				8, 30, 96,	208, 48, 384, -1, -3,	CL_TTHBASE_SCENARIO,					CL_TT_INVALID,								MENU_SIZE_SCENARIO,				m_nMenuCursorScenario,		MENU_LOCK_SCENARIO		); }
+	case( MENU_PHASE_PRACTICE_SPELL_ALL	){
+		__DrawMenu( MENU_PHASE_PRACTICE_SPELL_ALL, 0, 20, 80, 208, 48, 384, -1, -2, CL_TTHBASE_SPELL_NAME, CL_TT_INVALID, MENU_SIZE_PRACTICE_SPELL_ALL, m_nMenuCursorSpellAll, MENU_LOCK_PRACTICE_SPELL_ALL );
+		let nBaseX = 64;
+		let nBaseY = 176;
+		if( nNowPhase == nPhase ){
+			SetAlpha( Accelerate( 0, 255, m_nFlanPhaseCount, MENU_FADE_INTERVAL ) );
+			DrawTexTextOnCache( CL_TTHBASE_SPELL_INFOMATION + CL_TTH_SPELL_INFOMATION_SCORE_HIGH, 0, 0, nBaseX, nBaseY );
+			DrawTexTextOnCache( CL_TTHBASE_SPELL_INFOMATION + CL_TTH_SPELL_INFOMATION_HISTORY, 0, 0, nBaseX, nBaseY + 20 );
+			DrawTexTextOnCache( CL_TTHBASE_SPELL_INFOMATION + CL_TTH_SPELL_INFOMATION_SLASH, 0, 0, nBaseX + 160, nBaseY + 20 );
+			DrawTexTextOnCache( CL_TTHBASE_SPELL_INFOMATION + CL_TTH_SPELL_INFOMATION_PERCENTAGE, 0, 0, nBaseX + 288, nBaseY + 20 );
+			DrawTexTextOnCache( m_anTTHMenuSpellHistoryHiScore[ m_nMenuCursorSpellAll ], 0, 0, nBaseX + 160, nBaseY );
+			DrawTexTextOnCache( m_anTTHMenuSpellHistoryGet[ m_nMenuCursorSpellAll ], 0, 0, nBaseX + 120, nBaseY + 20 );
+			DrawTexTextOnCache( m_anTTHMenuSpellHistoryTry[ m_nMenuCursorSpellAll ], 0, 0, nBaseX + 176, nBaseY + 20 );
+			DrawTexTextOnCache( m_anTTHMenuSpellHistoryPercentage[ m_nMenuCursorSpellAll ], 0, 0, nBaseX + 240, nBaseY + 20 );
+			DrawTexTextOnCache( [ CL_TTH_DESCRIPTION_SECRET, CL_TTHBASE_SPELL_DESCRIPTION + m_nMenuCursorSpellAll ][ m_anMenuSpellRelease[ m_nMenuCursorSpellAll ] == CL_SPELL_HISTORY_RELEASE_LEVEL_COMMENT ], -1, -7, 48, 368 );
+		}
+	}
+	case( MENU_PHASE_MUSIC				){
+		__DrawMenu( MENU_PHASE_MUSIC, 0, 20, 80, 144, 48, 300, -2, -2, CL_TTHBASE_BGM_TITLE, CL_TTHBASE_BGM_DESCRIPTION, MENU_SIZE_MUSIC, m_nMenuCursorMusic, MENU_LOCK_MUSIC );
+		if( nNowPhase == nPhase ){
+			SetAlpha( Accelerate( 0, 255, m_nFlanPhaseCount, MENU_FADE_INTERVAL ) );
+			let nNowTime = GetTime() - m_nStageStartMusicSystemTime;
+			DrawTexTextOnCache( CL_TTH_MUSIC_MARKER, 0, 0, 48, 384 + Smooth( -2, 3, nNowTime % 1000, 1000 ) );
+			DrawTexTextOnCache( CL_TTHBASE_BGM_TITLE + m_nStageMusicIndex, -2, 0, 68, 384 );
+			DrawTexTextOnCache( CL_TTHBASE_NUMBER + truncate( nNowTime / 60000 ), 0, 0, 80, 408 );
+			DrawTexTextOnCache( CL_TTH_MUSIC_SECOND, 0, 0, 104, 408 );
+			DrawTexTextOnCache( CL_TTHBASE_NUMBER + truncate( nNowTime / 1000 ) % 60, 0, 0, 116, 408 );
+		}
+	}
+	case( MENU_PHASE_CONFIG_GRAPHIC		){
+		__DrawMenu( MENU_PHASE_CONFIG_GRAPHIC,	0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG_GRAPHIC,	CL_TTHBASE_DESCRIPTION_CONFIG_GRAPHIC,	MENU_SIZE_CONFIG_GRAPHIC,	m_nMenuCursorConfigGraphic,	MENU_LOCK_CONFIG_GRAPHIC	);
+		if( nNowPhase == nPhase ){ __DrawMenuConfigBoolean( MENU_CONFIG_KEY_GRAPHIC, MENU_CONFIG_VALUE_GRAPHIC, 30, 352, 208, m_nMenuCursorConfigGraphic, MENU_LOCK_CONFIG_GRAPHIC ); }
+	}
+	case( MENU_PHASE_CONFIG_SOUND		){
+		__DrawMenu( MENU_PHASE_CONFIG_SOUND,	0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG_SOUND,	CL_TTHBASE_DESCRIPTION_CONFIG_SOUND,	MENU_SIZE_CONFIG_SOUND,		m_nMenuCursorConfigSound,	MENU_LOCK_CONFIG_SOUND		);
+		if( nNowPhase == nPhase ){ __DrawMenuConfigBoolean( MENU_CONFIG_KEY_SOUND, MENU_CONFIG_VALUE_SOUND, 30, 352, 208, m_nMenuCursorConfigSound, MENU_LOCK_CONFIG_SOUND ); }
+	}
+	case( MENU_PHASE_CONFIG_GAME		){
+		__DrawMenu( MENU_PHASE_CONFIG_GAME,		0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG_GAME,	CL_TTHBASE_DESCRIPTION_CONFIG_GAME,		MENU_SIZE_CONFIG_GAME,		m_nMenuCursorConfigGame,	MENU_LOCK_CONFIG_GAME		);
+		if( nNowPhase == nPhase ){ __DrawMenuConfigReal( MENU_CONFIG_KEY_GAME, MENU_CONFIG_VALUE_GAME, 30, 352, 208, m_nMenuCursorConfigGame, MENU_LOCK_CONFIG_GAME ); }
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	共通インターフェイス処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	固有動作のタスクです。
+*	スクリプト開始1フレーム後にステージスクリプト本体より呼び出されます。
+*/
 task MainMenu(){
 	MainMenuInitialize();
-	ascent( let i in 0..2 ){ ViewTexTextObj( m_nTexTextHandleCopyright[ i ], 0, 480, 432 + i * 16, 8 ); }
-	while( MainMenuPhase() ){ yield; }
+	DoMenuLogoPhase();
+	__Wait( 16 );
+	SetPhase( MENU_PHASE_MAIN );
+	while( DoMenuSelectPhase() ){ yield; }
+	MainMenuFinalize();
 }
 
-//	@MainLoop()にて毎フレーム呼ばれる部分
-function MainMenuLoop(){
-	MovePlayerDefaultPosition();
-	ViewMenu( MENU_PHASE_MAIN,				8, 32, 64, 240, m_nTexTextHandleTitle,			m_nSelectMain,			m_anLockSelectMain );
-	ViewMenu( MENU_PHASE_LEVEL,				8, 32, 64, 240, m_nTexTextHandleLevel,			m_nSelectLevel,			m_anLockSelectLevel );
-	ViewMenu( MENU_PHASE_EXTRA,				8, 32, 64, 240, m_nTexTextHandleExLevel,		m_nSelectExLevel,		m_anLockSelectExLevel );
-	ViewMenu( MENU_PHASE_PRACTICE,			8, 32, 64, 240, m_nTexTextHandlePractice,		m_nSelectPractice,		m_anLockSelectPractice );
-	ViewMenu( MENU_PHASE_CONFIG,			8, 32, 64, 240, m_nTexTextHandleConfig,			m_nSelectConfig,		m_anLockSelectConfig );
-	ViewMenu( MENU_PHASE_PRACTICE_STAGE,	8, 32, 64, 240, m_nTexTextHandleStage,			m_nSelectStage,			m_anLockSelectStage );
-	ViewMenu( MENU_PHASE_PRACTICE_SPELL,	8, 32, 64, 240, m_nTexTextHandleSpellSort,		m_nSelectSpellSort,		m_anLockSelectSpellSort );
-	ViewMenu( MENU_PHASE_CONFIG_GRAPHIC,	8, 32, 64, 240, m_nTexTextHandleConfigGraphic,	m_nSelectConfigGraphic,	m_anLockSelectConfigGraphic );
-	ViewMenu( MENU_PHASE_CONFIG_SOUND,		8, 32, 64, 240, m_nTexTextHandleConfigSound,	m_nSelectConfigSound,	m_anLockSelectConfigSound );
-	ViewMenu( MENU_PHASE_CONFIG_BUTTON,		8, 32, 64, 240, m_nTexTextHandleConfigButton,	m_nSelectConfigButton,	m_anLockSelectConfigButton );
-	ViewMenu( MENU_PHASE_SCENARIO,			8, 32, 64, 240, m_nTexTextHandleScenario,		m_nSelectScenario,		m_anLockSelectScenario );
-}
+/**
+*	毎フレームごとにステージスクリプト本体より呼び出されます。
+*
+*	@param nStage 現在のステージ
+*	@param nStageCount 現在のステージカウンタ値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function MainMenuLoop( let nStageCount, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){}
 
-//	@BackGround()にて毎回呼ばれる部分
-function MainMenuDrawBackGround(){}
-
-//	@DrawBottomObject()にて毎回呼ばれる部分
-function MainMenuDrawBottomObject(){}
-
-//	@DrawTopObject()にて毎回呼ばれる部分
-function MainMenuDrawTopObject(){
-//	if( GetPhase() == PROGRESS_PHASE ){ SetAlpha( SlowDown( 255, 0, m_nPhaseNow, MENU_FADE / 2 ) ); }
-//	DrawScreenFill( imgMapWhite );
-//	if( GetPhase() == PROGRESS_PHASE ){ SetAlpha( SlowDown( 255, 0, m_nPhaseNow, MENU_FADE / 2 ) ); }
-//	else{ SetAlpha( Accelerate( 0, 255, m_nStageNow, MENU_FADE ) ); }
-//	SetGraphicRect( 0, 0, 256, 128 );
-//	_DrawChr( imgSystemLogo, GetClipMaxX() - 128, GetCenterY() - 64 );
-//	SetGraphicScale( 1, 1 );
-//	SetAlpha( 255 );
+/**
+*	上位レイヤ絵画時にステージスクリプト本体より呼び出されます。
+*
+*	@param nStage 現在のステージ
+*	@param nStageCount 現在のステージカウンタ値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function MainMenuDrawTopObject( let nStageCount, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	if( nStageCount < MENU_LOGO_FADEIN ){ SetAlpha( SlowDown( 0, 255, nStageCount, MENU_LOGO_FADEIN ) ); }
+	__DrawChrRect( imgSystemLogo, GetCenterX(), GetClipMinY() + 80, 0, 0, 256, 96 );
+	DrawTexTextOnCache( CL_TTH_COPYRIGHT, 0, -8, GetClipMinX() + 12, GetClipMaxY() - 18 );
+	SetAlpha( 255 );
+	ascent( let i in 0..2 ){
+		if( i == 0 || nPhaseCount <= MENU_FADE_INTERVAL ){ DrawMenu( [ nPhase, nPrevPhase ][ i ], nPhaseCount, nCount ); }
+	}
 }

@@ -1,0 +1,268 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Extend-Library (extends FLAN)
+//
+//		※使い魔スクリプト部です。
+//			それ以外からはインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	インデックスをインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\IMAGE\index_zako.dnh"
+#include_function ".\SOUND\SE\index.dnh"
+#include_function "lib\THCCL\IMAGE\OTHER\index.dnh"
+#include_function "\lib\THCCL\_index_UserShot.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	下位ライブラリをインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\FLAN\HEADER\Zako.dnh"
+#include_function ".\INCLUDE\EnemyShadow.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+/**	自機ショットを被弾した時の効果音 */
+FLAN_ENEMY_SE_DAMAGE_FILE_A = seDamage;
+/**	ライフ低下時に自機ショットを被弾した時の効果音 */
+FLAN_ENEMY_SE_DAMAGE_FILE_B = seDamage2;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/** 魔法陣画像定数 */
+let SHADOW_IMAGE_6S =	0;	//	六芒星 - 小
+let SHADOW_IMAGE_6M =	1;	//	六芒星 - 中
+let SHADOW_IMAGE_8S =	2;	//	八芒星 - 小
+let SHADOW_IMAGE_8M =	3;	//	八芒星 - 中
+
+/** 魔法陣色定数 */
+let SHADOW_COLOR_WHITE =	0;	//　白
+let SHADOW_COLOR_RED =		1;	//　赤
+let SHADOW_COLOR_GREEN =	2;	//　緑
+let SHADOW_COLOR_BLUE =		3;	//　青
+let SHADOW_COLOR_YELLOW =	4;	//　黄
+let SHADOW_COLOR_PURPLE =	5;	//　紫
+let SHADOW_COLOR_ORANGE =	6;	//　橙
+let SHADOW_COLOR_BLACK =	7;	//　黒
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** ユーザー定義弾 */
+let m_szUserShot = shotAll;
+
+/** 夢終劇本体からの起動であるか */
+let m_bStage = false;
+/** スペルプラクティスであるか */
+let m_bSpellPractice = false;
+/** ステージプラクティスであるか */
+let m_bStagePractice = false;
+/** レベル */
+let m_nLevel = 0;
+
+/** 使い魔の光：表示するか */
+let m_bShadowLighting = true;
+/** 使い魔の光：色 */
+let m_nShadowLightingColor = WHITE03;
+/** 使い魔の光：間隔フレーム数 */
+let m_nShadowLightingInterval = 3;
+/** 使い魔の光：長さフレーム数 */
+let m_nShadowLightingLimitTime = 15;
+/** 撃破時の弾消し範囲（0で弾を消さない） */
+let m_nShadowDeleteShot = 32;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	使い魔関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	使い魔を発光させる（発光体を作る）ループです。
+*	onInitializeから呼ばれるもので、直接呼び出す必要はありません。
+*/
+task LightShadowLoopEx{
+	loop{
+		loop( m_nShadowLightingInterval ){ yield; }
+		if( m_bShadowLighting ){ LightShadowObjectEx(); }
+	}
+}
+
+/**
+*	使い魔の発光体オブジェクトです。
+*	LightShadowLoopExから呼ばれるもので、直接呼び出すことはありません。
+*/
+task LightShadowObjectEx{
+	let obj = SetShotObject( GetX(), GetY(), 500, 0, m_nShadowLightingColor, m_nShadowLightingLimitTime );
+	Obj_SetAlpha( obj, 0 );
+	Obj_SetCollisionToPlayer( obj, false );
+	ObjShot_SetBombResist( obj, true );
+	ObjShot_ToItem( obj, false );
+	loop( m_nShadowLightingLimitTime ){ yield; }
+	Obj_Delete( obj );
+}
+
+/**
+*	撃破時に周囲の弾を消します。
+*	onFinalizeから呼ばれるもので、直接呼び出すことはありません。
+*/
+function DeleteShot{
+	DeleteEnemyShotToItemInCircle( SHOT, GetX(), GetY(), m_nShadowDeleteShot );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	魔法陣を指定して使い魔を描画します。（通常はこちら）
+*	対応する魔法陣画像がロードされている必要があります。
+*
+*	@param nShadowImage	魔法陣画像定数
+*	@param nShadowColor	魔法陣色定数
+*	@param nAngle		描画角度
+*	@param nScale		描画倍率
+*/
+function DrawShadow( let nShadowImage, let nShadowColor, let nAngle, let nScale ){
+	let szImageFile = IMAGE_CL_CIRCLE_6S;
+	let nRectLength = 64;
+	alternative( nShadowImage )
+	case( SHADOW_IMAGE_6S ){}
+	case( SHADOW_IMAGE_6M ){ szImageFile = IMAGE_CL_CIRCLE_6M; nRectLength = 128; }
+	case( SHADOW_IMAGE_8S ){ szImageFile = IMAGE_CL_CIRCLE_8S; }
+	case( SHADOW_IMAGE_8M ){ szImageFile = IMAGE_CL_CIRCLE_8M; nRectLength = 128; }
+	let nRectX = 0;
+	let nRectY = 0;
+	alternative( nShadowColor )
+	case( SHADOW_COLOR_WHITE )	{}
+	case( SHADOW_COLOR_RED )	{ nRectX = 1; }
+	case( SHADOW_COLOR_GREEN )	{ nRectX = 2; }
+	case( SHADOW_COLOR_BLUE )	{ nRectX = 3; }
+	case( SHADOW_COLOR_YELLOW )	{ nRectY = 1; }
+	case( SHADOW_COLOR_PURPLE )	{ nRectX = 1; nRectY = 1; }
+	case( SHADOW_COLOR_ORANGE )	{ nRectX = 2; nRectY = 1; }
+	case( SHADOW_COLOR_BLACK )	{ nRectX = 3; nRectY = 1; }
+	nRectX *= nRectLength;
+	nRectY *= nRectLength;
+	_DrawShadow( szImageFile, nRectX, nRectY, nRectLength, nAngle, nScale );
+}
+
+/**
+*	任意の画像を使用して使い魔を描画します。
+*	テクスチャ切り出し範囲が正方形である必要があります。
+*
+*	@param szImageFile	使い魔画像ファイル
+*	@param nRectX		切り出し正方形の左上x座標
+*	@param nRectY		切り出し正方形の左上y座標
+*	@param nRectLength	切り出し正方形の一辺の長さ
+*	@param nAngle		描画角度
+*	@param nScale		描画倍率
+*/
+function _DrawShadow( let szImageFile, let nRectX, let nRectY, let nRectLength, let nAngle, let nScale ){
+	SetAlpha( 255 );
+	SetGraphicScale( nScale, nScale );
+	SetGraphicAngle( 0, 0, nAngle );
+	__DrawChrRect( szImageFile, GetX(), GetY(), nRectX, nRectY, nRectLength, nRectLength );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	共通処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	敵固有のタスクです。onInitialize()より1フレーム後に呼ばれます。
+*	ここに固有の動作を記述します。
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*/
+task MainTask( let nArgv, let nLevel ){
+	MainTaskTHC( nArgv, nLevel );
+}
+
+/**
+*	初期化時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*/
+function onInitialize( let nArgv, let nLevel ){
+	m_bStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_ENABLE, false );
+	m_nLevel = nLevel;
+	let nStageNumber = GetCommonDataDefaultEx( CL_CDNS_RESULT, FLAN_CD_STAGE, - 1 );
+	if( nStageNumber >= 0 && nStageNumber <= 5 ){ m_bStagePractice = true; }
+	else if( nStageNumber == 7 ){ m_bSpellPractice = true; }
+	if( !m_bStage ){ LoadUserShotData( shotAll ); }
+	onInitializeTHC( nArgv, nLevel );
+	LightShadowLoopEx();
+}
+
+/**
+*	毎フレームごとに呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onMainLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	onMainLoopTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+}
+
+/**
+*	終了時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onFinalize( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	if( m_nShadowDeleteShot > 0 && GetLife() <= 0 ){ DeleteShot(); }
+	onFinalizeTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+	__CommonEnemyShadowFinalizeTHC();
+}
+
+/**
+*	絵画時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onDrawLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	onDrawLoopTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+}

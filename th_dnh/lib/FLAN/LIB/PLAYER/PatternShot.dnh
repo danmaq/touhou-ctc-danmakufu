@@ -1,0 +1,240 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定型弾
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	指定の座標からWay自機弾を発射します。
+*	__WayPlayerShot01のラッパーです。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nSpeed 速度
+*	@param nEndDamage 攻撃力
+*	@param nEndPenetration 貫通力
+*	@param nWay Way数
+*	@param nTotalWayWidth Wayの射程に含まれる角度
+*	@param nBaseAngle 狙う基本角度
+*	@param nType 弾種
+*/
+function WayPlayerShot01( let nX, let nY, let nSpeed, let nDamage, let nPenetration, let nWay, let nTotalWayWidth, let nBaseAngle, let nType ){
+	let nHalfWayWidth = nTotalWayWidth / 2;
+	let nLimit = nWay - 1;
+
+	ascent( let i in 0..nWay ){
+		CreatePlayerShot01( nX, nY, nSpeed, nBaseAngle + Smooth( -nHalfWayWidth, nHalfWayWidth, i, nLimit ), nDamage, nPenetration, nType );
+	}
+}
+
+/**
+*	発射座標アニメーション付きWay自機弾を発射します。
+*	__WayPlayerShot01のラッパーです。
+*
+*	@param nStartX モーション開始時のX座標
+*	@param nEndX モーション終了時のX座標
+*	@param anXParameter X座標変化のパラメータリスト
+*	@param nStartY モーション開始時のY座標
+*	@param nEndY モーション終了時のY座標
+*	@param anYParameter Y座標変化のパラメータリスト
+*	@param nSpeed 速度
+*	@param nEndDamage 攻撃力
+*	@param nEndPenetration 貫通力
+*	@param nWay Way数
+*	@param nTotalWayWidth Wayの射程に含まれる角度
+*	@param nBaseAngle 狙う基本角度
+*	@param nType 弾種
+*/
+function WayPlayerShotAnimationPos01(
+	let nStartX,	let nEndX,			let anXParameter,
+	let nStartY,	let nEndY,			let anYParameter,
+	let nSpeed,		let nDamage,		let nPenetration,
+	let nWay,		let nTotalWayWidth,	let nBaseAngle,		let nType
+){
+	let nX = nStartX;
+	let nY = nStartY;
+	let nHalfWayWidth = nTotalWayWidth / 2;
+	let nLimit = nWay - 1;
+
+	let bNoAnimationXPosition = nStartX == nEndX;
+	let bNoAnimationYPosition = nStartY == nEndY;
+
+	ascent( let i in 0..nWay ){
+		if( !bNoAnimationXPosition ){ nX = Animation( nStartX, nEndX, i, nLimit, anXParameter ); }
+		if( !bNoAnimationXPosition ){ nY = Animation( nStartY, nEndY, i, nLimit, anYParameter ); }
+
+		CreatePlayerShot01( nX, nY, nSpeed, nBaseAngle + ( ( nHalfWayWidth * 2 ) * i / nLimit - nHalfWayWidth ), nDamage, nPenetration, nType );
+	}
+}
+
+/**
+*	指定の座標から速度アニメーション付きWay自機弾を発射します。
+*	__WayPlayerShot01のラッパーです。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nStartSpeed モーション開始時の速度
+*	@param nEndSpeed モーション終了時の速度
+*	@param anSpeedParameter 速度変化のパラメータリスト
+*	@param nEndDamage 攻撃力
+*	@param nEndPenetration 貫通力
+*	@param nWay Way数
+*	@param nTotalWayWidth Wayの射程に含まれる角度
+*	@param nBaseAngle 狙う基本角度
+*	@param nType 弾種
+*/
+function WayPlayerShotAnimationSpeed01(
+	let nX,				let nY,
+	let nStartSpeed,	let nEndSpeed,		let anSpeedParameter,
+	let nDamage,		let nPenetration,	let nWay,
+	let nTotalWayWidth,	let nBaseAngle,		let nType
+){
+	let nSpeed = nStartSpeed;
+	let nHalfWayWidth = nTotalWayWidth / 2;
+	let nLimit = nWay - 1;
+
+	let bNoAnimationSpeed = nStartSpeed == nEndSpeed;
+	ascent( let i in 0..nWay ){
+		if( !bNoAnimationSpeed ){ nSpeed = Animation( nStartSpeed, nEndSpeed, i, nLimit, anSpeedParameter ); }
+		CreatePlayerShot01( nX, nY, nSpeed, nBaseAngle + ( ( nHalfWayWidth * 2 ) * i / nLimit - nHalfWayWidth ), nDamage, nPenetration, nType );
+	}
+}
+
+/**
+*	指定の座標から攻撃力・貫通力アニメーション付きWay自機弾を発射します。
+*	__WayPlayerShot01のラッパーです。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nSpeed 速度
+*	@param nStartDamage モーション開始時の攻撃力
+*	@param nEndDamage モーション終了時の攻撃力
+*	@param anDamageParameter 攻撃力変化のパラメータリスト
+*	@param nStartPenetration モーション開始時の貫通力
+*	@param nEndPenetration モーション終了時の貫通力
+*	@param anPenetrationParameter 貫通力変化のパラメータリスト
+*	@param nWay Way数
+*	@param nTotalWayWidth Wayの射程に含まれる角度
+*	@param nBaseAngle 狙う基本角度
+*	@param nType 弾種
+*/
+function WayPlayerShotAnimationDamage01(
+	let nX,					let nY,					let nSpeed,
+	let nStartDamage,		let nEndDamage,			let anDamageParameter,
+	let nStartPenetration,	let nEndPenetration,	let anPenetrationParameter,
+	let nWay,				let nTotalWayWidth,
+	let nBaseAngle,			let nType
+){
+	let nDamage = nStartDamage;
+	let nPenetration = nStartPenetration;
+	let nHalfWayWidth = nTotalWayWidth / 2;
+	let nLimit = nWay - 1;
+
+	let bNoAnimationDamage = nStartDamage == nEndDamage;
+	let bNoAnimationPenetration = nStartPenetration == nEndPenetration;
+
+	ascent( let i in 0..nWay ){
+		if( !bNoAnimationDamage			){ nDamage		= Animation( nStartDamage,		nEndDamage,			i, nLimit, anDamageParameter		); }
+		if( !bNoAnimationPenetration	){ nPenetration	= Animation( nStartPenetration,	nEndPenetration,	i, nLimit, anPenetrationParameter	); }
+
+		CreatePlayerShot01( nX, nY, nSpeed, nBaseAngle + ( ( nHalfWayWidth * 2 ) * i / nLimit - nHalfWayWidth ), nDamage, nPenetration, nType );
+	}
+}
+
+/**
+*	指定した設定のとおりにWay自機弾を発射します。
+*
+*	@param nStartX モーション開始時のX座標
+*	@param nEndX モーション終了時のX座標
+*	@param anXParameter X座標変化のパラメータリスト
+*	@param nStartY モーション開始時のY座標
+*	@param nEndY モーション終了時のY座標
+*	@param anYParameter Y座標変化のパラメータリスト
+*	@param nStartSpeed モーション開始時の速度
+*	@param nEndSpeed モーション終了時の速度
+*	@param anSpeedParameter 速度変化のパラメータリスト
+*	@param nStartDamage モーション開始時の攻撃力
+*	@param nEndDamage モーション終了時の攻撃力
+*	@param anDamageParameter 攻撃力変化のパラメータリスト
+*	@param nStartPenetration モーション開始時の貫通力
+*	@param nEndPenetration モーション終了時の貫通力
+*	@param anPenetrationParameter 貫通力変化のパラメータリスト
+*	@param nWay Way数
+*	@param nTotalWayWidth Wayの射程に含まれる角度
+*	@param anWaySpaceParameter Way間隔変化のパラメータリスト
+*	@param nBaseAngle 狙う基本角度
+*	@param nType 弾種
+*/
+function __WayPlayerShot01(
+	let nStartX,			let nEndX,				let anXParameter,
+	let nStartY,			let nEndY,				let anYParameter,
+	let nStartSpeed,		let nEndSpeed,			let anSpeedParameter,
+	let nStartDamage,		let nEndDamage,			let anDamageParameter,
+	let nStartPenetration,	let nEndPenetration,	let anPenetrationParameter,
+	let nWay,				let nTotalWayWidth,		let anWaySpaceParameter,
+	let nBaseAngle,			let nType,
+){
+	let nX = nStartX;
+	let nY = nStartY;
+	let nSpeed = nStartSpeed;
+	let nDamage = nStartDamage;
+	let nPenetration = nStartPenetration;
+	let nHalfWayWidth = nTotalWayWidth / 2;
+	let nLimit = nWay - 1;
+
+	let bNoAnimationXPosition = nStartX == nEndX;
+	let bNoAnimationYPosition = nStartY == nEndY;
+	let bNoAnimationSpeed = nStartSpeed == nEndSpeed;
+	let bNoAnimationDamage = nStartDamage == nEndDamage;
+	let bNoAnimationPenetration = nStartPenetration == nEndPenetration;
+
+	ascent( let i in 0..nWay ){
+		if( !bNoAnimationXPosition		){ nX			= Animation( nStartX,			nEndX,				i, nLimit, anXParameter				); }
+		if( !bNoAnimationXPosition		){ nY			= Animation( nStartY,			nEndY,				i, nLimit, anYParameter				); }
+		if( !bNoAnimationSpeed			){ nSpeed		= Animation( nStartSpeed,		nEndSpeed,			i, nLimit, anSpeedParameter			); }
+		if( !bNoAnimationDamage			){ nDamage		= Animation( nStartDamage,		nEndDamage,			i, nLimit, anDamageParameter		); }
+		if( !bNoAnimationPenetration	){ nPenetration	= Animation( nStartPenetration,	nEndPenetration,	i, nLimit, anPenetrationParameter	); }
+
+		CreatePlayerShot01( nX, nY, nSpeed, nBaseAngle + Animation( -nHalfWayWidth, nHalfWayWidth, i, nLimit, anWaySpaceParameter ), nDamage, nPenetration, nType );
+	}
+}
+
+/**	設定された条件に基づきonShotを呼び出します。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+task __ShotBasicShot(){
+	m_bFranPlayerShot = true;
+	loop( truncate( FLAN_PLAYER_SHOT_FRAME / FLAN_PLAYER_SHOT_INTERVAL ) ){
+		onShot( m_nFlanCount, GetPhase(), m_nFlanPhaseCount, m_nFlanPrevPhase );
+		loop( FLAN_PLAYER_SHOT_INTERVAL ){ yield; }
+	}
+	m_bFranPlayerShot = false;
+}

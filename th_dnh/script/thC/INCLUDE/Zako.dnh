@@ -1,0 +1,223 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Extend-Library (extends FLAN)
+//
+//		※ザコスクリプト部です。
+//			それ以外からはインクルードしないでください。
+//		※ザコの使い魔には使用できません。
+//			Shadow.dnhを使用してください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	インデックスをインクルード
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#include_function "lib\THCCL\_index_UserShot.dnh"
+#include_function "lib\THCCL\IMAGE\OTHER\index.dnh"
+#include_function ".\IMAGE\index_zako.dnh"
+#include_function ".\SOUND\SE\index.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	下位ライブラリをインクルード
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\FLAN\HEADER\Zako.dnh"
+#include_function ".\INCLUDE\EnemyShadow.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+/**	アイテムが画面外にはみ出た時の補正精度を設定します。
+*	増やすほどはみ出にくくなりますが重くなります(最悪フリーズします)。
+*/
+FLAN_ITEM_OUT_COMPENSATION = 10;
+
+/**	hoge */
+FLAN_ENEMY_SE_DAMAGE_CHANGE = 0;
+/**	自機ショットを被弾した時の効果音 */
+FLAN_ENEMY_SE_DAMAGE_FILE_A = seDamage;
+/**	ライフ低下時に自機ショットを被弾した時の効果音 */
+FLAN_ENEMY_SE_DAMAGE_FILE_B = seDamage2;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	雑魚アニメーションのフレーム間隔です。 */
+let ENEMY_ANIMATION_INTERVAL	= 12;
+/**	雑魚妖精の横幅/縦幅です。 */
+let RECT_YOUSEI_WIDTH			= 32;
+
+let RECT_YOUSEI_RED			= [ 0, 0 ];
+let RECT_YOUSEI_BLUE		= [ 0, 64 ];
+let RECT_YOUSEI_GREEN		= [ 0, 128 ];
+
+let RECT_R_KEDAMA_WHITE		= [ 0, 0 ];
+let RECT_R_KEDAMA_RED		= [ 64, 0 ];
+let RECT_R_KEDAMA_GREEN		= [ 128, 0 ];
+let RECT_R_KEDAMA_BLUE		= [ 192, 0 ];
+let RECT_R_KEDAMA_YELLOW	= [ 0, 64 ];
+let RECT_R_KEDAMA_PURPLE	= [ 64, 64 ];
+let RECT_R_KEDAMA_ORANGE	= [ 128, 64 ];
+let RECT_R_KEDAMA_BLACK		= [ 192, 64 ];
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	雑魚妖精を描画します。
+*
+*	@param anColor 妖精の色指定このファイルの定数を参照
+*/
+function DrawYousei( let anColor ){
+	let nAngle = MinMaxLoop( GetAngle(), 0, 360 );
+	let bHover = GetSpeed() < 0.3 || ( nAngle > 80 && nAngle < 100 ) || ( nAngle > 260 && nAngle < 280 );
+	let nSrcX = anColor[ 0 ] + [ 0, 128 ][ !bHover && ( nAngle < 90 || nAngle > 270 ) ];
+	let nSrcY = anColor[ 1 ] + [ 0, 32 ][ !bHover ];
+	let nAnimationGapX = ( truncate( m_nFlanCount / ENEMY_ANIMATION_INTERVAL ) % [ 4, 3 ][ bHover ] ) * RECT_YOUSEI_WIDTH;
+	SetGraphicRectWidth( nSrcX + nAnimationGapX, nSrcY, RECT_YOUSEI_WIDTH, RECT_YOUSEI_WIDTH );
+	DrawChr( dotYousei );
+}
+
+/**
+*	回転毛玉の描画
+*
+*	@param color 妖精の色指定このファイルの定数を参照
+*	@param now 現在のカウント
+*/
+function DrawRKedama( let color, let now ){
+	SetGraphicAngle( 0, 0, now * 10 );
+	SetTexture( dotKedama );
+	SetGraphicScale( 0.8, 0.8 );
+	__DrawChrRect( dotKedama, GetX(), GetY(), color[ 0 ], color[ 1 ], 32, 32 );
+	SetGraphicScale( 1, 1 );
+}
+
+/**
+*	雑魚魔法陣の描画
+*/
+function DarwZakoBack(){
+	let nScale = absolute( sin( m_nFlanCount * 2 ) ) * 0.3 + 0.6;
+	SetAlpha( 200 );
+	SetGraphicScale( nScale, nScale );
+	__DrawChrRect( IMAGE_CL_CIRCLE_6S, GetX(), GetY(), 0, 0, 64, 64 );
+	SetGraphicScale( 1, 1 );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	アイテムドロップ関係
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	アイテムドロップの制限数に従う関数
+*/
+function ItemDropStage(let Percentage){
+	let X1=GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_STAGE_ITEM , [0,0] )[0];
+	let X2=GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_STAGE_ITEM , [0,0] )[1];
+
+	if(X1 == 0){return false;}
+	if(X1 >= X2){
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_ITEM, [X1-1,X2-1]);
+		return true;
+		}
+	else{
+		if(RandPercentage( Percentage )){
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_ITEM, [X1-1,X2-1]);
+			return true;
+		}else{
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_ITEM, [X1,X2-1]);
+			return false;
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	共通処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	初期化時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*/
+function onInitialize( let nArgv, let nLevel ){
+	if( !GetCommonDataDefault( CL_CD_CDNS_INITIALIZED, false ) ){ CLCommonNameSpaceInitialize(); }
+	if( !GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_ENABLE, false ) ){ LoadUserShotData( shotAll ); }
+	onInitializeTHC( nArgv, nLevel );
+}
+
+/**
+*	毎フレームごとに呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onMainLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	onMainLoopTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+}
+
+/**
+*	終了時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onFinalize( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	onFinalizeTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+	__CommonEnemyShadowFinalizeTHC();
+}
+
+/**
+*	絵画時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onDrawLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	onDrawLoopTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+}

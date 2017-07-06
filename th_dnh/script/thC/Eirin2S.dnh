@@ -1,0 +1,335 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ2B　ボス　八意 永琳　スペル2
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Eirin - スペル2]
+#Text[ステージ2B ボス
+八意 永琳]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Eirin.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 100;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		SetTimer( 63 );
+		SetLife( 500 );
+		SetDamageRate( 14, 14 );
+		SetShotAutoDeleteClip( 64, 64, 64, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_EIYA + CL_TTH_CHARACTER_NAME_EIYA_EIRIN;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){ DropItemTHC( 12 ); }
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_EIYA + CL_TTH_SPELL_STAGE2_BOSS_2 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		loop{
+
+			/** 多角形レーザー */
+			Concentration01( 30 );
+			GeometryLaser();
+			__Wait( 240 );
+
+			/** 移動 */
+			Move( 60 );
+			__Wait( 60 );
+
+		}
+
+	}
+
+	/**
+	*	多角形レーザー
+	*/
+	task GeometryLaser{
+
+		let nWay = 6 - m_nLevel;
+		let nGapAngle = rand( 0, 360 );
+		let nWayGapAngle = 360 / nWay;
+
+		SetAction( ACT_SHOT_B5, 240 );
+		PlaySEEx( seLaser1 );
+		loop( nWay ){
+			_GeometryLaser( nGapAngle, nWayGapAngle );
+			nGapAngle += nWayGapAngle;
+		}
+
+	}
+
+	/**
+	*	多角形レーザー（1辺）
+	*	@param nGapAngle	レーザー源への間隔角度
+	*	@param nWayGapAngle	隣の辺との角度
+	*/
+	task _GeometryLaser( let nGapAngle, let nWayGapAngle ){
+
+		let obj = Obj_Create( OBJ_LASER );
+		let nDelay = 30;
+		ObjShot_SetGraphic( obj, US_BEAM_WHITE );
+		ObjShot_SetDelay( obj, nDelay );
+		ObjLaser_SetWidth( obj, 16 );
+		Obj_SetAutoDelete( obj, false );
+
+		let nKill = 240;
+		let nGapLength = 0;
+		let nMinGapLength = 80;
+		let nMaxGapLength = nMinGapLength / cos( nWayGapAngle / 2 );
+		let nX = 0;
+		let nY = 0;
+		let nLength=0;
+		let nAngle = nGapAngle + 90 + nWayGapAngle / 2;
+		_SetLength();
+		_SetAngle();
+		_SetLocation();
+
+		/** 遅延 */
+		loop( nDelay ){ yield; }
+
+		/** 拡大弾 */
+		nKill -= nDelay;
+		let nNumLength = 18 - m_nLevel;
+		let nNum = trunc( nLength / nNumLength );
+		nNumLength = nLength / nNum;
+		let nFrame = 12;
+		let __nX = GetX();
+		let __nY = GetY();
+		let _nBaseSpeed = 2.2 + 0.2 * m_nLevel;
+		if( m_nLevel == 3 ){ _nBaseSpeed = 2.4; }
+		let _anGraphic = [ US_RICE_S_RED, US_RICE_S_ORANGE, US_RICE_S_YELLOW, US_RICE_S_GREEN, US_RICE_S_SKY, US_RICE_S_BLUE, US_RICE_S_PURPLE ];
+		let _nGra = 0;
+		let _nDelay = 10;
+		while( nKill >= nFrame ){
+			ascent( let i in 0 .. nNum ){
+				let _nX = GetGapX( nX, nNumLength * i, nAngle );
+				let _nY = GetGapY( nY, nNumLength * i, nAngle );
+				let _nLength = GetGapLength( __nX, __nY, _nX, _nY );
+				let _nAngle = GetGapAngle( __nX, __nY, _nX, _nY ) - 180;
+				let _nSpeed = _nBaseSpeed * _nLength / nMinGapLength;
+				CreateShot01( _nX, _nY, _nSpeed, _nAngle, _anGraphic[ _nGra % 7 ], _nDelay );
+			}
+			PlaySEEx( seShot3 );
+			loop( nFrame ){ yield; }
+			nKill -= nFrame;
+			_nGra ++;
+		}
+
+		/** 消滅 */
+		ObjShot_FadeDelete( obj );
+
+		/** 位置設定 */
+		task _SetLocation{
+			loop( nKill ){
+				nX = GetGapX( GetX(), nGapLength, nGapAngle );
+				nY = GetGapY( GetY(), nGapLength, nGapAngle );
+				Obj_SetPosition( obj, nX, nY );
+				Obj_SetAngle( obj, nAngle );
+				ObjLaser_SetLength( obj, nLength );
+				yield;
+			}
+		}
+
+		/** 長さ設定 */
+		task _SetLength{
+			let nAddFrame = 15;
+			let nAddGapLength = nMaxGapLength / nAddFrame;
+			loop( nAddFrame ){
+				nGapLength += nAddGapLength;
+				yield;
+			}
+			let nMaxLength = nMaxGapLength * sin( nWayGapAngle / 2 ) * 2;
+			let nAddLength = nMaxLength / nAddFrame;
+			loop( nAddFrame ){
+				nLength += nAddLength;
+				yield;
+			}
+		}
+
+		/** 角度設定 */
+		task _SetAngle{
+			let nAddAngle = 360 / 240;
+			loop( nKill ){
+				nGapAngle += nAddAngle;
+				nAngle += nAddAngle;
+				yield;
+			}
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 40;
+		let nMaxMoveX = 80;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 20;
+
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

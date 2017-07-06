@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Enemy / Shot / Shadow / Stage" file="stage_enemy_shot_shadow">
+	<category caption="概要" link="true">
+		<paragraph>
+			敵(ボス/雑魚/使い魔)・ステージ・弾スクリプトで使用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/Spell_Enemy_Shot_Shadow.dnh</path>となります。
+			(関数の数が少ないので1ファイルのみの構成となります)
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+	</category>
+	<category caption="書換可能定数" link="true">
+	</category>
+	<category caption="メンバ変数" link="true">
+	</category>
+	<category caption="移動制御関連">
+		<paragraph>
+			主に移動制御関連の関数群です。
+		</paragraph>
+		<define key="SetPlayerPosition">
+			<argument>移動先のX座標</argument>
+			<argument>移動先のY座標</argument>
+			<paragraph>
+				プレイヤーを<caption>指定座標に瞬間移動</caption>させます。
+				<code>SetPlayerX</code> / <code>SetPlayerY</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+</contents>

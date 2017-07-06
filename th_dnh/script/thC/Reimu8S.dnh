@@ -1,0 +1,292 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージPh　ボス　博麗 霊夢　スペル8
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Reimu - スペル8]
+#Text[ステージPh ボス
+博麗 霊夢]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Reimu.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 120;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		SetTimer( 63 );
+		SetLife( 500 );
+		SetDamageRate( 5, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 180 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+		Barrier();
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_EXPH + CL_TTH_CHARACTER_NAME_EXPH_REIMU;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){
+			if( GetPlayerLife() == 0 ){ DropItemExtendTHC(); }
+			else{ DropItemBombTHC(); }
+		}
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		SetBlur( nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_PHANTASM + CL_TTH_SPELL_EXPH_BOSS_8;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		loop{
+
+			/** 車輪弾 */
+			SetAction( ACT_SHOT_A5, 60 );
+			PlaySEEx( seShadow );
+			WheelShot( 1 );
+			__Wait( 110 );
+			SetAction( ACT_SHOT_A5, 60 );
+			PlaySEEx( seShadow );
+			WheelShot( - 1 );
+			__Wait( 110 );
+
+			SetDamageRate( 11, 0 );
+
+		}
+
+	}
+
+	/**
+	*	車輪弾
+	*	@param nAssign	割り振り係数
+	*/
+	task WheelShot( let nAssign ){
+
+		let obj = Obj_Create( OBJ_SHOT );
+		let nX = GetX();
+		let nY = GetY();
+		Obj_SetPosition( obj, nX, nY );
+		ObjShot_SetGraphic( obj, [ US_ONMYOU_L_RED, US_ONMYOU_L_BLUE ][ nAssign == 1 ] );
+		ObjShot_SetBombResist( obj, true );
+
+		_SetLocation();
+
+		/** 回転弾 */
+		let nWay = 4;
+		let _nWay = 8;
+		let __nWay = _nWay * nWay;
+		let nGapAngle = rand( 0, 360 );
+		let nWayAngle = 360 / __nWay;
+		let nGapLength = 160;
+		let nAddGapAngle = rand( 0.6, 0.8 ) * [ 1, - 1 ][ rand( 1, - 1 ) < 0 ];
+		loop( nWay ){
+			ascent( let i in 0 .. _nWay ){
+				if( i >= 1 ){ WheelFire( nGapAngle ); }
+				nGapAngle += nWayAngle;
+			}
+		}
+
+		/** 初期移動 */
+		let nFrame = 60;
+		let _nX = CL_CEN_X + rand( 35, 80 ) * nAssign;
+		let _nY = CL_MIN_Y;
+		let nSpeed = GetGapLength( nX, nY, _nX, _nY ) / nFrame;
+		let nAngle = GetGapAngle( nX, nY, _nX, _nY );
+		let nAddX = nSpeed * cos( nAngle );
+		let nAddY = nSpeed * sin( nAngle );
+		ObjShot_SetDelay( obj, nFrame );
+		loop( nFrame ){
+			nX += nAddX;
+			nY += nAddY;
+			Obj_SetPosition( obj, nX, nY );
+			yield;
+		}
+		PlaySEEx( seShot2 );
+
+		/** 下移動 */
+		Obj_SetSpeed( obj, 1.08 );
+		Obj_SetAngle( obj, 90 );
+
+		/** 位置設定 */
+		task _SetLocation{
+			while( !Obj_BeDeleted( obj ) ){
+				nX = Obj_GetX( obj );
+				nY = Obj_GetY( obj );
+				yield;
+			}
+		}
+
+		/** 回転弾 */
+		task WheelFire( let _nGapAngle ){
+
+			let _obj = Obj_Create( OBJ_SHOT );
+			Obj_SetAngle( _obj, nGapAngle );
+			ObjShot_SetGraphic( _obj, [ US_ONMYOU_M_RED, US_ONMYOU_M_BLUE ][ nAssign == 1 ] );
+			ObjShot_SetDelay( _obj, 60 );
+			Obj_SetAutoDelete( _obj, false );
+			ObjShot_SetBombResist( _obj, true );
+
+			while( !Obj_BeDeleted( obj ) ){
+				_nGapAngle += nAddGapAngle;
+				_nX = GetGapX( nX, nGapLength, _nGapAngle );
+				_nY = GetGapY( nY, nGapLength, _nGapAngle );
+				Obj_SetPosition( _obj, _nX, _nY );
+				yield;
+			}
+			Obj_Delete( _obj );
+
+		}
+
+	}
+
+}

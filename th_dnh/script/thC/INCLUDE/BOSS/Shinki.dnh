@@ -1,0 +1,70 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　神綺
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossShinki;
+let m_szImageCutIn = cutShinki;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_SHINKI;
+let m_aszImageBGList = LOADBGLIST_SHINKI;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+	let i = m_nFlanCount % 800;
+	let j = m_nFlanCount % 280;
+	let k = m_nFlanCount % 600;
+	SetGraphicRect( 0, 0, 512, 512 );
+	SetColor(
+		[ Smooth( 0, 40, i, 800 ), Smooth( 40, 0, i, 800 ) ][ m_nFlanCount % 1600 >= 800 ],
+		[ Smooth( 0, 80, j, 280 ), Smooth( 80, 0, j, 280 ) ][ m_nFlanCount % 560 >= 280 ],
+		[ Smooth( 50, 100, k, 600 ), Smooth( 100, 50, k, 600 ) ][ m_nFlanCount % 1200 >= 600 ] );
+	DrawCenter( imgSpellShinki02 );
+	i = m_nFlanCount % 360;
+	j = m_nFlanCount % 1800 * 0.2;
+	SetColor( 255, 255, 255 );
+	SetAlpha( 150 );
+	SetGraphicRect( 0, 0, 256, 256 );
+	SetGraphicAngle( 60, i, 180 + j );
+	SetGraphicScale( 1.5, 1.5 );
+	__DrawChr( imgSpellShinki01, CL_CEN_X * 1.5, CL_CEN_Y );
+	SetGraphicRect( 0, 0, 256, 256 );
+	SetGraphicAngle( 60, - i, 270 - j );
+	SetGraphicScale( 1.5, 1.5 );
+	__DrawChr( imgSpellShinki01, CL_CEN_X / 2, CL_CEN_Y );
+	SetGraphicScale( 1, 1 );
+	SetGraphicAngle( 0, 0, 0 );
+	SetAlpha( 255 );
+}
+
+

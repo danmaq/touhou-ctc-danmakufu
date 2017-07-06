@@ -1,0 +1,201 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+/** 画面枠からはみ出た際の許容範囲。
+*	これを超えると自殺します。
+*/
+let FLAN_RINGOUT_BORDER		= 48;
+/**	画面内に敵が存在しない場合に渡すデフォルトX座標を設定します。
+*	注意: -128～512の範囲内の値を設定すると動作がおかしくなる場合があります。
+*/
+let FLAN_INVALID_ENEMY_X	= 65535;
+/**	画面内に敵が存在しない場合に渡すデフォルトY座標を設定します。
+*	注意: -128～512の範囲内の値を設定すると動作がおかしくなる場合があります。
+*/
+let FLAN_INVALID_ENEMY_Y	= 65535;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(原則書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	敵存在判定関数を使用した際画面内の敵X座標が格納されます。 */
+let m_nFlanInScreenEnemyX = FLAN_INVALID_ENEMY_X;
+/**	敵存在判定関数を使用した際画面内の敵Y座標が格納されます。 */
+let m_nFlanInScreenEnemyY = FLAN_INVALID_ENEMY_Y;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	判定関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	画面から一定以上はみ出ているか判定します。
+*
+*	@param nX 判定対象とするX座標
+*	@param nY 判定対象とするY座標
+*	@param nDeadline 画面端からの判定猶予距離
+*	@return 画面端から指定の判定猶予距離以上はみ出ていればtrue
+*/
+function IsOutPos( let nX, let nY, let nDeadline ){
+	return	nX < GetClipMinX() - nDeadline ||
+			nX > GetClipMaxX() + nDeadline ||
+			nY < GetClipMinY() - nDeadline ||
+			nY > GetClipMaxY() + nDeadline;
+}
+
+/**
+*	画面内に敵が存在しているか判定します。
+*	EnumEnemyGetIDInScreenのラッパーです。
+*
+*	@return 画面内に敵が存在していればtrue
+*/
+function IsEnemyInScreen(){ return GetEnemyIDInScreen() != -1; }
+
+/**
+*	画面内に存在している敵の内、最も内部IDが若い敵の内部IDを取得します。
+*
+*	@return 画面内に存在する敵の中で最も若い内部ID、画面内に存在していなければ-1
+*/
+function GetEnemyIDInScreen(){
+	if( GetEnemyNum() == 0 ){ return -1; }
+	ascent( let i in EnumEnemyBegin()..EnumEnemyEnd() ){
+		let nID = EnumEnemyGetID( i );
+		let nEnemyX = GetEnemyInfoDefault( nID, ENEMY_X, 65536 );
+		let nEnemyY = GetEnemyInfoDefault( nID, ENEMY_Y, 65536 );
+		if( !IsOutPos( nEnemyX, nEnemyY, FLAN_RINGOUT_BORDER ) ){
+			m_nFlanInScreenEnemyX = nEnemyX;
+			m_nFlanInScreenEnemyY = nEnemyY;
+			return nID;
+		}
+	}
+	m_nFlanInScreenEnemyX = FLAN_INVALID_ENEMY_X;
+	m_nFlanInScreenEnemyY = FLAN_INVALID_ENEMY_Y;
+	return -1;
+}
+
+/**
+*	画面内に存在している敵の内、指定X座標に最も近い敵の内部IDを取得します。
+*
+*	@param nX 基準とするX座標
+*	@return 画面内に存在し、かつ最も指定X座標に近い敵の内部ID、画面内に存在していなければ-1
+*/
+function GetEnemyIDInScreenMoreNearX( let nX ){
+	if( GetEnemyNum() == 0 ){ return -1; }
+	let anEnemyInfo = [ -1, 65536 ];
+	m_nFlanInScreenEnemyX = FLAN_INVALID_ENEMY_X;
+	m_nFlanInScreenEnemyY = FLAN_INVALID_ENEMY_Y;
+	ascent( let i in EnumEnemyBegin()..EnumEnemyEnd() ){
+		let nID = EnumEnemyGetID( i );
+		let nEnemyX = GetEnemyInfoDefault( nID, ENEMY_X, 65536 );
+		let nEnemyY = GetEnemyInfoDefault( nID, ENEMY_Y, 65536 );
+		if( !IsOutPos( nEnemyX, nEnemyY, FLAN_RINGOUT_BORDER ) ){
+			let nGap = absolute( nEnemyX - nX );
+			if( anEnemyInfo[ 1 ] > nGap ){
+				m_nFlanInScreenEnemyX = nEnemyX;
+				m_nFlanInScreenEnemyY = nEnemyY;
+				anEnemyInfo[ 1 ] = nGap;
+				anEnemyInfo[ 0 ] = nID;
+			}
+		}
+	}
+	return anEnemyInfo[ 0 ];
+}
+
+/**
+*	画面内に存在している敵の内、指定Y座標に最も近い敵の内部IDを取得します。
+*
+*	@param nX 基準とするY座標
+*	@return 画面内に存在し、かつ最も指定Y座標に近い敵の内部ID、画面内に存在していなければ-1
+*/
+function GetEnemyIDInScreenMoreNearY( let nY ){
+	if( GetEnemyNum() == 0 ){ return -1; }
+	let anEnemyInfo = [ -1, 65536 ];
+	m_nFlanInScreenEnemyX = FLAN_INVALID_ENEMY_X;
+	m_nFlanInScreenEnemyY = FLAN_INVALID_ENEMY_Y;
+	ascent( let i in EnumEnemyBegin()..EnumEnemyEnd() ){
+		let nID = EnumEnemyGetID( i );
+		let nEnemyX = GetEnemyInfoDefault( nID, ENEMY_X, 65536 );
+		let nEnemyY = GetEnemyInfoDefault( nID, ENEMY_Y, 65536 );
+		if( !IsOutPos( nEnemyX, nEnemyY, FLAN_RINGOUT_BORDER ) ){
+			let nGap = absolute( nEnemyY - nY );
+			if( anEnemyInfo[ 1 ] > nGap ){
+				m_nFlanInScreenEnemyX = nEnemyX;
+				m_nFlanInScreenEnemyY = nEnemyY;
+				anEnemyInfo[ 1 ] = nGap;
+				anEnemyInfo[ 0 ] = nID;
+			}
+		}
+	}
+	return anEnemyInfo[ 0 ];
+}
+
+/**
+*	画面内に存在している敵の内、指定座標に最も近い敵の内部IDを取得します。
+*
+*	@param nX 基準とするX座標
+*	@param nY 基準とするY座標
+*	@return 画面内に存在し、かつ最も指定座標に近い敵の内部ID、画面内に存在していなければ-1
+*/
+function GetEnemyIDInScreenMoreNear( let nX, let nY ){
+	if( GetEnemyNum() == 0 ){ return -1; }
+	let anEnemyInfo = [ -1, 65536 ];
+	m_nFlanInScreenEnemyX = FLAN_INVALID_ENEMY_X;
+	m_nFlanInScreenEnemyY = FLAN_INVALID_ENEMY_Y;
+	ascent( let i in EnumEnemyBegin()..EnumEnemyEnd() ){
+		let nID = EnumEnemyGetID( i );
+		let nEnemyX = GetEnemyInfoDefault( nID, ENEMY_X, 65536 );
+		let nEnemyY = GetEnemyInfoDefault( nID, ENEMY_Y, 65536 );
+		if( !IsOutPos( nEnemyX, nEnemyY, FLAN_RINGOUT_BORDER ) ){
+			let nGap = Hypot( nEnemyX - nX, nEnemyY - nY );
+			if( anEnemyInfo[ 1 ] > nGap ){
+				m_nFlanInScreenEnemyX = nEnemyX;
+				m_nFlanInScreenEnemyY = nEnemyY;
+				anEnemyInfo[ 1 ] = nGap;
+				anEnemyInfo[ 0 ] = nID;
+			}
+		}
+	}
+	return anEnemyInfo[ 0 ];
+}
+
+/**
+*	乱数によって誤差を発生させます。
+*	注意:絵画時(onDrawLoop/onBackGround/onBottomObject/onTopObject)には絶対に使用しないでください
+*	(リプレイがずれます)
+*
+*	@param nExpr 誤差の幅(±exprとなります)
+*	@return 0を中心とした誤差
+*/
+function RandBlur( let nExpr ){ return rand( -nExpr, nExpr ); }
+
+/**
+*	指定の確率で真偽を返します。
+*	注意:絵画時(onDrawLoop/onBackGround/onBottomObject/onTopObject)には絶対に使用しないでください
+*	(リプレイがずれます)
+*
+*	@param nPercentage 百分率
+*	@return 指定した確率でtrue
+*/
+function RandPercentage( let nPercentage ){ return rand( 0, 100 ) < nPercentage; }

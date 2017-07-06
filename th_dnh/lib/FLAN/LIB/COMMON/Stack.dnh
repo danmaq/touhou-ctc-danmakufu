@@ -1,0 +1,181 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	無効なスタックハンドルを示す定数。ReleaseStackした後はこれを代入しておくとより安全です。 */
+let FLAN_STACK_HANDLE_INVALID = -1;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	スタックキャッシュヘッダ。 */
+let m_abFlanStackCacheEnable = [];
+/**	スタックキャッシュ本体。 */
+let m_anFlanStackCacheData = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スタック操作
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	弾幕風システムにエラーメッセージを投げます。
+*	スタックエラーが発生した際、内部から自動的に呼ばれます。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*
+*	@param nHandle 不正なスタックハンドル
+*/
+function __PutStackError( let nHandle ){
+	if( IsValidStackHandle( nHandle ) ){ return; }
+	RaiseError(
+		"不正なハンドル値が代入されました。" ~ FLAN_COMMON_BR_CODE ~
+		"有効なスタックエリア: 0～" ~ ToStringInt( length( m_abFlanStackCacheEnable ) ) ~ " に対し" ~ FLAN_COMMON_BR_CODE ~
+		"代入されたハンドル値: " ~ ToStringInt( nHandle ),
+		"FLAN:StackError"
+	);
+}
+
+/**
+*	渡されたスタックハンドルが正当か判定します。
+*
+*	@param nHandle 評価するスタックハンドル
+*	@return スタックハンドルが正当ならtrue
+*/
+function IsValidStackHandle( let nHandle ){
+	let nLength = length( m_abFlanStackCacheEnable );
+	return nLength > 0 && nHandle >= 0 && nHandle < nLength && m_abFlanStackCacheEnable[ nHandle ];
+}
+
+/**
+*	スタックの実体を返します。
+*
+*	@param nHandle スタックハンドル
+*	@return スタックの実体
+*/
+function GetStackInstance( let nHandle ){
+	if( !IsValidStackHandle( nHandle ) ){ __PutStackError( nHandle ); }
+	return m_anFlanStackCacheData[ nHandle ];
+}
+
+/**
+*	スタック実体を元に新規スタックを作成します。
+*
+*	@param anStackInstance スタック実体
+*	@return 作成したスタックのハンドル
+*/
+function SetStackInstance( let anStackInstance ){
+	let nLength = length( m_abFlanStackCacheEnable );
+	ascent( let i in 0..nLength ){
+		if( !m_abFlanStackCacheEnable[ i ] ){
+			m_abFlanStackCacheEnable[ i ] = true;
+			let anData = m_anFlanStackCacheData[ i ];
+			anData = anData ~ anStackInstance;
+			m_anFlanStackCacheData[ i ] = anData;
+			return i;
+		}
+	}
+	m_abFlanStackCacheEnable = m_abFlanStackCacheEnable ~ [ true ];
+	m_anFlanStackCacheData = m_anFlanStackCacheData ~ [ anStackInstance ];
+	return nLength;
+}
+
+/**
+*	新規にスタックを作成します。
+*	SetStackInstanceのラッパーです。
+*
+*	@param nValue 登録する初期値
+*	@return 作成したスタックのハンドル
+*/
+function CreateStack( let nValue ){ return SetStackInstance( [ nValue ] ); }
+
+/**
+*	スタックに登録された値を取得します。
+*
+*	@param nHandle スタックハンドル
+*	@return スタックに登録された値
+*/
+function GetStackValue( let nHandle ){
+	if( !IsValidStackHandle( nHandle ) ){ __PutStackError( nHandle ); }
+	let anStackData = m_anFlanStackCacheData[ nHandle ];
+	return anStackData[ 0 ];
+}
+
+/**
+*	スタックに値を登録します。
+*
+*	@param nHandle スタックハンドル
+*	@param nValue 登録する値
+*/
+function PushStack( let nHandle, let nValue ){
+	if( !IsValidStackHandle( nHandle ) ){ __PutStackError( nHandle ); }
+	let anStackData = m_anFlanStackCacheData[ nHandle ];
+	anStackData = [ nValue ] ~ anStackData;
+	m_anFlanStackCacheData[ nHandle ] = anStackData;
+}
+
+/**
+*	スタックに登録された値を上書き登録します。
+*	スタックは積まれません。
+*
+*	@param nHandle スタックハンドル
+*	@param nHandle 登録する値
+*/
+function ReplaceStack( let nHandle, let nValue ){
+	if( !IsValidStackHandle( nHandle ) ){ __PutStackError( nHandle ); }
+	let anStackData = m_anFlanStackCacheData[ nHandle ];
+	anStackData[ 0 ] = nValue;
+	m_anFlanStackCacheData[ nHandle ] = anStackData;
+}
+
+/**
+*	スタックに登録された値を新しいものから1つ取り除きます。
+*
+*	@param nHandle スタックハンドル
+*	@return 取り除いた値
+*/
+function PopStack( let nHandle ){
+	if( !IsValidStackHandle( nHandle ) ){ __PutStackError( nHandle ); }
+	let anStackData = m_anFlanStackCacheData[ nHandle ];
+	let nValue = anStackData[ 0 ];
+	anStackData = erase( anStackData, 0 );
+	m_anFlanStackCacheData[ nHandle ] = anStackData;
+	return nValue;
+}
+
+/**
+*	スタックを削除解放します。
+*	注意:削除解放した後はスタックハンドルを誤使用されないように
+*	FLAN_STACK_HANDLE_INVALIDを代入することを勧めます。
+*
+*	@param nHandle スタックハンドル
+*	@return 解放できたらtrue、ハンドルが無効など解放に失敗したらfalse
+*/
+function ReleaseStack( let nHandle ){
+	if( !IsValidStackHandle( nHandle ) ){ return false; }
+	let anStackData = m_anFlanStackCacheData[ nHandle ];
+	m_anFlanStackCacheData[ nHandle ] = anStackData[ 0..0 ];
+	m_abFlanStackCacheEnable[ nHandle ] = false;
+	return true;
+}

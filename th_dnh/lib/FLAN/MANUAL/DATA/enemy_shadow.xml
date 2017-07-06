@@ -1,0 +1,228 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Enemy / Shadow" file="enemy_shadow">
+	<category caption="概要" link="true">
+		<paragraph>
+			敵スクリプト(ボス・雑魚・使い魔など)で利用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/ENEMY_SHADOW/</path>となります。
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+		<define key="FLAN_ENEMY_KIND_BOSS" type="var">
+			<paragraph>
+				種別がボスであることを示します。
+			</paragraph>
+		</define>
+		<define key="FLAN_ENEMY_KIND_ZAKO" type="var">
+			<paragraph>
+				種別がザコであることを示します。
+			</paragraph>
+		</define>
+		<define key="FLAN_ENEMY_KIND_SHADOW" type="var">
+			<paragraph>
+				種別が使い魔であることを示します。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="書換可能定数" link="true">
+		<define key="FLAN_ENEMY_ITEM" type="var">
+			<paragraph>
+				敵が落とす点アイテム数を設定します。
+				デフォルト値は<value>0</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ENEMY_ITEM_BOMB" type="var">
+			<paragraph>
+				敵が落とすボムアイテム数を設定します。
+				デフォルト値は<value>0</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ENEMY_ITEM_EXTEND" type="var">
+			<paragraph>
+				敵が落とす1UPアイテム数を設定します。
+				デフォルト値は<value>0</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ENEMY_COLLISION_A" type="var">
+			<paragraph>
+				敵本体の被弾判定半径(0指定で判定無し)。<br />
+				デフォルト値は<value>0</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ENEMY_COLLISION_B" type="var">
+			<paragraph>
+				敵本体の体当たり接触判定半径(0指定で判定無し)。<br />
+				デフォルト値は<value>0</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ENEMY_SE_DAMAGE_INTERVAL" type="var">
+			<paragraph>
+				ダメージ音が発生する最小の間隔を定義します。<br />
+				デフォルト値は<value>3</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ENEMY_SE_DAMAGE_CHANGE" type="var">
+			<paragraph>
+				現在ライフが最大ライフの何%まで削られたらダメージ音が切り替わるか定義します。<br />
+				デフォルト値は<value>20</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ENEMY_SE_DAMAGE_FILE_A" type="var">
+			<paragraph>
+				ダメージを受けたときの効果音を設定します。<br />
+				デフォルト値は<value>&quot;&quot;</value>(空文字列)です。<br />
+				<caution>効果音ファイルは自動的にロードされません(各自でロードする必要があります。</caution>
+			</paragraph>
+		</define>
+		<define key="FLAN_ENEMY_SE_DAMAGE_FILE_B" type="var">
+			<paragraph>
+				ダメージを受けたときの効果音を設定します。
+				現在ライフが最大ライフの<var>FLAN_ENEMY_SE_DAMAGE_CHANGE</var>％以下に削られた時に再生されます。<br />
+				デフォルト値は<value>&quot;&quot;</value>(空文字列)です。<br />
+				<caution>効果音ファイルは自動的にロードされません(各自でロードする必要があります。</caution>
+			</paragraph>
+		</define>
+		<define key="FLAN_ENEMY_ARGV_DEFAULT" type="var">
+			<paragraph>
+				<code>GetArgument()</code>で取得できる任意データのデフォルト値。<br />
+				デフォルト値は<value>0</value>です。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="メンバ変数" link="true">
+		<define key="m_nFlanEnemyKind" type="var">
+			<paragraph>
+				自分自身の種別を定義されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanEnemyMaxLife" type="var">
+			<paragraph>
+				最大ライフが格納されます。
+				onInitializeの終了直後に自動的にセットされます。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="アイテム関連">
+		<paragraph>
+			アイテム関連の関数群です。
+		</paragraph>
+		<define key="DropItemPoint">
+			<argument>アイテムの数</argument>
+			<paragraph>
+				<caption>点アイテムを落とします</caption>。
+				__DropItemのラッパーです。
+			</paragraph>
+		</define>
+		<define key="DropItemBomb">
+			<argument>アイテムの数</argument>
+			<paragraph>
+				<caption>ボムアイテムを落とします</caption>。
+				__DropItemのラッパーです。
+			</paragraph>
+		</define>
+		<define key="DropItemExtend">
+			<argument>アイテムの数</argument>
+			<paragraph>
+				<caption>エクステンドアイテムを落とします</caption>。
+				__DropItemのラッパーです。
+			</paragraph>
+		</define>
+		<define key="__DropItem">
+			<argument>アイテムの種類</argument>
+			<argument>アイテムの数</argument>
+			<paragraph>
+				<caption>アイテムを落とします</caption>。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="判定関連">
+		<paragraph>
+			判定関連の関数群です。
+		</paragraph>
+		<define key="__Collision">
+			<argument>当たり判定の中心X座標</argument>
+			<argument>当たり判定の中心Y座標</argument>
+			<argument>敵本体の被弾判定半径(0指定で判定無し)</argument>
+			<argument>敵本体の体当たり接触判定半径(0指定で判定無し)</argument>
+			<paragraph>
+				<caption>当たり判定を登録</caption>します。
+				<code>SetCollisionA</code>/<code>SetCollisionB</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Collision">
+			<argument>敵本体の被弾判定半径(0指定で判定無し)</argument>
+			<argument>敵本体の体当たり接触判定半径(0指定で判定無し)</argument>
+			<paragraph>
+				<caption>自分自身の座標を中心に当たり判定を登録</caption>します。
+				<code>__Collision</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="__CheckGoneLoop">
+			<paragraph>
+				毎フレーム自分自身の座標を確認し、<caption>画面から一定以上はみ出ていたら自殺</caption>します。<br />
+				<caution>自動的に内部から呼ばれますので直接呼び出すことは通常ありません。</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="BGM/効果音関連">
+		<paragraph>
+			主にBGM/効果音関連の関数群です。
+		</paragraph>
+		<define key="__PlayDamageSELoop">
+			<paragraph>
+				毎フレーム被弾したか確認し、<caption>一定間隔でダメージ音を鳴らします</caption>。<br />
+				<caution>自動的に内部から呼ばれますので直接呼び出すことは通常ありません。</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="ダメージ率設定">
+		<paragraph>
+			主にダメージ率設定関連の関数群です。
+		</paragraph>
+		<define key="SetDamageRateDelay">
+			<argument>ショットダメージの通り具合(単位:%)</argument>
+			<argument>ボムダメージの通り具合(単位:%)</argument>
+			<argument>遅延フレーム数</argument>
+			<paragraph>
+				指定したフレーム数<caption>遅延してダメージの通り具合を設定</caption>します。
+				<code>SetDamageRate</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="SetDamageRateDelayEx">
+			<argument>ショットダメージの通り具合(単位:%)</argument>
+			<argument>ボムダメージの通り具合(単位:%)</argument>
+			<argument>ショットダメージの親スクリプトへの影響する比率(単位:%)</argument>
+			<argument>ボムダメージの親スクリプトへの影響する比率(単位:%)</argument>
+			<argument>遅延フレーム数</argument>
+			<paragraph>
+				指定したフレーム数<caption>遅延してダメージの通り具合を設定</caption>します。
+				<code>SetDamageRateEx</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="OwnKill">
+			<paragraph>
+				<caption>その場で自殺</caption>します。
+				<code>AddLife</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="共通処理">
+		<paragraph>
+			このライブラリセットの読み込み対象となる全てのスクリプトで実行される共通処理です。<br />
+			<caution>
+				内部から自動的に呼ばれる関数です。
+				通常直接呼び出すことはありません。
+			</caution>
+		</paragraph>
+		<define key="__FlanCommonEnemyShadowInitialize">
+			<argument>下位初期化処理を呼ぶかどうか</argument>
+			<paragraph>
+				該当<caption>スクリプトの共通初期化処理</caption>です。
+			</paragraph>
+		</define>
+	</category>
+</contents>

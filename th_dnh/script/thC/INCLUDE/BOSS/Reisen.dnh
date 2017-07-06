@@ -1,0 +1,97 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　鈴仙・優曇華院・イナバ
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossReisen;
+let m_szImageCutIn = cutReisen;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_REISEN;
+let m_aszImageBGList = LOADBGLIST_REISEN;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+/** 幻視中か */
+let m_bVision = false;
+let m_nVisionChangeFrame = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellBlack );
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	SetColor( 150, 150, 150 );
+	SetGraphicScale( 0.4, 0.4 );
+	let i = - m_nFlanCount % 1440 * 0.25;
+	__DrawChr( imgSpellBlueMoon, CL_CEN_X + 80 * cos( i ), CL_CEN_Y + 80 * sin( i ) );
+
+	SetAlpha( 160 );
+	SetGraphicRect( 0, 0, 512, 512 );
+	SetColor( 255, 255, 255 );
+	SetGraphicScale( 1.4, 1.4 );
+	SetGraphicAngle( 0, 0, [ m_nFlanCount % 360, m_nFlanCount % 720 * 0.5 ][ m_bVision ] );
+	DrawCenter( imgSpellUdon01 );
+
+	SetAlpha( [ 80, 45 ][ m_bVision ] );
+	SetGraphicRect( 0, 0, 512, 512 );
+	SetGraphicScale( 1, 1 );
+	SetGraphicAngle( 0, 0, [ - m_nFlanCount % 720 * 0.5, - m_nFlanCount % 90 * 4 ][ m_bVision ] );
+	DrawCenter( imgSpellUdon02 );
+
+	if( m_bVision && m_nVisionChangeFrame == 0 ){ m_nVisionChangeFrame = m_nFlanCount; }
+	if( !m_bVision ){ m_nVisionChangeFrame = 0;}
+
+	if( m_bVision ){
+		i = m_nFlanCount - m_nVisionChangeFrame + 80;
+		SetAlpha( 255 );
+		SetRenderState( [ ALPHA, ADD ][ m_bVision ] );
+		SetGraphicAngle( 0, 0, 0 );
+		ascent( let j in 0 .. [ 1, 6 ][ m_bVision ] ){
+			let k = i - j * 12;
+			SetColor( 50, 50, 50 );
+			SetGraphicRect( 0, 0, 256, 256 );
+			SetGraphicScale( Smooth( 0, 1.3, k, 120 ), Smooth( 0, 1.3, k, 120 ) );			
+			DrawCenter( imgSpellUdon03 );
+		}
+		SetColor( 255, 255, 255 );
+		SetRenderState( ALPHA );
+	}
+
+	SetGraphicAngle( 0, 0, 0 );
+	SetColor( 255, 255, 255 );
+	SetGraphicScale( 1, 1 );
+	SetAlpha( 255 );
+
+}
+
+

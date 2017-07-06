@@ -1,0 +1,154 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+/**	使い魔が発光するかどうかを設定します。 */
+let FLAN_SHADOW_LIGHTING			= true;
+/**	使い魔の発光色を設定します。 */
+let FLAN_SHADOW_LIGHTING_COLOR		= WHITE05;
+/**	使い魔の発光間隔を設定します。
+*	注意 : 1未満の数値を設定すると動作が不安定になる可能性があります。
+*/
+let FLAN_SHADOW_LIGHTING_INTERVAL	= 3;
+/**	使い魔の発光期限を設定します。 */
+let FLAN_SHADOW_LIGHTING_LIMITTME	= 15;
+/**	当たり判定を持つかどうかを設定します。 */
+let FLAN_SHADOW_COLLISION			= false;
+/**	使い魔破壊時の弾消し半径を設定します。 */
+let FLAN_SHADOW_DELETE_SHOT			= 32;
+/**	使い魔が隠れる時の効果音を設定します。
+*	注意：効果音ファイルは自動的にロードされません(各自でロードする必要があります。
+*/
+let FLAN_SHADOW_SE_HIDDEN			= "";
+/**	使い魔が具現化する時の効果音を設定します。
+*	注意：効果音ファイルは自動的にロードされません(各自でロードする必要があります。
+*/
+let FLAN_SHADOW_SE_APPEAR			= "";
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	使い魔の被弾判定有無が格納されます。 */
+let m_bFlanCollisionA = false;
+/**	使い魔の体当たり判定有無が格納されます。 */
+let m_bFlanCollisionB = false;
+/**	前フレームの低速ボタン入力状態が格納されます。 */
+let m_nFlanPrevSlowStat = GetKeyState( VK_SLOWMOVE );
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	判定関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	毎ループ低速キーの状態を確認し、使い魔の状態を決定します。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+task __SetShadowModeLoop(){
+	loop{
+		yield;
+		let nStat = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_KEY_SLOW_STAT, GetKeyState( VK_SLOWMOVE ) );
+		alternative( nStat )
+		case( KEY_FREE ){
+			m_bFlanCollisionA = true;
+			m_bFlanCollisionB = true;
+			if( length( FLAN_SHADOW_SE_APPEAR ) > 0 && m_nFlanPrevSlowStat == KEY_PULL ){ PlaySEEx( FLAN_SHADOW_SE_APPEAR ); }
+		}
+		case( KEY_PULL, KEY_PUSH ){
+			m_bFlanCollisionA = true;
+			m_bFlanCollisionB = false;
+		}
+		case( KEY_HOLD ){
+			m_bFlanCollisionA = false;
+			m_bFlanCollisionB = false;
+			if( length( FLAN_SHADOW_SE_HIDDEN ) > 0 && m_nFlanPrevSlowStat == KEY_PUSH ){ PlaySEEx( FLAN_SHADOW_SE_HIDDEN ); }
+		}
+		m_nFlanPrevSlowStat = nStat;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	エフェクト関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	使い魔を発光させる(発光体を作る)ループです。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+task __LightShadowLoop(){
+	loop{
+		loop( FLAN_SHADOW_LIGHTING_INTERVAL ){ yield; }
+		if( FLAN_SHADOW_LIGHTING && m_bFlanCollisionA ){ __LightShadowObject(); }
+	}
+}
+
+/**
+*	使い魔の発光体オブジェクトです。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+task __LightShadowObject(){
+	let obj = Obj_Create( OBJ_SHOT );
+	Obj_SetSpeed( obj, 500 );
+	Obj_SetAngle( obj, 0 );
+	Obj_SetAlpha( obj, 0 );
+	Obj_SetAutoDelete( obj, true );
+	Obj_SetPosition( obj, GetX(), GetY() );
+	Obj_SetCollisionToPlayer( obj, false );
+	ObjShot_ToItem( obj, false );
+	ObjShot_SetBombResist( obj, true );
+	ObjShot_SetDelay( obj, FLAN_SHADOW_LIGHTING_LIMITTME );
+	ObjShot_SetGraphic( obj, FLAN_SHADOW_LIGHTING_COLOR );
+	loop( FLAN_SHADOW_LIGHTING_LIMITTME ){ yield; }
+	Obj_Delete( obj );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	移動関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	使い魔を周回運動させます。
+*	敵本体を中心として回転させる場合SetCoordinateType( COODINATE_TYPE_PARENT )を併用すると便利です。
+*
+*	@param nSpeed 速度
+*	@param nRadius 半径
+*	@param nBaseX 中心点のX座標
+*	@param nBaseY 中心点のY座標
+*/
+function MoveRotate( let nSpeed, let nRadius, let nBaseX, let nBaseY ){
+	SetCoordinateType( COODINATE_TYPE_PARENT );
+	let nDeg = m_nFlanCount * nSpeed + GetAngle();
+	let nX = nBaseX - cos( nDeg ) * nRadius;
+	let nY = nBaseY + sin( nDeg ) * nRadius;
+	SetX( nX );
+	SetY( nY );
+	return atan2( nY, nX );
+}

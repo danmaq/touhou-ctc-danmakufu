@@ -1,0 +1,414 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ6　ボス　博麗 霊夢（白）　スペル2
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[ReimuW - スペル2]
+#Text[ステージ6 ボス
+博麗 霊夢（白）]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\ReimuW.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 110;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 80;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 蝶画像ファイル */
+	let m_szImageButterfly = IMAGE_CL_SHOT_ALL;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage ){ LoadGraphic( m_szImageButterfly ); }
+		SetTimer( 60 );
+		SetLife( 500 );
+		SetDamageRate( 5, 5 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		else{ CheckDuelTimer(); }
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_YOUMU + CL_TTH_CHARACTER_NAME_YOUMU_REIMU;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){ DropItemTHC( 20 ); }
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 残像描画 */
+		DrawBlur( m_szImageBoss );
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG2();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		SetBlur( nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_YOUMU + CL_TTH_SPELL_STAGE6_BOSS_2 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE_NEXTPHASE, true );
+
+		/** 誘導蝶弾 */
+		SetAction( ACT_SHOT_A5, 60 );
+		SetColor( 95, 95, 255 );
+		Concentration01( 30 );
+		SetColor( 255, 255, 255 );
+		__Wait( 30 );
+		PlaySEEx( seShadow );
+		HormingButterfly( 0 );
+		if( m_nLevel == 3 ){ HormingButterfly( 180 ); }
+		__Wait( 90 );
+
+		/** 全方向V字弾 */
+		SetAction( ACT_SHOT_B5, 180 );
+		PlaySEEx( sePower );
+		SetColor( 95, 95, 255 );
+		Concentration01( 120 );
+		SetColor( 255, 255, 255 );
+		__Wait( 120 );
+		RoundVShot();
+		SetDamageRate( 12, 8 );
+
+		loop{
+
+			/** 全方向V字弾 */
+			__Wait( 300 );
+
+			/** 移動 */
+			Move( 60 );
+			__Wait( 60 );
+
+			SetAction( ACT_SHOT_A5, 300 );
+
+		}
+
+	}
+
+	/**
+	*	全方向V字弾
+	*/
+	task RoundVShot(){
+
+		let nFrame = 45;
+		let nWay = 7 + m_nLevel;
+		let nAngle = 90;
+		let nAddAngle = 360 / nWay * 0.5;
+
+		loop{
+			_RoundVShot( nAngle, nWay );
+			__Wait( nFrame );
+			nAngle += nAddAngle;
+		}
+
+	}
+
+	/**
+	*	全方向V字弾（1セット）
+	*	@param nBaseAngle	角度
+	*	@param nWay			way数
+	*/
+	task _RoundVShot( let nBaseAngle, let nWay ){
+
+		let nFrame = 10;
+		let nNum = 4;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 1.4;
+		let nWayAngle = 360 / nWay;
+		let nNumAngle = nWayAngle / 2 / ( nNum - 1 );
+		let nAngle = 0;
+		let nGraphic = US_FIRE_BLUE;
+		let nDelay = 8;
+
+		ascent( let i in 0 .. nNum ){
+			_RoundShot01( nX, nY, nSpeed, nBaseAngle + nAngle, nWay, nGraphic, nDelay );
+			if( i != 0 && i != nNum - 1 ){ _RoundShot01( nX, nY, nSpeed, nBaseAngle - nAngle, nWay, nGraphic, nDelay ); }
+			PlaySEEx( seShot1 );
+			__Wait( nFrame );
+			nAngle += nNumAngle;
+		}
+
+	}
+
+	/**
+	*	誘導蝶弾
+	*	@param nAngle	角度
+	*/
+	task HormingButterfly( let nAngle ){
+
+		let obj = Obj_Create( OBJ_SHOT );
+		let nX = GetX();
+		let nY = GetY();
+		let nGraphic = US_BALL_M_PURPLE;
+		Obj_SetPosition( obj, nX, nY );
+		ObjShot_SetGraphic( obj, nGraphic );
+		Obj_SetAutoDelete( obj, false );
+		ObjShot_SetBombResist( obj, true );
+		let nSpeed = 4;
+		let bAccel = false;
+		_SetAngle();
+		_SetSpeed();
+		SetButterfly();
+
+		let nFrame = [ 20, 10, 6, 8 ][ m_nLevel ];
+		let _nMaxSpeed = 1;
+		let _nAccelSpeed = _nMaxSpeed / 120;
+		let _nGraphic = US_BALL_S_PURPLE;
+		let nDelay = nFrame;
+
+		/** 尾弾 */
+		loop{
+			loop( nFrame ){ yield; }
+			CreateShot02( nX, nY, 0, nAngle + 180, _nAccelSpeed, _nMaxSpeed, _nGraphic, nDelay );
+		}
+
+		/** 速度設定 */
+		task _SetSpeed{
+			let nMinSpeed = 0.6;
+			let nMaxSpeed = 3.6;
+			let nAccelSpeed = 0.06;
+			let nDecelSpeed = 0.03;
+			loop{
+				Obj_SetSpeed( obj, nSpeed );
+				yield;
+				if( bAccel ){
+					nSpeed += nAccelSpeed;
+					if( nSpeed > nMaxSpeed ){ nSpeed = nMaxSpeed; }
+				}
+				else{
+					nSpeed -= nDecelSpeed;
+					if( nSpeed < nMinSpeed ){ nSpeed = nMinSpeed; }
+				}
+			}
+		}
+
+		/** 角度設定 */
+		task _SetAngle{
+			let nAddAngle = 1.3;
+			loop{
+				nX = Obj_GetX( obj );
+				nY = Obj_GetY( obj );
+				if( nAngle >= 360 ){ nAngle %= 360; }
+				while( nAngle < 0 ){ nAngle += 360; }
+				let nPlayerAngle = GetGapAngle( nX, nY, GetPlayerX(), GetPlayerY() );
+				if( nPlayerAngle >= 360 ){ nPlayerAngle %= 360; }
+				while( nPlayerAngle < 0 ){ nPlayerAngle += 360; }
+				let nDiffAngle = nPlayerAngle - nAngle;
+				if( ( nDiffAngle > 0 && nDiffAngle <= 180 ) || nDiffAngle <= - 180 ){ nAngle += nAddAngle; }
+				else if( nDiffAngle > 180 || ( nDiffAngle < 0 && nDiffAngle > - 180 ) ){ nAngle -= nAddAngle; }
+				if( absolute( nDiffAngle ) <= 5 ){ bAccel = true; }
+				else{ bAccel = false; }
+				Obj_SetAngle( obj, nAngle );
+				yield;
+			}
+		}
+
+		/** 蝶設定 */
+		task SetButterfly{
+
+			let nRectLength = 80;
+			let nLengthRatio = 0.2;
+			let nWidthRatio = 0.2;
+			let _obj = CreateSquareEffectObject( m_szImageButterfly, 180, 260, 30, 30, nRectLength, nRectLength );
+			_SetScale();
+
+			loop{
+				Obj_SetPosition( _obj, nX, nY );
+				ObjEffect_SetAngle( _obj, 0, 0, nAngle + 90 );
+				ObjEffect_SetScale( _obj, nWidthRatio, nLengthRatio );
+				yield;
+			}
+
+			/** 大きさ設定 */
+			task _SetScale{
+				let _nFrame = 15;
+				let nAddLengthRatio = ( 1 - nLengthRatio ) / _nFrame;
+				loop( _nFrame ){
+					nLengthRatio += nAddLengthRatio;
+					yield;
+				}
+				let nMinWidthRatio = nWidthRatio;
+				let nMaxWidthRatio = 1;
+				let nAddWidthRatio = ( nMaxWidthRatio - nMinWidthRatio ) / 8;
+				loop{
+					nWidthRatio += nAddWidthRatio;
+					if( nWidthRatio >= nMaxWidthRatio ){
+						nWidthRatio = nMaxWidthRatio;
+						nAddWidthRatio = - nAddWidthRatio;
+					}
+					else if( nWidthRatio <= nMinWidthRatio ){
+						nWidthRatio = nMinWidthRatio;
+						nAddWidthRatio = - nAddWidthRatio;
+					}
+					yield;
+					if( !bAccel ){ yield; }
+				}
+			}
+
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 40;
+		let nMaxMoveX = 80;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 20;
+
+		SetAction( ACT_MOVE, nFrame );
+		SetBlur( nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

@@ -1,0 +1,10 @@
+let PATH_USER_SHOT = GetCurrentScriptDirectory() ~ "Shot.dnh";
+let US_MAINSHOT		= 1;	// メインショット
+let US_SUBSHOT		= 2;	// マジックミサイル
+let US_SUBSHOT_LONG	= 3;	// マジックナパーム
+let US_LASER		= 4;	// イリュージョンレーザー
+let US_INYAN		= 5;	// 陰陽弾
+let US_BLANK16		= 251;	// 非表示弾(16x16)
+let US_BLANK32		= 252;	// 非表示弾(32x32)
+let US_BLANK64		= 253;	// 非表示弾(64x64)
+let US_BLANK256		= 254;	// 非表示弾(256x256)

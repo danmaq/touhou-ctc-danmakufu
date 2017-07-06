@@ -1,0 +1,370 @@
+/** ÉÜÅ[ÉUÅ[íËã`íeíËã`Ç÷ÇÃÉpÉX */
+let shotAll = "lib\THCCL\shot_All.dnh";
+
+////////////////////////////////////////////////////////////
+//	ÉVÉáÉbÉgâÊëúéwíËíËêî
+//	(shot_All.dnhçXêVéûÇÕÇ±ÇøÇÁÇ‡èCê≥ÇµÇƒÇ≠ÇæÇ≥Ç¢)
+////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////
+//	ÇWêFíe
+////////////////////////////////////////////////////////////
+
+/** ó±íe */
+let US_BALL_SS_RED		= 1;
+let US_BALL_SS_ORANGE	= 2;
+let US_BALL_SS_YELLOW	= 3;
+let US_BALL_SS_GREEN	= 4;
+let US_BALL_SS_SKY		= 5;
+let US_BALL_SS_BLUE		= 6;
+let US_BALL_SS_PURPLE	= 7;
+let US_BALL_SS_WHITE	= 8;
+
+/** è¨íe */
+let US_BALL_S_RED		= 9;
+let US_BALL_S_ORANGE	= 10;
+let US_BALL_S_YELLOW	= 11;
+let US_BALL_S_GREEN		= 12;
+let US_BALL_S_SKY		= 13;
+let US_BALL_S_BLUE		= 14;
+let US_BALL_S_PURPLE	= 15;
+let US_BALL_S_WHITE		= 16;
+
+/** è¨íeÅiâ¡éZçáê¨ï`âÊópÅj */
+let US_BALL_S_A_RED		= 241;
+let US_BALL_S_A_ORANGE	= 242;
+let US_BALL_S_A_YELLOW	= 243;
+let US_BALL_S_A_GREEN	= 244;
+let US_BALL_S_A_SKY		= 245;
+let US_BALL_S_A_BLUE	= 246;
+let US_BALL_S_A_PURPLE	= 247;
+let US_BALL_S_A_WHITE	= 248;
+
+/** ògè¨íe */
+let US_BALL_BS_RED		= 17;
+let US_BALL_BS_ORANGE	= 18;
+let US_BALL_BS_YELLOW	= 19;
+let US_BALL_BS_GREEN	= 20;
+let US_BALL_BS_SKY		= 21;
+let US_BALL_BS_BLUE		= 22;
+let US_BALL_BS_PURPLE	= 23;
+let US_BALL_BS_WHITE	= 24;
+
+/** íÜíe */
+let US_BALL_M_RED		= 25;
+let US_BALL_M_ORANGE	= 26;
+let US_BALL_M_YELLOW	= 27;
+let US_BALL_M_GREEN		= 28;
+let US_BALL_M_SKY		= 29;
+let US_BALL_M_BLUE		= 30;
+let US_BALL_M_PURPLE	= 31;
+let US_BALL_M_WHITE		= 32;
+
+/** íÜíeÅiâ¡éZçáê¨ï`âÊópÅj */
+let US_BALL_M_A_RED		= 225;
+let US_BALL_M_A_ORANGE	= 226;
+let US_BALL_M_A_YELLOW	= 227;
+let US_BALL_M_A_GREEN	= 228;
+let US_BALL_M_A_SKY		= 229;
+let US_BALL_M_A_BLUE	= 230;
+let US_BALL_M_A_PURPLE	= 231;
+let US_BALL_M_A_WHITE	= 232;
+
+/** êjíe */
+let US_NEEDLE_RED		= 33;
+let US_NEEDLE_ORANGE	= 34;
+let US_NEEDLE_YELLOW	= 35;
+let US_NEEDLE_GREEN		= 36;
+let US_NEEDLE_SKY		= 37;
+let US_NEEDLE_BLUE		= 38;
+let US_NEEDLE_PURPLE	= 39;
+let US_NEEDLE_WHITE		= 40;
+
+/** ïƒó±íe */
+let US_RICE_S_RED		= 41;
+let US_RICE_S_ORANGE	= 42;
+let US_RICE_S_YELLOW	= 43;
+let US_RICE_S_GREEN		= 44;
+let US_RICE_S_SKY		= 45;
+let US_RICE_S_BLUE		= 46;
+let US_RICE_S_PURPLE	= 47;
+let US_RICE_S_WHITE		= 48;
+
+/** ïXâÚíe */
+let US_ICE_RED		= 49;
+let US_ICE_ORANGE	= 50;
+let US_ICE_YELLOW	= 51;
+let US_ICE_GREEN	= 52;
+let US_ICE_SKY		= 53;
+let US_ICE_BLUE		= 54;
+let US_ICE_PURPLE	= 55;
+let US_ICE_WHITE	= 56;
+
+/** ç¿ñÚíe */
+let US_MISSILE_RED		= 57;
+let US_MISSILE_ORANGE	= 58;
+let US_MISSILE_YELLOW	= 59;
+let US_MISSILE_GREEN	= 60;
+let US_MISSILE_SKY		= 61;
+let US_MISSILE_BLUE		= 62;
+let US_MISSILE_PURPLE	= 63;
+let US_MISSILE_WHITE	= 64;
+
+/** ç¿ñÚíeÅiå∂éãíÜÅj */
+let US_MISSILE_V_RED	= 97;
+let US_MISSILE_V_ORANGE	= 98;
+let US_MISSILE_V_YELLOW	= 99;
+let US_MISSILE_V_GREEN	= 100;
+let US_MISSILE_V_SKY	= 101;
+let US_MISSILE_V_BLUE	= 102;
+let US_MISSILE_V_PURPLE	= 103;
+let US_MISSILE_V_WHITE	= 104;
+
+/** ëêóöíe */
+let US_RICE_M_RED		= 65;
+let US_RICE_M_ORANGE	= 66;
+let US_RICE_M_YELLOW	= 67;
+let US_RICE_M_GREEN		= 68;
+let US_RICE_M_SKY		= 69;
+let US_RICE_M_BLUE		= 70;
+let US_RICE_M_PURPLE	= 71;
+let US_RICE_M_WHITE		= 72;
+
+/** ãÍñ≥íe */
+let US_KUNAI_RED		= 73;
+let US_KUNAI_ORANGE		= 74;
+let US_KUNAI_YELLOW		= 75;
+let US_KUNAI_GREEN		= 76;
+let US_KUNAI_SKY		= 77;
+let US_KUNAI_BLUE		= 78;
+let US_KUNAI_PURPLE		= 79;
+let US_KUNAI_WHITE		= 80;
+
+/** óÿíe */
+let US_SCALE_RED		= 81;
+let US_SCALE_ORANGE		= 82;
+let US_SCALE_YELLOW		= 83;
+let US_SCALE_GREEN		= 84;
+let US_SCALE_SKY		= 85;
+let US_SCALE_BLUE		= 86;
+let US_SCALE_PURPLE		= 87;
+let US_SCALE_WHITE		= 88;
+
+/** óÿíeÅiâ¡éZçáê¨ï`âÊópÅj */
+let US_SCALE_A_RED		= 233;
+let US_SCALE_A_ORANGE	= 234;
+let US_SCALE_A_YELLOW	= 235;
+let US_SCALE_A_GREEN	= 236;
+let US_SCALE_A_SKY		= 237;
+let US_SCALE_A_BLUE		= 238;
+let US_SCALE_A_PURPLE	= 239;
+let US_SCALE_A_WHITE	= 240;
+
+/** éDíe */
+let US_BILL_RED		= 89;
+let US_BILL_ORANGE	= 90;
+let US_BILL_YELLOW	= 91;
+let US_BILL_GREEN	= 92;
+let US_BILL_SKY		= 93;
+let US_BILL_BLUE	= 94;
+let US_BILL_PURPLE	= 95;
+let US_BILL_WHITE	= 96;
+
+/** í±íe */
+let US_BUTTERFLY_RED		= 105;
+let US_BUTTERFLY_ORANGE		= 106;
+let US_BUTTERFLY_YELLOW		= 107;
+let US_BUTTERFLY_GREEN		= 108;
+let US_BUTTERFLY_SKY		= 109;
+let US_BUTTERFLY_BLUE		= 110;
+let US_BUTTERFLY_PURPLE		= 111;
+let US_BUTTERFLY_WHITE		= 112;
+
+/** åıíe */
+let US_LIGHT_RED		= 113;
+let US_LIGHT_ORANGE		= 114;
+let US_LIGHT_YELLOW		= 115;
+let US_LIGHT_GREEN		= 116;
+let US_LIGHT_SKY		= 117;
+let US_LIGHT_BLUE		= 118;
+let US_LIGHT_PURPLE		= 119;
+let US_LIGHT_WHITE		= 120;
+
+/** è¨êØíe */
+let US_STAR_S_RED		= 121;
+let US_STAR_S_ORANGE	= 122;
+let US_STAR_S_YELLOW	= 123;
+let US_STAR_S_GREEN		= 124;
+let US_STAR_S_SKY		= 125;
+let US_STAR_S_BLUE		= 126;
+let US_STAR_S_PURPLE	= 127;
+let US_STAR_S_WHITE		= 128;
+
+/** ëÂêØíe */
+let US_STAR_M_RED		= 129;
+let US_STAR_M_ORANGE	= 130;
+let US_STAR_M_YELLOW	= 131;
+let US_STAR_M_GREEN		= 132;
+let US_STAR_M_SKY		= 133;
+let US_STAR_M_BLUE		= 134;
+let US_STAR_M_PURPLE	= 135;
+let US_STAR_M_WHITE		= 136;
+
+/** è¨ìÅíe */
+let US_KNIFE_YOUMU_RED		= 137;
+let US_KNIFE_YOUMU_ORANGE	= 138;
+let US_KNIFE_YOUMU_YELLOW	= 139;
+let US_KNIFE_YOUMU_GREEN	= 140;
+let US_KNIFE_YOUMU_SKY		= 141;
+let US_KNIFE_YOUMU_BLUE		= 142;
+let US_KNIFE_YOUMU_PURPLE	= 143;
+let US_KNIFE_YOUMU_WHITE	= 144;
+
+/** ÉiÉCÉtíe */
+let US_KNIFE_KOUMA_RED		= 145;
+let US_KNIFE_KOUMA_ORANGE	= 146;
+let US_KNIFE_KOUMA_YELLOW	= 147;
+let US_KNIFE_KOUMA_GREEN	= 148;
+let US_KNIFE_KOUMA_SKY		= 149;
+let US_KNIFE_KOUMA_BLUE		= 150;
+let US_KNIFE_KOUMA_PURPLE	= 151;
+let US_KNIFE_KOUMA_WHITE	= 152;
+
+/** åıê¸Åiâ¡éZçáê¨ï`âÊópÅj */
+let US_BEAM_RED			= 153;
+let US_BEAM_ORANGE		= 154;
+let US_BEAM_YELLOW		= 155;
+let US_BEAM_GREEN		= 156;
+let US_BEAM_SKY			= 157;
+let US_BEAM_BLUE		= 158;
+let US_BEAM_PURPLE		= 159;
+let US_BEAM_WHITE		= 160;
+let US_BEAM_RAINBOW		= 161;
+
+/** ëÂíe */
+let US_BALL_L_RED		= 165;
+let US_BALL_L_ORANGE	= 166;
+let US_BALL_L_YELLOW	= 167;
+let US_BALL_L_GREEN		= 168;
+let US_BALL_L_SKY		= 169;
+let US_BALL_L_BLUE		= 170;
+let US_BALL_L_PURPLE	= 171;
+let US_BALL_L_WHITE		= 172;
+
+////////////////////////////////////////////////////////////
+//	ì¡éÍíe
+////////////////////////////////////////////////////////////
+
+/** âäíe */
+let US_FIRE_RED		= 162;
+let US_FIRE_BLUE	= 163;
+
+/** ë≤ìÉîkíe */
+let US_TABLET	= 164;
+
+/** âAózíÜíe */
+let US_ONMYOU_M_RED		= 221;
+let US_ONMYOU_M_BLUE	= 222;
+
+/** âAózëÂíe */
+let US_ONMYOU_L_RED		= 223;
+let US_ONMYOU_L_BLUE	= 224;
+
+/** ëKíe Å¶ÇRêFà»äOÇÕëÃå±î≈CÇ…ÇƒíËã`çÌèú */
+//let US_COIN_RED		= ;
+let US_COIN_ORANGE		= 251;
+let US_COIN_YELLOW		= 252;
+//let US_COIN_GREEN		= ;
+//let US_COIN_SKY		= ;
+//let US_COIN_BLUE		= ;
+//let US_COIN_PURPLE	= ;
+let US_COIN_WHITE		= 253;
+
+/** ìVãÁíeÅiâ¡éZçáê¨ï`âÊópÅj */
+let US_TENGU	= 254;
+
+/** íeñãçŸîªíe */
+let US_JUDGMENT		= 255;
+
+////////////////////////////////////////////////////////////
+//	ÇSêFíeÅiîΩì]Åj
+////////////////////////////////////////////////////////////
+
+/** îΩì]è¨íe */
+let US_BALL_S_R_WHITE	= 173;
+let US_BALL_S_R_RED		= 174;
+let US_BALL_S_R_PURPLE	= 175;
+let US_BALL_S_R_BLUE	= 176;
+
+/** îΩì]ògè¨íe */
+let US_BALL_BS_R_WHITE		= 177;
+let US_BALL_BS_R_RED		= 178;
+let US_BALL_BS_R_PURPLE		= 179;
+let US_BALL_BS_R_BLUE		= 180;
+
+/** îΩì]íÜíe */
+let US_BALL_M_R_WHITE	= 181;
+let US_BALL_M_R_RED		= 182;
+let US_BALL_M_R_PURPLE	= 183;
+let US_BALL_M_R_BLUE	= 184;
+
+/** îΩì]êjíe */
+let US_NEEDLE_R_WHITE	= 185;
+let US_NEEDLE_R_RED		= 186;
+let US_NEEDLE_R_PURPLE	= 187;
+let US_NEEDLE_R_BLUE	= 188;
+
+/** îΩì]ïƒó±íe */
+let US_RICE_S_R_WHITE	= 189;
+let US_RICE_S_R_RED		= 190;
+let US_RICE_S_R_PURPLE	= 191;
+let US_RICE_S_R_BLUE	= 192;
+
+/** îΩì]ïXâÚíe */
+let US_ICE_R_WHITE		= 193;
+let US_ICE_R_RED		= 194;
+let US_ICE_R_PURPLE		= 195;
+let US_ICE_R_BLUE		= 196;
+
+/** îΩì]ç¿ñÚíe */
+let US_MISSILE_R_WHITE		= 197;
+let US_MISSILE_R_RED		= 198;
+let US_MISSILE_R_PURPLE		= 199;
+let US_MISSILE_R_BLUE		= 200;
+
+/** îΩì]ëêóöíe */
+let US_RICE_M_R_WHITE	= 201;
+let US_RICE_M_R_RED		= 202;
+let US_RICE_M_R_PURPLE	= 203;
+let US_RICE_M_R_BLUE	= 204;
+
+/** îΩì]í±íe */
+let US_BUTTERFLY_R_WHITE	= 205;
+let US_BUTTERFLY_R_RED		= 206;
+let US_BUTTERFLY_R_PURPLE	= 207;
+let US_BUTTERFLY_R_BLUE		= 208;
+
+/** îΩì]åıíe */
+let US_LIGHT_R_WHITE	= 209;
+let US_LIGHT_R_RED		= 210;
+let US_LIGHT_R_PURPLE	= 211;
+let US_LIGHT_R_BLUE		= 212;
+
+/** îΩì]è¨êØíe */
+let US_STAR_S_R_WHITE	= 213;
+let US_STAR_S_R_RED		= 214;
+let US_STAR_S_R_PURPLE	= 215;
+let US_STAR_S_R_BLUE	= 216;
+
+/** îΩì]ëÂêØíe */
+let US_STAR_M_R_WHITE	= 217;
+let US_STAR_M_R_RED		= 218;
+let US_STAR_M_R_PURPLE	= 219;
+let US_STAR_M_R_BLUE	= 220;
+
+/** îΩì]åıê¸ Å¶ëÃå±î≈CÇ…ÇƒíËã`çÌèú */
+//let US_BEAM_R_WHITE	= ;
+//let US_BEAM_R_RED		= ;
+//let US_BEAM_R_PURPLE	= ;
+//let US_BEAM_R_BLUE	= ;
+

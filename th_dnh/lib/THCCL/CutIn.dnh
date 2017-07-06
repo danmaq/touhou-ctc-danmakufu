@@ -1,0 +1,480 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Common-Library
+//		THCカットインライブラリ v2.0
+//
+//	※ステージ・ボス・プレイヤースクリプトでは内部から自動的に
+//		インクルードされるので直接インクルードすることはありません。
+//	※雑魚や使い魔でデバッグ用などに使用したい場合のみ
+//		直接各スクリプトからインクルードしてください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	下位ライブラリをインクルード
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\THCCL\Font.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	スペルプラクティスにおいて該当スペルが選択不可能であることを示します。 */
+let CL_SPELL_HISTORY_RELEASE_LEVEL_LOCK			= 0;
+/**	スペルプラクティスにおいて該当スペルが可能だがタイトル・コメント共に「？？？」表示であることを示します。 */
+let CL_SPELL_HISTORY_RELEASE_LEVEL_SELECTABLE	= 1;
+/**	スペルプラクティスにおいて該当スペルが可能だがコメントが「？？？」表示であることを示します。 */
+let CL_SPELL_HISTORY_RELEASE_LEVEL_TITLE		= 2;
+/**	スペルプラクティスにおいて該当スペルが選択可能かつ全ての情報が表示されることを示します。 */
+let CL_SPELL_HISTORY_RELEASE_LEVEL_COMMENT		= 3;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+/**	カットインの切り出しX座標を設定します。 */
+let CL_CUTIN_X	= 0;
+/**	カットインの切り出しY座標を設定します。 */
+let CL_CUTIN_Y	= 0;
+/**	カットインの幅を設定します。 */
+let CL_CUTIN_WIDTH	= 192;
+/**	カットインの高さを設定します。 */
+let CL_CUTIN_HEIGHT	= 288;
+/**	カーニングの量を設定します(はみ出し防止用)。 */
+let CL_CUTIN_SPELLNAME_KERNING	= -2;
+/**	プレイヤースペル名の基本X座標を設定します(はみ出し防止用)。 */
+let CL_CUTIN_SPELLNAME_X_PLAYER	= 192;
+/**	敵スペル名の基本X座標を設定します(はみ出し防止用)。 */
+let CL_CUTIN_SPELLNAME_X_ENEMY	= 64;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	スペルカットイン発動したフレーム時間が格納されます。 */
+let m_nCLCutInStartTime = 0;
+/**	スペルカットイン発動中かどうかが格納されます。 */
+let m_bCLCutInEnable = false;
+/**	スペルカットインがプレイヤーのものかどうかが格納されます。 */
+let m_bCLCutInPlayer = false;
+/**	スペルカード名が格納されます。 */
+let m_szCLCutInSpellName = "";
+/**	スペルカードIDが格納されます。 */
+let m_nCLCutInSpellID = -1;
+/**	スペルカットインの画像ファイル名が格納されます。 */
+let m_szCLCutInImage = "";
+/**	カットインの切り出しX座標が格納されます。 */
+let m_nCLCutInImageX = 0;
+/**	カットインの切り出しY座標が格納されます。 */
+let m_nCLCutInImageY = 0;
+/**	カットインの幅が格納されます。 */
+let m_nCLCutInImageWidth = 0;
+/**	カットインの高さが格納されます。 */
+let m_nCLCutInImageHeight = 0;
+/**	スペルカード名のフォントキャッシュハンドルが格納されます。 */
+let m_nCLTTHSpellName = CL_TT_INVALID;
+/**	スペルカードにおける現在の取得予定ボーナスのフォントキャッシュハンドルが格納されます。 */
+let m_nCLTTHSpellBonus = CL_TT_INVALID;
+let m_nCLTTHSpellHiScore = CL_TT_INVALID;
+let m_nCLTTHSpellHistory = CL_TT_INVALID;
+
+/**	カットインの絵画先X座標が格納されます。 */
+let m_nCLCutInAX = 0;
+/**	カットインの透過度が格納されます。 */
+let m_nCLCutInAAlpha = 0;
+/**	カットインのX軸拡大率が格納されます。 */
+let m_nCLCutInAScaleX = 0;
+/**	カットインのY軸拡大率が格納されます。 */
+let m_nCLCutInAScaleY = 0;
+/**	カットイン(バック表示)の絵画先Y座標が格納されます。 */
+let m_nCLCutInBY = 0;
+/**	カットイン(バック表示)の透過度が格納されます。 */
+let m_nCLCutInBAlpha = 0;
+/**	カットイン(バック表示)の拡大率が格納されます。 */
+let m_nCLCutInBScale = 0;
+
+/**	スペルカード名表示のX座標を格納します。 */
+let m_nCLSpellNameX = 0;
+/**	スペルカード名表示のY座標を格納します。 */
+let m_nCLSpellNameY = 0;
+/**	スペルカード名表示背景ワンポイント画像のX座標を格納します。 */
+let m_nCLSpellNameBGX = 0;
+/**	スペルカード名表示背景ワンポイント画像の切り出し上端Y座標を格納します。 */
+let m_nCLSpellNameBGSrcY = 0;
+/**	スペルカード名表示の左端Y座標誤差を格納します。 */
+let m_nCLSpellNameYGapStart = 0;
+/**	スペルカード名表示の右端Y座標誤差を格納します。 */
+let m_nCLSpellNameYGapEnd = 0;
+/**	スペルカード名表示の右端透明度を格納します。 */
+let m_nCLSpellNameAlphaStart = 0;
+/**	スペルカード名表示の左端透明度を格納します。 */
+let m_nCLSpellNameAlphaEnd = 0;
+/**	スペルカード名表示の右端拡大率を格納します。 */
+let m_nCLSpellNameScaleXStart = 0;
+/**	スペルカード名表示の右端拡大率を格納します。 */
+let m_nCLSpellNameScaleXEnd = 0;
+/**	スペルカード名表示の透過度が格納されます。 */
+let m_nCLSpellNameAlpha = 255;
+/**	スペルカード名表示をこのフレームでラスタライズするかどうかが格納されます。 */
+let m_bCLSpellNameRasterize = false;
+/**	スペルカード名表示が無事ラスタライズされたどうかが格納されます。 */
+let m_bCLSpellNameRasterized = false;
+/**	スペルカード名表示下スコアを更新するどうかが格納されます。 */
+let m_bCLSpellBonusRefresh = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	制御系機能
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+/**
+*	スペルカードエフェクトが発動しているかどうかを返します。
+*	こちらはm_bCLCutInEnableのように「カットインを表示している間」ではなく
+*	スペルカードエフェクトが有効の間常に真値が返ります
+*
+*	@return スペルカードエフェクトが有効な場合true
+*/
+function IsCLCutIn(){ return m_nCLTTHSpellName != CL_TT_INVALID || m_bCLCutInEnable; }
+
+/**
+*	スペルカットインを発動します。
+*	(厳密にはスペルカットインのキューを送信するだけです。)
+*	注意: CL/ELステージが有効か無効かによってカットインやスペルカード名表示などの優先度が異なります。
+*
+*	@param bPlayer プレイヤーのスペルカットインかどうか
+*	@param szFileImageCutIn カットインファイルパス
+*	@param szSpellName スペルカード名
+*/
+function PushCLCutInQueue( let bPlayer, let szFileImageCutIn, let szSpellName ){
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_START, true );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_PLAYER, bPlayer );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_SPELL_NAME, szSpellName );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_SPELL_ID, -1 );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_IMAGE_FILE, szFileImageCutIn );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_SPELL_KERNING, CL_CUTIN_SPELLNAME_KERNING );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_IMAGE_RECT, [ CL_CUTIN_X, CL_CUTIN_Y, CL_CUTIN_WIDTH, CL_CUTIN_HEIGHT ] );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_SPELL_X, [ CL_CUTIN_SPELLNAME_X_ENEMY, CL_CUTIN_SPELLNAME_X_PLAYER ][ bPlayer ] );
+	if( !GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_ENABLE, false ) || bPlayer ){ PopCLCutInQueue( false ); }
+}
+
+/**
+*	スペルカットインを発動します。
+*	(厳密にはスペルカットインのキューを送信するだけです。)
+*	注意: CL/ELステージが有効か無効かによってカットインやスペルカード名表示などの優先度が異なります。
+*
+*	@param szFileImageCutIn カットインファイルパス
+*	@param szSpellName スペルカード名
+*/
+function PushCLCutInQueueEnemy( let szFileImageCutIn, let nSpellID ){
+	m_nCLCutInSpellID = nSpellID;
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_START, true );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_PLAYER, false );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_SPELL_NAME, "「単体テスト」" );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_SPELL_ID, nSpellID );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_IMAGE_FILE, szFileImageCutIn );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_SPELL_KERNING, CL_CUTIN_SPELLNAME_KERNING );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_IMAGE_RECT, [ CL_CUTIN_X, CL_CUTIN_Y, CL_CUTIN_WIDTH, CL_CUTIN_HEIGHT ] );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_SPELL_X, CL_CUTIN_SPELLNAME_X_ENEMY );
+	if( !GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_ENABLE, false ) ){ PopCLCutInQueue( false ); }
+}
+
+/**
+*	キューを受信してスペルカットインを発動します。
+*	注意: 内部から自動的に呼び出されるので直接呼び出すことは通常ありません。
+*/
+task PopCLCutInQueueLoop(){
+	loop{
+		__Wait( 12 );
+		if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_CUTIN_START, false ) ){ PopCLCutInQueue( true ); }
+	}
+}
+
+/**
+*	キューを受信してスペルカットインを発動します。
+*	注意: 内部から自動的に呼び出されるので直接呼び出すことは通常ありません。
+*
+*	@param ステージスクリプトからの呼び出しかどうか
+*	@return キューを受信し、スペルが発動したかどうか
+*/
+function PopCLCutInQueue( bStage ){
+	if( !PopCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_START, false ) ){ return false; }
+	if( m_nCLTTHSpellName != CL_TT_INVALID ){
+		DeleteTexTextHandle( m_nCLTTHSpellName );
+		m_nCLTTHSpellName = CL_TT_INVALID;
+	}
+	if( !bStage ){ FontInitialize( IMAGE_CL_FONT_ASCII, IMAGE_CL_FONT_SJIS16 ); }
+	m_nCLCutInSpellID = PopCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_SPELL_ID, -1 );
+	let nTTHSpellNameFromID = CL_TTHBASE_SPELL_NAME + m_nCLCutInSpellID;
+	if( GetCommonDataDefaultEx( CL_CDNS_RESULT, FLAN_CD_STAGE, 0 ) != 7 || GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_CUTIN_SPELL_ID, -1 ) == -1 ){
+		let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
+		if( nStage >= 10 ){ nTTHSpellNameFromID -= CL_TTH_SPELL_EXTRA; }
+		else if( nStage >= 4 ){ nTTHSpellNameFromID -= CL_TTH_SPELL_YOUMU - 55; }
+		else{ nTTHSpellNameFromID -= [ CL_TTH_SPELL_KOUMA, CL_TTH_SPELL_EIYA, CL_TTH_SPELL_KAEI, CL_TTH_SPELL_LOTUS ][ GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_STAGE_SCENARIO, 0 ) ] }
+	}
+	if( m_nCLCutInSpellID != -1 && IsValidTexTextCacheHandle( nTTHSpellNameFromID ) ){ m_nCLTTHSpellName = nTTHSpellNameFromID; }
+	else{ m_nCLTTHSpellName = CreateTexText16Cache( PopCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_SPELL_NAME, "「単体テスト」" ) ); }
+	m_nCLCutInStartTime = m_nFlanCount;
+	m_bCLCutInEnable = true;
+	m_bCLCutInPlayer = PopCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_PLAYER, false );
+	m_szCLCutInImage = PopCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_IMAGE_FILE, "" );
+	let nSpellNameBaseX = PopCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_SPELL_X, 128 );
+	if( m_bCLCutInPlayer ){ CL_CUTIN_SPELLNAME_X_PLAYER = nSpellNameBaseX; }
+	else{ CL_CUTIN_SPELLNAME_X_ENEMY = nSpellNameBaseX; }
+	CL_CUTIN_SPELLNAME_KERNING = PopCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_SPELL_KERNING, 128 );
+	let anCutInImageRect = PopCommonDataEx( CL_CDNS_TEMP, CL_CD_CUTIN_IMAGE_RECT, [ 0, 0, 0, 0 ] );
+	m_nCLCutInImageX = anCutInImageRect[ 0 ];
+	m_nCLCutInImageY = anCutInImageRect[ 1 ];
+	m_nCLCutInImageWidth = anCutInImageRect[ 2 ];
+	m_nCLCutInImageHeight = anCutInImageRect[ 3 ];
+
+	__CLSpellName();
+	__CLCutIn();
+	return true;
+}
+
+/**
+*	スペルカード名表示タスクです。
+*	注意: 内部から自動的に呼び出されるので直接呼び出すことは通常ありません。
+*/
+task __CLSpellName(){
+	let nID = m_nCLCutInStartTime;
+	let nCount = 0;
+	let nEnemyY = GetCenterY() + 64;
+	let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 1 );
+	m_nCLSpellNameX = [ CL_CUTIN_SPELLNAME_X_ENEMY, CL_CUTIN_SPELLNAME_X_PLAYER ][ m_bCLCutInPlayer ];
+	m_nCLSpellNameY = [ nEnemyY, GetClipMaxY() - 24 ][ m_bCLCutInPlayer ];
+	m_nCLSpellNameBGSrcY = [ GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_STAGE_SCENARIO, 7 ) + 1, 0 ][ m_bCLCutInPlayer ] * 36 - 1;
+	if( !m_bCLCutInPlayer ){
+		if( nStage >= 4 ){
+			let nBossID = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, CL_TT_INVALID );
+			if( nStage != 7 ){
+				alternative( nStage )
+				case( 4, 5 ){	m_nCLSpellNameBGSrcY = 5; }
+				case( 6, 11 ){
+					let nBossIDYoumu = nBossID - CL_TTH_CHARACTER_NAME_YOUMU;
+					let nBossIDExPh = nBossID - CL_TTH_CHARACTER_NAME_EXPH;
+					m_nCLSpellNameBGSrcY =	[ [ 5, 6 ][ nBossIDYoumu == CL_TTH_CHARACTER_NAME_YOUMU_REIMU ], 7 ]
+											[ nBossIDExPh == CL_TTH_CHARACTER_NAME_EXPH_SUIKA ];
+				}
+				case( 10 ){		m_nCLSpellNameBGSrcY = 7; }
+			}
+			else if( nBossID >= CL_TTH_CHARACTER_NAME_EXPH ){
+				nBossID -= CL_TTH_CHARACTER_NAME_EXPH;
+				m_nCLSpellNameBGSrcY = [ 6, 7 ][ nBossID == CL_TTH_CHARACTER_NAME_EXPH_SUIKA ];
+			}
+			else{
+				nBossID -= CL_TTH_CHARACTER_NAME_YOUMU;
+				m_nCLSpellNameBGSrcY = [ 5, 6 ][ nBossID == CL_TTH_CHARACTER_NAME_YOUMU_REIMU ];
+			}
+			m_nCLSpellNameBGSrcY = m_nCLSpellNameBGSrcY * 36 - 1;
+		}
+		let anSpellHistoryInitializeList = CreateArray( CL_SPELL_TOTAL, 0 );
+		let anSpellHistoryHiScore	= GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_HISCORE,		anSpellHistoryInitializeList );
+		let anSpellHistoryTry		= GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_COUNT_TRY,	anSpellHistoryInitializeList );
+		let anSpellHistoryGet		= GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_COUNT_GET,	anSpellHistoryInitializeList );
+		m_nCLTTHSpellHistory = CreateTexText12Cache(
+			"HISTORY : " ~ ToStringInt( anSpellHistoryGet[ m_nCLCutInSpellID ] ) ~
+			" / " ~ ToStringInt( anSpellHistoryTry[ m_nCLCutInSpellID ] ) ~
+			" ( " ~ ToStringInt( truncate( anSpellHistoryGet[ m_nCLCutInSpellID ] / Max( anSpellHistoryTry[ m_nCLCutInSpellID ], 1 ) * 100 ) ) ~ "% )"
+		);
+	}
+	let nLimit = 50;
+	ascent( let i in 0..( nLimit + 1 ) ){
+		m_nCLSpellNameBGX = SlowDown( [ GetClipMinX(), GetClipMaxX() ][ m_bCLCutInPlayer ], GetCenterX() + [ -8, 8 ][ m_bCLCutInPlayer ], i, nLimit );
+		m_nCLSpellNameYGapStart = SlowDown( -24, 0, i, 20 );
+		m_nCLSpellNameYGapEnd = SlowDown( -64, 0, i, nLimit );
+		m_nCLSpellNameAlphaStart = Smooth( 0, 255, i, 20 );
+		m_nCLSpellNameAlphaEnd = Smooth( -512, 255, i, nLimit );
+		m_nCLSpellNameScaleXStart = Smooth( 3, -3, i, 30 );
+		m_nCLSpellNameScaleXEnd = Smooth( 9, 1, i, nLimit );
+		yield;
+	}
+	m_bCLSpellNameRasterize = !m_bCLCutInPlayer && IsWritableTextureCreated( 0 );
+	while( [ OnEnemySpell(), OnBomb() ][ m_bCLCutInPlayer ] ){
+		if( !m_bCLCutInPlayer ){
+			if( nCount <= 100 ){ m_nCLSpellNameY = SplineFakeSFS( nEnemyY, GetClipMinY() + 48, nCount - 30, 30 ); }
+			if( m_bCLSpellBonusRefresh && nCount % 4 == 0 ){
+				let nBonus = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_BOSS_SPELL_SCORE, 0 );
+				DeleteTexTextHandle( m_nCLTTHSpellBonus );
+				m_nCLTTHSpellBonus = CreateTexText12Cache( "SCORE : " ~ ToStringInt( nBonus ) );
+				m_bCLSpellBonusRefresh = nBonus != 0;
+			}
+		}
+		yield;
+		nCount++;
+	}
+	if( !m_bCLCutInPlayer ){
+		ClearRenderTarget( IMAGE_CL_WRITABLE_NAME_LIST[ 0 ] );
+		m_bCLSpellNameRasterized = false;
+	}
+	nLimit = 50;
+	ascent( let i in 0..( nLimit + 1 ) ){
+		m_nCLSpellNameAlphaStart = Smooth( 255, 0, i, 20 );
+		m_nCLSpellNameAlphaEnd = Smooth( 512, 0, i, nLimit );
+		if( nID != m_nCLCutInStartTime ){ return; }
+		yield;
+	}
+	m_bCLSpellBonusRefresh = true;
+	DeleteTexTextHandle( m_nCLTTHSpellBonus );
+	DeleteTexTextHandle( m_nCLTTHSpellName );
+	m_nCLTTHSpellBonus = CL_TT_INVALID;
+	m_nCLTTHSpellName = CL_TT_INVALID;
+	if( !m_bCLCutInPlayer ){
+		DeleteTexTextHandle( m_nCLTTHSpellHistory );
+		DeleteTexTextHandle( m_nCLTTHSpellHiScore );
+		m_nCLTTHSpellHistory = CL_TT_INVALID;
+		m_nCLTTHSpellHiScore = CL_TT_INVALID;
+	}
+}
+
+/**
+*	カットインタスクです。
+*	注意: 内部から自動的に呼び出されるので直接呼び出すことは通常ありません。
+*/
+task __CLCutIn(){
+	let x1 = [ GetClipMaxX(), GetClipMinX() ][ m_bCLCutInPlayer ] + ( m_nCLCutInImageWidth / 2 + 32 ) * [ -1, 1 ][ m_bCLCutInPlayer ];
+	let y2 = GetClipMaxY() + m_nCLCutInImageHeight * 2;
+	let a1 = 240;
+	let a2 = 40;
+	let nLimit = 5;
+	m_nCLCutInAScaleY = 1;
+	m_nCLCutInBScale = 3;
+	ascent( let i in 0..( nLimit + 1 ) ){
+		m_nCLCutInAX = Smooth( [ GetClipMinX(), GetClipMaxX() ][ m_bCLCutInPlayer ], x1, i, nLimit );
+		m_nCLCutInAAlpha = Accelerate( 0, a1, i, nLimit );
+		m_nCLCutInBAlpha = Accelerate( 0, a2, i, nLimit );
+		m_nCLCutInAScaleX = Accelerate( 3, 1, i, nLimit );
+		m_nCLCutInBY = Smooth( y2, GetClipMaxY(), i, nLimit );
+		yield;
+	}
+	let x2 = x1 + 32 * [ 1, -1 ][ m_bCLCutInPlayer ];
+	let y2 = GetClipMaxY() - 160;
+	nLimit = 60;
+	ascent( let i in 0..( nLimit + 1 ) ){
+		m_nCLCutInAX = SlowDown( x1, x2, i, nLimit );
+		m_nCLCutInBY = SlowDown( GetClipMaxY(), y2, i, nLimit );
+		yield;
+	}
+	nLimit = 10;
+	ascent( let i in 0..( nLimit + 1 ) ){
+		m_nCLCutInAAlpha = Smooth( a1, 0, i, nLimit );
+		m_nCLCutInBAlpha = Accelerate( a2, 0, i, nLimit );
+		m_nCLCutInAScaleX = Accelerate( 1, 5, i, nLimit );
+		m_nCLCutInAScaleY = SlowDown( 1, 0, i, nLimit );
+		m_nCLCutInBScale = Accelerate( 3, 8, i, nLimit );
+		yield;
+	}
+	m_bCLCutInEnable = false;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画系機能
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	カットイン総合絵画機能です。
+*	こちらを呼び出すことで自動的にカットイン・スペル名を絵画します。
+*	注意: 内部から自動的に呼び出されるので直接呼び出すことは通常ありません。
+*/
+function CLDrawSpellCardEffect(){
+	if( m_bCLCutInEnable ){ __CLDrawCutIn(); }
+	if( m_nCLTTHSpellName != CL_TT_INVALID ){ __CLDrawSpellName(); }
+}
+
+/**
+*	カットインを絵画します。
+*	注意: 内部から自動的に呼び出されるので直接呼び出すことは通常ありません。
+*/
+function __CLDrawCutIn(){
+	if( m_nCLCutInAAlpha > 0 ){
+		SetAlpha( m_nCLCutInAAlpha );
+		SetGraphicScale( m_nCLCutInAScaleX, m_nCLCutInAScaleY );
+		SetGraphicRect( 0, 0, m_nCLCutInImageWidth, m_nCLCutInImageHeight );
+		__DrawChr( m_szCLCutInImage, m_nCLCutInAX, GetClipMaxY() - m_nCLCutInImageHeight / 2 );
+	}
+	if( m_nCLCutInBAlpha > 0 ){
+		SetAlpha( m_nCLCutInBAlpha );
+		SetGraphicScale( m_nCLCutInBScale, m_nCLCutInBScale );
+		__DrawChr( m_szCLCutInImage, GetCenterX(), m_nCLCutInBY );
+	}
+	SetAlpha( 255 );
+	SetGraphicScale( 1, 1 );
+}
+
+/**
+*	スペル名を絵画します。
+*	注意: 内部から自動的に呼び出されるので直接呼び出すことは通常ありません。
+*/
+function __CLDrawSpellName(){
+	let nCount = m_nFlanCount - m_nCLCutInStartTime;
+	SetAlpha( MinMax( Min( [ m_nCLSpellNameAlphaEnd, nCount * 3 ][ nCount < 60 ], m_nCLSpellNameAlpha ), 0, 240 ) );
+	if( !m_bCLSpellNameRasterized ){ __CLDrawSpellNameInner( false ); }
+	else{ __DrawChrRect( IMAGE_CL_WRITABLE_NAME_LIST[ 0 ], m_nCLSpellNameBGX + 8, m_nCLSpellNameY + 10, 32, 295, 384, 40 ); }
+	SetAlpha( 255 );
+	if( m_bCLSpellNameRasterize ){
+		m_bCLSpellNameRasterize = false;
+		m_szCLDefaultRenderSurface = SetRenderTarget( IMAGE_CL_WRITABLE_NAME_LIST[ 0 ] );
+		__CLDrawSpellNameInner( true );
+		SetRenderTarget( m_szCLDefaultRenderSurface );
+		m_bCLSpellNameRasterized = true;
+	}	// フェードアウトに使うのでここでフォント解放してはいけない
+	if( !m_bCLCutInPlayer ){
+		DrawTexTextOnCache( m_nCLTTHSpellBonus, 0, 0, m_nCLSpellNameX + 32, m_nCLSpellNameY + 14 );
+	}
+	SetAlpha( 255 );
+}
+
+/**
+*	スペル名を絵画します。
+*	注意: 内部から自動的に呼び出されるので直接呼び出すことは通常ありません。
+*
+*	@param bToWritableTexture 書き込み対象が書き込み可能テクスチャかどうか
+*/
+function __CLDrawSpellNameInner( let bToWritableTexture ){
+	let nCount = m_nFlanCount - m_nCLCutInStartTime;
+	let tx = [ 0, 80 ][ m_bCLCutInPlayer ];
+	let nAlphaStart;
+	let nAlphaEnd;
+	if( bToWritableTexture ){
+		nAlphaStart = 255;
+		nAlphaEnd = 255;
+		SetAlpha( 255 );
+	}
+	else{
+		nAlphaStart = Min( m_nCLSpellNameAlphaStart, m_nCLSpellNameAlpha );
+		nAlphaEnd = Min( m_nCLSpellNameAlphaEnd, m_nCLSpellNameAlpha );
+	}
+	if( !m_bCLCutInPlayer ){
+		DrawTexTextOnCache( m_nCLTTHSpellHistory, 0, 0, m_nCLSpellNameX + 32, m_nCLSpellNameY + 24 );
+	}
+	__DrawChrRect( IMAGE_CL_SPELL_LINE, m_nCLSpellNameBGX, m_nCLSpellNameY, tx, m_nCLSpellNameBGSrcY, 384, 34 );
+	DrawTexTextOnCacheEx(
+		m_nCLTTHSpellName, CL_CUTIN_SPELLNAME_KERNING, 0, m_nCLSpellNameX, m_nCLSpellNameY,
+		0, 0, 0, 0, [],
+		m_nCLSpellNameYGapStart, m_nCLSpellNameYGapEnd, -16, 0, [],
+		m_nCLSpellNameScaleXStart / 1.5, m_nCLSpellNameScaleXEnd / 1.5, 1, 3, [],
+		m_nCLSpellNameScaleXStart, m_nCLSpellNameScaleXEnd, 1, 3, [],
+		0, 0, 0, 0, [],
+		0, 0, 0, 0, [],
+		0, 0, 0, 0, [],
+		nAlphaStart, nAlphaEnd, 0, 255, [],
+		[ 255,	192 ][ m_bCLCutInPlayer ], [ 255,	160 ][ m_bCLCutInPlayer ], 0, 255, [],
+		[ 128,	192 ][ m_bCLCutInPlayer ], [ 192,	128 ][ m_bCLCutInPlayer ], 0, 255, [],
+		[ 160,	255 ][ m_bCLCutInPlayer ], [ 192,	255 ][ m_bCLCutInPlayer ], 0, 255, []
+	);
+}

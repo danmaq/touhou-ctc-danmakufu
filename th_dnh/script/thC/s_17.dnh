@@ -1,0 +1,173 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 6(妖精雑魚)
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	スクリプトここから
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	THCELをインクルード
+//	(FLAN/THCELへのインクルードはTHCELが勝手にやってくれます)
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\Zako.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	/**	デフォルトアイテムの落下量を設定します。 */
+	ENEMY_ITEMEX_NUM_DEFAULT = 4;
+	/**	被弾判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_A = 13;
+	/**	接触判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_B = 8;
+	/**	onMainLoopへ処理をまわさないよう設定します。(まわしても何の処理も無い) */
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数宣言
+//////////////////////////////////////////////////////////////////////
+
+	let count=int(rand(0,360));
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵の移動を管理するタスクです。
+	*
+	*	@param nLevel レベル(0～3)
+	*/
+	task DoMove( let nLevel ){
+		loop( 3 ){
+			SetMovePositionHermite(
+				rand(GetCenterX()/2,GetCenterX()*1.5),
+				rand(GetClipMinY()+50,GetCenterY()/2),
+				rand(150,200),
+				GetAngle(),
+				rand(150,200),
+				rand(0,360),
+				100
+			);
+			__Wait(100);
+		}
+		let XX=GetX+rand(-100,100);
+		SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,70);
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵固有のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nArgv, let nLevel ){
+		DoMove( nLevel );
+		__Wait(rand(10,30));
+		loop([20,40,60,80][nLevel]){
+			let angle=rand(0,360);
+			let width=rand(0,30);
+			CreateShot02(
+				GetX()+width*cos(angle),
+				GetY()+width*sin(angle),
+				rand(0,0.7),
+				angle+180+rand(-90,90),
+				0.03,
+				rand(0.8,[2,2,3,4][nLevel]),
+				US_BALL_S_A_BLUE,
+				5
+			);
+			PlaySEEx(seShot1);
+			loop([4,3,2,1][nLevel]){yield;}
+		}
+	}
+
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( let nArgv, let nLevel ){
+//		CreateDebugWindow();
+		SetLife(30);
+		SetInvincibility( 15 );
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+//		ascent(i in 0..2)
+//		{
+//			SetTexture(IMAGE_CL_CIRCLE_6S);
+//			SetGraphicRect(128,0,192,64);
+//			SetAlpha(180);
+//			SetGraphicScale(Smooth(1,1.5,i,2),Smooth(1,1.5,i,2));
+//			SetGraphicAngle( 0, 0, nCount*Smooth(-10,5,i,2) );
+//			DrawGraphic(GetX,GetY);
+//			SetGraphicScale(1,1);
+//		}
+//		SetGraphicAngle( 0, 0, 0 );
+		DrawYousei( RECT_YOUSEI_GREEN );
+	}
+
+}

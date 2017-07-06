@@ -1,0 +1,344 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Extend-Library (extends FLAN)
+//
+//		※ステージスクリプト部です。
+//			それ以外からはインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	下位ライブラリをインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\THCCL\Common.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	インデックスライブラリをインクルード
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(変更不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	ステージのレジューム機能で復元する共通データのキーです。 */
+let STAGE_RESUME_KEYS = [ FLAN_CD_STAGE, FLAN_CD_STAGE_LEVEL, CL_CD_RESUME_ENABLE, CL_CD_STAGE_SCENARIO, CL_CD_CONFIG_PLAYER, CL_CD_CUTIN_SPELL_ID, CL_CD_HISTORY_COUNT_TOTAL ];
+/**	ステージのレジューム機能で復元するスペルリザルトのキーです。 */
+let STAGE_RESUME_KEYS_HISTORY_SPELL = [ CL_CD_SPELL_HISTORY_RELEASE, CL_CD_SPELL_HISTORY_HISCORE, CL_CD_SPELL_HISTORY_COUNT_TRY, CL_CD_SPELL_HISTORY_COUNT_GET ];
+/**	ステージのレジューム機能で復元するステージリザルトのキーです。 */
+let STAGE_RESUME_KEYS_HISTORY_STAGE = [ CL_CD_HISTORY_CLEAR, CL_CD_HISTORY_TRY ];
+/**	ステージのレジューム機能で復元する共通データのキーです。 */
+let STAGE_RESUME_KEYS_CONFIG = [ CL_CD_CONFIG_PLAYER ];
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(変更可能)
+//////////////////////////////////////////////////////////////////////
+
+/**	プログレスゲージの画面下端からの距離を設定します。 */
+let PROGRESS_BOTTOMMARGIN = 64;
+/**	ローダ作動中のフェーズ番号を設定します。 */
+let PROGRESS_PHASE = 32767;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	プラクティスモードかどうかを格納します。 */
+let m_bStagePractice = false;
+/**	前ステージのスコアを格納します。 */
+let m_nStageScorePrevious = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	履歴関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ステージクリア情報を取得し、共通データに格納します。
+*
+*	@param nStage ステージ番号
+*/
+function SetClearHistory( let nStage ){
+	let nScore = GetScore();
+	if( !m_bStagePractice ){
+		nScore -= m_nStageScorePrevious;
+		m_nStageScorePrevious = GetScore();
+	}
+	PushCommonDataExArray(
+		CL_CDNS_RESULT, CL_CD_HISTORY_CLEAR,
+		[
+			GetPlayerID(),
+			GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_STAGE_SCENARIO, 0 ),
+			nStage,
+			GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 ),
+			nScore,
+			[ 0, 1 ][ Continued() ],
+			[ 0, 1 ][ m_bStagePractice ]
+		]
+	);
+}
+
+/**
+*	ステージトライ情報を取得し、共通データに格納します。
+*
+*	@param nStage ステージ番号
+*/
+function SetTryHistory( let nStage ){
+	PushCommonDataExArray(
+		CL_CDNS_RESULT, CL_CD_HISTORY_TRY,
+		[
+			GetPlayerID(),
+			GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_STAGE_SCENARIO, 0 ),
+			nStage,
+			GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 ),
+			[ 0, 1 ][ m_bStagePractice ]
+		]
+	);
+}
+
+/**
+*	EX解禁条件を満たしているかどうかを取得します。
+*
+*	@return EX解禁条件を満たしているかどうか
+*/
+function IsCanTryStageEX(){
+	return ( GetClearHistory( [ GetPlayerID() ], [], [ 6 ], [], 0, 0, 0 ) >= 2 );
+}
+
+/**
+*	EX2解禁条件を満たしているかどうかを取得します。
+*
+*	@return EX2解禁条件を満たしているかどうか
+*/
+function IsCanTryStageEX2(){
+	let nPlayerID = GetPlayerID();
+	ascent( let i in 0..4 ){
+		if( GetClearHistory( [ nPlayerID ], [ i ], [ 6 ], [ 0		], 0, 0, 0 ) == 0 ){ return false; }
+		if( GetClearHistory( [ nPlayerID ], [ i ], [ 6 ], [ 1, 2, 3 ], 0, 0, 0 ) == 0 ){ return false; }
+	}
+	if( GetClearHistory( [ nPlayerID ], [], [ 10 ], [], 0, 0, 0 ) == 0 ){ return false; }
+	if( GetClearHistory( [], [], [ 6 ], [ 2, 3 ], 0, -1, 0 ) == 0 ){ return false; }
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	レジューム関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	レジュームをセットし、再起動します。
+*	再起動後はGetResumeによりセットしたデータを復元します。
+*
+*	@param nScenario シナリオ
+*	@param nStage ステージ
+*	@param nLevel 難易度
+*	@param bPractice プラクティスかどうか
+*/
+function SetResume( let nScenario, let nStage, let nLevel, let bPractice ){
+	SetCommonDataEx( CL_CDNS_RESULT, FLAN_CD_STAGE, [ -1, nStage ][ bPractice || nStage >= 10 ] );
+	SetCommonDataEx( CL_CDNS_RESULT, FLAN_CD_STAGE_LEVEL, nLevel );
+	SetCommonDataEx( CL_CDNS_RESULT, CL_CD_RESUME_ENABLE, 1 );
+	SetCommonDataEx( CL_CDNS_RESULT, CL_CD_STAGE_SCENARIO, nScenario );
+	SetCommonDataEx( CL_CDNS_RESULT, CL_CD_CONFIG_PLAYER, GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_PLAYER, 3 ) );
+	SaveCommonDataEx( CL_CDNS_RESULT, CL_CDFILE_RESULT );
+	Retry();
+}
+
+/**
+*	レジュームをセットし、再起動します。
+*	再起動後はGetResumeによりセットしたデータを復元します。
+*
+*	@param nSpellID スペル番号
+*/
+function SetResumeSpell( let nSpellID ){
+	SetCommonDataEx( CL_CDNS_RESULT, FLAN_CD_STAGE, 7 );
+	SetCommonDataEx( CL_CDNS_RESULT, CL_CD_RESUME_ENABLE, 1 );
+	SetCommonDataEx( CL_CDNS_RESULT, CL_CD_CUTIN_SPELL_ID, nSpellID );
+	SaveCommonDataEx( CL_CDNS_RESULT, CL_CDFILE_RESULT );
+	Retry();
+}
+
+/**
+*	レジュームの有無を確認します。
+*
+*	@return レジュームデータが存在する場合true
+*/
+function GetResume(){
+	let anSpellHistoryInitializeList = CreateArray( CL_SPELL_TOTAL, 0 );
+	let anBGMInitializeList = CreateArray( length( bgmList ), 0 );
+//====================================================================
+//	TODO : SaveCommonDataInReplayFileExが使えるようになるまでの仮措置
+	if( IsReplay() ){
+		LoadCommonDataFromReplayFile();
+		CopyCommonData( STAGE_RESUME_KEYS,					"", CL_CDNS_RESULT, true, 0 );
+		CopyCommonData( STAGE_RESUME_KEYS_CONFIG,			"", CL_CDNS_CONFIG, true, 0 );
+		CopyCommonData( STAGE_RESUME_KEYS_HISTORY_STAGE,	"", CL_CDNS_RESULT, true, [] );
+		CopyCommonData( STAGE_RESUME_KEYS_HISTORY_SPELL,	"", CL_CDNS_RESULT, true, anSpellHistoryInitializeList );
+		CopyCommonData( [ CL_CD_HISTORY_BGM ],				"", CL_CDNS_RESULT, true, anBGMInitializeList );
+//		m_aszFlanHashKeys = m_aszFlanHashKeys ~ GetCommonDataDefault( CL_CD_RESUME_HASH_KEYS, [] );
+//		m_anFlanHashValues = m_anFlanHashValues ~ GetCommonDataDefault( CL_CD_RESUME_HASH_VALUES, [] );
+//		SetCommonDataFromHashEx( CL_CDNS_RESULT, STAGE_RESUME_KEYS, 0 );
+	}
+//====================================================================
+	let bResume = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_RESUME_ENABLE, 0 ) == 1;
+	if( !bResume ){ LoadTTC( CL_CDID_MENU ); }
+	else{
+//====================================================================
+//	TODO : SaveCommonDataInReplayFileExが使えるようになるまでの仮措置
+		CopyCommonData( STAGE_RESUME_KEYS,					CL_CDNS_RESULT, "", false, 0 );
+		CopyCommonData( STAGE_RESUME_KEYS_CONFIG,			CL_CDNS_CONFIG, "", false, 0 );
+		CopyCommonData( STAGE_RESUME_KEYS_HISTORY_STAGE,	CL_CDNS_RESULT, "", false, [] );
+		CopyCommonData( STAGE_RESUME_KEYS_HISTORY_SPELL,	CL_CDNS_RESULT, "", false, anSpellHistoryInitializeList );
+		CopyCommonData( [ CL_CD_HISTORY_BGM ],				CL_CDNS_RESULT, "", false, anBGMInitializeList );
+//--------------------------------------------------------------------
+//	TODO : CommonDataのリプ埋め込みで[]が化けるバグが直るまでの仮措置
+		ascent( let i in 0..length( STAGE_RESUME_KEYS_HISTORY_STAGE ) ){
+			let szKey = STAGE_RESUME_KEYS_HISTORY_STAGE[ i ];
+			if( length( GetCommonDataDefault( szKey, [] ) ) == 0 ){ SetCommonData( szKey, [ CreateArray( 16, 0 ) ] ); }
+		}
+//--------------------------------------------------------------------
+//		GetCommonDataToHashEx( CL_CDNS_RESULT, STAGE_RESUME_KEYS, 0 );
+//		SetCommonData( CL_CD_RESUME_HASH_KEYS, m_aszFlanHashKeys );
+//		SetCommonData( CL_CD_RESUME_HASH_VALUES, m_anFlanHashValues );
+		SaveCommonDataInReplayFile();
+//====================================================================
+		m_nFlanLevel = GetCommonDataDefaultEx( CL_CDNS_RESULT, FLAN_CD_STAGE_LEVEL, 1 );
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, m_nFlanLevel );
+		let nResumeStage = GetCommonDataDefaultEx( CL_CDNS_RESULT, FLAN_CD_STAGE, -1 );
+		if(			nResumeStage >= 10 ){ LoadTTC( CL_CDID_EXPH	); }
+		else if(	nResumeStage == 7 ){ LoadTTC( CL_CDID_SPELL	); }
+		else{
+			alternative( GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_STAGE_SCENARIO, 0 ) )
+			case( 0 ){ LoadTTC( CL_CDID_KOUMA ); }
+			case( 1 ){ LoadTTC( CL_CDID_EIYA ); }
+			case( 2 ){ LoadTTC( CL_CDID_KAEI ); }
+			case( 3 ){ LoadTTC( CL_CDID_LOTUS ); }
+		}
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE, nResumeStage );
+	}
+	CL_TT_ROM_AREA = length( m_aCLTTCBeUsed ) - 1;
+	ClearResume( !bResume );
+	return bResume;
+}
+
+/**
+*	レジュームを無効にします。
+*
+*	@param bRealClear 無効にするだけでなくレジューム情報を完全に削除します
+*/
+function ClearResume( let bRealClear ){
+	DeleteCommonDataEx( CL_CDNS_RESULT, CL_CD_RESUME_ENABLE );
+	if( bRealClear ){
+		DeleteCommonDataEx( CL_CDNS_RESULT, FLAN_CD_STAGE );
+		DeleteCommonDataEx( CL_CDNS_RESULT, FLAN_CD_STAGE_LEVEL );
+		DeleteCommonDataEx( CL_CDNS_RESULT, CL_CD_STAGE_SCENARIO );
+		DeleteCommonDataEx( CL_CDNS_RESULT, CL_CD_CONFIG_PLAYER );
+		DeleteCommonDataEx( CL_CDNS_RESULT, CL_CD_CUTIN_SPELL_ID );
+	}
+	SaveCommonDataEx( CL_CDNS_RESULT, CL_CDFILE_RESULT );
+}
+
+/**
+*	CommonDataを初期化しディスクから読み込みます。
+*/
+function LoadAllCommonData(){
+	CLCommonNameSpaceInitialize();
+	if( !IsReplay() ){ LoadCommonDataEx( CL_CDNS_RESULT, CL_CDFILE_RESULT ); }
+	LoadCommonDataEx( CL_CDNS_CONFIG, CL_CDFILE_CONFIG );
+}
+
+/**
+*	フォントキャッシュ用CommonDataを読み込みます。
+*
+*	@param nCDID 分類コード
+*/
+function LoadTTC( let nCDID ){
+	InitializePreLoadTTH( nCDID );
+	LoadCommonDataEx( CL_CDNS_MESSAGE, CL_CDFILE_MESSAGE );
+	ClearTexTextHandle();
+	AddTexTextHandleList( GetCommonDataDefaultEx( CL_CDNS_MESSAGE, CL_CD_TTC, [] ) );
+	DeleteCommonDataEx( CL_CDNS_MESSAGE, CL_CD_TTC );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	リソース読み込み関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	本当にロードする背景画像ファイルのリストを返します。
+*	夢終劇コンフィグにおいて背景表示がOFFの場合、リストが全てダミーファイルに置き換わります。
+*
+*	@param aszLoadFileBG ロードする背景画像ファイルのリスト
+*	@return 実際にロードする背景画像ファイルのリスト
+*/
+function GetBGRealLoadList( let aszLoadFileBG ){
+	if( !GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG, true ) ){ ascent( let i in 0..length( aszLoadFileBG ) ){ aszLoadFileBG[ i ] = ""; } }
+	return aszLoadFileBG;
+}
+
+/**
+*	ローダ本体です。
+*	1フレームごとに1リソース読み込みます。
+*	全てのリソースを読み終えるまで処理が戻りません。
+*
+*	@param aszGraphicFileList ロードする画像ファイルのリスト
+*	@param aszEnemyFileList ロードする敵スクリプトファイルのリスト
+*	@param aszSEFileList ロードする効果音ファイルのリスト
+*/
+function LoadProgress( let aszGraphicFileList, let aszEnemyFileList, let aszSEFileList ){
+	yield;
+	let anFrameObj = CreateFillScreenEffectObject( IMAGE_CL_BLACK, IMAGE_THC_BLACK_FRAME );
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, false );
+	SetRenderFrame( false );
+	SetDefaultStatusVisible( false );
+	ForbidBomb( true );
+	ForbidShot( true );
+	let bEnableSE = GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_SE, true );
+	GosubPhase( PROGRESS_PHASE );
+	LoadResourceProgress( aszGraphicFileList, aszEnemyFileList, aszSEFileList );
+	while( m_nFlanLoadResourcePercentage != -1 ){ yield; }
+	ascent( let i in 0..length( anFrameObj ) ){ Obj_Delete( anFrameObj[ i ] ); }
+	MovePlayerDefaultPosition();
+	ReturnPhase();
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, true );
+	SetRenderFrame( true );
+	SetDefaultStatusVisible( true );
+	ForbidBomb( false );
+	ForbidShot( false );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ローダの進捗状況を絵画します。
+*/
+function DrawLoadProgress(){
+	if( m_nFlanLoadResourcePercentage == -1 ){ return; }
+	SetGraphicRect( 0, 0, 384, 448 );
+	DrawCenter( IMAGE_CL_BLACK );
+	__DrawChrRect( imgSystemProgress, GetCenterX(), GetClipMaxY() - PROGRESS_BOTTOMMARGIN, 0, 16, 256, 16 );
+	SetGraphicScale( Smooth( 0, 1, m_nFlanLoadResourcePercentage, 100 ), 1 );
+	__DrawChrRect( imgSystemProgress, GetCenterX() - Smooth( 128, 0, m_nFlanLoadResourcePercentage, 100 ), GetClipMaxY() - PROGRESS_BOTTOMMARGIN, 0, 0, 256, 16 );
+	SetGraphicScale( 1, 1 );
+	DrawTexTextOnCache( CL_TTHBASE_NUMBER + truncate( m_nFlanLoadResourcePercentage ), 0, 0, GetCenterX() + 112, GetClipMaxY() - PROGRESS_BOTTOMMARGIN + 16 );
+}

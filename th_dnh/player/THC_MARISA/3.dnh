@@ -38,86 +38,86 @@ script_player_main{
 
 
 //////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_PLAYER_SPEED_FAST = 5.7;
+	FLAN_PLAYER_SPEED_SLOW = 2.2;
+	FLAN_PLAYER_BORDERLIFE_DEFAULT = 12;
+	FLAN_PLAYER_ITEM_AUTOCOLLECT_LINE = 192;
+	PLAYER_SHOT_BASIC_WIDTH_FASTMOVE = 7;
+	PLAYER_SHOT_BASIC_WIDTH_SLOWMOVE = 3;
+	PLAYER_INYAN_GAUGE_RATE = 1.07;
+	PLAYER_SPELL_NAME_FASTMOVE = "魔符「スターダストレヴァリエ」";
+	PLAYER_SPELL_NAME_SLOWMOVE = "魔符「ミルキーウェイ」";
+	PLAYER_SPELL_FUNCTION_FASTMOVE = "StarDustReverie";
+	PLAYER_SPELL_FUNCTION_SLOWMOVE = "MilkyWay";
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数
+//////////////////////////////////////////////////////////////////////
+
+	/**	サブショットの真上からの最大角度です。 */
+	let SUBSHOT_MAX_WIDTH = 30;
+
+
+//////////////////////////////////////////////////////////////////////
 //	メンバ変数
 //////////////////////////////////////////////////////////////////////
 
-let m_nSubShotADir = 1;
-let m_nSubShotBAngle = 3;
+	let m_nSubShotADir = 1;
+	let m_nSubShotBAngle = 3;
+	/**	ビット専用カウンタです。 */
+	let m_nBitCount = 0;
 
 
 //////////////////////////////////////////////////////////////////////
-//	マイクロスレッド
+//	固有処理
 //////////////////////////////////////////////////////////////////////
 
-	//	メイン
-	task Main(){
-		yield;
-		KeyCheck();
-	}
-	
-	//	サブショット(ビットタスクより呼ばれる)
-	function SubShot( let obj, let bLeft ){
-		if( !BeCanFire( trunc( Smooth( 40, 4, m_nPowerPhase, 5 ) ) ) ){ return; }
-		if( m_bSlow ){
-			SuperExplodeShot( Obj_GetX( obj ), Obj_GetY( obj ), m_nSubShotBAngle % 30 * [ 1, -1 ][ bLeft ] );
-			if( bLeft ){ m_nSubShotBAngle += 3; }
-		}
-		else{
-			ExplodeShot( Obj_GetX( obj ), Obj_GetY( obj ), m_nSubShotADir * [ 1, -1 ][ bLeft ] );
-			if( bLeft ){ m_nSubShotADir = -m_nSubShotADir; }
-		}
-	}
-	
 	//	マジックミサイル(低速)
 	task SuperExplodeShot( let nX, let nY, let nAngle ){
 		let nObjCount = 0;
 		let obj = Obj_Create( OBJ_SHOT );
 		let nNowX = nX;
 		let nNowY = nY;
+		let nTimeOut = Smooth( 68, 50, absolute( nAngle ), SUBSHOT_MAX_WIDTH );
 		Obj_SetPosition( obj, nX, nY );
 		Obj_SetAngle( obj, 270 + nAngle );
+		Obj_SetAutoDelete( obj, true );
 		ObjShot_SetGraphic( obj, US_SUBSHOT_LONG );
 		ObjShot_SetDamage( obj, 4.5 );
 		ObjShot_SetPenetration( obj, 3 );
-		while( !Obj_BeDeleted( obj ) ){
+		while( !Obj_BeDeleted( obj ) && nObjCount <= nTimeOut ){
 			Obj_SetAlpha( obj, Smooth( 0, 192, nObjCount, 20 ) );
+			Obj_SetSpeed( obj, Accelerate( 3, 20, nObjCount, 100 ) );
 			nNowX = Obj_GetX( obj );
 			nNowY = Obj_GetY( obj );
-			Obj_SetSpeed( obj, Accelerate( 3, 20, nObjCount, 100 ) );
-			if( nObjCount > 55 ){ Obj_Delete( obj ); }
 			yield;
 			nObjCount++;
 		}
+		Obj_Delete( obj );
 		if( IsOutPos( nNowX, nNowY, 32 ) ){ return; }
-		SuperDelayBomb( nNowX, nNowY, 3, 10, 64 );
+		SuperDelayBomb( nNowX, nNowY, 2, 8, 64 );
 	}
 
 	//	遅延範囲攻撃(エフェクト表示のみ)
 	task SuperDelayBomb( let nX, let nY, let nDamage, let nTime, let nMaxSize ){
-		let nObjCount = 0;
-		let nVertex = 16;
-		DelayBomb( nX, nY, nDamage, nTime );
-		let obj = Obj_Create( OBJ_EFFECT );
+		let obj = CreateSquareEffectObject( IMAGE_FLASH, 0, 0, 128, 128, nMaxSize * 1.5, nMaxSize * 1.5 );
 		Obj_SetPosition( obj, nX, nY );
-		ObjEffect_SetTexture( obj, imgFlash );
-		ObjEffect_SetRenderState( obj, ALPHA );
-		ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLEFAN );
-		ObjEffect_CreateVertex( obj, nVertex * 3 );
-		ascent( let i in 0..( nVertex * 3 ) ){ ObjEffect_SetVertexUV( obj, i, Smooth( 0, 128, trunc( ( i + 1 ) / 3 ), nVertex ), [ 1, 32 ][ i % 3 == 0 ] ); }
-		while( !Obj_BeDeleted( obj ) ){
-			let nSize = SlowDown( 0, nMaxSize, nObjCount, nTime );
-			let nAlpha = Accelerate( 255, 0, nObjCount, nTime );
-			ascent( let i in 0..( nVertex * 3 ) ){
-				let nScale = nSize * [ 0, 1, 1 ][ i % 3 ];
-				let nDeg = Smooth( 0, 360, trunc( ( i + 1 ) / 3 ), nVertex );
-				ObjEffect_SetVertexXY( obj, i, nScale * cos( nDeg ), nScale * sin( nDeg ) );
-				ObjEffect_SetVertexColor( obj, i, nAlpha, Accelerate( 128, 255, nObjCount, nTime ), 128, Accelerate( 255, 0, nObjCount, nTime ) );
-			}
-			if( nObjCount > nTime ){ Obj_Delete( obj ); }
+		Obj_SetAutoDelete( obj, true );
+		DelayBomb( nX, nY, nDamage, nTime );
+		ascent( let i in 0..nTime ){
+			let nScale		= SlowDown(		0,		1,		i, nTime );
+			let nAlpha		= Accelerate(	255,	0,		i, nTime );
+			let nBrightR	= Accelerate(	128,	255,	i, nTime );
+			let nBrightB	= Accelerate(	255,	0,		i, nTime );
+			ascent( let j in 0..4 ){ ObjEffect_SetVertexColor( obj, j, nAlpha, nBrightR, 128, nBrightB ); }
+			ObjEffect_SetScale( obj, nScale, nScale );
 			yield;
-			nObjCount++;
 		}
-
+		Obj_Delete( obj );
 	}
 
 	//	マジックミサイル
@@ -126,6 +126,7 @@ let m_nSubShotBAngle = 3;
 		let obj = Obj_Create( OBJ_SHOT );
 		let nNowX = nX;
 		let nNowY = nY;
+		Obj_SetAutoDelete( obj, true );
 		Obj_SetPosition( obj, nX, nY );
 		Obj_SetAngle( obj, 270 + 2 * nDir );
 		ObjShot_SetGraphic( obj, US_SUBSHOT );
@@ -140,7 +141,7 @@ let m_nSubShotBAngle = 3;
 			nObjCount++;
 		}
 		if( IsOutPos( nNowX, nNowY, 16 ) ){ return; }
-		SuperDelayBomb( nNowX, nNowY, 2, 5, 32 );
+		SuperDelayBomb( nNowX, nNowY, 1, 4, 32 );
 	}
 	
 	//	遅延範囲攻撃(ダメージのみ)
@@ -152,72 +153,123 @@ let m_nSubShotBAngle = 3;
 		ObjShot_SetGraphic( obj, US_BLANK64 );
 		ObjShot_SetDamage( obj, nDamage );
 		ObjShot_SetPenetration( obj, nTime );
-		while( !Obj_BeDeleted( obj ) ){
-			if( nObjCount > nTime ){ Obj_Delete( obj ); }
+		while( !Obj_BeDeleted( obj ) && nObjCount <= nTime ){
 			yield;
 			nObjCount++;
 		}
+		Obj_Delete( obj );
 	}
 
 
 //////////////////////////////////////////////////////////////////////
-//	初期処理
+//	共通処理
 //////////////////////////////////////////////////////////////////////
 
-	@Initialize{
-		OnInitialize( 188, 5, 2, 1, 32, 10, 7, 3, 0.4, "StarDustReverie", "MilkyWay", "魔符「スターダストレヴァリエ」", "魔符「ミルキーウェイ」" );
-		Main();
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*/
+	task MainTaskTHC(){
 	}
 
-
-//////////////////////////////////////////////////////////////////////
-//	毎フレーム呼ばれるメインループ
-//////////////////////////////////////////////////////////////////////
-
-	@MainLoop{
-		OnMainLoop();
+	/**
+	*	初期化時に呼ばれます。
+	*/
+	function onInitializeTHC(){
 	}
 
-
-//////////////////////////////////////////////////////////////////////
-//	撃墜中のみ毎フレーム呼ばれるループ
-//////////////////////////////////////////////////////////////////////
-
-	@Missed{
-		OnMissedLoop();
+	/**
+	*	ショット発射時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onShotTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	}
 
-
-//////////////////////////////////////////////////////////////////////
-//	スペルカード処理
-//////////////////////////////////////////////////////////////////////
-
-	@SpellCard{
-		OnSpellCard();
+	/**
+	*	サブショット発射時に呼ばれます。
+	*
+	*	@param nParentBitObj 親ビットのオブジェクトハンドル
+	*	@param nParentBitDir 親ビットの左右位置関係
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onSubShotTHC( let nParentBitObj, let nParentBitDir, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		if( nCount % trunc( 50 / ( nPhase + 1 ) / [ 1.5, 1 ][ m_bFlanKeySlow ] ) != 0 ){ return; }
+		if( m_bFlanKeySlow ){
+			SuperExplodeShot( Obj_GetX( nParentBitObj ), Obj_GetY( nParentBitObj ), m_nSubShotBAngle % trunc( Smooth( 8, SUBSHOT_MAX_WIDTH, nPhase, 5 ) ) * nParentBitDir );
+			if( nParentBitDir == 1 ){ m_nSubShotBAngle += 3; }
+		}
+		else{
+			ExplodeShot( Obj_GetX( nParentBitObj ), Obj_GetY( nParentBitObj ), m_nSubShotADir * nParentBitDir );
+			if( nParentBitDir == 1 ){ m_nSubShotADir = -m_nSubShotADir; }
+		}
 	}
 
-
-//////////////////////////////////////////////////////////////////////
-//	絵画処理
-//////////////////////////////////////////////////////////////////////
-
-	@DrawLoop{
-		OnDrawLoop();
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	}
 
+	/**
+	*	ミス時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onPlayerMissedTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-//////////////////////////////////////////////////////////////////////
-//	終了処理
-//////////////////////////////////////////////////////////////////////
+	/**
+	*	スペル発動時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onStartSpellTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-	@Finalize{
-		OnFinalize();
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	}
 
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	メイン部スクリプトここまで
+//	メインスクリプト部ここまで
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
@@ -243,10 +295,20 @@ script_spell StarDustReverie{
 
 
 //////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
 //	定数
 //////////////////////////////////////////////////////////////////////
 
-let SPELL_STAR_SCALE				= 112;
+/**	星の大きさを設定します。 */
+let SPELL_STAR_SCALE	= 144;
+/**	星の数を設定します。 */
+let SPELL_STAR_NUMS_A	= 6;
+/**	星の数を設定します。 */
+let SPELL_STAR_NUMS_B	= 5;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -255,53 +317,89 @@ let SPELL_STAR_SCALE				= 112;
 
 
 //////////////////////////////////////////////////////////////////////
-//	マイクロスレッド
+//	固有処理
 //////////////////////////////////////////////////////////////////////
 
-	//	メイン
-	task Main(){
-		ascent( let i in 0..5 ){
-			ascent( let j in 0..4 ){
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*/
+	task MainTask( let nArgv ){
+		let nAngleSplit = 360 / SPELL_STAR_NUMS_B;
+		PlaySEEx( seKira1 );
+		ascent( let i in 0..SPELL_STAR_NUMS_A ){
+			ascent( let j in 0..SPELL_STAR_NUMS_B ){
 				let n = ( i * 4 + j ) % SPELL_STAR_COLORTABLE_LENGTH;
-				ReverieStar( j * 90 + Smooth( 0, 90, i, 5 ), SPELL_STAR_SCALE, Smooth( 0, 4.5, i, 5 ), SPELL_STAR_COLORTABLE_RED[ n ], SPELL_STAR_COLORTABLE_GREEN[ n ], SPELL_STAR_COLORTABLE_BLUE[ n ] );
+				ReverieStar(
+					j * nAngleSplit + Smooth( 0, nAngleSplit, i, SPELL_STAR_NUMS_A ),
+					SPELL_STAR_SCALE,
+					Smooth( 0, 4.5, i, SPELL_STAR_NUMS_A ),
+					SPELL_STAR_COLORTABLE_RED[ n ],
+					SPELL_STAR_COLORTABLE_GREEN[ n ],
+					SPELL_STAR_COLORTABLE_BLUE[ n ]
+				);
 			}
-			_Wait( 3 );
+			__Wait( 3 );
 		}
-		_Wait( 180 );
+		__Wait( 180 );
 		End();
 	}
 
-//////////////////////////////////////////////////////////////////////
-//	初期処理
-//////////////////////////////////////////////////////////////////////
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*/
+	function onInitializeTHC( let nArgv ){
+		LoadSE( seKira1 );
+		SetPlayerInvincibility( 280 );
+	}
 
-	@Initialize{
-		OnInitialize( 260 );
-		Main();
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	}
 
 
 //////////////////////////////////////////////////////////////////////
-//	毎フレーム呼ばれるメインループ
+//--------------------------------------------------------------------
+//	スペルカードスクリプト部ここまで
+//--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
-
-	@MainLoop{
-		OnMainLoop();
-	}
-
-
-//////////////////////////////////////////////////////////////////////
-//	終了処理
-//////////////////////////////////////////////////////////////////////
-
-	@Finalize{
-		OnFinalize();
-	}
-
 
 }
 
+
 //////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スペルカード部スクリプト
+//--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
 //	ミルキーウェイ
@@ -316,10 +414,18 @@ script_spell MilkyWay{
 
 
 //////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
 //	定数
 //////////////////////////////////////////////////////////////////////
 
-let SPELL_STAR_SCALE				= 112;
+/**	星の大きさを設定します。 */
+let SPELL_STAR_SCALE	= 112;
+/**	星の数を設定します。 */
+let SPELL_STAR_NUMS		= 20;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -328,47 +434,67 @@ let SPELL_STAR_SCALE				= 112;
 
 
 //////////////////////////////////////////////////////////////////////
-//	マイクロスレッド
+//	固有処理
 //////////////////////////////////////////////////////////////////////
 
-	//	メイン
-	task Main(){
-		yield;
-		ascent( let i in 0..20 ){
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*/
+	task MainTask( let nArgv ){
+		ascent( let i in 0..SPELL_STAR_NUMS ){
+			PlaySEEx( seKira4 );
 			let n = i % SPELL_STAR_COLORTABLE_LENGTH;
-			ReverieStar( RandBlur( 20 ) - 90 + [ 0, 20 ][ m_bLeft ] - [ 0, 20 ][ m_bRight ], SPELL_STAR_SCALE, 2, SPELL_STAR_COLORTABLE_RED[ n ], SPELL_STAR_COLORTABLE_GREEN[ n ], SPELL_STAR_COLORTABLE_BLUE[ n ] );
-			_Wait( 8 );
+			ReverieStar(
+				RandBlur( 20 ) - 90 + [ 0, 20 ][ m_bFlanKeyRight ] - [ 0, 20 ][ m_bFlanKeyLeft ],
+				SPELL_STAR_SCALE, 2,
+				SPELL_STAR_COLORTABLE_RED[ n ], SPELL_STAR_COLORTABLE_GREEN[ n ], SPELL_STAR_COLORTABLE_BLUE[ n ]
+			);
+			__Wait( 8 );
 		}
-		_Wait( 180 );
+		__Wait( 180 );
 		End();
 	}
 
-
-//////////////////////////////////////////////////////////////////////
-//	初期処理
-//////////////////////////////////////////////////////////////////////
-
-	@Initialize{
-		OnInitialize( 400 );
-		Main();
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*/
+	function onInitializeTHC( let nArgv ){
+		LoadSE( seKira4 );
+		SetPlayerInvincibility( 480 );
 	}
 
-
-//////////////////////////////////////////////////////////////////////
-//	毎フレーム呼ばれるメインループ
-//////////////////////////////////////////////////////////////////////
-
-	@MainLoop{
-		OnMainLoop();
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	}
 
-
-//////////////////////////////////////////////////////////////////////
-//	終了処理
-//////////////////////////////////////////////////////////////////////
-
-	@Finalize{
-		OnFinalize();
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	}
 
 

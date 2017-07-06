@@ -1,125 +1,226 @@
-script_enemy_main
-{
-
-#include_function ".\INCLUDE\Enemy.dnh"
-
-
-//変数宣言--------------------------------------
-	let count=0;
-	let Level = GetCommonDataDefault( "Level", 1 );
-//タスクの作成----------------------------------
-
-task MainAction()
-{
-	yield;
-
-	_Wait(100);
-
-	loop([3,5,10,20][Level])
-	{
-		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),rand(2,[2.1,3,4,5][Level]),GetAngleToPlayer()+180+[rand(-15,15),rand(-30,30),rand(-100,100),rand(0,360)][Level],0);
-	}
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 1b(妖精雑魚)
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
 
+//////////////////////////////////////////////////////////////////////
+//	スクリプトここから
+//////////////////////////////////////////////////////////////////////
 
-}
-task SubAction01()
-{
-	yield;
-	let spmax=GetSpeed();
-	let i=0;
-	loop(100)
-	{
-		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
-		i++;
-		yield;
-	}
-	_Wait(200);
-}
+script_enemy_main{
 
-//実行部分---------------------------------------
 
-	@Initialize
-	{
-		SetLife(40);
-		SetInvincibility( 230 );
-		MainAction();
-		SubAction01();
-	}
-	
-	@MainLoop
-	{
-		Gone();
-		Deletemine();
-		yield;
-		count++;
-		if(count==600){VanishEnemy();}
-		//敵画像代わり------------------------------------
-		if(int(count/2)==count/2)
-		{
-			CreateShotA(0,GetX(),GetY(),0);
-			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
-			SetShotKillTime(0,2);
-			FireShot(0);
+//////////////////////////////////////////////////////////////////////
+//	THCELをインクルード
+//	(FLAN/THCELへのインクルードはTHCELが勝手にやってくれます)
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\Zako.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	/**	デフォルトアイテムの落下量を設定します。 */
+	ENEMY_ITEMEX_NUM_DEFAULT = 5;
+	/**	被弾判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_A = 13;
+	/**	接触判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_B = 8;
+	/**	onMainLoopへ処理をまわさないよう設定します。(まわしても何の処理も無い) */
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵の移動を管理するタスクです。
+	*
+	*	@param nLevel レベル(0～3)
+	*/
+	task DoMove( let nLevel ){
+		let spmax=GetSpeed();
+		ascent(i in 0..200){
+			SetSpeed(SlowDown( spmax , -0.4 , i , 200 ));
+			yield;
 		}
-		//------------------------------------------------
-		Collision( 20, 8 );
 	}
-	@DrawLoop
-	{
-	}
-	@Finalize
-	{
-		DropItem( 1 , 60 );
-		DeleteEnemyShotToItem(ALL);
-	}
-}
 
-////////////////////////////////////////////////////////////////////////
-//仮の使い魔、使い魔の書式の統一が必要なので雛形の作成をお願いします
-////////////////////////////////////////////////////////////////////////
-script_enemy t_ma_01
-{
-
-#include_function ".\INCLUDE\Shadow.dnh"
-#include_function ".\index_UserShot.dnh"
-
-	let count=0;
-	let scale=0;
-	let Level = GetCommonDataDefault( "Level", 1 );
-	let seHidden=seShadowHidden;
-	let seSudden=seShadowSudden;
-
-task MainAction()
-{
-	_Wait(100);
-	loop(3)
-	{
-		_Wait(30);
-		loop([1,3,6,12][Level])
-		{
-			CreateShot02(GetX(),GetY(),0.5,GetAngleToPlayer(),0.05,[1.5,1.8,3,4][Level],RED04,0);
-			_Wait([0,15,5,3][Level]);
+	/**
+	*	使い魔を出すのとは別のアクション
+	*
+	*	@param nLevel レベル(0～3)
+	*/
+	task SubAction( let nLevel){
+		__Wait(15);
+		loop(6){
+			CreateEnemyFromScript("Shadow",GetX(),GetY(),rand(2,[2.1,3,4,5][nLevel]),GetAngleToPlayer()+[rand(80,110),-rand(80,110)][rand(0,100)>50],0);
+			PlaySEEx(seShadow);
+			__Wait([25,15,10,10][nLevel]);
 		}
-		_Wait(60);
-		CreateItem(ITEM_SCORE,GetX(),GetY());
 	}
-	VanishEnemy();
+
+//////////////////////////////////////////////////////////////////////
+//	共通動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵固有のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nArgv, let nLevel ){
+		DoMove( nLevel );
+		SubAction( nLevel );
+		__Wait(25);
+		_RoundShot01(GetX(),GetY(),1,GetAngleToPlayer(),[16,24,32,54][nLevel],US_RICE_S_ORANGE,20);
+		PlaySEEx(seShot2);
+		__Wait(15);
+		let speed = 1.2;
+		loop([3,6,10,12][nLevel]){
+			_WideShot01(GetX(),GetY(),speed,GetAngleToPlayer()+20,[4,8,12,16][nLevel],[3,3,4,6][nLevel],US_RICE_S_ORANGE,20);
+			_WideShot01(GetX(),GetY(),speed,GetAngleToPlayer()-20,[4,8,12,16][nLevel],[3,3,4,6][nLevel],US_RICE_S_ORANGE,20);
+			PlaySEEx(seShot2);
+			speed+=0.4;
+			loop([16,8,4,3][nLevel]){yield;}
+		}
+	}
+
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( let nArgv, let nLevel ){
+//		CreateDebugWindow();
+		SetLife( 25 );
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		DarwZakoBack();
+		DrawYousei( RECT_YOUSEI_RED );
+	}
 
 }
 
-task SubAction01()
-{
-	yield;
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	使い魔
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy Shadow{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Shadow.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ESS_NOGONE = false;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_SHADOW_LIGHTING = true;
+	FLAN_SHADOW_COLLISION = true;
+	FLAN_SHADOW_DELETE_SHOT = 32;
+	FLAN_ENEMY_COLLISION_A = 24;
+	FLAN_ENEMY_COLLISION_B = 0;
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)独自ショートカットShadowBody専用
+//////////////////////////////////////////////////////////////////////
+
+	let SHADOW_LIFE = 5;
+	let SHADOW_COLOR = SHADOW_COLOR_BLUE;
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+task MainAction( let nLevel ){}
+task SubAction01( let nLevel ){
 	let spmax=GetSpeed();
-	let i=0;
-	loop(100)
-	{
-		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
-		i++;
+	ascent(i in 0..200){
+		SetSpeed(SlowDown( spmax , spmax/2 , i , 200 ));
 		yield;
 	}
-
 }
-#include_function ".\INCLUDE\ShadowBody.dnh"
+
+
+	#include_function ".\INCLUDE\ShadowBody.dnh"
+
 }

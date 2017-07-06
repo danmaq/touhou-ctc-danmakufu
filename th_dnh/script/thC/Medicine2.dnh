@@ -1,207 +1,306 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ1C　ボス　メディスン・メランコリー　通常攻撃2
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Medicine - 通常攻撃2]
+#Text[ステージ1C ボス
+メディスン・メランコリー]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_enemy_main{
 
-	// 共通関数読み込み
-	#include_function ".\INCLUDE\Boss.dnh"
-	#include_function ".\_index_UserShot.dnh"
 
-	// 画像及び効果音ファイル
-	let userShot=shotAll;
-	let imgBoss=dotBossMedicine;
-	let imgList=[imgBoss];
-	let seList=[];
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
 
-	// 各種設定値（難易度等）
-	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
-	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
-	Debug_SetLevel;
-	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
-	let DamageRate=1;
-	if(!THC||Practice){DamageRate=0.75;}
+	#include_function ".\INCLUDE\BossSub.dnh"
+	#include_function ".\INCLUDE\BOSS\Medicine.dnh"
 
-	let dollGapAngle=GetCommonDataDefault("DollGapAngle",-90);
 
-	// -------------------------------------------------------------------------
-	@Initialize{
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
 
-		// ボス初期設定（ファイルのロード他）
-		if(!THC){
-			LoadUserShotData(userShot);
-			seList=seList~seListEnemy;
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 80;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** サブキャラ間隔角度 */
+	let m_nDollGapAngle = 0;
+
+	/** ダメージ率（スペルプラクティス及び単体テスト時に固くする） */
+	let m_nDamageRate = 1;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+			m_nDamageRate = 0.8;
 		}
-		InitializeBoss(imgList,seList);
+		else if( m_bStagePractice ){ m_nDamageRate = 0.8; }
+		SetTimer( 45 );
+		SetLife( 2000 );
+		SetDamageRate( 90 * m_nDamageRate, 90 * m_nDamageRate );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+		BehaviorSub( ACT_STAND3 );
+		m_nDollGapAngle = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_ANGLE, -90 );
 
-		// スペルカード設定
-		SetTimer(45);
-		SetLife(1875);
-		SetDamageRate(90*DamageRate,90*DamageRate);
-		SetShotAutoDeleteClip(32,32,32,32);
-
-		// ボス基本処理、メイン処理
-		CountTimer(seTimeOut);
-		BehaviorBoss(ACT_STAND3);
-		BehaviorSub(ACT_STAND3);
-		Main;
-
-	}
-
-	// -------------------------------------------------------------------------
-	@MainLoop{
-
-		// 当たり判定（自弾,体当たり）
-		Collision(32,24);
-
-		// ダメージ音
-		PlayDamageSE(seDamage);
-
-		// スーさん角度設定
-		dollGapAngle+=360/240;
-
-		// カウンタ加算
-		m_nCount++;
-
-		yield;
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_KAEI + CL_TTH_CHARACTER_NAME_KAEI_MEDICINE;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
 
 	}
 
-	// メイン処理 --------------------------------------------------------------
-	task Main{
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		SetInvincibility(182);
-		_Wait(2);
+		/** サブキャラ間隔角度設定 */
+		m_nDollGapAngle += 360 / 240;
 
-		// 初期移動
-		let fr=150;
-		let x=cenX;
-		let y=minY+120+RandBlur(0.1);
-		SetMovePosition02(x,y,fr);
-		SetAction(ACT_MOVE,fr);
-		_Wait(180);
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+		/** 個別終了設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ANGLE );
+		}
+		else{
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ANGLE, m_nDollGapAngle );
+		}
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス＆サブキャラ描画 */
+		let nDollGapLength = 32;
+		let nX = GetGapX( GetX(), nDollGapLength, m_nDollGapAngle );
+		let nY = GetGapY( GetY(), nDollGapLength * 0.4, m_nDollGapAngle * 2 );
+		if( sin( m_nDollGapAngle ) > 0 ){
+			DrawBoss( m_szImageBoss );
+			DrawSub( m_szImageBoss, CHAR_DOLL, nX, nY );
+		}
+		else{
+			DrawSub( m_szImageBoss, CHAR_DOLL, nX, nY );
+			DrawBoss( m_szImageBoss );
+		}
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 150;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 180 );
 
 		loop{
 
-			// ワインド直線弾
-			WindLineShot;
-			_Wait(150);
+			/** ワインド直線弾 */
+			WindLineShot();
+			__Wait( 150 );
 
-			// 移動＋ランダム直線弾
-			RandomLineShot(150);
-			move(120);
-			_Wait(120);
-			SetAction(ACT_SHOT_A5,60);
-			_Wait(90);
+			/** 移動＋ランダム直線弾 */
+			RandomLineShot( 150 );
+			Move( 120 );
+			__Wait( 120 );
+			SetAction( ACT_SHOT_A5, 60 );
+			__Wait( 90 );
 
 		}
 
 	}
 
-	// ワインド直線弾 ----------------------------------------------------------
+	/** ワインド直線弾 */
 	task WindLineShot{
 
-		let way=36;
-		let num=[1,1,2,2];
-		let minSpeed=[2.6, 3.2, 2.6, 1.4];
-		let maxSpeed=[2.6, 3.2, 4.2, 3.4];
-		let wideAngle=95;
-		let graphic=US_BALL_M_PURPLE;
-		let delay=20;
-		let fr=2;
-		let assign=1;
-		if(GetPlayerX<cenX){assign=-1;}
+		let nWay = 36;
+		let nFrame = 2;
+		let nNum = 1;
+		if( m_nLevel >= 2 ){ nNum = 2; }
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = [ 2.6, 3, 2.6, 1.4 ][ m_nLevel ];
+		let nMaxSpeed = [ 2.6, 3, 3.8, 3.4 ][ m_nLevel ];
+		let nWideAngle = 94;
+		let nGraphic = US_BALL_M_PURPLE;
+		let nDelay = 20;
+		let nAssign = 1;
+		if( GetPlayerX() < CL_CEN_X ){ nAssign = - 1; }
 
-		SetAction(ACT_SHOT_A5,fr*way*2);
-		LoopPlaySE(seShot3,fr*way*2,6);
-		loop(2){
-			let baseAngle=GetGapAngle(GetX,GetY,cenX,maxY)-90*assign;
-			let wayAngle=wideAngle/(way-1)*assign;
-			ascent(let i in 0 .. way){
-				let angle=baseAngle+wayAngle*i;
-				LineShot(GetX,GetY,minSpeed[Lv],maxSpeed[Lv],angle,num[Lv],graphic,delay);
-				angle=baseAngle-wayAngle*i;
-				LineShot(GetX,GetY,minSpeed[Lv],maxSpeed[Lv],angle,num[Lv],graphic,delay);
-				_Wait(fr);
+		SetAction( ACT_SHOT_A5, nFrame * nWay * 2 );
+		PlaySELoop( seShot3, nFrame * nWay * 2, 6 );
+		loop( 2 ){
+			let nBaseAngle = GetGapAngle( nX, nY , CL_CEN_X, CL_MAX_Y ) - 90 * nAssign;
+			let nWayAngle = nWideAngle / ( nWay - 1 ) * nAssign;
+			ascent( let i in 0 .. nWay ){
+				let nAngle = nBaseAngle + nWayAngle * i;
+				_LineShot( nX, nY, nSpeed, nMaxSpeed, nAngle, nNum, nGraphic, nDelay );
+				nAngle = nBaseAngle - nWayAngle * i;
+				_LineShot( nX, nY, nSpeed, nMaxSpeed, nAngle, nNum, nGraphic, nDelay );
+				__Wait( nFrame );
 			}
-			assign*=-1;
+			nAssign = - nAssign;
 		}
 
 	}
 
-	// ランダム直線弾 ----------------------------------------------------------
-	task RandomLineShot(let totalFr){
+	/**
+	*	ランダム直線弾
+	*	@param nTotalFrame 攻撃終了までのフレーム数
+	*/
+	task RandomLineShot( let nTotalFrame ){
 
-		let fr=[8,6,4,2];
-		let _fr=trunc(fr[Lv]/2);
-		let shotNum=trunc(totalFr/fr[Lv]);
-		let num=[5,3];
-		let minSpeed=[1, 1.4];
-		let maxSpeed=[2.4, 2];
-		let graphic=[US_RICE_S_RED,US_SCALE_RED];
-		let delay=15;
-		let assign=1;
-		if(GetX>cenX){assign=-1;}
-		let assignAngle=45;
+		let nFrame = 10 - 2 * m_nLevel;
+		let _nFrame = nFrame / 2;
+		let nShotNum = trunc( nTotalFrame / nFrame );
+		let anNum = [ 5, 3 ];
+		let anSpeed = [ 1, 1.4 ];
+		let anMaxSpeed = [ 2.4, 2 ];
+		let anGraphic = [ US_RICE_S_RED, US_SCALE_RED ];
+		let nDelay = 15;
+		let nAssign = 1;
+		if( GetX() > CL_CEN_X ){ nAssign = - 1; }
+		let nAssignAngle = 45;
 
-		LoopPlaySE(seShot1,totalFr,10);
-		ascent(let i in 0 .. shotNum){
-			ascent(let j in 0 .. 2){
-				let gapLength=rand(0,15);
-				let gapAngle=rand(0,360);
-				let x=GetGapX(GetX,gapLength,gapAngle);
-				let y=GetGapY(GetY,gapLength,gapAngle);
-				let angle=rand(90+assignAngle*i*assign,90+assignAngle*(i+1)*assign)+180*j;
-				LineShot(x,y,minSpeed[j],maxSpeed[j],angle,num[j],graphic[j],delay);
-				_Wait(_fr);
+		PlaySELoop( seShot1, nTotalFrame, 10 );
+		ascent( let i in 0 .. nShotNum ){
+			let _nX = GetX();
+			let _nY = GetY();
+			ascent( let j in 0 .. 2 ){
+				let nGapLength = rand( 0, 15 );
+				let nGapAngle = rand( 0, 360 );
+				let nX = GetGapX( _nX, nGapLength, nGapAngle );
+				let nY = GetGapY( _nY, nGapLength, nGapAngle );
+				let nAngle = rand( 90 + nAssignAngle * i * nAssign, 90 + nAssignAngle * ( i + 1 ) * nAssign ) + 180 * j;
+				_LineShot( nX, nY, anSpeed[ j ], anMaxSpeed[ j ], nAngle, anNum[ j ], anGraphic[ j ], nDelay );
+				__Wait( _nFrame );
 			}
 		}
 
 	}
 
-	// 移動 --------------------------------------------------------------------
-	task move(let fr){
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
 
-		let x=GetX;
-		let y=GetY;
-		let mx=rand(40,80);
-		let my=rand(0,20);
-		if(x>=GetPlayerX){
-			if(x-mx>=minX+100){mx=-mx;}
-		}
-		else{
-			if(x+mx>=maxX-100){mx=-mx;}
-		}
-		if(y>=minY+120){my=-my;}
-		x+=mx;
-		y+=my;
-		SetMovePosition02(x,y,fr);
-		SetAction(ACT_MOVE,fr);
+		let nMinMoveX = 40;
+		let nMaxMoveX = 80;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 20;
 
-	}
-
-	// -------------------------------------------------------------------------
-	@Finalize{
-
-		// ロードしたファイルを削除
-		DeleteGraphicList(imgList,seList);
-
-		// スーさん角度設定
-		SetCommonData("DollGapAngle",dollGapAngle);
-
-	}
-
-	// -------------------------------------------------------------------------
-	@DrawLoop{
-
-		// ボス＆スーさん描画
-		let dollGapLength=32;
-		let x=GetGapX(GetX,dollGapLength,dollGapAngle);
-		let y=GetGapY(GetY,dollGapLength*0.4,dollGapAngle*2);
-		if(sin(dollGapAngle)>0){
-			DrawBoss(imgBoss);
-			DrawSub(imgBoss,CHAR_DOLL,x,y);
-		}
-		else{
-			DrawSub(imgBoss,CHAR_DOLL,x,y);
-			DrawBoss(imgBoss);
-		}
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
 
 	}
 

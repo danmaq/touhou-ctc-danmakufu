@@ -1,0 +1,123 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+/**	キーリピートが発動した時のリピートサイクルを設定します。 */
+let FLAN_KEY_REPEAT_CYCLE	= 6;
+/**	キーリピートが発動するまでの待ちフレーム数を設定します。 */
+let FLAN_KEY_REPEAT_TIME	= 20;
+/**	使い魔の為の低速ボタンを押してから反映されるまでのタイムラグを設定します。 */
+let FLAN_KEY_SLOW_DELAY		= 8;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(原則書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	最後に押したキーの種類が格納されます。 */
+let m_nFlanKeyHold = -1;
+/**	最後にキーを押した時のカウンタ値が格納されます。 */
+let m_nFlanKeyHoldTime = 0;
+/**	最後に低速ボタンを押した/離した時のカウンタ値が格納されます。 */
+let m_nFlanKeySlowTime = 0;
+/**	前フレームの低速キー状態が格納されます。 */
+let m_nFlanKeySlowPrevStat = KEY_FREE;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	キー入力関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**	指定したキーが押されているかどうかを返します。
+*	@return 指定キーが押されている( KEY_PUSH / KEY_HOLD )状態でtrue
+*/
+function IsPressKey( let nKeyType ){
+	let nState = GetKeyState( nKeyType );
+	return nState == KEY_PUSH || nState == KEY_HOLD;
+}
+
+/**	方向キーを押したかどうかを返します。
+*	GetKeyState()のラッパーです。
+*	@return 方向キーが押された瞬間のみtrue
+*/
+function IsPushDirKey(){ return GetKeyState( VK_UP ) == KEY_PUSH || GetKeyState( VK_DOWN ) == KEY_PUSH || GetKeyState( VK_LEFT ) == KEY_PUSH || GetKeyState( VK_RIGHT ) == KEY_PUSH; }
+
+/**	方向キーを押したかどうかを返します。(キーリピート対応版)
+*	GetKeyStateEx()のラッパーです。
+*	@return 方向キーが押された瞬間およびキーリピート発動中は一定時間ごとに一度のみtrue
+*/
+function IsPushDirKeyEx(){ return GetKeyStateEx( VK_UP ) == KEY_PUSH || GetKeyStateEx( VK_DOWN ) == KEY_PUSH || GetKeyStateEx( VK_LEFT ) == KEY_PUSH || GetKeyStateEx( VK_RIGHT ) == KEY_PUSH; }
+
+/**	キー入力状態を取得します。
+*	GetKeyState()のリピート対応型で、発動するとその度にKEY_PUSHを返します。
+*	@param nType 取得するキーの種類
+*	@return キーの状態
+*/
+function GetKeyStateEx( let nType ){
+	let nResult = GetKeyState( nType );
+	alternative( nResult )
+	case( KEY_PUSH ){
+		if( m_nFlanKeyHold != nType ){
+			m_nFlanKeyHold = nType;
+			m_nFlanKeyHoldTime = m_nFlanCount;
+		}
+	}
+	case( KEY_HOLD ){
+		if( m_nFlanKeyHold == nType ){
+			let nRepeatStartCount = m_nFlanCount - ( m_nFlanKeyHoldTime + FLAN_KEY_REPEAT_TIME );
+			if( nRepeatStartCount >= 0 ){
+				alternative( nRepeatStartCount % FLAN_KEY_REPEAT_CYCLE )
+				case( 0 ){ return KEY_PULL; }
+				case( 1 ){ return KEY_PUSH; }
+			}
+		}
+	}
+	case( KEY_FREE, KEY_PULL ){
+		if( m_nFlanKeyHold == nType ){
+			m_nFlanKeyHold = -1;
+			m_nFlanKeyHoldTime = 0;
+		}
+	}
+	return nResult;
+}
+
+/**	毎フレーム低速キーの入力状態を取得します。
+*	使い魔のディレイ対応版です。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+task __SetSlowKeyStateDelayLoop(){
+	loop{
+		yield;
+		let nStat = GetKeyState( VK_SLOWMOVE );
+		if( nStat == KEY_PUSH || nStat == KEY_PULL ){ m_nFlanKeySlowTime = m_nFlanCount; }
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_KEY_SLOW_TIME, m_nFlanCount - m_nFlanKeySlowTime );
+		let nDelayStat;
+		if( m_nFlanKeySlowPrevStat != nStat ){ nDelayStat = [ KEY_PULL, KEY_PUSH ][ nStat == KEY_PUSH || nStat == KEY_HOLD ]; }
+		else{
+			if( m_nFlanCount - m_nFlanKeySlowTime > FLAN_KEY_SLOW_DELAY ){ nDelayStat = [ KEY_FREE, KEY_HOLD ][ nStat == KEY_HOLD ]; }
+			else{ nDelayStat = [ KEY_PULL, KEY_PUSH ][ nStat == KEY_HOLD ]; }
+		}
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_KEY_SLOW_STAT, nDelayStat );
+		m_nFlanKeySlowPrevStat = nStat;
+	}
+}

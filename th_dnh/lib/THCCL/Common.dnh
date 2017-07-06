@@ -1,0 +1,229 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Common-Library
+//		CommonData操作ライブラリ
+//
+//	※ステージ・ボス・プレイヤースクリプトでは内部から自動的に
+//		インクルードされるので直接インクルードすることはありません。
+//	※雑魚や使い魔でデバッグ用などに使用したい場合のみ
+//		直接各スクリプトからインクルードしてください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	インデックスをインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\THCCL\DATA\index.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	STGシーンの各座標です。 */
+let CL_CEN_X = GetCenterX();
+let CL_CEN_Y = GetCenterY();
+let CL_MIN_X = GetClipMinX();
+let CL_MIN_Y = GetClipMinY();
+let CL_MAX_X = GetClipMaxX();
+let CL_MAX_Y = GetClipMaxY();
+
+/**	登録可能スペルカード総数です。 */
+let CL_SPELL_TOTAL = 400;
+/**	各ステージにおける博麗小符ノルマです。 */
+let CL_LASTSPELL_HAKUREI_NORM		= 180;
+/**	書き込み可能テクスチャの名前です。 */
+let IMAGE_CL_WRITABLE_NAME_LIST			= [ "THC_0", "THC_1" ];
+/**	書き込み可能テクスチャの名前です。 */
+let IMAGE_CL_WRITABLE_MID_NAME_LIST		= [
+	"THC_M00",	"THC_M01",	"THC_M02",	"THC_M03",	"THC_M04",	"THC_M05",	"THC_M06",	"THC_M07",	"THC_M08",	"THC_M09",
+];
+/**	書き込み可能テクスチャの名前です。 */
+let IMAGE_CL_WRITABLE_MINI_NAME_LIST	= [
+	"THC_S00",	"THC_S01",	"THC_S02",	"THC_S03",	"THC_S04",	"THC_S05",	"THC_S06",	"THC_S07",	"THC_S08",	"THC_S09",
+	"THC_S10",	"THC_S11",	"THC_S12",	"THC_S13",	"THC_S14",	"THC_S15",	"THC_S16",	"THC_S17",	"THC_S18",	"THC_S19",
+	"THC_S20",	"THC_S21",	"THC_S22",	"THC_S23",	"THC_S24",	"THC_S25",	"THC_S26",	"THC_S27",	"THC_S28",	"THC_S29",
+	"THC_S30",	"THC_S31",	"THC_S32",	"THC_S33",	"THC_S34",	"THC_S35",	"THC_S36",	"THC_S37",	"THC_S38",	"THC_S39",
+	"THC_S40",	"THC_S41",	"THC_S42",	"THC_S43",	"THC_S44",	"THC_S45",	"THC_S46",	"THC_S47",	"THC_S48",	"THC_S49",
+];
+/**	書き込み可能テクスチャの一辺の幅です(正方形)。 */
+let IMAGE_CL_WRITABLE_WIDTH				= 512;
+/**	書き込み可能テクスチャの幅です。 */
+let IMAGE_CL_WRITABLE_MID_WIDTH			= 128;
+/**	書き込み可能テクスチャの高さです。 */
+let IMAGE_CL_WRITABLE_MID_HEIGHT		= 64;
+/**	書き込み可能テクスチャの幅です。 */
+let IMAGE_CL_WRITABLE_MINI_WIDTH		= 64;
+/**	書き込み可能テクスチャの高さです。 */
+let IMAGE_CL_WRITABLE_MINI_HEIGHT		= 16;
+
+//--------------------------------------------------------------------
+//	アイテムID定義
+//--------------------------------------------------------------------
+/**	[点]アイテムを示すIDです。 */
+let ITEMEX_SCORE				= 0;
+/**	(点)アイテムを示すIDです。 */
+let ITEMEX_SCORE_SMALL			= 1;
+/**	[☆]アイテムを示すIDです。 */
+let ITEMEX_SCORE_STAR			= 2;
+/**	博麗小符アイテムを示すIDです。 */
+let ITEMEX_HAKUREI				= 3;
+/**	[P]アイテムを示すIDです。 */
+let ITEMEX_POWER				= 4;
+/**	大[P]アイテムを示すIDです。 */
+let ITEMEX_POWER_BIG			= 5;
+/**	[F]アイテムを示すIDです。 */
+let ITEMEX_POWER_FULL			= 6;
+/**	ボムアイテムを示すIDです。 */
+let ITEMEX_BOMB					= 7;
+/**	エクステンドアイテムを示すIDです。 */
+let ITEMEX_EXTEND				= 8;
+/**	[点]・[P]・大[P]が一定法則で変化するアイテムを示すIDです。 */
+let ITEMEX_DEFAULT				= 9;
+
+//--------------------------------------------------------------------
+//	プレイヤーID定義
+//--------------------------------------------------------------------
+/**	自機Aを示すIDです。 */
+let PLAYER_A		= 0;
+/**	自機Bを示すIDです。 */
+let PLAYER_B		= 1;
+/**	自機Cを示すIDです。 */
+let PLAYER_C		= 2;
+/**	自機Dを示すIDです。 */
+let PLAYER_D		= 3;
+/**	その他の自機を示すIDです。 */
+let PLAYER_OTHER	= 4;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	デフォルトの絵画先サーフェイス名が格納されます。 */
+let m_szCLDefaultRenderSurface;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	CommonData操作
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	CommonDataを初期化します。
+*	注意: 内部から自動的に呼ばれますので直接呼び出す必要はありません。
+*/
+function CLCommonNameSpaceInitialize(){
+	ClearCommonData();
+	CreateCommonDataArea( CL_CDNS_MESSAGE );
+	CreateCommonDataArea( CL_CDNS_RESULT );
+	CreateCommonDataArea( CL_CDNS_CONFIG );
+	CreateCommonDataArea( CL_CDNS_TEMP );
+	SetCommonData( CL_CD_CDNS_INITIALIZED, true );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	アイテム生成予約関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	アイテム落下キューを投げます。
+*	キューはステージ側に拾われてアイテムとして画面内に放出されます。
+*
+*	@param nKind アイテム種別
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nSpeed 速度
+*	@param nAngle 角度
+*/
+function SetItemQueue( let nKind, let nX, let nY, let nSpeed, let nAngle ){
+	let aItem = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_QUEUE_CREATE, [] );
+	let aItemInfo = [ nKind, nX, nY, nSpeed, nAngle ];
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_QUEUE_CREATE, aItem ~ [ aItemInfo ] );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	エフェクト機能
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	爆破衝撃波エフェクトを絵画します。
+*	弾幕風標準のものより複雑な操作も可能です。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nLifeTime エフェクトの寿命
+*	@param nWidthStart 初期幅
+*	@param nWidthEnd 最終幅
+*	@param anWidthAnimationSplitParameter 内分変化分割用定数のリスト
+*	@param nBrightStart 初期輝度
+*	@param nBrightEnd 最終輝度
+*	@param anBrightAnimationSplitParameter 内分変化分割用定数のリスト
+*/
+task ExplosionEx01(
+	let nX,				let nY,			let nLifeTime,
+	let nWidthStart,	let nWidthEnd,	let anWidthAnimationSplitParameter,
+	let nBrightStart,	let nBrightEnd,	let anBrightAnimationSplitParameter
+){
+	let obj = CreateSquareEffectObject( IMAGE_CL_SHOCKWAVE_ADD, 0, 0, 256, 256, 256, 256 );
+	Obj_SetPosition( obj, nX, nY );
+	Obj_SetAutoDelete( obj, false );
+	ObjEffect_SetRenderState( obj, ADD );
+	ascent( let i in 0..nLifeTime ){
+		let nWidthH = Animation( nWidthStart,	nWidthEnd,	i, nLifeTime, anWidthAnimationSplitParameter	) / 2;
+		let nBright = Animation( nBrightStart,	nBrightEnd,	i, nLifeTime, anBrightAnimationSplitParameter	);
+		ascent( let j in 0..4 ){
+			ObjEffect_SetVertexXY( obj, j, nWidthH * [ -1, 1 ][ truncate( j / 2 ) ], nWidthH * [ -1, 1 ][ j % 2 ] );
+			ObjEffect_SetVertexColor( obj, j, 255, nBright, nBright, nBright );
+		}
+		yield;
+	}
+	Obj_Delete( obj );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	書き込み可能テクスチャが生成されているかどうかを返します。
+*
+*	@param nID テクスチャID
+*	@return 書き込み可能テクスチャが生成されている場合true
+*/
+function IsWritableTextureCreated( let nID ){
+	let nTextureNum = length( IMAGE_CL_WRITABLE_NAME_LIST );
+	let abWritableTextureCreated = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_WRITABLE_TEXTURE_CREATED, CreateArray( nTextureNum, false ) );
+	return nID < nTextureNum && abWritableTextureCreated[ nID ];
+}
+
+/**
+*	書き込み可能テクスチャが生成されているかどうかを返します。
+*
+*	@param nID テクスチャID
+*	@return 書き込み可能テクスチャが生成されている場合true
+*/
+function IsWritableTextureMiniCreated( let nID ){
+	let nTextureNum = length( IMAGE_CL_WRITABLE_MINI_NAME_LIST );
+	let abWritableTextureCreated = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_WRITABLE_TEXTURE_MINI_CREATED, CreateArray( nTextureNum, false ) );
+	return nID < nTextureNum && abWritableTextureCreated[ nID ];
+}

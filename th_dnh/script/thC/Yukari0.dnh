@@ -1,0 +1,309 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ4　ボス　八雲 紫　戦闘前
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#BackGround[User]
+#ScriptVersion[2]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Yukari.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 100;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDemo = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetLife( 1 );
+		SetDamageRate( 0, 0 );
+		BehaviorBoss( ACT_STAND3 );
+		SetPosition( CL_CEN_X, CL_MIN_Y - 1000 );
+		SetEnemyMarker( false );
+		m_nEnemyAlpha = 0;
+		CheckAlpha( 0, FLAN_ENEMY_COLLISION_A, FLAN_ENEMY_COLLISION_B );
+		FLAN_ENEMY_COLLISION_A = 0;
+		FLAN_ENEMY_COLLISION_B = 0;
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 当たり判定 */
+		if( m_nWarpStatus == 0 ){
+			FLAN_ENEMY_COLLISION_A = 32;
+			FLAN_ENEMY_COLLISION_B = 16;
+		}
+		else if( m_nWarpStatus >= 3 ){
+			FLAN_ENEMY_COLLISION_A = 32;
+			FLAN_ENEMY_COLLISION_B = 0;
+		}
+		else{
+			FLAN_ENEMY_COLLISION_A = 0;
+			FLAN_ENEMY_COLLISION_B = 0;
+		}
+
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		SetDrawDataYukari();
+		DrawBossFloat( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 会話開始 */
+		CreateEventFromScript( "Talk" );
+		while( GetEventStep() != 1 ){ yield; }
+
+		/** ワープ出現＋ボスID設定 */
+		let nFrame = 90;
+		let nEventCount = m_nFlanCount;
+		Warp( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y + RandBlur( 0.1 ), 55 );
+		__Wait( 55 );
+		SetEnemyMarker( true );
+		let nBossID = CL_TTH_CHARACTER_NAME_YOUMU + CL_TTH_CHARACTER_NAME_YOUMU_YUKARI;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		while( GetEventStep() != 2 || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** BGM */
+		PlayMusicEx( 27 );
+		nFrame = 30;
+		nEventCount = m_nFlanCount;
+		while( OnEvent() || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** 戦闘開始 */
+		AddLife( - 1 );
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	会話
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_event Talk{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Event.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 敵カットイン画像 */
+	m_aszImageCutInEnemy = [
+		cutYukari,
+		cutYukari2,
+		cutYukari,
+		cutYukari,
+		cutYukari,
+		cutYukari,
+		cutYukari,
+		cutYukari,
+		cutYukari,
+		cutYukari3
+	];
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	@MainLoop{
+
+		TextOutEnemyC( m_nWaitFrame, "ああもう、二人して気が早いんだから" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		SetStep( 1 );
+		TextOutPlayerB( 120, "こんなところに居たのか\n探す手間が省けたぜ" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "フフ、あなたのすることくらい\n何もかも分かっていたわ" );
+		SetNameFromTextEnemy( "八雲 紫", "幻想の境界" );
+		TextOutEnemy( "霊夢を探していることも\nそして私に何の用かも、ね" );
+		InCharPlayer( CUT_PLAYER_BAD );
+		TextOutPlayer( "お前に先読みされても何も驚かないぜ" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "むしろ話を切り出しやすいくらいだ" );
+		DeleteNameEnemy();
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "私もそう思って\nあなたになんて答えるべきか考えていたの" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "この残酷な話をあなたが本当に\n受け入れられるのか、って" );
+		InCharPlayer( CUT_PLAYER_SURPRISE );
+		TextOutPlayer( "…は？" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "冗談はよしてくれ\n森羅万象のルール無視のお前が" );
+		TextOutPlayer( "霊夢一人すら生き返させられない、って\nオチは無しだぜ？" );
+		TextOutEnemy( "…その通りよ？" );
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "何でだよ？いつものように\n生と死の境界をサクっと弄くって" );
+		TextOutPlayer( "それで終わりじゃないのか？" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "確かにね、境界操作で一応は生き返るわ" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "でもね、もう生き返す意味がないの" );
+		InCharPlayer( CUT_PLAYER_REGRET );
+		TextOutPlayer( "何言ってるんだよ" );
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "ミナミの、ってわけじゃないが\n博麗神社に居てこそ霊夢だろう" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "白玉楼の霊夢って言われても\nそれはなんか違うと思うぜ？" );
+		TextOutEnemy( "本当にあなたはそう思うのかしら？" );
+		InCharPlayer( CUT_PLAYER_TEMPER );
+		TextOutPlayer( "思うも何も、それが幻想郷の常識だろ？" );
+		TextOutEnemy( "そうね、常識ね…\n確かにそれが幻想郷の常識よ" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "でもね…常識は突然に\nひっくり返ることだってあるのよ？" );
+		InCharPlayer( CUT_PLAYER_REGRET );
+		TextOutPlayer( "あーッ！もういいぜ" );
+		TextOutPlayer( "お前が素直に話を聞いてくれると\n思った私が馬鹿だったわ" );
+		SetStep( 2 );
+		InCharPlayer( CUT_PLAYER_TEMPER );
+		TextOutPlayer( "いいか、今からお前を\n力ずくでも霊夢のところまで連れて行く" );
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "素直についていくか、とっちめてから\n連れ去られるか４０秒で選びな" );
+		TextOutEnemy( "魔女が今私を連れ去ろうとしているよ～" );
+		InCharPlayer( CUT_PLAYER_TEMPER );
+		TextOutPlayer( "この期に及んでふざける気か\n後者希望で文句はないな？" );
+		End();
+
+	}
+
+}

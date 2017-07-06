@@ -1,0 +1,422 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ2D　ボス　風見 幽香　ラストスペル
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[YukaB - ラストスペル]
+#Text[ステージ2D ボス
+風見 幽香]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Yuka.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 100;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 100;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 最大ライフ（ラストスペルエフェクトでm_nFlanEnemyMaxLifeは使えない） */
+	let m_nMaxLife = 500;
+
+	/** 次のフェイズに移るか */
+	let m_bNextPhase = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDeadEffect = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( m_nLevel > 0 ){ m_nLevel --; }
+		SetTimer( 63 );
+		SetLife( 500 );
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+			let nBossID = CL_TTH_CHARACTER_NAME_LOTUS + CL_TTH_CHARACTER_NAME_LOTUS_YUKA;
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		}
+		else{
+			SetPosition( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y + RandBlur( 0.1 ) );
+			LastSpellEffect();
+		}
+		SetDamageRate( 12, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		if( !m_bStage || m_bSpellPractice ){
+			SetAction( ACT_MOVE, nFrame );
+			BossMoveHome( nFrame, true );
+		}
+		__Wait( 55 );
+		if( m_bDead ){ break; }
+
+		/** ボスID設定 */
+		if( m_bStage && !m_bSpellPractice ){
+			let nBossID = CL_TTH_CHARACTER_NAME_LOTUS + CL_TTH_CHARACTER_NAME_LOTUS_YUKA;
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		}
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_LOTUS + CL_TTH_SPELL_STAGE2_BOSS_LAST + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+		if( m_bDead ){ break; }
+
+		/** ライフチェック */
+		CheckLifePhase();
+
+		let nAssign = 1;
+
+		loop{
+
+			/** 全方向扇状増殖弾 */
+			if( m_bNextPhase || m_bDead ){ break; }
+			RoundWideExtendShot( nAssign );
+			loop( 50 ){
+				if( m_bNextPhase ){ break; }
+				yield;
+			}
+			if( m_bNextPhase || m_bDead ){ break; }
+
+			/** 移動 */
+			Move( 50 );
+			loop( 50 ){
+				if( m_bNextPhase ){ break; }
+				yield;
+			}
+
+			nAssign = - nAssign;
+
+		}
+		if( m_bDead ){ break; }
+
+		/** ワープ移動 */
+		PlaySEEx( sePower );
+		DeleteEnemyShotToItem( ALL );
+		SetDamageRate( 0, 0 );
+		SetMovePosition01( GetX(), GetY(), 0 );
+		Warp();
+		PlaySEEx( sePower );
+		__Wait( 60 );
+		if( m_bDead ){ break; }
+		Concentration01( 60 );
+		__Wait( 42 );
+		if( m_bDead ){ break; }
+		SetDamageRate( 12.5, 0 );
+
+		/** 全方向増殖弾 */
+		RoundExtendShot();
+
+	}
+
+	/**
+	*	全方向扇状増殖弾
+	*	@param nAssign	割り振り係数
+	*/
+	task RoundWideExtendShot( let nAssign ){
+
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 2.4;
+		let nAngle = rand( 0, 360 );
+		let nRoundWay = 6 + m_nLevel;
+		let nRoundWayAngle = 360 / nRoundWay * nAssign;
+		let nWideWay = 3;
+		let nWideWayAngle = nRoundWayAngle * ( 0.38 + 0.04 * m_nLevel ) / ( nWideWay - 1 );
+		let nGraphic = US_SCALE_ORANGE;
+
+		SetAction( ACT_SHOT_A5, 60 );
+		loop( nRoundWay ){
+			let _nAngle = nAngle;
+			loop( nWideWay ){
+				ExtendShot( nX, nY, nSpeed, nSpeed, _nAngle, nGraphic, nAssign );
+				_nAngle += nWideWayAngle;
+			}
+			nAngle += nRoundWayAngle;
+		}
+		__Wait( 30 );
+		if( !m_bNextPhase ){ PlaySEEx( seShot1 ); }
+
+	}
+
+	/**
+	*	全方向増殖弾
+	*/
+	task RoundExtendShot{
+
+		SetAction( ACT_SHOT_B5, 6000 );
+		__Wait( 18 );
+
+		let nFrame = 16;
+		let nWay = 4;
+		let nX = GetX();
+		let nY = GetY() + 22;
+		let nSpeed = 2.4;
+		let _nSpeed = 2.8 + 0.8 * m_nLevel;
+		let nAngle = - 90;
+		let nWayAngle = 360 / nWay;
+		let nAddAngle = - 8.4;
+		let nGraphic = US_RICE_S_SKY;
+
+		PlaySELoopEx( seShot3, 6000, 10 );
+		loop{
+			let _nAngle = nAngle;
+			loop( nWay ){
+				ExtendShot( nX, nY, nSpeed, _nSpeed, _nAngle, nGraphic, 1 );
+				_nAngle += nWayAngle;
+			}
+			__Wait( nFrame );
+			if(m_bDead){break;}
+			nAngle += nAddAngle;
+		}
+
+	}
+
+	/**
+	*	増殖弾
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nSpeed	速度
+	*	@param nExSpeed	増殖した弾の速度
+	*	@param nAngle	角度
+	*	@param nGraphic	弾画像
+	*	@param nAssign	割り振り係数
+	*/
+	task ExtendShot( let nX, let nY, let nSpeed, let nExSpeed, let nAngle, let nGraphic, let nAssign ){
+
+		let obj = Obj_Create( OBJ_SHOT );
+		let nDelay = 30;
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetSpeed( obj, nSpeed );
+		Obj_SetAngle( obj, nAngle );
+		ObjShot_SetDelay( obj, nDelay );
+		ObjShot_SetGraphic( obj, nGraphic );
+		Obj_SetAutoDelete( obj, false );
+
+		/** 遅延 */
+		loop( nDelay ){ yield; }
+
+		/** 角度変化 */
+		_SetAngle();
+
+		/** 増殖 */
+		let _nFrame = 5;
+		while( !Obj_BeDeleted( obj ) ){
+			CreateShot01( Obj_GetX(obj), Obj_GetY(obj), nExSpeed, nAngle, nGraphic, 0 );
+			loop( _nFrame ){ yield; }
+		}
+
+		/** 角度設定 */
+		task _SetAngle{
+			let nFrame = 80;
+			let nAddAngle = 360 / nFrame * nAssign;
+			loop( nFrame ){
+				yield;
+				if( Obj_BeDeleted( obj ) ){ break; }
+				nAngle += nAddAngle;
+				Obj_SetAngle( obj, nAngle );
+			}
+			if( !Obj_BeDeleted( obj ) ){ Obj_Delete( obj ); }
+		}
+
+	}
+
+	/**
+	*	ライフチェック
+	*/
+	task CheckLifePhase{
+
+		loop{
+			if( GetLife() <= m_nMaxLife * 0.55 ){ break; }
+			yield;
+		}
+		m_bNextPhase = true;
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了までのフレーム数
+	*/
+	task Move( let nFrame ){
+
+		let _nX = GetX();
+		let _nY = GetY();
+		let nMoveX = rand( 40, 80 );
+		let nMoveY = rand( 0, 10 );
+		if( _nX >= GetPlayerX() ){
+			if( _nX - nMoveX >= CL_MIN_X + FLAN_BOSS_MOVE_MARGIN_SIDE ){ nMoveX = - nMoveX; }
+		}
+		else{
+			if( _nX + nMoveX >= CL_MAX_X - FLAN_BOSS_MOVE_MARGIN_SIDE ){ nMoveX = - nMoveX; }
+		}
+		if( _nY >= FLAN_BOSS_HOME_Y ){ nMoveY = - nMoveY; }
+		let nX = _nX + nMoveX;
+		let nY = _nY + nMoveY;
+		SetAction( ACT_MOVE, nFrame );
+		SlowMove( nX, nY, nFrame - 1 );
+		__Wait( nFrame - 1 );
+		if( !m_bNextPhase ){ SetMovePosition02( nX, nY, 1 ); }
+
+	}
+
+	/**
+	*	ワープ移動
+	*/
+	task Warp{
+
+		Swing( - 1 );
+		PlaySEEx( seKira4 );
+		FLAN_ENEMY_COLLISION_A = 0;
+		FLAN_ENEMY_COLLISION_B = 0;
+		__Wait( 55 );
+
+		SetMovePosition02( CL_CEN_X, CL_MIN_Y + 62, 5 );
+		__Wait( 5 );
+		if( m_bDead ){ break; }
+		Swing( 1 );
+		PlaySEEx( seKira4 );
+		FLAN_ENEMY_COLLISION_A = 32;
+		FLAN_ENEMY_COLLISION_B = 16;
+
+	}
+
+}
