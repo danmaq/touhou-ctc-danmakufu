@@ -193,7 +193,7 @@ script_enemy_main{
 		let nAngle = 0;
 		let nRandAngle = 40;
 		let nRandNum = 8;
-		let anGraphic = [ US_BILL_WHITE, US_BALL_BS_RED ];
+		let anGraphic = [ US_BILL_WHITE, US_BILL_RED ];
 		let nDelay = 6;
 
 		loop{

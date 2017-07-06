@@ -243,7 +243,7 @@ script_enemy_main{
 		let obj = Obj_Create( OBJ_SHOT );
 		let nGraphic = US_BALL_L_BLUE;
 		Obj_SetPosition( obj, nX, nY );
-		Obj_SetSpeed( obj, [ 2.2, 2.2, 1.8, 0.7 ][ m_nLevel ] * nSpeedRatio );
+		Obj_SetSpeed( obj, [ 2.2, 2.2, 1.8, 0.55 ][ m_nLevel ] * nSpeedRatio );
 		ObjShot_SetGraphic( obj, nGraphic );
 		Obj_SetAutoDelete( obj, false );
 

@@ -74,7 +74,7 @@ function EndingInitialize(){
 */
 task EndingMainTask(){
 	let nTime = 0;
-	EDSkip();
+	if( !IsReplay() ){ EDSkip(); }
 	BGCloudTask();
 	EndingStaffRollTask();
 	WaitRealTime( 37000 );
@@ -330,7 +330,16 @@ task BGMTitleTask(){
 */
 task Ending( let bGoodEnding ){
 	m_nEndingID = [ 0, 1 ][ bGoodEnding ];
-	if( m_nEndingID == 1 ){ m_nEndingID = ( GetClearHistory( [], [], [ 6 ], [], 0, 0, 0 ) % 2 ) + 1; }
+	if( m_nEndingID == 1 ){
+		let nHistory = 0;
+		ascent( let i in 0..4 ){
+			if( GetClearHistory( [], [ i ], [ 6 ], [], 0, 0, 0 ) != 0 ){ nHistory++; }
+		}
+		if( nHistory == 2 || nHistory == 4 ){ m_nEndingID = 2; }
+		else if( nHistory > 4 ){
+			m_nEndingID = ( GetClearHistory( [], [], [ 6 ], [], 0, 0, 0 ) % 2 ) + 1;
+		}
+	}
 	EndingInitialize();
 	EndingMainTask();
 }

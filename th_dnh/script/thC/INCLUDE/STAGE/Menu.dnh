@@ -124,6 +124,7 @@ function __DrawMenuConfigReal( let aszKeyList, let anDefaultValueList, let nStep
 *	@param nMenuSize メニューの選択項目総数
 *	@param nCursorPos 現在のカーソル位置
 *	@param anLock 選択不可項目のカーソル位置を列挙した配列
+*	@param bVisible ロック項目を表示するかどうか
 */
 function __DrawMenu(
 	let nTargetPhase,
@@ -131,7 +132,7 @@ function __DrawMenu(
 	let nBaseDstX,				let nBaseDstY,
 	let nDescriptionX,			let nDescriptionY,
 	let nDescriptionKerning,	let nKerningLimit,	let nTexTextHandleStart,	let nTexTextDescriptionHandleStart,
-	let nMenuSize,				let nCursorPos,		let anLock
+	let nMenuSize,				let nCursorPos,		let anLock,					let bVisible
 ){
 	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
 	let bInPhase = anStackData[ 0 ] == nTargetPhase;
@@ -168,6 +169,7 @@ function __DrawMenu(
 			if( i == nMark ){ nMoveX = 4; }
 		}
 		if( nAlpha > 0 ){
+			let bHidden = false;
 			let nIndex = [ i, MinMaxLoop( nCursorPos - 4 + i, 0, nMenuSize ) ][ bScroll ];
 			let nMark = [ nCursorPos, MENU_SCROLL_TARGET ][ bScroll ];
 			SetAlpha( nAlpha );
@@ -176,17 +178,20 @@ function __DrawMenu(
 			let nTTH = nTexTextHandleStart + nIndex;
 			ascent( let j in 0..length( anLock ) ){
 				if( anLock[ j ] == nIndex ){
+					if( !bVisible ){ bHidden = true; }
 					SetColor( 128, 0, 128 );
 					if( bScroll ){ nTTH = CL_TTH_SECRET; }
 					break;
 				}
 			}
-			let nDstX = nX * i + nBaseDstX - nMoveX;
-			let nDstY = nY * i + nBaseDstY;
-			if( !bScroll ){ DrawTexTextOnCache( nTTH, nKerning, 0, nDstX, nDstY ); }
-			else{
-				DrawTexTextOnCache( nTTH, nKerning, 0, nDstX - [ 0, 9 ][ nIndex < 99 ], nDstY );
-				DrawTexTextOnCache( CL_TTHBASE_NUMBER + nIndex + 1, -1, 0, nDstX - 34, nDstY );
+			if( !bHidden ){
+				let nDstX = nX * i + nBaseDstX - nMoveX;
+				let nDstY = nY * i + nBaseDstY;
+				if( !bScroll ){ DrawTexTextOnCache( nTTH, nKerning, 0, nDstX, nDstY ); }
+				else{
+					DrawTexTextOnCache( nTTH, nKerning, 0, nDstX - [ 0, 9 ][ nIndex < 99 ], nDstY );
+					DrawTexTextOnCache( CL_TTHBASE_NUMBER + nIndex + 1, -1, 0, nDstX - 34, nDstY );
+				}
 			}
 		}
 	}

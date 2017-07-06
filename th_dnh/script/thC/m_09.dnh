@@ -90,17 +90,19 @@ script_enemy_main{
 		PlaySEEx(seShadow);
 		
 		__Wait(15);
-		let angle_b=-36;
-		while(angle_b<=36){
-			let angle=0;
-			while(angle<=(nLevel-1)*2){
-				CreateLaser01(GetX(),GetY(),[1,1.5,2,3][nLevel],angle_b+GetAngleToPlayer()+angle,100+nLevel*30,8,US_SCALE_A_GREEN,0);
-				CreateLaser01(GetX(),GetY(),[1,1.5,2,3][nLevel],angle_b+GetAngleToPlayer()-angle,100+nLevel*30,8,US_SCALE_A_GREEN,0);
-				angle+=1.5;
+		if(nLevel>0){
+			let angle_b=-36;
+			while(angle_b<=36){
+				let angle=0;
+				while(angle<=(nLevel-1)*2){
+					CreateLaser01(GetX(),GetY(),[1,1.5,2,3][nLevel],angle_b+GetAngleToPlayer()+angle,100+nLevel*30,8,US_SCALE_A_GREEN,0);
+					CreateLaser01(GetX(),GetY(),[1,1.5,2,3][nLevel],angle_b+GetAngleToPlayer()-angle,100+nLevel*30,8,US_SCALE_A_GREEN,0);
+					angle+=1.5;
+				}
+				angle_b+=18;
 			}
-			angle_b+=18;
+			PlaySEEx(seLaser2);
 		}
-		PlaySEEx(seLaser2);
 		if(nLevel>0){
 			loop([0,20,50,100][nLevel]){_ReflectShot(GetX(),GetY(),rand(1.5,3),GetAngleToPlayer()+180+rand(-150,150),1,false,true,false,false,US_BALL_BS_RED,0);}
 			loop([0,10,17,40][nLevel]){CreateShot01(GetX(),GetY(),rand(1.5,3),GetAngleToPlayer()+rand(-30,30),US_BALL_BS_RED,0);}

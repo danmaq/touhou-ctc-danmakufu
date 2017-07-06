@@ -58,8 +58,10 @@ script_enemy_main{
 	*/
 	task DoMove( let nLevel ){
 		let spmax=GetSpeed();
+		let addangle=rand(0.3,0.8);
 		ascent(i in 0..100){
 			SetSpeed(SlowDown( spmax , 0.7 , i , 100 ));
+			SetAngle(GetAngle+SplineFakeSFS([addangle,-addangle][GetAngle()>90],[-addangle,addangle][GetAngle()>90],i,100));
 			yield;
 		}
 	}

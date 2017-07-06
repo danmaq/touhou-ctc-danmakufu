@@ -9,16 +9,19 @@
 let dirImageMap = GetCurrentScriptDirectory() ~ "IMAGE\MAP\";
 
 //	屋外汎用
-let imgMapGround	= dirImageMap ~ "Ground.png";
-let imgMapGround2	= dirImageMap ~ "Ground2.png";
-let imgMapBamboo	= dirImageMap ~ "Bamboo.png";
-let imgMapTree		= dirImageMap ~ "Tree.png";
-let imgMapTree2		= dirImageMap ~ "Tree2.png";
-let imgMapTree3		= dirImageMap ~ "Tree3.png";
-let imgMapFog		= dirImageMap ~ "Fog.png";
-let imgMapFog2		= dirImageMap ~ "Fog2.png";
-let imgMapWhite		= dirImageMap ~ "White.png";
-let imgMapCircle	= dirImageMap ~ "Circle.png";
+let imgMapGround		= dirImageMap ~ "Ground.png";
+let imgMapGround2		= dirImageMap ~ "Ground2.png";
+let imgMapBamboo		= dirImageMap ~ "Bamboo.png";
+let imgMapTree			= dirImageMap ~ "Tree.png";
+let imgMapTree2			= dirImageMap ~ "Tree2.png";
+let imgMapTree3			= dirImageMap ~ "Tree3.png";
+let imgMapFog			= dirImageMap ~ "Fog.png";
+let imgMapFog2			= dirImageMap ~ "Fog2.png";
+let imgMapWhite			= dirImageMap ~ "White.png";
+let imgMapCircle		= dirImageMap ~ "Circle.png";
+let imgMapChip			= dirImageMap ~ "Chip.png";
+let imgMapChip2			= dirImageMap ~ "Chips.png";
+let imgMapCherryChip	= dirImageMap ~ "CherryChip.png";
 
 //	鈴蘭畑ステージ
 let imgMapFlower = dirImageMap ~ "Flower.png";

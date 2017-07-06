@@ -27,7 +27,7 @@
 //////////////////////////////////////////////////////////////////////
 
 /**	ステージのレジューム機能で復元する共通データのキーです。 */
-let STAGE_RESUME_KEYS = [ FLAN_CD_STAGE, FLAN_CD_STAGE_LEVEL, CL_CD_RESUME_ENABLE, CL_CD_STAGE_SCENARIO, CL_CD_CONFIG_PLAYER, CL_CD_CUTIN_SPELL_ID, CL_CD_HISTORY_COUNT_TOTAL ];
+let STAGE_RESUME_KEYS = [ FLAN_CD_STAGE, FLAN_CD_STAGE_LEVEL, CL_CD_RESUME_ENABLE, CL_CD_STAGE_SCENARIO, CL_CD_CUTIN_SPELL_ID, CL_CD_HISTORY_COUNT_TOTAL ];
 /**	ステージのレジューム機能で復元するスペルリザルトのキーです。 */
 let STAGE_RESUME_KEYS_HISTORY_SPELL = [ CL_CD_SPELL_HISTORY_RELEASE, CL_CD_SPELL_HISTORY_HISCORE, CL_CD_SPELL_HISTORY_COUNT_TRY, CL_CD_SPELL_HISTORY_COUNT_GET ];
 /**	ステージのレジューム機能で復元するステージリザルトのキーです。 */
@@ -111,7 +111,13 @@ function SetTryHistory( let nStage ){
 *	@return EX解禁条件を満たしているかどうか
 */
 function IsCanTryStageEX(){
-	return ( GetClearHistory( [ GetPlayerID() ], [], [ 6 ], [], 0, 0, 0 ) >= 2 );
+	let nPlayerID = GetPlayerID();
+	let nClear = 0;
+	ascent( let i in 0..4 ){
+		if( GetClearHistory( [], [ i ], [ 6 ], [], 0, 0, 0 ) != 0 ){ nClear++; }
+		else if( i == nPlayerID ){ return false; }
+	}
+	return nClear >= 2;
 }
 
 /**
@@ -122,7 +128,7 @@ function IsCanTryStageEX(){
 function IsCanTryStageEX2(){
 	let nPlayerID = GetPlayerID();
 	ascent( let i in 0..4 ){
-		if( GetClearHistory( [ nPlayerID ], [ i ], [ 6 ], [ 0		], 0, 0, 0 ) == 0 ){ return false; }
+		if( GetClearHistory( [ nPlayerID ], [ i ], [ 6 ], [ 0, 1	], 0, 0, 0 ) == 0 ){ return false; }
 		if( GetClearHistory( [ nPlayerID ], [ i ], [ 6 ], [ 1, 2, 3 ], 0, 0, 0 ) == 0 ){ return false; }
 	}
 	if( GetClearHistory( [ nPlayerID ], [], [ 10 ], [], 0, 0, 0 ) == 0 ){ return false; }

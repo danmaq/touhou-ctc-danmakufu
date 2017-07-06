@@ -146,11 +146,11 @@ let SPELL_PRACTICE_ENEMY_LIST = [
 	bossReimuXList[ 3 ],	bossReimuXList[ 3 ],	bossReimuXList[ 3 ],	bossReimuXList[ 3 ],
 	bossReimuXList[ 4 ],	bossReimuXList[ 4 ],	bossReimuXList[ 4 ],	bossReimuXList[ 4 ],
 	bossReimuXList[ 5 ],	bossReimuXList[ 5 ],	bossReimuXList[ 5 ],	bossReimuXList[ 5 ],
-	bossSuikaAList[ 0 ],	bossSuikaAList[ 1 ],	bossSuikaAList[ 2 ],	// EXPHルート
+	bossSuikaAList[ 1 ],	bossSuikaAList[ 2 ],	bossSuikaAList[ 3 ],	// EXPHルート
 	bossSuikaBList[ 2 ],	bossSuikaBList[ 4 ],	bossSuikaBList[ 6 ],	bossSuikaBList[ 8 ],
 	bossSuikaBList[ 10 ],	bossSuikaBList[ 12 ],	bossSuikaBList[ 14 ],	bossSuikaBList[ 16 ],
 	bossSuikaBList[ 17 ],	bossSuikaBList[ 18 ],	bossSuikaBList[ 20 ],
-	bossSuikaCList[ 0 ],	bossSuikaCList[ 1 ],	bossSuikaCList[ 2 ],
+	bossSuikaCList[ 1 ],	bossSuikaCList[ 2 ],	bossSuikaCList[ 3 ],
 	bossReimuRList[ 2 ],	bossReimuRList[ 4 ],	bossReimuRList[ 6 ],	bossReimuRList[ 8 ],
 	bossReimuRList[ 10 ],	bossReimuRList[ 12 ],	bossReimuRList[ 14 ],	bossReimuRList[ 16 ],
 	bossReimuRList[ 17 ],	bossReimuRList[ 18 ],	bossReimuRList[ 20 ],
@@ -331,7 +331,7 @@ function SpellPracticeDrawTopObject( let nCount ){
 	let nScaleY = SlowDown( 0, 1, nCount, 20 );
 	SetGraphicScale( nScaleX, nScaleY );
 	DrawTexTextOnCache( CL_TTH_STAGE_RETRY, 0, 0, GetCenterX() - 64, GetCenterY() - 96 );
-	__DrawMenu( GetPhase(), 0, 30, 160, 224, 80, 384, -1, -3, CL_TTHBASE_BOOLEAN_YESNO, CL_TT_INVALID, 2, m_nSpellPracticeMenuRetry, [] );
+	__DrawMenu( GetPhase(), 0, 30, 160, 224, 80, 384, -1, -3, CL_TTHBASE_BOOLEAN_YESNO, CL_TT_INVALID, 2, m_nSpellPracticeMenuRetry, [], true );
 	SetGraphicScale( 1, 1 );
 	SetAlpha( 255 );
 }

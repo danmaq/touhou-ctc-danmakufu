@@ -120,6 +120,7 @@ script_enemy_main{
 
 		/** アイテム放出 */
 		if( m_bStage && !m_bSpellPractice ){
+			DropItemTHC( 24 );
 			if( GetPlayerLife() == 0 ){ DropItemExtendTHC(); }
 			else{ DropItemBombTHC(); }
 		}

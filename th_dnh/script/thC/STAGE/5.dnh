@@ -19,6 +19,7 @@
 */
 let STAGE_5_LOAD_LIST_GRAPHIC_BG = [
 	imgMapGround2,
+	imgMapCherryChip,
 ] ~ IMAGE_CHERRY_HALF_LIST ~ LOADBGLIST_YOUMU ~ LOADBGLIST_YUYUKO;
 /**	読み込むステージ固有のその他グラフィックです。 */
 let STAGE_5_LOAD_LIST_GRAPHIC = [
@@ -260,16 +261,33 @@ function Stage5Loop( let nScenario, let nStage, let nStageCount, let nLevel, let
 	let nSpeedTable = [ 0.3, 0.5, 0.1 ];
 	let anBGParam = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_STAGE_BG_PARAMETER, [ 680, 160, -20, 0, 150, 0 ] );
 	anBGParam[ BG_TO_Z ] = anBGParam[ BG_TO_Z ] - Smooth( nSpeedTable[ Max( nPhase - 1, 0 ) ], nSpeedTable[ nPhase ], nPhaseCount, 300 );
-	if( !OnEnemySpell() && IsRenderFrame() && nPhaseCount <= [ 0, 210, 2010, 0 ][ nPhase ] ){
-		alternative( nPhase )
-		case( 1 ){
-			anBGParam[ BG_FROM_DISTANCE ] = SplineFakeSFS( 680, 600, nPhaseCount, 200 );
-			if( nPhaseCount == 202 ){ DeleteGraphicList( IMAGE_CHERRY_HALF_LIST[ 1..18 ] ); }
+	if( !OnEnemySpell() ){
+		if( IsRenderFrame() && nPhaseCount <= [ 0, 210, 2010, 0 ][ nPhase ] ){
+			alternative( nPhase )
+			case( 1 ){
+				anBGParam[ BG_FROM_DISTANCE ] = SplineFakeSFS( 680, 600, nPhaseCount, 200 );
+				if( nPhaseCount == 202 ){ DeleteGraphicList( IMAGE_CHERRY_HALF_LIST[ 1..18 ] ); }
+			}
+			case( 2 ){
+				anBGParam[ BG_TO_Y ] = SplineFakeSFS( 150, 80, nPhaseCount, 500 );
+				anBGParam[ BG_FROM_YAW ] = SplineFakeSFS( 160, 130, nPhaseCount, 2000 );
+				anBGParam[ BG_FROM_PITCH ] = SplineFakeSFS( -20, -10, nPhaseCount, 500 );
+			}
 		}
-		case( 2 ){
-			anBGParam[ BG_TO_Y ] = SplineFakeSFS( 150, 80, nPhaseCount, 500 );
-			anBGParam[ BG_FROM_YAW ] = SplineFakeSFS( 160, 130, nPhaseCount, 2000 );
-			anBGParam[ BG_FROM_PITCH ] = SplineFakeSFS( -20, -10, nPhaseCount, 500 );
+		if(
+			GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG_EFFECT, true ) &&
+			nStageCount % [ 20, 10 ][ nStageCount < 2500 ] == 0
+		){
+			let nRandX = m_anFlanRandomTable[ ( nCount + 37 ) % FLAN_RANDTABLE_LENGTH ];
+			let nRandY = m_anFlanRandomTable[ ( nCount + 41 ) % FLAN_RANDTABLE_LENGTH ];
+			let nRandZ = m_anFlanRandomTable[ ( nCount + 29 ) % FLAN_RANDTABLE_LENGTH ];
+			Add3DEffect(
+				anBGParam[ BG_TO_X ] + nRandX / 2 - 64,	anBGParam[ BG_TO_Y ] + nRandY / 4 - 64,	anBGParam[ BG_TO_Z ] + nRandZ / 2 - 64,
+				nRandX / 96 - 1.5,						nRandY / 128 - 1.8,						nRandZ / 96 - 1.5,
+				nRandX,									nRandY,									nRandZ,
+				nRandX / 48 - 3,						nRandY / 48 - 3,						nRandZ / 48 - 3,
+				200
+			);
 		}
 	}
 	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_BG_PARAMETER, anBGParam );
@@ -330,6 +348,13 @@ function Stage5DrawBackGround( let nScenario, let nStage, let nStageCount, let n
 			}
 			nZ += nSpace;
 		}
+	}
+	if( GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG_EFFECT, true ) ){
+		SetTexture( imgMapCherryChip );
+		SetGraphicRect( 0, 256, 256, 512 );
+		SetGraphicScale( 0.05, 0.05 );
+		Draw3DEffect();
+		SetGraphicScale( 1, 1 );
 	}
 	SetColor( 255, 255, 255 );
 	SetAlpha( 255 );

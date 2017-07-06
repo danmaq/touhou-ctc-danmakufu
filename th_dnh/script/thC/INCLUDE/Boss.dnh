@@ -117,11 +117,7 @@ let m_nSpellScore = 500000;
 *	基本0でスキップキーで+1、ユーザ定義キーで+2します。
 */
 function SetLevelTemporary(){
-	if( !IsDebugMode() ){ return; }
-	let nLevel = 0;
-	if( GetKeyState( VK_SKIP ) == KEY_HOLD ){ nLevel++; }
-	if( GetKeyState( VK_USER ) == KEY_HOLD ){ nLevel += 2; }
-	__SetLevelTemporary( nLevel );
+	return;
 }
 
 
@@ -135,31 +131,37 @@ function SetLevelTemporary(){
 *	ステージスクリプトへリザルトのキューを投げます。
 */
 function SetResult(){
+	let nPoint = GetPoint() - GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_RESULT_POINT_PREV, 0 );
+	let nGraze = GetGraze() - GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_RESULT_GRAZE_PREV, 0 );
+	let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 ) - GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_RESULT_HAKUREI_PREV, 0 );
 	let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
 	let nClear = nStage * 10000000;
-	let nPoint = GetPoint() * 50000;
-	let nGraze = GetGraze() * 500;
-	let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 ) * 2500;
+	let nBonusPoint = Max( nPoint * 50000, 2000 );
+	let nBonusGraze = Max( nGraze * 500, 20 );
+	let nBonusHakurei = Max( nHakurei * 2500, 100 );
 	let nRate = [ 50, 100, 120, 150 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 0 ) ];
-	let nPlayerPenalty = [ 100, 100, 100, 100 , 60, 30, 20, 10, 10, 10, 10 ][ GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_PLAYER, 3 ) ];
+	let nPlayerPenalty = [ 100, 100, 100, 100, 60, 30, 20, 10, 10, 10, 10 ][ GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_PLAYER, 3 ) ];
 	let nPlayer = 0;
 	let nBomb = 0;
-	if( !m_bStagePractice && nStage >= 6 ){
+	if( GetCommonDataDefaultEx( CL_CDNS_RESULT, FLAN_CD_STAGE, 0 ) < 0 && nStage >= 6 ){
 		nPlayer = GetPlayerLife() * 1000000;
 		nBomb = GetPlayerBomb() * 50000;
 		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_PLAYER, nPlayer );
 		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_BOMB, nBomb );
 	}
-	let nTotal = ( nClear + nPoint + nGraze + nHakurei + nPlayer + nBomb ) * ( nRate / 100 ) * ( nPlayerPenalty / 100 );
+	let nTotal = ( nClear + nBonusPoint + nBonusGraze + nBonusHakurei + nPlayer + nBomb ) * ( nRate / 100 ) * ( nPlayerPenalty / 100 );
 	AddScore( nTotal );
 	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT, true );
 	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_CLEAR, nClear );
-	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_POINT, nPoint );
-	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_GRAZE, nGraze );
-	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_HAKUREI, nHakurei );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_POINT, nBonusPoint );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_GRAZE, nBonusGraze );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_HAKUREI, nBonusHakurei );
 	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_RATE, nRate );
 	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_PLAYER_INIT, nPlayerPenalty );
 	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_TOTAL, nTotal );
+	if( nPoint		> 0 ){ SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_POINT_PREV, GetPoint() ); }
+	if( nGraze		> 0 ){ SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_GRAZE_PREV, GetGraze() ); }
+	if( nHakurei	> 0 ){ SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_HAKUREI_PREV, GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 ) ); }
 }
 
 
@@ -414,8 +416,12 @@ function DrawBlur( let szImageFile ){
 		let nRectX = RECT_BOSS_LENGTH * anRect[ 0 ];
 		let nRectY = RECT_BOSS_LENGTH * anRect[ 1 ];
 		SetAlpha( anBlurStatus[ 2 ] );
+		//	色追加
+		SetColor( anBlurStatus[ 2 ], anBlurStatus[ 2 ], 255 );
 		__DrawChrRect( szImageFile, anBlurStatus[ 0 ], anBlurStatus[ 1 ], nRectX, nRectY, RECT_BOSS_LENGTH, RECT_BOSS_LENGTH );
 	}
+	SetColor( 255, 255, 255 );
+	SetAlpha( 255 );
 }
 
 
@@ -536,7 +542,7 @@ function onMainLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCo
 */
 function onFinalize( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	onFinalizeTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
-	if( GotSpellCardBonus() ){ DropItemHakureiTHC( 50 ); }
+	if( GotSpellCardBonus() ){ DropItemHakureiTHC( [ 50, 150 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 0 ) >= 6 ] ); }
 	if( m_nCLCutInSpellID >= 0 ){
 		AddCommonDataExArray(				CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_COUNT_TRY,	m_nCLCutInSpellID, 1, CL_SPELL_TOTAL, 0 );
 		if( GotSpellCardBonus() ){

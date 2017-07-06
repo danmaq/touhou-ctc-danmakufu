@@ -154,7 +154,16 @@ script_enemy_main{
 
 		/** 撃破音 */
 		PlaySEEx( seBossExplode );
-		__Wait( 150 );
+
+		/** 前スペルでミスした場合はスロー＆ブラーなし */
+		if( !GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_DEAD, false ) ){
+			MotionBlur( ALL, 80, 200 );
+			Slow( 1 );
+			__Wait( 80 );
+			Slow( 0 );
+			__Wait( 130 );
+		}
+		else{ __Wait( 210 ); }
 
 		/** リザルト */
 		SetResult();

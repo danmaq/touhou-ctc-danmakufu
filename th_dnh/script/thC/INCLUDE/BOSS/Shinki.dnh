@@ -41,6 +41,12 @@ let m_aszSeFileList = [];
 *	”wŒi‚ð•`‰æ‚µ‚Ü‚·B
 */
 function DrawSpellBG{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG_Light();
+		return;
+	}
+
 	let i = m_nFlanCount % 800;
 	let j = m_nFlanCount % 280;
 	let k = m_nFlanCount % 600;
@@ -65,6 +71,22 @@ function DrawSpellBG{
 	SetGraphicScale( 1, 1 );
 	SetGraphicAngle( 0, 0, 0 );
 	SetAlpha( 255 );
+
+}
+
+function DrawSpellBG_Light{
+
+	let i = m_nFlanCount % 800;
+	let j = m_nFlanCount % 280;
+	let k = m_nFlanCount % 600;
+	SetGraphicRect( 0, 0, 512, 512 );
+	SetColor(
+		[ Smooth( 0, 40, i, 800 ), Smooth( 40, 0, i, 800 ) ][ m_nFlanCount % 1600 >= 800 ],
+		[ Smooth( 0, 80, j, 280 ), Smooth( 80, 0, j, 280 ) ][ m_nFlanCount % 560 >= 280 ],
+		[ Smooth( 50, 100, k, 600 ), Smooth( 100, 50, k, 600 ) ][ m_nFlanCount % 1200 >= 600 ] );
+	DrawCenter( imgSpellShinki02 );
+	SetColor( 255, 255, 255 );
+
 }
 
 

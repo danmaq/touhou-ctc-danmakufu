@@ -58,12 +58,12 @@ script_enemy_main{
 	*/
 	task DoMove( let nLevel ){
 		let spmax=GetSpeed();
-		let spmin=GetSpeed()/rand(1.3,2);
+		let spmin=GetSpeed()/rand(2,3);
 		let anglemax=rand(4,6);
 		ascent(i in 0..100)
 		{
 			SetAngle(GetAngle()+Accelerate( 0,anglemax,i,100 )*GetArgument());
-			SetSpeed(Smooth( spmax,spmin,i,100 ));
+			SetSpeed(SlowDown( spmax,spmin,i,100 ));
 			yield;
 		}
 	}

@@ -152,8 +152,11 @@ script_enemy_main{
 		/** 撃破音 */
 		PlaySEEx( seBossExplode );
 
-		/** 会話開始＋リザルト */
+		/** 会話開始 */
 		CreateEventFromScript( "Talk" );
+		while( GetEventStep() != 1 ){ yield; }
+
+		/** リザルト */
 		SetResult();
 		while( OnEvent() ){ yield; }
 
@@ -201,6 +204,7 @@ script_event Talk{
 
 		InCharPlayer( CUT_PLAYER_SERIOUS );
 		TextOutPlayerC( m_nWaitFrame, "悪いがこっちも探し人がいるんでね" );
+		SetStep( 1 );
 		InCharPlayer( CUT_PLAYER_NORMAL );
 		TextOutPlayer( "今お前に構ってられる程\n悠長な状況じゃないんだわ" );
 		End();

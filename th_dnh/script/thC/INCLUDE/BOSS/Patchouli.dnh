@@ -41,6 +41,13 @@ let m_aszSeFileList = [];
 *	îwåiÇï`âÊÇµÇ‹Ç∑ÅB
 */
 function DrawSpellBG{
+
+	/** åyó î≈îwåiÇ»Çµ */
+	//if( m_bDrawSpellBGLight ){
+	//	DrawSpellBG_Light();
+	//	return;
+	//}
+
 	let nSrcGap = m_nFlanCount * 3.5;
 	let nDstXGap = CL_MIN_X + 64;
 	let i = m_nFlanCount * 3.5;
@@ -48,6 +55,7 @@ function DrawSpellBG{
 	ascent( let nX in 0 .. 3 ){
 		ascent( let nY in 0 .. 4 ){ __DrawChr( imgSpellScrollStone, nX * 128 + nDstXGap, nY * 128 + 64 ); }
 	}
+
 }
 
 

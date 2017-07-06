@@ -157,7 +157,7 @@ task SetRollConstant( let nFrame ){
 		SetSpeed(6);
 		if(GetArgument()%10==0){
 			while(IsOut(-30)){yield;}
-			CreateLaser01(GetX(),GetY(),GetSpeed(),GetAngle(),300,7,US_BALL_S_A_ORANGE,0);
+			CreateLaser01(GetX(),GetY(),GetSpeed(),GetAngle(),300,10,US_BALL_M_A_ORANGE,0);
 			while(!IsOut(-30)){
 				loop([10,15,20,20][nLevel]){CreateShot01(GetX(),GetY(),rand(1,[2,3,4,4.5][nLevel]),rand(0,360),US_SCALE_SKY,10);}
 				PlaySEEx(seShot1);
@@ -167,7 +167,7 @@ task SetRollConstant( let nFrame ){
 		}
 		if(GetArgument()%10==1){
 			while(IsOut(-30)){yield;}
-			CreateLaser01(GetX(),GetY(),GetSpeed(),GetAngle(),300,7,US_BALL_S_A_GREEN,0);
+			CreateLaser01(GetX(),GetY(),GetSpeed(),GetAngle(),300,10,US_BALL_M_A_GREEN,0);
 			while(!IsOut(-30)){
 				_RoundShot02(GetX(),GetY(),0,0.05,[3,4,5,5][nLevel],GetAngleToPlayer,[1,5,9,13][nLevel],US_BILL_PURPLE, 10 );
 				PlaySEEx(seShot2);
