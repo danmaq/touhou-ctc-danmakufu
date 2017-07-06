@@ -170,17 +170,3 @@ function DrawRotate( let szTexFile, let nCount ){
 	DrawChrGap( szTexFile, 0 );
 	SetGraphicAngle( 0, 0, 0 );
 }
-
-// -----------------------------------------------------------------------------
-// デバッグ用難易度設定　(Stage&Enemy&Shadow&Shot)
-// ※主に各スクリプトのInitializeに設定し、単発再生でのデバッグを容易にする
-// -----------------------------------------------------------------------------
-function Debug_SetLevel{
-	if(!GetCommonDataDefault("DebugSetLevel",false)){
-		let Lv=0;
-		if(GetKeyState(VK_SKIP)==KEY_HOLD){Lv++;}
-		if(GetKeyState(VK_USER)==KEY_HOLD){Lv+=2;}
-		SetCommonData("Level",Lv);
-		SetCommonData("DebugSetLevel",true);
-	}
-}

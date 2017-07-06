@@ -1,33 +1,36 @@
-// -----------------------------------------------------------------------------
-// ドット絵
-// -----------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//　ドット絵
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
 let dirImageCharDot = GetCurrentScriptDirectory ~ "IMAGE\CHAR\DOT\";
 
-// -----------------------------------------------------------------------------
-// ボス
-// -----------------------------------------------------------------------------
+//　ボス
 let dotBossSample = dirImageCharDot ~ "ExRumia.png";
+let dotBossFlandre = dirImageCharDot ~ "boss_flandre.png";
+let dotBossMeilin = dirImageCharDot ~ "boss_meilin.png";
+let dotBossSakuya = dirImageCharDot ~ "boss_sakuya.png";
+let dotBossRemilia = dirImageCharDot ~ "boss_remilia.png";
+let dotBossDevil = dirImageCharDot ~ "boss_devil.png";
+let dotBossPatchouli = dirImageCharDot ~ "boss_patchouli.png";
+let dotBossLily = dirImageCharDot ~ "boss_lily.png";
+let dotBossMedicine = dirImageCharDot ~ "boss_medicine.png";
+let dotBossAya = dirImageCharDot ~ "boss_aya.png";
+let dotBossKomachi = dirImageCharDot ~ "boss_komachi.png";
+let dotBossEiki = dirImageCharDot ~ "boss_eiki.png";
 
-// -----------------------------------------------------------------------------
-// ザコ
-// -----------------------------------------------------------------------------
-let dotKedama = dirImageCharDot ~ "kedama.png";
+//　ザコ
+let dotKedama = dirImageCharDot ~ "zako_kedama.png";
 
-// -----------------------------------------------------------------------------
-// 魔法陣
-// -----------------------------------------------------------------------------
+//　魔法陣
 let dotCircle6s = dirImageCharDot ~ "circle6_s.png";
 let dotCircle6m = dirImageCharDot ~ "circle6_m.png";
 let dotCircle8s = dirImageCharDot ~ "circle8_s.png";
 let dotCircle8m = dirImageCharDot ~ "circle8_m.png";
 
-// -----------------------------------------------------------------------------
-// 弾
-// -----------------------------------------------------------------------------
+//　弾
 let dotAddShot = dirImageCharDot ~ "shot_add.png";
 let dotPoisonShot = dirImageCharDot ~ "shot_poison.png";
 
-// -----------------------------------------------------------------------------
-// プレイヤー
-// -----------------------------------------------------------------------------
+//　プレイヤー
 let dotMarisa = dirImageCharDot ~ "player_marisa.png";

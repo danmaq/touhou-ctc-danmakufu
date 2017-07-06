@@ -152,6 +152,12 @@ function _DrawChrRect( let szTexFile, let dstx, let dsty, let srcx1, let srcy1, 
 	_DrawChr( szTexFile, dstx, dsty );
 }
 
+//	テクスチャszTexFileの内容の一部のみ(正方形)を指定位置に絵画する
+function _DrawChrRectSqr( let szTexFile, let dstx, let dsty, let srcx, let srcy, let sLength ){
+	SetGraphicRect( srcx, srcy, srcx + sLength, srcy + sLength );
+	_DrawChr( szTexFile, dstx, dsty );
+}
+
 //	テクスチャszTexFileの内容を全て中央に絵画する
 function DrawCenter( let szTexFile ){ _DrawChr( szTexFile, GetCenterX(), GetCenterY() ); }
 

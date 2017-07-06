@@ -12,12 +12,46 @@
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
+//	定数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//　座標簡略記述
+let cenX = GetCenterX;
+let cenY = GetCenterY;
+let minX = GetClipMinX;
+let maxX = GetClipMaxX;
+let minY = GetClipMinY;
+let maxY = GetClipMaxY;
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
 //	メンバ変数
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
-//	体験版製品版完全版ではfalseにすること
-let m_bDebug = true;			//	デバッグモード
 
+//	デバッグモード
+let m_bDebug = true;	//	体験版製品版完全版ではfalseにすること
+
+//////////////////////////////////////////////////////////////////////
+// -------------------------------------------------------------------
+// デバッグ
+// -------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//　難易度設定
+//　主に各スクリプトのInitializeに設定し、単発再生でのデバッグを容易にする
+function Debug_SetLevel{
+
+	if( m_bDebug && !GetCommonDataDefault( "DebugSetLevel", false ) ){
+		let Lv = GetCommonDataDefault( "Level", 0 );
+		if( GetKeyState( VK_SKIP ) == KEY_HOLD ){ Lv ++; }
+		if( GetKeyState( VK_USER ) == KEY_HOLD ){ Lv += 2; }
+		SetCommonData( "Level", Lv );
+		SetCommonData( "DebugSetLevel", true );
+	}
+
+}
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
@@ -68,6 +102,18 @@ function MinMaxLoop( let expr, let limit1, let limit2 ){
 
 //	expr1とexpr2の距離がlen以下か否かを返す
 function Near( let expr1, let expr2, let len ){ return absolute( expr1 - expr2 ) < len; }
+
+//　異なる位置の点(x1,y1)(x2,y2)の距離を返す
+function GetGapLength( let x1, let y1, let x2, let y2 ){ return ( ( x2 - x1 ) ^ 2 + ( y2 - y1 ) ^ 2 ) ^ 0.5; }
+
+//　異なる位置の点(x1,y1)から(x2,y2)への絶対角度を返す
+function GetGapAngle( let x1, let y1, let x2, let y2 ){ return atan2( y2 - y1, x2 - x1 ); }
+
+//　点(x,*)から距離gapLength、絶対角度gapAngleにある点のx座標を返す
+function GetGapX( let x, let gapLength, let gapAngle ){ return x + gapLength * cos( gapAngle ); }
+
+//　点(*,y)から距離gapLength、絶対角度gapAngleにある点のy座標を返す
+function GetGapY( let y, let gapLength, let gapAngle ){ return y + gapLength * sin( gapAngle ); }
 
 
 //////////////////////////////////////////////////////////////////////
@@ -129,12 +175,44 @@ function SplineFakeSFS( let start, let end, let now, let limit ){
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	指定要素の配列を作り、指定値で埋める
+//	指定要素数の配列を作り、指定値で埋める
 function CreateArray( let nSize, let expr ){
 	if( nSize <= 0 ){ return; }
 	let array = [];
-	ascent( let i in 0..nSize ){ array = array ~ [ expr ]; }
+	ascent( let i in 0 .. nSize ){ array = array ~ [ expr ]; }
 	return array;
+}
+
+//　指定要素数の配列を作り、要素番号で埋める
+function CreateOrderArray( let nSize ){
+	if( nSize <= 0 ){ return; }
+	let array = [];
+	ascent( let i in 0 .. nSize ){ array = array ~ [ i ]; }
+	return array;
+}
+
+//　指定要素数の配列を作り、ランダムに並べ替えた要素番号で埋める
+function CreateMixOrderArray( let nSize ){
+	if( nSize <= 0 ){ return; }
+	let array = CreateOrderArray( nSize );
+	let mArray = MixArray( array );
+	return mArray;
+}
+
+//　配列の要素をランダムに並べ替える(別の変数で受け取ること)
+//　× array = MixArray( array );
+//　○ let array2 = MixArray( array );
+function MixArray( let array ){
+	if( length( array ) <= 0 ){ return; }
+	let mArray = [];
+	while( length( array ) > 0 ){
+		let total = length( array );
+		let pos = rand_int( 0, total - 1 );
+		let char = array[ pos ];
+		mArray = mArray ~ [ char ];
+		array = erase( array, pos );
+	}
+	return mArray;
 }
 
 //	配列array内を数値charで検索し、要素番号を返す
@@ -144,6 +222,7 @@ function SearchArray( let array, let char ){
 	while( pos < total && array[ pos ] != char ){ pos++; }
 	return pos;
 }
+
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
@@ -166,34 +245,4 @@ function StringToInteger( let str ){
 	let res = 0;
 	ascent( let grade in 0..length( strint ) ){ res += CharToInteger( strint[ grade ] ) * 10 ^ grade; }
 	return res;
-}
-
-//以下追加の関数
-
-// -----------------------------------------------------------------------------
-// 異なる位置の点(x1,y1)(x2,y2)の距離を求める　(Common)
-// -----------------------------------------------------------------------------
-function GetGapLength( let x1, let y1, let x2, let y2 ){
-	return ( ( x2 - x1 ) ^ 2 + ( y2 - y1 ) ^ 2 ) ^ 0.5;
-}
-
-// -----------------------------------------------------------------------------
-// 異なる位置の点(x1,y1)から(x2,y2)への絶対角度を求める　(Common)
-// -----------------------------------------------------------------------------
-function GetGapAngle( let x1, let y1, let x2, let y2 ){
-	return atan2( y2 - y1, x2 - x1 );
-}
-
-// -----------------------------------------------------------------------------
-// 点(x,*)から距離gapLength、絶対角度gapAngleにある点のx座標を求める　(Common)
-// -----------------------------------------------------------------------------
-function GetGapX( let x, let gapLength, let gapAngle ){
-	return x + gapLength * cos( gapAngle );
-}
-
-// -----------------------------------------------------------------------------
-// 点(*,y)から距離gapLength、絶対角度gapAngleにある点のy座標を求める　(Common)
-// -----------------------------------------------------------------------------
-function GetGapY( let y, let gapLength, let gapAngle ){
-	return y + gapLength * sin( gapAngle );
 }

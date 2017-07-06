@@ -135,7 +135,9 @@ task SubAction()
 
 	@Initialize
 	{	
-		SetLife(80);
+		SetLife(5);
+		SetDamageRateExDelay(0,15,10,1,1);
+		LightShadow;
 		LoadGraphic(dotCircle6s);
 		MainAction();
 		SubAction();
@@ -143,21 +145,21 @@ task SubAction()
 	@MainLoop
 	{
 		Deletemine();
-		BehaviorShadow( 0,0 );
-		if(count<200){SetAngle(GetAngle()+GetArgument());}
-		count++;
-		scale=Smooth( 0,1,count,40 );
-
-	if( IsOut( 32 ) ){ SetSpeed(0);AddLife(10); }
-
-	if(BeParentVanished()){VanishEnemy();}
-
-		LightOfShadow(count);
+		GoneEx(40);
+		if(!m_bHidden){Collision(24,18);}
+		BehaviorShadow(seHidden,seSudden);
+		m_nCount++;
+		scale=Smooth( 0,1,m_nCount,40 );
 		yield;
+
+		if(count<200){SetAngle(GetAngle()+GetArgument());}
+		if( IsOut( 32 ) ){ SetSpeed(0);AddLife(10); }
+		if(BeParentVanished()){VanishEnemy();}
+
 	}
 	@DrawLoop
 	{
-		DrowShadowEasy(count*2);
+		DrawShadow(dotCircle6s,0,0,64,m_nCount*2,0.8*scale,0.5*scale);
 	}
 	@Finalize{
 			DestructShadow( 40 );

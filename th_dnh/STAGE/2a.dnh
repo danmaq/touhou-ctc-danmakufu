@@ -88,7 +88,7 @@ task Stage2A(){
 
 ///////////////////////////////////////////////////////////////////////
 	CreateEnemyBossFromFile(bossSakuya,GetCenterX(),0,0,0,0);
-	WaitForZeroEnemy();//“G‚ªÁ‚¦‚é‚Ü‚Å’â~
+	WaitZeroEnemy();//“G‚ªÁ‚¦‚é‚Ü‚Å’â~
 ///////////////////////////////////////////////////////////////////////
 
 	SetCommonData("DeleteEnemy",0);
@@ -165,11 +165,11 @@ task Stage2A(){
 
 ///////////////////////////////////////////////////////////////////////
 	CreateEnemyBossFromFile(bossRemilia,GetCenterX(),0,0,0,0);
-	WaitForZeroEnemy();//“G‚ªÁ‚¦‚é‚Ü‚Å’â~
+	WaitZeroEnemy();//“G‚ªÁ‚¦‚é‚Ü‚Å’â~
 
 //if(ğŒ){
 	CreateEnemyBossFromFile(bossRemiliaL,GetCenterX(),GetCenterY/2,0,0,0);
-	WaitForZeroEnemy();//“G‚ªÁ‚¦‚é‚Ü‚Å’â~
+	WaitZeroEnemy();//“G‚ªÁ‚¦‚é‚Ü‚Å’â~
 //}
 
 ///////////////////////////////////////////////////////////////////////

@@ -110,24 +110,25 @@ task Stage1C(){
 
 //---------------------------------------------------------------
 
+	loop(20)
+	{
+		CreateEnemyFromFile(z_g_20,GetCenterX()+rand(-150,+150),GetClipMinY()-20,rand([1,2,3,5][m_nStageLevel],[3,4,7,8.5][m_nStageLevel]),90+rand(-10,10),0);
+		_Wait(10);
+	}
+
 	CreateEnemyFromFile(z_m_07,GetCenterX()*1.5,GetClipMinY()-20,5,90,13);
 	CreateEnemyFromFile(z_m_07,GetCenterX()/2,GetClipMinY()-20,5,90,13);
 
-	loop(20)
-	{
-		CreateEnemyFromFile(z_g_20,GetCenterX()+rand(-150,+150),GetClipMinY()-20,rand(2,4),90+rand(-10,10),0);
-		_Wait(20);
-	}
-
+	_Wait(400);
 
 	DeleteEnemyShotToItem(ALL);
 	SetCommonData("DeleteEnemy",1);
 
 
 ///////////////////////////////////////////////////////////////////////
-	if(m_nStageLevel<2){CreateEnemyBossFromFile(bossLilyE,GetCenterX(),0,0,0,0);}
-	if(m_nStageLevel>1){CreateEnemyBossFromFile(bossLilyH,GetCenterX(),0,0,0,0);}
-	WaitForZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
+//	if(m_nStageLevel<2){CreateEnemyBossFromFile(bossLilyE,GetCenterX(),0,0,0,0);}
+//	if(m_nStageLevel>1){CreateEnemyBossFromFile(bossLilyH,GetCenterX(),0,0,0,0);}
+//	WaitZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
 ///////////////////////////////////////////////////////////////////////
 
 	SetCommonData("DeleteEnemy",0);
@@ -165,7 +166,7 @@ task Stage1C(){
 		}
 	}
 
-	_Wait(450);
+	_Wait(500);
 
 //----------------------------------------------------------------
 
@@ -183,12 +184,12 @@ task Stage1C(){
 
 
 ///////////////////////////////////////////////////////////////////////
-	CreateEnemyBossFromFile(bossMedicine,GetCenterX(),0,0,0,0);
-	WaitForZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
+//	CreateEnemyBossFromFile(bossMedicine,GetCenterX(),0,0,0,0);
+//	WaitZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
 
 //if(èåè){
-	CreateEnemyBossFromFile(bossMedicineL,GetCenterX(),GetCenterY/2,0,0,0);
-	WaitForZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
+//	CreateEnemyBossFromFile(bossMedicineL,GetCenterX(),GetCenterY/2,0,0,0);
+//	WaitZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
 //}
 
 ///////////////////////////////////////////////////////////////////////

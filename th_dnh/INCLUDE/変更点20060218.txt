@@ -1,0 +1,18 @@
+Common.dnh
+
+　定数
+　　座標簡略記述を追加
+
+Shadow.dnh
+
+　未分類
+　　実体化時に光を表示する関数 LightShadow を追加
+　絵画関数
+　　使い魔を絵画する関数 DrawShadow を追加
+
+
+withoutEvent.dnh
+
+　絵画関数
+　　_DrawChrRectSqr の引数名を変更（引数の順序や処理自体は変化なし）
+

@@ -32,14 +32,14 @@ task SubAction01()
 	yield;
 	let spmax=GetSpeed();
 	let i=0;
-	loop(100)
+	loop(200)
 	{
-		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		SetSpeed(SlowDown( spmax , 0 , i , 200 ));
 		i++;
 		yield;
 	}
-	let XX=GetX+rand(-100,100);
-	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,400);
+	let XX=GetX+rand(-80,80);
+	SetMovePositionHermite(XX,GetClipMinY()-50,300*rand(0.5,1.5),90+rand(-20,20),-90,300,400);
 
 
 }
@@ -59,10 +59,10 @@ task SubAction01()
 		Gone();
 		Deletemine();
 		yield;
-		if(count>100){Collision(16 , 12);}
+		if(count>200){Collision(16 , 12);}
 		count++;
 		//“G‰æ‘œ‘ã‚í‚è------------------------------------
-		if(int(count/2)==count/2 && count>100)
+		if(int(count/2)==count/2 && count>200)
 		{
 			CreateShotA(0,GetX(),GetY(),0);
 			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
@@ -105,9 +105,9 @@ task SubAction01()
 	yield;
 	let spmax=GetSpeed();
 	let i=0;
-	loop(100)
+	loop(200)
 	{
-		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		SetSpeed(SlowDown( spmax , 0 , i , 200 ));
 		i++;
 		yield;
 	}

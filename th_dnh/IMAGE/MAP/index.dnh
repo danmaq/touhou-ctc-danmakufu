@@ -1,2 +1,10 @@
-let imgMapBlack = GetCurrentScriptDirectory() ~ "IMAGE\MAP\Black.png";
-let imgMapWhite = GetCurrentScriptDirectory() ~ "IMAGE\MAP\White.png";
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//　3D背景
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+let dirImageMap = GetCurrentScriptDirectory ~ "IMAGE\MAP\";
+
+//　サンプル
+let imgMapBlack = dirImageMap ~ "Black.png";
+let imgMapWhite = dirImageMap ~ "White.png";

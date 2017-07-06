@@ -1,6 +1,8 @@
 	@Initialize
 	{	
-		SetLife(30);
+		SetLife(5);
+		SetDamageRateExDelay(0,15,10,1,1);
+		LightShadow;
 		LoadGraphic(dotCircle6s);
 		MainAction();
 		SubAction01();
@@ -9,17 +11,17 @@
 	@MainLoop
 	{
 		Deletemine();
-		Gone();
-		BehaviorShadow( 0,0 );
+		GoneEx(40);
+		if(!m_bHidden){Collision(24,18);}
+		BehaviorShadow(seHidden,seSudden);
+		m_nCount++;
 		count++;
-		scale=Smooth( 0,1,count,40 );
-
-		LightOfShadow(count);
+		scale=Smooth( 0,1,m_nCount,40 );
 		yield;
 	}
 	@DrawLoop
 	{
-		DrowShadowEasy(count*2);
+		DrawShadow(dotCircle6s,0,0,64,m_nCount*2,0.8*scale,0.5*scale);
 	}
 	@Finalize
 	{

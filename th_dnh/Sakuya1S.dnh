@@ -1,17 +1,3 @@
-#東方弾幕風
-#Title[Sakuya - スペルカード1]
-#Text[ステージ2A 中ボス
-十六夜 咲夜
-
-下記以外のスタート＝Easy
-スキップ＋スタート＝Normal
-ユーザー＋スタート＝Hard
-ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
-#Image[]
-#BackGround[Default]
-#Player[FREE]
-#ScriptVersion[2]
-
 script_enemy_main{
 
 	// 画像及び効果音ファイル

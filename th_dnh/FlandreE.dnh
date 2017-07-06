@@ -1,15 +1,3 @@
-#東方弾幕風[Plural]
-#Title[Frandre - Easy/Normal]
-#Text[ステージ1A 中ボス
-フランドール・スカーレット
-
-そのままスタート＝Easy
-スキップ＋スタート＝Normal]
-#Image[]
-#BackGround[Default]
-#Player[FREE]
-#ScriptVersion[2]
-
 #ScriptPathData
 #ScriptPath[.\Flandre1.dnh]
 #EndScriptPathData

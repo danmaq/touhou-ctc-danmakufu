@@ -1,15 +1,3 @@
-#東方弾幕風[Plural]
-#Title[Lily - Easy/Normal]
-#Text[ステージ1C 中ボス
-リリー・ホワイト
-
-そのままスタート＝Easy
-スキップ＋スタート＝Normal]
-#Image[]
-#BackGround[Default]
-#Player[FREE]
-#ScriptVersion[2]
-
 #ScriptPathData
 #ScriptPath[.\Lily1.dnh]
 #EndScriptPathData

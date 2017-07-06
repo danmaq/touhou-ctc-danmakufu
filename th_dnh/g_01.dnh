@@ -57,7 +57,7 @@ task SubAction01()
 	}
 	@DrawLoop
 	{
-		DrowZako( dotKedama,0,0,32,0.8 );
+		DrawZako( dotKedama,0,0,32,0.8 );
 	}
 	@Finalize
 	{

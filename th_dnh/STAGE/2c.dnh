@@ -45,12 +45,12 @@ task Stage2C(){
 	{
 		loop(8)
 		{
-			CreateEnemyFromFile(z_o_02,GetCenterX()*1.5+rand(-50,+50),GetClipMinY()-20,rand(4,7),90+rand(0,30),0);
+			CreateEnemyFromFile(z_o_02,GetCenterX()*1.5+rand(-50,+50),GetClipMinY()-20,rand(1.5,4),90+rand(0,30),0);
 		}
 		_Wait(200);
 		loop(8)
 		{
-			CreateEnemyFromFile(z_o_02,GetCenterX()/2+rand(-50,+50),GetClipMinY()-20,rand(4,7),90-rand(0,30),0);
+			CreateEnemyFromFile(z_o_02,GetCenterX()/2+rand(-50,+50),GetClipMinY()-20,rand(1.5,4),90-rand(0,30),0);
 		}
 		_Wait(200);
 	}
@@ -86,7 +86,7 @@ task Stage2C(){
 	let i=0;
 	loop(10)
 	{
-		CreateEnemyFromFile(z_o_02,GetClipMinX()-20,GetCenterY()/3,6+0.25*i,60-i*8,0);
+		CreateEnemyFromFile(z_o_02,GetClipMinX()-20,GetCenterY()/3,2+0.25*i,60-i*8,0);
 		_Wait(10);
 		i++;
 	}
@@ -94,7 +94,7 @@ task Stage2C(){
 	{
 		loop(6)
 		{
-			CreateEnemyFromFile(z_g_20,GetCenterX()+rand(-100,+100),GetClipMinY()-20,rand(0.8,1.3),90+rand(-30,30),0);
+			CreateEnemyFromFile(z_g_20,GetCenterX()+rand(-100,+100),GetClipMinY()-20,rand(3,5),90+rand(-30,30),0);
 		}
 	}
 
@@ -103,7 +103,7 @@ task Stage2C(){
 	let i=0;
 	loop(10)
 	{
-		CreateEnemyFromFile(z_o_02,GetClipMaxX()-20,GetCenterY()/3,6+0.25*i,100+i*8,0);
+		CreateEnemyFromFile(z_o_02,GetClipMaxX()-20,GetCenterY()/3,2+0.25*i,100+i*8,0);
 		_Wait(10);
 		i++;
 	}
@@ -111,12 +111,12 @@ task Stage2C(){
 	{
 		loop(6)
 		{
-			CreateEnemyFromFile(z_g_20,GetCenterX()+rand(-100,+100),GetClipMinY()-20,rand(0.8,1.3),90+rand(-30,30),0);
+			CreateEnemyFromFile(z_g_20,GetCenterX()+rand(-100,+100),GetClipMinY()-20,rand(3,5),90+rand(-30,30),0);
 		}
 	}
 
 
-	_Wait(500);
+	_Wait(550);
 	DeleteEnemyShotToItem(ALL);
 	SetCommonData("DeleteEnemy",1);
 

@@ -123,14 +123,8 @@ task SubAction01()
 	{
 		SetTexture(dotCircle6s);
 		SetGraphicRect(0,0,64,64);
-		if(GetKeyState(VK_SLOWMOVE)==KEY_PUSH||GetKeyState(VK_SLOWMOVE)==KEY_HOLD){
-			SetAlpha(127);
-			SetGraphicScale(0.8,0.8);
-		}
-		else{
-			SetAlpha(255);
-			SetGraphicScale(0.5,0.5);
-		}
+		SetAlpha(127);
+		SetGraphicScale(0.8,0.8);
 		SetColor(255,255,255);
 		SetGraphicAngle(0,0,count*2);
 		DrawGraphic(GetX,GetY);

@@ -2,34 +2,47 @@ script_enemy_main
 {
 
 #include_function ".\INCLUDE\Enemy.dnh"
-
+#include_function ".\index_UserShot.dnh"
 
 //•Ï”éŒ¾--------------------------------------
 	let count=0;
 	let Level = GetCommonDataDefault( "Level", 1 );
+
 //ƒ^ƒXƒN‚Ìì¬----------------------------------
 
 task MainAction()
 {
 	yield;
 	_Wait(125);
+	let angle=GetAngleToPlayer()-90;
 
-	let angle_b=GetAngleToPlayer();
-	let speed=[1,1.2,2.5,4][Level];
-	while(speed>=[1,1.2,1.2,1][Level])
+	loop([3,6,9,15][Level])
 	{
-		let angle=-180;
-		while(angle<180)
+
+		let speed=[1.5,2,2.6,3.5][Level];
+
+		let time=rand(50,80);
+		while(speed>1)
 		{
-			CreateShotA(0,GetX(),GetY(),20);
-			SetShotDataA(0,0,speed,angle+angle_b,0,-[0.02,0.03,0.03,0.065][Level],0,[RED23,GREEN23,BLUE23,YELLOW23,PURPLE23,AQUA23,ORANGE23][int(rand(0,6))]);
-			SetShotDataA(0,100,speed,angle+angle_b+90,2.5+rand(-0.1,0.1),0,0,[RED23,GREEN23,BLUE23,YELLOW23,PURPLE23,AQUA23,ORANGE23][int(rand(0,6))]);
-			SetShotDataA(0,230,[1,1.2,1.5,2][Level],angle+angle_b+180,0,0,0,[RED23,GREEN23,BLUE23,YELLOW23,PURPLE23,AQUA23,ORANGE23][int(rand(0,6))]);
+			CreateShotA(0,GetX(),GetY(),30);
+			SetShotDataA(0,0,speed,angle,0,0,0,1);
+			SetShotDataA(0,time,NULL,angle+180,0,0,0,1);
+			SetShotDirectionType(SEQUENCE);
+			SetShotDataA(0,time+70,speed,180-30,sin(angle)/10,0,0,1);
 			FireShot(0);
-			angle+=[12,10,10,10][Level];
+			SetShotDirectionType(ABSOLUTE);
+			CreateShotA(0,GetX(),GetY(),30);
+			SetShotDataA(0,0,speed,angle,0,0,0,1);
+			SetShotDataA(0,time,NULL,angle+180,0,0,0,1);
+			SetShotDirectionType(SEQUENCE);
+			SetShotDataA(0,time+70,speed,180+30,-sin(angle)/10,0,0,1);
+			FireShot(0);
+			SetShotDirectionType(ABSOLUTE);
+			speed=speed-0.3
 		}
-		speed=speed/1.2;
+		angle+=180/([3,6,9,15][Level]-1);
 	}
+
 }
 task SubAction01()
 {
@@ -55,6 +68,7 @@ task SubAction01()
 		SetInvincibility( 130 );
 		MainAction();
 		SubAction01();
+		LoadUserShotData(shotMedicine);
 	}
 	
 	@MainLoop

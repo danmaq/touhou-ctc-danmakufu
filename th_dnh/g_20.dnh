@@ -41,7 +41,7 @@ task SubAction01()
 	let yy=GetY;
 	while(1)
 	{
-		SetMovePositionRandom01(rand(0,80),rand(0,80),rand(1.5,3),xx-80,yy-80,xx+80,yy+80);
+		SetMovePositionRandom01(rand(20,80),rand(20,80),rand(1.5,3),Max( xx-80,GetClipMinX()+20 ),Max( yy-80,GetClipMinY()+20 ),Min( xx+80,GetClipMaxX()-20 ),Min( yy+80,GetClipMaxY()-20 ));
 		_Wait([999,100,80,60][Level]+int(rand(-10,10)));
 	}
 }
@@ -63,12 +63,12 @@ task SubAction01()
 		Deletemine();
 		yield;
 		count++;
-		if(count==400){DropItem( 3 , 20 );VanishEnemy();}
+		if(count==400){DropItem( 2 , 20 );VanishEnemy();}
 		Collision( 13, 8 );
 	}
 	@DrawLoop
 	{
-		DrowZako( dotKedama,0,0,32,0.8 );
+		DrawZako( dotKedama,64,0,32,0.8 );
 	}
 	@Finalize
 	{

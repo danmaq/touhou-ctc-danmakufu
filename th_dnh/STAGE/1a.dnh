@@ -42,15 +42,15 @@ task Stage1A(){
 
 	loop(2)
 	{
-		ascent(i in 0..7)
+		loop(7)
 		{
-			CreateEnemyFromFile(z_s_07,Smooth( GetClipMinX()+40,GetClipMaxX()-40,i,7 ),GetClipMinY()-20,0,0,GetCenterX/3);
+			CreateEnemyFromFile(z_s_07,GetCenterX()*1.5+rand(-50,+50),GetClipMinY()-20,1.7,90,1);
 			_Wait(20);
 		}
 		_Wait(150);
-		ascent(i in 0..7)
+		loop(7)
 		{
-			CreateEnemyFromFile(z_s_07,Smooth( GetClipMaxX()-40,GetClipMinX()+40,i,7 ),GetClipMinY()-20,0,0,GetCenterX()+GetCenterX/3*2);
+			CreateEnemyFromFile(z_s_07,GetCenterX()/2+rand(-50,+50),GetClipMinY()-20,1.7,90,-1);
 			_Wait(20);
 		}
 		_Wait(150);
@@ -58,7 +58,7 @@ task Stage1A(){
 
 //---------------------------------------------------------------
 
-	CreateEnemyFromFile(z_g_11,GetCenterX(),GetClipMinY()-20,6.5,90,0);
+	CreateEnemyFromFile(z_g_11,GetCenterX(),GetClipMinY()-20,5.5,90,0);
 
 	_Wait(400);
 
@@ -80,7 +80,7 @@ task Stage1A(){
 ///////////////////////////////////////////////////////////////////////
 	if(m_nStageLevel<2){CreateEnemyBossFromFile(bossFlandreE,GetCenterX(),0,0,0,0);}
 	if(m_nStageLevel>1){CreateEnemyBossFromFile(bossFlandreH,GetCenterX(),0,0,0,0);}
-	WaitForZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
+	WaitZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
 ///////////////////////////////////////////////////////////////////////
 
 	SetCommonData("DeleteEnemy",0);
@@ -90,7 +90,8 @@ task Stage1A(){
 	{
 		loop(10)
 		{
-			CreateEnemyFromFile(z_s_07,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,0,0,rand(GetClipMinX()+30,GetClipMaxX()-30));
+			let XX=rand(GetClipMinX()+50,GetClipMaxX()-50);
+			CreateEnemyFromFile(z_s_07,XX,GetClipMinY()-20,2.5,90,[1,-1][XX<GetCenterX()]);
 			_Wait(10);
 		}
 		_Wait(150);
@@ -122,8 +123,8 @@ task Stage1A(){
 
 //---------------------------------------------------------------
 
-	CreateEnemyFromFile(z_g_11,GetCenterX()/2,GetClipMinY()-20,6.5,90,0);
-	CreateEnemyFromFile(z_g_11,GetCenterX()*1.5,GetClipMinY()-20,6.5,90,0);
+	CreateEnemyFromFile(z_g_11,GetCenterX()/2,GetClipMinY()-20,5.5,90,0);
+	CreateEnemyFromFile(z_g_11,GetCenterX()*1.5,GetClipMinY()-20,5.5,90,0);
 
 	_Wait(650);
 
@@ -136,11 +137,11 @@ task Stage1A(){
 
 ///////////////////////////////////////////////////////////////////////
 	CreateEnemyBossFromFile(bossMeirin,GetCenterX(),0,0,0,0);
-	WaitForZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
+	WaitZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
 
 //if(èåè){
 	CreateEnemyBossFromFile(bossMeirinL,GetCenterX(),GetCenterY/2,0,0,0);
-	WaitForZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
+	WaitZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
 //}
 
 ///////////////////////////////////////////////////////////////////////

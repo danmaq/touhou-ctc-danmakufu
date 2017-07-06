@@ -105,7 +105,7 @@ task MainAction()
 
 }
 
-task SubAction()
+task SubAction01()
 {
 	yield;
 	let spmax=GetSpeed();

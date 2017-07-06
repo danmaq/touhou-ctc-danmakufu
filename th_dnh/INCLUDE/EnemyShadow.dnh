@@ -50,14 +50,21 @@ function Gone(){ GoneEx( 32 ); }
 function Deletemine(){if(GetCommonDataDefault("DeleteEnemy",0) == 1){VanishEnemy();}}
 
 
-// -----------------------------------------------------------------------------
-// 一定時間無敵（ボスへのダメージもなし）後、ダメージ率再設定　(Enemy&Shadow)
-// ※主にボスが出す使い魔のInitializeに設定し、出現時無敵にする
-// -----------------------------------------------------------------------------
-task SetDamageRateExDelay( let frame, let damageS, let damageB, let bossDamageS, let bossDamageB ){
+//////////////////////////////////////////////////////////////////////
+// -------------------------------------------------------------------
+// ダメージ率設定
+// -------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
 
-	SetDamageRateEx( 0, 0, 0, 0 );
+// 一定時間後、ダメージ率設定 (※注 task)
+task _SetDamageRateExDelay( let frame, let damShot, let damBomb, let damShotB, let damBombB ){
 	loop( frame ){ yield; }
-	SetDamageRateEx( damageS, damageB, bossDamageS, bossDamageB );
+	SetDamageRateEx( damShot, damBomb, damShotB, damBombB );
+}
 
+// 一定時間無敵（ボスへのダメージもなし）後、ダメージ率設定 (※注 task)
+// 主にボスが出す使い魔のInitializeに設定し、出現時無敵にする
+task SetDamageRateExDelay( let frame, let damShot, let damBomb, let damShotB, let damBombB ){
+	SetDamageRateEx( 0, 0, 0, 0 );
+	_SetDamageRateExDelay( frame, damShot, damBomb, damShotB, damBombB );
 }

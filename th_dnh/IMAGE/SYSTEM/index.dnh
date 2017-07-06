@@ -1,4 +1,16 @@
-let imgSystemFont = GetCurrentScriptDirectory() ~ "IMAGE\SYSTEM\Font.png";
-let imgSystemFontSmall = GetCurrentScriptDirectory() ~ "IMAGE\SYSTEM\FontSmall.png";
-let imgSystemLogo = GetCurrentScriptDirectory() ~ "IMAGE\SYSTEM\Logo.png";
-let imgSystemProgress = GetCurrentScriptDirectory() ~ "IMAGE\SYSTEM\Progress.png";
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//　システム
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+let dirImageSystem = GetCurrentScriptDirectory ~ "IMAGE\SYSTEM\";
+
+//　フォント
+let imgSystemFont = dirImageSystem ~ "Font.png";
+let imgSystemFontSmall = dirImageSystem ~ "FontSmall.png";
+
+//　タイトル
+let imgSystemLogo = dirImageSystem ~ "Logo.png";
+
+//　その他
+let imgSystemProgress = dirImageSystem ~ "Progress.png";

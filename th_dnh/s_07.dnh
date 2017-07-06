@@ -12,33 +12,41 @@ script_enemy_main
 task MainAction()
 {
 	yield;
-	_Wait(200);
+	_Wait([150,150,120,100][Level]);
 	if(Level !=0)
 	{
-		let speed=2.5;
+		SetShotDirectionType(ABSOLUTE);
+		let speed=[0,2.5,3,4][Level];
 		loop([0,1,4,7][Level])
 		{
-			CreateShot02(GetX(),GetY(),speed,GetAngleToPlayer()+rand(-20,20),-0.1,[0,0.8,1.5,2][Level],[RED23,GREEN23,BLUE23,YELLOW23,PURPLE23,AQUA23,ORANGE23][int(rand(0,6))],0);
+			CreateShot02(GetX(),GetY(),speed,GetAngleToPlayer()+rand(-20,20),-0.1,[0,0.8,1.5,2][Level],ORANGE04,0);
 			speed+=0.3
+		}
+		if(Level==3)
+		{
+			RoundShot02(GetX(),GetY(),4,-0.1,1.3,rand(0,360),36,WHITE11,0);
 		}
 	}
 }
 task SubAction01()
 {
 	yield;
-	let XX=GetArgument();
-	SetMovePositionHermite(XX,GetCenterY()/2,600,90,600,-90,200);
-	_Wait(210);
-	if(GetX() != GetCenterX)
-	{SetMovePosition01([GetClipMaxX(),GetClipMinX()][GetX>GetCenterX],GetClipMaxY+40,1.2);}
-	else
-	{SetMovePosition01(GetCenterX(),GetClipMinY-40,1.2);}
+	let spmax=GetSpeed();
+	let spmin=GetSpeed()/rand(1.3,2);
+	let anglemax=rand(4,6);
+	ascent(i in 0..[150,150,120,100][Level])
+	{
+		SetAngle(GetAngle()+Accelerate( 0,anglemax,i,[150,150,120,100][Level] )*GetArgument());
+		SetSpeed(Smooth( spmax,spmin,i,[150,150,120,100][Level] ));
+		yield;
+	}
 }
 
 //ŽÀs•”•ª---------------------------------------
 
 	@Initialize
 	{
+		LoadGraphic(dotKedama);
 		SetLife(13);
 		MainAction();
 		SubAction01();
@@ -50,22 +58,14 @@ task SubAction01()
 		Deletemine();
 		yield;
 		count++;
-		//“G‰æ‘œ‘ã‚í‚è------------------------------------
-		if(int(count/2)==count/2)
-		{
-			CreateShotA(0,GetX(),GetY(),0);
-			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
-			SetShotKillTime(0,2);
-			FireShot(0);
-		}
-		//------------------------------------------------
 		Collision( 20, 8 );
 	}
 	@DrawLoop
 	{
+		DrawZako( dotKedama,0,0,32,0.8 );
 	}
 	@Finalize
 	{
-		if(count>100){DropItem( 1 , 20 );}
+		DropItem( [1,2][count>100] , 20 );
 	}
 }

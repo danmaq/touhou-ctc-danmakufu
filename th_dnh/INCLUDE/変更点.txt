@@ -1,0 +1,40 @@
+Common.dnh
+
+　デバッグ
+　　Debug_SetLevel（難易度設定）を、EnemyShotShadow.dnh からここに移した
+　　Debug_SetLevel の処理修正（HAL900氏）
+
+　配列操作
+　　CreateOrderArray（指定要素数の配列を作り、要素番号で埋める）を追加
+　　CreateMixOrderArray（指定要素数の配列を作り、ランダムに並べ替えた要素番号で埋める）を追加
+　　MixArray（配列の要素をランダムに並べ替える）を追加
+
+Enemy.dnh
+
+　その他
+　　HAL900氏追加の DrowZako の処理記述を _DrawChrRectSqr を使って簡略化
+　　　_DrawChrRectSqr は withoutEvent.dnh に追加した正方形描画関数です
+　　　記述は簡略されましたが他関数を経由するようになりましたので、万が一重かったら言ってください
+　　　あと綴りは Drow → Draw ですね（処理に影響が出るので今は直しません）
+
+EnemyShadow.dnh
+
+　ダメージ率設定
+　　_SetDamageRateExDelay（一定時間後ダメージ率設定）を追加
+　　SetDamageRateExDelay の処理記述を _SetDamageRateExDelay を使って簡略化
+
+EnemyShotShadow.dnh
+
+　デバッグ
+　　Debug_SetLevel（難易度設定）を、ここから EnemyShotShadow.dnh に移した
+
+Stage.dnh
+
+　HAL900氏追加の WaitForZeroEnemy ですが、同機能の WaitZeroEnemy が withoutEvent.dnh にあります
+　Stage以外にも使えるのでこちらに置いてあるのでしょう（処理に影響が出るので今は削除しません）
+
+withoutEvent.dnh
+
+　絵画関数
+　　_DrawChrRectSqr（テクスチャの内容の一部(正方形)を指定位置に絵画する）を追加
+
