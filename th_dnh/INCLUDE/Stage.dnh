@@ -1,0 +1,295 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	ステージスクリプト部専用上位ライブラリ
+//
+//		※ステージスクリプト以外ではインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	下位ライブラリをインクルード
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\withoutEvent.dnh"
+#include_function ".\INCLUDE\Font.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	インデックスをインクルード
+//	※夢終劇以外に流用する場合は必要に応じて削除してください
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\STAGE\index.dnh"
+#include_function ".\_index.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let PROGRESS_BOTTOMMARGIN = 64;	//	ローダープログレスバーの画面下端からの距離
+let PROGRESS_PHASE = 32767;		//	ローダー作動中のフェイズ番号
+
+let KEY_REPEAT_CYCLE = 6;		//	キーリピートが発動した時のリピートサイクル
+let KEY_REPEAT_TIME = 20;		//	キーリピートが発動するまでの待ちフレーム
+
+let MENU_FADE = 60;				//	メニューのフェード時間
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let m_nPlayerDefaultX = -1;			//	プレイヤー初期X座標
+let m_nPlayerDefaultY = -1;			//	プレイヤー初期X座標
+
+let m_nLoadProgressPercentage = -1;	//	ローダーの進捗率
+
+let m_nStage = -1;					//	現在のステージ
+let m_nStageCount = 0;				//	ステージの開始された時間
+let m_nStageLevel = 1;				//	ステージランク
+
+let m_nKeyHold = -1;				//	押したキーの種類
+let m_nKeyHoldTime = 0;				//	最後にキーを押した時間
+
+let m_nMenuCursorMoveTime = 0;		//	最後にメニューカーソルを動かした時間
+let m_nMenuPrevCursor = -1;			//	前のカーソル位置
+let m_bMenuBack = false;			//	メニューバックしたか
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	キー入力判定
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	キーリピート対応版GetKeyState()
+//	リピート発動するとその度にKEY_PUSHを返す
+function GetKeyStateEx( let nType ){
+	let nResult = GetKeyState( nType );
+	alternative( nResult )
+	case( KEY_PUSH ){
+		if( m_nKeyHold != nType ){
+			m_nKeyHold = nType;
+			m_nKeyHoldTime = m_nCount;
+		}
+	}
+	case( KEY_HOLD ){
+		if( m_nKeyHold == nType ){
+			let nRepeatStartCount = m_nCount - ( m_nKeyHoldTime + KEY_REPEAT_TIME );
+			if( nRepeatStartCount >= 0 ){
+				alternative( nRepeatStartCount % KEY_REPEAT_CYCLE )
+				case( 0 ){ return KEY_PULL; }
+				case( 1 ){ return KEY_PUSH; }
+			}
+		}
+	}
+	case( KEY_FREE, KEY_PULL ){
+		if( m_nKeyHold == nType ){
+			m_nKeyHold = -1;
+			m_nKeyHoldTime = 0;
+		}
+	}
+	return nResult;
+}
+
+//	方向キーを押したか否かを返す
+function IsPushDirKey(){ return GetKeyState( VK_UP ) == KEY_PUSH || GetKeyState( VK_DOWN ) == KEY_PUSH || GetKeyState( VK_LEFT ) == KEY_PUSH || GetKeyState( VK_RIGHT ) == KEY_PUSH; }
+
+//	方向キーを押したか否かを返す(キーリピート対応版
+function IsPushDirKeyEx(){ return GetKeyStateEx( VK_UP ) == KEY_PUSH || GetKeyStateEx( VK_DOWN ) == KEY_PUSH || GetKeyStateEx( VK_LEFT ) == KEY_PUSH || GetKeyStateEx( VK_RIGHT ) == KEY_PUSH; }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メニュー機能
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	メニューカーソル移動
+function MenuSelect( let nNowSelect, let szSESelect, let nMenuNum ){
+	let res = nNowSelect;
+	if( IsPushDirKeyEx() ){
+		m_nMenuPrevCursor = nNowSelect;
+		PlaySE( szSESelect );
+		if( nMenuNum > 10 ){
+			if( GetKeyStateEx( VK_UP ) == KEY_PUSH ){ res--; }
+			if( GetKeyStateEx( VK_DOWN ) == KEY_PUSH ){ res++; }
+			if( GetKeyStateEx( VK_LEFT ) == KEY_PUSH ){ res -= 10; }
+			if( GetKeyStateEx( VK_RIGHT ) == KEY_PUSH ){ res += 10; }
+		}
+		else{ res += [ 1, -1 ][ GetKeyStateEx( VK_UP ) == KEY_PUSH || GetKeyStateEx( VK_LEFT ) == KEY_PUSH ]; }
+		res = MinMaxLoop( res, 0, nMenuNum );
+		m_nMenuCursorMoveTime = m_nCount;
+	}
+	return res;
+}
+
+//	決定・キャンセル判定
+function IsMenuEnter( let szSEEnter, let szSECancel ){
+	m_nMenuPrevCursor = -1;
+	m_nMenuCursorMoveTime = 0;
+	if( GetKeyStateEx( VK_BOMB ) == KEY_PUSH ){
+		PlaySE( szSECancel );
+		m_bMenuBack = true;
+		return false;
+	}
+	else{
+		PlaySE( szSEEnter );
+		m_bMenuBack = false;
+		return true;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ステージ制御
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	指定ステージに設定する
+function SetStage( let nStage ){
+	SetPhase( 0 );
+	m_nStage = nStage;
+	m_nStageCount = m_nCount;
+}
+
+//	次のステージへ行く
+function SetNextStage(){ SetStage( m_nStage + 1 ); }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	プレイヤー初期位置関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	プレイヤー初期位置を保存
+//	※必ず@MainLoop()の最初のフレームで実行してください
+function SetPlayerDefaultPosition(){
+	if( m_nPlayerDefaultX >= 0 || m_nPlayerDefaultY >= 0 ){ return; }
+	m_nPlayerDefaultX = GetPlayerX();
+	m_nPlayerDefaultY = GetPlayerY();
+}
+
+//	プレイヤー初期位置に強制移動させる
+function MovePlayerDefaultPosition(){
+	SetPlayerX( m_nPlayerDefaultX );
+	SetPlayerY( m_nPlayerDefaultY );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	マイクロスレッド制御
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	キー入力をnWaitフレームだけ待つ
+function WaitPushKey( let Key, let nWait ){
+	let nCount = 0;
+	while( nCount < nWait && GetKeyState( Key ) != KEY_PUSH ){
+		yield;
+		nCount++;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ロード/セーブ関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	ローダー本体
+function LoadProgress( let aszGraphicFileList, let aszEnemyFileList, let aszSEFileList ){
+	let nGraphicListElems = length( aszGraphicFileList );
+	let nSEListElems = length( aszSEFileList );
+	let nTotalElems = nGraphicListElems + nSEListElems + length( aszEnemyFileList );
+	GosubPhase( PROGRESS_PHASE );
+	ascent( let i in 0..nTotalElems ){
+		m_nLoadProgressPercentage = Smooth( 0, 100, i, nTotalElems );
+		if( i < nGraphicListElems ){ LoadGraphic( aszGraphicFileList[ i ] ); }
+		else if( i - nGraphicListElems < nSEListElems ){ LoadSE( aszSEFileList[ i - nGraphicListElems ] ); }
+		else{ CompileEnemyFromFile( aszEnemyFileList[ i - nGraphicListElems - nSEListElems ] ); }
+		yield;
+	}
+	ReturnPhase();
+	m_nLoadProgressPercentage = -1;
+}
+
+//	現在のロード進捗率を返す(ロード中でなければ-1を返す)
+function GetLoadProgressPercentage(){ return m_nLoadProgressPercentage; }
+
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	指定テクスチャで塗りつぶす
+function DrawScreenFill( let szTexFillFile ){
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( szTexFillFile );
+}
+
+//	ローダーの進捗状況を絵画する
+function DrawLoadProgress( let szTexProgressFile, let szTexFillFile ){
+	let nPercentage = GetLoadProgressPercentage();
+	if( nPercentage == -1 ){ return; }
+	DrawScreenFill( szTexFillFile );
+	_DrawChrRect( szTexProgressFile, GetCenterX(), GetClipMaxY() - PROGRESS_BOTTOMMARGIN, 0, 16, 256, 32 );
+	SetGraphicExpansion( Smooth( 0, 1, nPercentage, 100 ), 1 );
+	_DrawChrRect( szTexProgressFile, GetCenterX() - Smooth( 128, 0, nPercentage, 100 ), GetClipMaxY() - PROGRESS_BOTTOMMARGIN, 0, 0, 256, 16 );
+	SetGraphicExpansion( 1, 1 );
+}
+
+//	メニューを絵画する
+function DrawMenu( let nTargetPhase, let nX, let nY, let nGapX, let nGapY, let anTexTextHandle, let nSelect ){
+	let bInPhase = GetPhase() == nTargetPhase;
+	if( !bInPhase && m_nPrevPhase != nTargetPhase ){ return; }
+	let nKerning = 0;
+	SetGraphicAngle( 0, 0, SlowDown( [ 0, -120 ][ bInPhase ], [ -60, 0 ][ bInPhase ], m_nPhaseNow, MENU_FADE ) );
+	ascent( let i in 0..length( anTexTextHandle ) ){
+		let nMoveX = 0;
+		let nAlpha;
+		if( bInPhase ){
+			nKerning = SlowDown( -32, 0, m_nPhaseNow, MENU_FADE );
+			nX = SlowDown( 0, nX, m_nPhaseNow, MENU_FADE );
+			if( i != m_nMenuPrevCursor ){
+				if( i == nSelect ){ nMoveX = Smooth( 0, 4, m_nPhaseNow, MENU_FADE / 10 ); }
+				nAlpha = Accelerate( 0, [ 80, 255 ][ i == nSelect ], m_nPhaseNow, MENU_FADE );
+			}
+			else{
+				nMoveX = Smooth( 4, 0, m_nPhaseNow, MENU_FADE / 10 );
+				nAlpha = SlowDown( Accelerate( 0, 255, m_nPhaseNow, MENU_FADE ), 80, m_nCount - m_nMenuCursorMoveTime, MENU_FADE / 10 );
+			}
+		}
+		else{
+			nAlpha = SlowDown( [ 80, 255 ][ i == nSelect ], 0, m_nPhaseNow, MENU_FADE / [ 5, 1 ][ i == nSelect && !m_bMenuBack ] );
+			if( i == nSelect ){ nMoveX = 4; }
+		}
+		SetAlpha( nAlpha );
+		SetGraphicScale( [ Smooth( 1, 3, m_nPhaseNow, MENU_FADE ), 1 ][ bInPhase ], 1 );
+		SetColor( 255, 255, 223 + 32 * [ 1, sin( m_nCount * 2 ) ][ i == nSelect ] );
+		DrawTexTextOnCache( anTexTextHandle[ i ], nKerning, nX * i + nGapX - nMoveX, nY * i + nGapY );
+	}
+	SetGraphicScale( 1, 1 );
+	SetColor( 255, 255, 255 );
+	SetGraphicAngle( 0, 0, 0 );
+	SetAlpha( 255 );
+}

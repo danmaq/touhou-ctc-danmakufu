@@ -1,0 +1,171 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	弾・敵・使い魔などの共通下位ライブラリ
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//		※イベントスクリプト・ステージスクリプトでは使用できません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	下位ライブラリをインクルード
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+#include_function ".\INCLUDE\withoutEvent.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定型弾発射関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	start～end角度間をspaceで等分したWay可変速弾を発射する
+//	※滅多なことがない限り以下のラッパー関数を使ってください
+//	TODO:速度違いWay弾にも対応させたい
+function _WayShot02( let start, let end, let space, let speed, let accelerate, let max, let type, let delay ){
+	let angle = start;
+	while( [ angle <= end, angle < end ][ end >= 360 + start ] ){
+		if( accelerate == 0 ){ CreateShot01( GetX(), GetY(), speed, angle, type, delay ); }
+		else{ CreateShot02( GetX(), GetY(), speed, angle, accelerate, max, type, delay ); }
+		angle += space;
+	}
+}
+
+/*	↓↓↓以下全て_WayShot02()のラッパー関数↓↓↓	*/
+
+//	(-limit～+limit)+gap角度間をspace等分したWay可変速弾を発射する
+function WayShotGap02( let limit, let space, let speed, let accelerate, let max, let type, let delay, let gap ){ _WayShot02( -limit + gap, limit + gap, space, speed, accelerate, max, type, delay ); }
+
+//	-limit～+limit角度間をspace等分したWay可変速弾を発射する
+function WayShot02( let limit, let space, let speed, let accelerate, let max, let type, let delay ){ WayShotGap02( limit, space, speed, accelerate, max, type, delay, 0 ); }
+
+//	space等分した全方位可変速弾をgap分角度をずらして発射する
+function CircleShotGap02( let space, let speed, let accelerate, let max, let type, let delay, let gap ){ _WayShot02( gap, 360 + gap, space, speed, accelerate, max, type, delay ); }
+
+//	space等分した全方位可変速弾を発射する
+function CircleShot02( let space, let speed, let accelerate, let max, let type, let delay ){ CircleShotGap02( space, speed, accelerate, max, type, delay, 0 ); }
+
+//	start～end角度間をspace等分したWay固定速弾を発射する
+function _WayShot01( let start, let end, let space, let speed, let type, let delay ){ _WayShot02( start, end, space, speed, 0, speed, type, delay ); }
+
+//	(-limit～+limit)+gap角度間をspace等分したWay固定速弾を発射する
+function WayShotGap01( let limit, let space, let speed, let type, let delay, let gap ){ _WayShot01( -limit + gap, limit + gap, space, speed, type, delay ); }
+
+//	-limit～+limit角度間をspace等分したWay固定速弾を発射する
+function WayShot01( let limit, let space, let speed, let type, let delay ){ WayShotGap01( limit, space, speed, type, delay, 0 ); }
+
+//	space等分した全方位固定速弾をgap分角度をずらして発射する
+function CircleShotGap01( let space, let speed, let type, let delay, let gap ){ _WayShot01( gap, 360 + gap, space, speed, type, delay ); }
+
+//	space等分した全方位固定速弾を発射する
+function CircleShot01( let space, let speed, let type, let delay ){ CircleShotGap01( space, speed, type, delay, 0 ); }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	判定関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	自分が画面から出ているかどうか判定する
+function IsOut( let nDeadline ){ return IsOutPos( GetX(), GetY(), nDeadline ); }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	マイクロスレッド制御
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	自分が一定速度以下になるまで待機
+function WaitSpeedDown( let nSpeed ){ yield; while( GetSpeed() > nSpeed ){ yield; } }
+
+//	自分が停止するまで待機
+function WaitZeroSpeed(){ WaitSpeedDown( 0 ); }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	オブジェクト弾制御
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	オブジェクト弾生成
+function _SetObject( let x, let y, let fSpeed, let fAngle, let nDelay, let bAutoDelete ){
+	let obj = Obj_Create( OBJ_SHOT );
+	Obj_SetX( obj, x );
+	Obj_SetY( obj, y );
+	Obj_SetSpeed( obj, fSpeed );
+	Obj_SetAngle( obj, fAngle );
+	Obj_SetAutoDelete( obj, bAutoDelete );
+	ObjShot_SetDelay( obj, nDelay );
+	return obj;
+}
+
+//	オブジェクト生成
+function SetShotObject( let x, let y, let fSpeed, let fAngle, let Color, let nDelay ){
+	let obj = _SetObject( x, y, fSpeed, fAngle, nDelay, true );
+	ObjShot_SetGraphic( obj, Color );
+	return obj;
+}
+
+//	隠しオブジェクト生成
+function SetHiddenObject( let x, let y, let fSpeed, let fAngle, let nDelay, let bRedist, let bAutoDelete ){
+	let obj = _SetObject( x, y, fSpeed, fAngle, nDelay, bAutoDelete );
+	Obj_SetCollisionToPlayer( obj, false );
+	ObjShot_SetBombResist( obj, bRedist );
+	return obj;
+}
+
+//	GetAngleToPlayer()のオブジェクト弾対応版
+function GetAngleToPlayerObject( let obj ){ return atan2( GetPlayerY() - Obj_GetY( obj ), GetPlayerX() - Obj_GetX( obj ) ); }
+
+//	一定フレーム待機(オブジェクト弾に_Wait()を使ってはいけない)
+function WaitObject( let obj, let frame ){
+	let count = 0;
+	while( !Obj_BeDeleted( obj ) && count < frame ){
+		yield;
+		count++;
+	}
+	return Obj_BeDeleted( obj );
+}
+
+//	反射弾
+function ReflectObject( let object, let bBottom, let bSide, let bTop ){
+	let fAngle = Obj_GetAngle( object ) % 360;
+	if( ( bTop && Obj_GetY( object ) < GetClipMinY() ) || ( bBottom && Obj_GetY( object ) > GetClipMaxY() ) ){
+		Obj_SetAngle( object, -fAngle );
+		return true;
+	}
+	if( bSide && ( Obj_GetX( object ) < GetClipMinX() || Obj_GetX( object ) > GetClipMaxX() ) ){
+		Obj_SetAngle( object, 180 - fAngle );
+		return true;
+	}
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	自分の上にテクスチャ貼り付け(Y座標のずれを指定できる)
+function DrawChrGap( let szTexFile, let nGap ){ _DrawChr( szTexFile, GetX(), GetY() + nGap ); }
+
+//	自分の上にテクスチャ貼り付け(縦に正弦波運動しあたかも浮遊しているかのように見える)
+function DrawChr( let szTexFile, let nCount ){ DrawChrGap( szTexFile, sin( nCount * 2.5 ) * 8 ); }
+
+//	自分の上にテクスチャを回転貼り付け
+function DrawRotate( let szTexFile, let nCount ){
+	SetGraphicAngle( 0, 0, nCount );
+	DrawChrGap( szTexFile, 0 );
+	SetGraphicAngle( 0, 0, 0 );
+}

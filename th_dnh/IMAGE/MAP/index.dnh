@@ -1,0 +1,2 @@
+let imgMapBlack = GetCurrentScriptDirectory() ~ "IMAGE\MAP\Black.png";
+let imgMapWhite = GetCurrentScriptDirectory() ~ "IMAGE\MAP\White.png";

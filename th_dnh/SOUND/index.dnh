@@ -1,0 +1,2 @@
+#include_function ".\SOUND\BGM\index.dnh"
+#include_function ".\SOUND\SE\index.dnh"

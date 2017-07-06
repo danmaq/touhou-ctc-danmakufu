@@ -1,0 +1,75 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	_Wait([140,50][GetArgument()]);
+	if(Level !=0)
+	{
+		let angle=-[0,0,12,36][Level];
+		while(angle<=[0,0,12,36][Level])
+		{
+			CreateShot01(GetX(),GetY(),[0,1.5,2,2][Level]-absolute(angle/60),angle+GetAngleToPlayer(),GREEN05,0);
+			angle+=4;
+		}
+	}
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop([100,45][GetArgument()])
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , [100,45][GetArgument()] ));
+		i++;
+		yield;
+	}
+	_Wait(40);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(13);
+		MainAction();
+		SubAction01();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		count++;
+		//敵画像代わり------------------------------------
+		if(int(count/2)==count/2)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+			SetShotKillTime(0,2);
+			FireShot(0);
+		}
+		//------------------------------------------------
+		Collision( 20, 8 );
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		if(count>[100,30][GetArgument()]){DropItem( 1 , 20 );}
+	}
+}

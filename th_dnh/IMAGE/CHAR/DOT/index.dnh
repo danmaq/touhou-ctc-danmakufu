@@ -1,0 +1,1 @@
+let imgcircle_t = GetCurrentScriptDirectory~"IMAGE\CHAR\DOT\circle_w.png";

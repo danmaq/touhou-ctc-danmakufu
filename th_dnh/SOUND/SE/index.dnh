@@ -1,0 +1,6 @@
+let seCancel = GetCurrentScriptDirectory() ~ "SOUND\SE\cancel00.wav";
+let seDamage = GetCurrentScriptDirectory() ~ "SOUND\SE\damage00.wav";
+let seOk = GetCurrentScriptDirectory() ~ "SOUND\SE\ok00.wav";
+let sePower = GetCurrentScriptDirectory() ~ "SOUND\SE\power0.wav";
+let seSelect = GetCurrentScriptDirectory() ~ "SOUND\SE\select00.wav";
+let seShadow = GetCurrentScriptDirectory() ~ "SOUND\SE\Shadow.wav";

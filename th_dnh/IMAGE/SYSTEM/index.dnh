@@ -1,0 +1,4 @@
+let imgSystemFont = GetCurrentScriptDirectory() ~ "IMAGE\SYSTEM\Font.png";
+let imgSystemFontSmall = GetCurrentScriptDirectory() ~ "IMAGE\SYSTEM\FontSmall.png";
+let imgSystemLogo = GetCurrentScriptDirectory() ~ "IMAGE\SYSTEM\Logo.png";
+let imgSystemProgress = GetCurrentScriptDirectory() ~ "IMAGE\SYSTEM\Progress.png";

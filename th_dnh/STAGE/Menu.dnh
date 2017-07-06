@@ -1,0 +1,263 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		メインメニュー部
+//
+//		※ステージライブラリから自動的にインクルードされます
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let MENU_PHASE_MAIN				= 0;
+let MENU_PHASE_LEVEL			= 1;
+let MENU_PHASE_EXTRA			= 2;
+let MENU_PHASE_PRACTICE			= 3;
+let MENU_PHASE_RESULT			= 4;
+let MENU_PHASE_MUSIC			= 5;
+let MENU_PHASE_CONFIG			= 6;
+let MENU_PHASE_PRACTICE_STAGE	= 7;
+let MENU_PHASE_PRACTICE_SPELL	= 8;
+let MENU_PHASE_PRACTICE_BOSS	= 9;
+let MENU_PHASE_CONFIG_GRAPHIC	= 10;
+let MENU_PHASE_CONFIG_SOUND		= 11;
+let MENU_PHASE_CONFIG_BUTTON	= 12;
+let MENU_PHASE_RESET_CONFIG		= 13;
+let MENU_PHASE_RESET_ALL		= 14;
+let MENU_PHASE_SCENARIO			= 15;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	テキストテーブル
+let m_aszMainMenu = [ "Dream Start", "Extra Start", "Practice", "Result", "Music Room", "Configure" ];
+let m_aszLevel = [ "Easy", "Normal", "Hard", "Lunatic" ];
+let m_aszExLevel = [ "Extra", "Phantasm" ];
+let m_aszPractice = [ "Stage", "Spell", "Boss" ];
+let m_aszConfig = [ "Graphic Setting", "Sound Setting", "Button Setting", "Setting Reset", "Game Data All Reset" ];
+let m_aszStage = [ "1", "2", "3", "4", "5", "6" ];
+let m_aszScenario = [ "A", "B", "C", "D" ];
+let m_aszSpellSort = [ "All", "Char", "Level", "Got", "Unbeaten" ];
+let m_aszConfigGraphic = [ "BackGround Graphic", "BackGround Effect" ];
+let m_aszConfigSound = [ "BackGround Music", "Sound Effect", "Surround SE" ];
+let m_aszConfigButton = [ "Charge", "Enter", "Cancel" ];
+
+let m_aszCopyright = [ "(c)2005 danmaq", "All right reserved" ];
+
+//	メニューテキストハンドル
+let m_nTexTextHandleTitle = [];			//	タイトル画面
+let m_nTexTextHandleLevel = [];			//	難易度
+let m_nTexTextHandleExLevel = [];		//	エキストラ
+let m_nTexTextHandlePractice = [];		//	プラクティス
+let m_nTexTextHandleConfig = [];		//	コンフィグ
+let m_nTexTextHandleConfigGraphic = [];	//	グラフィック設定
+let m_nTexTextHandleConfigSound = [];	//	サウンド設定
+let m_nTexTextHandleConfigButton = [];	//	ボタン設定
+let m_nTexTextHandleStage = [];			//	ステージ名
+let m_nTexTextHandleSpellSort = [];		//	スペルソート
+let m_nTexTextHandleScenario = [];		//	シナリオセレクト
+let m_nTexTextHandleCopyright = [];		//	著作権表示
+
+//	メニューセレクト
+let m_nSelectMain = 0;
+let m_nSelectLevel = 1;
+let m_nSelectExLevel = 0;
+let m_nSelectPractice = 0;
+let m_nSelectConfig = 0;
+let m_nSelectStage = 0;
+let m_nSelectSpellSort = 0;
+let m_nSelectConfigGraphic = 0;
+let m_nSelectConfigSound = 0;
+let m_nSelectConfigButton = 0;
+let m_nSelectScenario = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	内部処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	初期化
+function MainMenuInitialize(){
+	ForbidBomb( true );
+	ForbidShot( true );
+	LoadProgress( [ imgSystemFontSmall, imgSystemProgress, imgSystemFont, imgMapWhite, imgSystemLogo ], [ _enemyExtend ], [ seCancel, seOk, seSelect ] );
+	ascent( let i in 0..length( m_aszMainMenu )			){ m_nTexTextHandleTitle			= m_nTexTextHandleTitle ~			[ CreateTexText48Cache( imgSystemFont, m_aszMainMenu[ i ] )					]; }
+	ascent( let i in 0..length( m_aszLevel )			){ m_nTexTextHandleLevel			= m_nTexTextHandleLevel ~			[ CreateTexText48Cache( imgSystemFont, m_aszLevel[ i ] )					]; }
+	ascent( let i in 0..length( m_aszExLevel )			){ m_nTexTextHandleExLevel			= m_nTexTextHandleExLevel ~			[ CreateTexText48Cache( imgSystemFont, m_aszExLevel[ i ] )					]; }
+	ascent( let i in 0..length( m_aszPractice )			){ m_nTexTextHandlePractice			= m_nTexTextHandlePractice ~		[ CreateTexText48Cache( imgSystemFont, m_aszPractice[ i ] ~ " Practice" )	]; }
+	ascent( let i in 0..length( m_aszConfig )			){ m_nTexTextHandleConfig			= m_nTexTextHandleConfig ~			[ CreateTexText32Cache( imgSystemFont, m_aszConfig[ i ] )					]; }
+	ascent( let i in 0..length( m_aszStage )			){ m_nTexTextHandleStage			= m_nTexTextHandleStage ~			[ CreateTexText32Cache( imgSystemFont, "Stage " ~ m_aszStage[ i ] )			]; }
+	ascent( let i in 0..length( m_aszScenario )			){ m_nTexTextHandleScenario			= m_nTexTextHandleScenario ~		[ CreateTexText32Cache( imgSystemFont, "Scenario " ~ m_aszScenario[ i ] )	]; }
+	ascent( let i in 0..length( m_aszSpellSort )		){ m_nTexTextHandleSpellSort		= m_nTexTextHandleSpellSort ~		[ CreateTexText48Cache( imgSystemFont, m_aszSpellSort[ i ] )				]; }
+	ascent( let i in 0..length( m_aszConfigGraphic )	){ m_nTexTextHandleConfigGraphic	= m_nTexTextHandleConfigGraphic ~	[ CreateTexText32Cache( imgSystemFont, m_aszConfigGraphic[ i ] )			]; }
+	ascent( let i in 0..length( m_aszConfigSound )		){ m_nTexTextHandleConfigSound		= m_nTexTextHandleConfigSound ~		[ CreateTexText32Cache( imgSystemFont, m_aszConfigSound[ i ] )				]; }
+	ascent( let i in 0..length( m_aszConfigButton )		){ m_nTexTextHandleConfigButton		= m_nTexTextHandleConfigButton ~	[ CreateTexText32Cache( imgSystemFont, m_aszConfigButton[ i ] )				]; }
+	ascent( let i in 0..length( m_aszCopyright )		){ m_nTexTextHandleCopyright		= m_nTexTextHandleCopyright ~		[ CreateTexText16Cache( imgSystemFontSmall, m_aszCopyright[ i ] )			]; }
+	SetStage( 0 );
+}
+
+//	フェーズごとのメニュー処理
+function MainMenuPhase(){
+	//	愚痴 : 弾幕風に変数の参照渡し機能があればここ超スマートに書けるんだが…orz
+	alternative( GetPhase() )
+	case( MENU_PHASE_MAIN ){
+		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH ){
+			m_nSelectMain = MenuSelect( m_nSelectMain, seSelect, length( m_nTexTextHandleTitle ) );
+			yield;
+		}
+		IsMenuEnter( seOk, seCancel );
+		GosubPhase( m_nSelectMain + MENU_PHASE_LEVEL );
+	}
+	case( MENU_PHASE_LEVEL ){
+		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
+			m_nSelectLevel = MenuSelect( m_nSelectLevel, seSelect, length( m_nTexTextHandleLevel ) );
+			yield;
+		}
+		if( !IsMenuEnter( seOk, seCancel ) ){ ReturnPhase(); }
+		else{ GosubPhase( MENU_PHASE_SCENARIO ); }
+	}
+	case( MENU_PHASE_EXTRA ){
+		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
+			m_nSelectExLevel = MenuSelect( m_nSelectExLevel, seSelect, length( m_nTexTextHandleExLevel ) );
+			yield;
+		}
+		IsMenuEnter( seOk, seCancel );
+		ReturnPhase();
+	}
+	case( MENU_PHASE_PRACTICE ){
+		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
+			m_nSelectPractice = MenuSelect( m_nSelectPractice, seSelect, length( m_nTexTextHandlePractice ) );
+			yield;
+		}
+		if( !IsMenuEnter( seOk, seCancel ) ){ ReturnPhase(); }
+		else{ GosubPhase( m_nSelectPractice + MENU_PHASE_PRACTICE_STAGE ); }
+	}
+	case( MENU_PHASE_RESULT ){ ReturnPhase(); }
+	case( MENU_PHASE_MUSIC ){ ReturnPhase(); }
+	case( MENU_PHASE_CONFIG ){
+		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
+			m_nSelectConfig = MenuSelect( m_nSelectConfig, seSelect, length( m_nTexTextHandleConfig ) );
+			yield;
+		}
+		if( !IsMenuEnter( seOk, seCancel ) ){ ReturnPhase(); }
+		else{ GosubPhase( m_nSelectConfig + MENU_PHASE_CONFIG_GRAPHIC ); }
+	}
+	case( MENU_PHASE_PRACTICE_STAGE ){
+		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
+			m_nSelectStage = MenuSelect( m_nSelectStage, seSelect, length( m_nTexTextHandleStage ) );
+			yield;
+		}
+		IsMenuEnter( seOk, seCancel );
+		ReturnPhase();
+	}
+	case( MENU_PHASE_PRACTICE_SPELL ){
+		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
+			m_nSelectSpellSort = MenuSelect( m_nSelectSpellSort, seSelect, length( m_nTexTextHandleSpellSort ) );
+			yield;
+		}
+		IsMenuEnter( seOk, seCancel );
+		ReturnPhase();
+	}
+	case( MENU_PHASE_PRACTICE_BOSS ){ ReturnPhase(); }
+	case( MENU_PHASE_CONFIG_GRAPHIC ){
+		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
+			m_nSelectConfigGraphic = MenuSelect( m_nSelectConfigGraphic, seSelect, length( m_nTexTextHandleConfigGraphic ) );
+			yield;
+		}
+		IsMenuEnter( seOk, seCancel );
+		ReturnPhase();
+	}
+	case( MENU_PHASE_CONFIG_SOUND ){
+		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
+			m_nSelectConfigSound = MenuSelect( m_nSelectConfigSound, seSelect, length( m_nTexTextHandleConfigSound ) );
+			yield;
+		}
+		IsMenuEnter( seOk, seCancel );
+		ReturnPhase();
+	}
+	case( MENU_PHASE_CONFIG_BUTTON ){
+		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
+			m_nSelectConfigButton = MenuSelect( m_nSelectConfigButton, seSelect, length( m_nTexTextHandleConfigButton ) );
+			yield;
+		}
+		IsMenuEnter( seOk, seCancel );
+		ReturnPhase();
+	}
+	case( MENU_PHASE_RESET_CONFIG ){ ReturnPhase(); }
+	case( MENU_PHASE_RESET_ALL ){ ReturnPhase(); }
+	case( MENU_PHASE_SCENARIO ){
+		//	TODO : 体験版までには自機魔理沙における分岐に置き換える
+		while( GetKeyStateEx( VK_SHOT ) != KEY_PUSH && GetKeyStateEx( VK_BOMB ) != KEY_PUSH ){
+			m_nSelectScenario = MenuSelect( m_nSelectScenario, seSelect, length( m_nTexTextHandleScenario ) );
+			yield;
+		}
+		if( !IsMenuEnter( seOk, seCancel ) ){ ReturnPhase(); }
+		else{
+			ClearPhase();
+			m_nStageLevel = m_nSelectLevel;
+			m_nScenario = m_nSelectScenario;
+			Stage1();
+			return false;
+		}
+	}
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メイン部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	メインタスク
+task MainMenu(){
+	MainMenuInitialize();
+	while( MainMenuPhase() ){ yield; }
+}
+
+//	@MainLoop()にて毎フレーム呼ばれる部分
+function MainMenuLoop(){ MovePlayerDefaultPosition(); }
+
+//	@BackGround()にて毎回呼ばれる部分
+function MainMenuDrawBackGround(){}
+
+//	@DrawBottomObject()にて毎回呼ばれる部分
+function MainMenuDrawBottomObject(){}
+
+//	@DrawTopObject()にて毎回呼ばれる部分
+function MainMenuDrawTopObject(){
+	if( GetPhase() == PROGRESS_PHASE ){ SetAlpha( SlowDown( 255, 0, m_nPhaseNow, MENU_FADE / 2 ) ); }
+	DrawScreenFill( imgMapWhite );
+	DrawMenu( MENU_PHASE_MAIN,				8, 32, 64, 240, m_nTexTextHandleTitle,			m_nSelectMain );
+	DrawMenu( MENU_PHASE_LEVEL,				8, 32, 64, 240, m_nTexTextHandleLevel,			m_nSelectLevel );
+	DrawMenu( MENU_PHASE_EXTRA,				8, 32, 64, 240, m_nTexTextHandleExLevel,		m_nSelectExLevel );
+	DrawMenu( MENU_PHASE_PRACTICE,			8, 32, 64, 240, m_nTexTextHandlePractice,		m_nSelectPractice );
+	DrawMenu( MENU_PHASE_CONFIG,			8, 32, 64, 240, m_nTexTextHandleConfig,			m_nSelectConfig );
+	DrawMenu( MENU_PHASE_PRACTICE_STAGE,	8, 32, 64, 240, m_nTexTextHandleStage,			m_nSelectStage );
+	DrawMenu( MENU_PHASE_PRACTICE_SPELL,	8, 32, 64, 240, m_nTexTextHandleSpellSort,		m_nSelectSpellSort );
+	DrawMenu( MENU_PHASE_CONFIG_GRAPHIC,	8, 32, 64, 240, m_nTexTextHandleConfigGraphic,	m_nSelectConfigGraphic );
+	DrawMenu( MENU_PHASE_CONFIG_SOUND,		8, 32, 64, 240, m_nTexTextHandleConfigSound,	m_nSelectConfigSound );
+	DrawMenu( MENU_PHASE_CONFIG_BUTTON,		8, 32, 64, 240, m_nTexTextHandleConfigButton,	m_nSelectConfigButton );
+	DrawMenu( MENU_PHASE_SCENARIO,			8, 32, 64, 240, m_nTexTextHandleScenario,		m_nSelectScenario );
+	if( GetPhase() == PROGRESS_PHASE ){ SetAlpha( SlowDown( 255, 0, m_nPhaseNow, MENU_FADE / 2 ) ); }
+	else{ SetAlpha( Accelerate( 0, 255, m_nStageNow, MENU_FADE ) ); }
+	SetGraphicRect( 0, 0, 128, 256 );
+	_DrawChr( imgSystemLogo, GetClipMaxX() - 32, GetCenterY() - 64 );
+	SetGraphicScale( 1, 1 );
+	ascent( let i in 0..2 ){ DrawTexTextOnCache( m_nTexTextHandleCopyright[ i ], 0, 288, 432 + i * 16 ); }
+	SetAlpha( 255 );
+}

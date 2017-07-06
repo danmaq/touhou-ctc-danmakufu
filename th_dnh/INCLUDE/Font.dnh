@@ -1,0 +1,255 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	プロポーショナルビットマップフォントライブラリ
+//
+//		※ステージスクリプトライブラリ肥大化防止のため隔離しました。
+//			ライブラリから自動的にインクルードされます
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let FONT_TEX_WIDTH = 512;
+let FONTSMALL_TEX_WIDTH = 256;
+//	48ポイント
+let FONT48_X = [
+	0, 18, 44, 78, 112, 152, 188, 208, 230, 252, 288, 326, 344, 382, 400, 448, 480,
+	0, 34, 66, 102, 134, 166, 198, 230, 262, 280, 298, 336, 372, 410, 440,
+	0, 42, 78, 114, 152, 186, 222, 260, 298, 314, 344, 380, 416, 454,
+	0, 38, 72, 110, 148, 182, 220, 256, 294, 336, 374, 412, 448, 468,
+	0, 22, 48, 98, 124, 154, 184, 214, 244, 276, 304, 334, 364, 382, 408, 440, 458,
+	0, 30, 60, 90, 120, 148, 176, 204, 236, 268, 306, 340, 370, 402, 424, 440, 460,
+	0
+];
+let FONT48_XLINE = [ 17, 15, 14, 14, 17, 17, 0 ];
+let FONT48_RIGHTCUT = [ 10, 32, 20, 6, 20, 0, 0 ];
+let FONT48_SPACING = 4;
+let FONT48_HEIGHT = 58;
+let FONT48_HEIGHT_GAP = 0;
+let FONT48_KERNING_GAP = 10;
+
+//	32ポイント
+let FONT32_X = [
+	0, 12, 28, 52, 74, 100, 126, 138, 154, 168, 192, 218, 230, 254, 266, 298, 320, 332, 356, 376, 400, 422, 444, 464, 486,
+	0, 12, 24, 48, 74, 98, 118, 144, 172, 196, 220, 246, 268, 290, 318, 342, 354, 374, 398, 420, 446, 470,
+	0, 24, 48, 74, 96, 122, 146, 172, 200, 224, 250, 274, 288, 312, 326, 344, 376, 394, 414, 434, 454, 474,
+	0, 18, 38, 58, 70, 88, 110, 122, 146, 164, 186, 206, 224, 244, 262, 280, 302, 324, 348, 372, 392, 414, 428, 438, 452,
+	0
+];
+let FONT32_RIGHTCUT = [ 4, 18, 16, 26, 0 ];
+let FONT32_XLINE = [ 25, 22, 22, 25, 0 ];
+let FONT32_SPACING = 3;
+let FONT32_HEIGHT = 40;
+let FONT32_HEIGHT_GAP = 348;
+let FONT32_KERNING_GAP = 5;
+
+//	24ポイント
+let FONT24_X = [
+	0, 12, 26, 46, 66, 86, 108, 120, 134, 148, 168, 188, 200, 222,
+	0, 26, 44, 56, 76, 94, 114, 132, 152, 170, 188, 206, 218, 230,
+	0, 20, 42, 60, 82, 104, 124, 144, 166, 186, 206, 228,
+	0, 12, 28, 50, 68, 90, 110, 132, 152, 172, 194, 214,
+	0, 20, 42, 66, 86, 108, 128, 140, 162, 174, 190, 216, 232,
+	0, 18, 34, 52, 71, 86, 104, 122, 134, 148, 168, 178, 198, 216, 234,
+	0, 16, 32, 50, 66, 84, 102, 124, 144, 162, 180, 192, 204, 216,
+	0
+];
+let FONT24_RIGHTCUT = [ 22, 6, 8, 22, 6, 4, 14, 0 ];
+let FONT24_XLINE = [ 14, 14, 12, 12, 13, 15, 14, 0 ];
+let FONT24_SPACING = 3;
+let FONT24_HEIGHT = 32;
+let FONT24_HEIGHT_GAP = 0;
+let FONT24_KERNING_GAP = 6;
+
+
+//	16ポイント
+let FONT16_X = [
+	0, 10, 20, 34, 48, 64, 78, 88, 98, 108, 122, 138, 146, 160, 170, 188, 202, 210, 224, 236,
+	0, 14, 26, 40, 54, 66, 76, 84, 100, 114, 128, 142, 156, 172, 188, 202, 218, 232,
+	0, 16, 32, 40, 52, 66, 80, 96, 110, 126, 140, 154, 170, 184, 198, 214, 228,
+	0, 16, 30, 46, 56, 70, 80, 90, 110, 120, 134, 146, 158, 170, 184, 196, 208, 220, 230,
+	0, 14, 22, 36, 50, 62, 76, 88, 100, 112, 122, 136, 150, 164, 178, 192, 204, 214, 222, 232,
+	0
+];
+let FONT16_RIGHTCUT = [ 4, 10, 10, 14, 4, 0 ];
+let FONT16_XLINE = [ 20, 18, 17, 19, 20, 0 ];
+let FONT16_SPACING = 3;
+let FONT16_HEIGHT = 24;
+let FONT16_HEIGHT_GAP = 228;
+let FONT16_KERNING_GAP = 5;
+
+//	12ポイント
+let FONT12_X = [
+	0, 10, 22, 34, 48, 62, 78, 86, 98, 108, 122, 136, 146, 160, 170, 188, 202, 210, 224, 236,
+	0, 14, 26, 40, 52, 66, 74, 84, 98, 114, 128, 140, 154, 170, 184, 198, 212, 226,
+	0, 14, 30, 38, 50, 64, 78, 94, 106, 122, 136, 150, 164, 178, 192, 206, 220,
+	0, 14, 28, 42, 54, 68, 78, 88, 106, 118, 130, 144, 156, 168, 182, 194, 206, 218, 228,
+	0, 12, 22, 36, 50, 62, 74, 86, 98, 112, 122, 136, 150, 162, 176, 190, 202, 214, 222, 232,
+	0
+];
+let FONT12_RIGHTCUT = [ 4, 16, 20, 16, 6, 0 ];
+let FONT12_XLINE = [ 20, 18, 17, 19, 20, 0 ];
+let FONT12_SPACING = 3;
+let FONT12_HEIGHT = 20;
+let FONT12_HEIGHT_GAP = 348;
+let FONT12_KERNING_GAP = 6;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let m_aTextCacheFile = [];			//	テキストキャッシュ(画像)
+let m_aTextCacheSrcX = [];			//	テキストキャッシュ(X)
+let m_aTextCacheSrcY = [];			//	テキストキャッシュ(Y)
+let m_aTextCacheWidth = [];			//	テキストキャッシュ(文字幅)
+let m_aTextCacheHeight = [];		//	テキストキャッシュ(文字高さ)
+let m_aTextCacheKerningGap = [];	//	テキストキャッシュ(カーニング誤差)
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	キャッシュ関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	指定文字列をプリレンダリングし、キャッシュハンドルを返す
+//	※滅多なことがない限り後述のラッパー関数を使ってください
+function _CreateTexTextCache( let szTexFontFile, let nTexWidth, let aXTable, let aLineTable, let aRightCutTable, let nSpacing, let nHeight, let nHeightGap, let nKerningGap, let szText ){
+	let anSrcX = [];
+	let anSrcY = [];
+	let anWidth = [];
+	ascent( let i in 0..length( szText ) ){
+		let code = szText[ i ] - 33;
+		if( code < 0 ){	//	スペース
+			anSrcX = anSrcX ~ [ -1 ];
+			anSrcY = anSrcY ~ [ -1 ];
+			anWidth = anWidth ~ [ nSpacing ];
+		}
+		else{	//	スペース以外
+			let ycode = 0;
+			let l = 0;
+			while( ycode <= code ){
+				ycode += aLineTable[ l ];
+				l++;
+			}
+			anSrcX = anSrcX ~ [ aXTable[ code ] ];
+			anSrcY = anSrcY ~ [ ( l - 1 ) * nHeight + nHeightGap ];
+			anWidth = anWidth ~ [ [ aXTable[ code + 1 ], nTexWidth - aRightCutTable[ l - 1 ] ][ aXTable[ code + 1 ] == 0 ] - aXTable[ code ] ];
+		}
+	}
+	m_aTextCacheFile = m_aTextCacheFile ~ [ szTexFontFile ];
+	m_aTextCacheSrcX = m_aTextCacheSrcX ~ [ anSrcX ];
+	m_aTextCacheSrcY = m_aTextCacheSrcY ~ [ anSrcY ];
+	m_aTextCacheWidth = m_aTextCacheWidth ~ [ anWidth ];
+	m_aTextCacheHeight = m_aTextCacheHeight ~ [ nHeight ];
+	m_aTextCacheKerningGap = m_aTextCacheKerningGap ~ [ nKerningGap ];
+	return length( m_aTextCacheFile ) - 1;
+}
+
+//	特定キャッシュを削除する
+function DeleteTexTextHandle( let nHandle ){
+	m_aTextCacheFile = erase( m_aTextCacheFile, nHandle );
+	m_aTextCacheSrcX = erase( m_aTextCacheSrcX, nHandle );
+	m_aTextCacheSrcY = erase( m_aTextCacheSrcY, nHandle );
+	m_aTextCacheWidth = erase( m_aTextCacheWidth, nHandle );
+	m_aTextCacheHeight = erase( m_aTextCacheHeight, nHandle );
+	m_aTextCacheKerningGap = erase( m_aTextCacheKerningGap, nHandle );
+}
+
+//	全てのキャッシュを削除する
+function ClearTexTextHandle(){
+	m_aTextCacheFile = m_aTextCacheFile[ 0..0 ];
+	m_aTextCacheSrcX = m_aTextCacheSrcX[ 0..0 ];
+	m_aTextCacheSrcY = m_aTextCacheSrcY[ 0..0 ];
+	m_aTextCacheWidth = m_aTextCacheWidth[ 0..0 ];
+	m_aTextCacheHeight = m_aTextCacheHeight[ 0..0 ];
+	m_aTextCacheKerningGap = m_aTextCacheKerningGap[ 0..0 ];
+}
+
+
+/*	↓↓↓以下全て_CreateTexTextCache()のラッパー関数↓↓↓	*/
+
+//	指定文字列を12ポイントフォントでプリレンダリングし、キャッシュハンドルを返す
+function CreateTexText12Cache( let szTexFontFile, let szText ){ return _CreateTexTextCache( szTexFontFile, FONTSMALL_TEX_WIDTH, FONT12_X, FONT12_XLINE, FONT12_RIGHTCUT, FONT12_SPACING, FONT12_HEIGHT, FONT12_HEIGHT_GAP, FONT12_KERNING_GAP, szText ); }
+
+//	指定文字列を16ポイントフォントでプリレンダリングし、キャッシュハンドルを返す
+function CreateTexText16Cache( let szTexFontFile, let szText ){ return _CreateTexTextCache( szTexFontFile, FONTSMALL_TEX_WIDTH, FONT16_X, FONT16_XLINE, FONT16_RIGHTCUT, FONT16_SPACING, FONT16_HEIGHT, FONT16_HEIGHT_GAP, FONT16_KERNING_GAP, szText ); }
+
+//	指定文字列を24ポイントフォントでプリレンダリングし、キャッシュハンドルを返す
+function CreateTexText24Cache( let szTexFontFile, let szText ){ return _CreateTexTextCache( szTexFontFile, FONTSMALL_TEX_WIDTH, FONT24_X, FONT24_XLINE, FONT24_RIGHTCUT, FONT24_SPACING, FONT24_HEIGHT, FONT24_HEIGHT_GAP, FONT24_KERNING_GAP, szText ); }
+
+//	指定文字列を32ポイントフォントでプリレンダリングし、キャッシュハンドルを返す
+function CreateTexText32Cache( let szTexFontFile, let szText ){ return _CreateTexTextCache( szTexFontFile, FONT_TEX_WIDTH, FONT32_X, FONT32_XLINE, FONT32_RIGHTCUT, FONT32_SPACING, FONT32_HEIGHT, FONT32_HEIGHT_GAP, FONT32_KERNING_GAP, szText ); }
+
+//	指定文字列を48ポイントフォントでプリレンダリングし、キャッシュハンドルを返す
+function CreateTexText48Cache( let szTexFontFile, let szText ){ return _CreateTexTextCache( szTexFontFile, FONT_TEX_WIDTH, FONT48_X, FONT48_XLINE, FONT48_RIGHTCUT, FONT48_SPACING, FONT48_HEIGHT, FONT48_HEIGHT_GAP, FONT48_KERNING_GAP, szText ); }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	テキストをキャッシュハンドルを使って絵画する
+function DrawTexTextOnCache( let nHandle, let nKerning, let x, let y ){
+	let anSrcX = m_aTextCacheSrcX[ nHandle ];
+	let anSrcY = m_aTextCacheSrcY[ nHandle ];
+	let anWidth = m_aTextCacheWidth[ nHandle ];
+	let nHeight = m_aTextCacheHeight[ nHandle ];
+	let nKerningGap = m_aTextCacheKerningGap[ nHandle ];
+	let nLen  = length( anWidth );
+	let nPosX = x;
+	SetTexture( m_aTextCacheFile[ nHandle ] );
+	ascent( let i in 0..nLen ){
+		let nGap;
+		if( anSrcX[ i ] < 0 ){
+			nGap = anWidth[ i ];
+			if( i > 0 ){ nGap += anWidth[ i - 1 ] / 2; }
+		}
+		else{
+			SetGraphicRect( anSrcX[ i ], anSrcY[ i ] + 1, anSrcX[ i ] + anWidth[ i ], anSrcY[ i ] + nHeight - 1 );
+			DrawGraphic( nPosX, y );
+			nGap = anWidth[ i ] / 2;
+		}
+		if( ( i + 1 ) < nLen ){ nGap += anWidth[ i + 1 ] / 2; }
+		nPosX += Max( 0, nGap - nKerningGap + nKerning );
+	}
+}
+
+//	テキストをキャッシュを使わず直接指定文字列を絵画する
+//	※滅多なことがない限り後述のラッパー関数を使ってください
+//	※注)キャッシュを使わず毎回レンダリングするので結構重いです。
+function _DrawTexText( let szTexFontFile, let nTexWidth, let aXTable, let aLineTable, let aRightCutTable, let nHeight, let nHeightGap, let nKerningGap, let szText, let nKerning, let nSpacing, let x, let y ){
+	let nHandle = _CreateTexTextCache( szTexFontFile, nTexWidth, aXTable, aLineTable, aRightCutTable, nSpacing, nHeight, nHeightGap, nKerningGap, szText );
+	DrawTexTextOnCache( nHandle, nKerning, x, y );
+	DeleteTexTextHandle( nHandle );
+}
+
+/*	↓↓↓以下全て_DrawTexText()のラッパー関数↓↓↓	*/
+//	※注)キャッシュを使わず毎回レンダリングするので結構重いです。
+
+//	テキストをキャッシュを使わず指定文字列を12ポイントフォントで絵画する
+function DrawTex12Text( let szTexFontFile, let szText, let nKerning, let x, let y ){ _DrawTexText( szTexFontFile, FONTSMALL_TEX_WIDTH, FONT12_X, FONT12_XLINE, FONT12_RIGHTCUT, FONT12_HEIGHT, FONT12_HEIGHT_GAP, FONT12_KERNING_GAP, szText, nKerning, FONT12_SPACING, x, y ); }
+
+//	テキストをキャッシュを使わず指定文字列を16ポイントフォントで絵画する
+function DrawTex16Text( let szTexFontFile, let szText, let nKerning, let x, let y ){ _DrawTexText( szTexFontFile, FONTSMALL_TEX_WIDTH, FONT16_X, FONT16_XLINE, FONT16_RIGHTCUT, FONT16_HEIGHT, FONT16_HEIGHT_GAP, FONT16_KERNING_GAP, szText, nKerning, FONT16_SPACING, x, y ); }
+
+//	テキストをキャッシュを使わず指定文字列を24ポイントフォントで絵画する
+function DrawTex24Text( let szTexFontFile, let szText, let nKerning, let x, let y ){ _DrawTexText( szTexFontFile, FONTSMALL_TEX_WIDTH, FONT24_X, FONT24_XLINE, FONT24_RIGHTCUT, FONT24_HEIGHT, FONT24_HEIGHT_GAP, FONT24_KERNING_GAP, szText, nKerning, FONT24_SPACING, x, y ); }
+
+//	テキストをキャッシュを使わず指定文字列を32ポイントフォントで絵画する
+function DrawTex32Text( let szTexFontFile, let szText, let nKerning, let x, let y ){ _DrawTexText( szTexFontFile, FONT_TEX_WIDTH, FONT32_X, FONT32_XLINE, FONT32_RIGHTCUT, FONT32_HEIGHT, FONT32_HEIGHT_GAP, FONT32_KERNING_GAP, szText, nKerning, FONT32_SPACING, x, y ); }
+
+//	テキストをキャッシュを使わず指定文字列を48ポイントフォントで絵画する
+function DrawTex48Text( let szTexFontFile, let szText, let nKerning, let x, let y ){ _DrawTexText( szTexFontFile, FONT_TEX_WIDTH, FONT48_X, FONT48_XLINE, FONT48_RIGHTCUT, FONT48_HEIGHT, FONT48_HEIGHT_GAP, FONT48_KERNING_GAP, szText, nKerning, FONT48_SPACING, x, y ); }

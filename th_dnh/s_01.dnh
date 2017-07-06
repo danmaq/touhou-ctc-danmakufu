@@ -1,0 +1,71 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level=GetCommonData("Level");
+//タスクの作成----------------------------------
+task MainAction()
+{
+	yield;
+	_Wait(20);
+	if(Level != 0)
+	{
+		let speed=0.8;
+		loop(25)
+		{
+			if( GetY() <= GetCenterY()+80 )
+			{
+				CreateShot01(GetX(),GetY(),speed,GetAngleToPlayer(),ORANGE11,0);
+				speed+=0.2;
+				loop([0,30,20,10][Level]){yield;}
+			}
+		}
+	}
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(30);
+		SetInvincibility( 10 );
+		SetAngle( GetAngle() );
+		MainAction();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		Collision(16 , 12);
+		count++;
+		//敵画像代わり------------------------------------
+		if(int(count/2)==count/2)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+			SetShotKillTime(0,2);
+			FireShot(0);
+		}
+		//------------------------------------------------
+
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		DropItem( 1 , 20 );
+		if(BeVanished() == false && GetY() <= GetCenterY()+80 && rand(0,100)>60)
+		{
+			SetShotDirectionType(PLAYER);
+			CircleShot01( [180,120,60,45][Level] , 1 , ORANGE11 , 20 );
+			SetShotDirectionType(ABSOLUTE);
+		}
+
+	}
+}

@@ -1,0 +1,4 @@
+script_enemy_main{
+	@Initialize{ VanishEnemy(); }
+	@Finalize{ loop( GetArgument() ){ CreateItem( ITEM_1UP, GetPlayerX(), GetPlayerY() ); } }
+}
