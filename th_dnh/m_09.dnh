@@ -16,10 +16,28 @@ task MainAction()
 	let angle=-30;
 	while(angle<=30)
 	{
-		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),0.5,GetAngleToPlayer()+180+angle,0);
-		angle+=10;
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),[1,1.5,2,3][Level],GetAngleToPlayer()+angle,0);
+		angle+=15;
 	}
-	_Wait(60);
+	_Wait(20);
+	
+	if(Level>0)
+	{
+		let angle_b=-30;
+		while(angle_b<=30)
+		{
+			let angle=0;
+			while(angle<=(Level-1)*2)
+			{
+				CreateLaser01(GetX(),GetY(),[1,1.5,2,3][Level],angle_b+GetAngleToPlayer()+angle,150+Level*30,8,GREEN21,0);
+				CreateLaser01(GetX(),GetY(),[1,1.5,2,3][Level],angle_b+GetAngleToPlayer()-angle,150+Level*30,8,GREEN21,0);
+				angle+=1.5;
+			}
+			angle_b+=15;
+		}
+	}
+
+	_Wait(20);
 	while(1)
 	{
 		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),[1,1.5,2,3][Level],GetAngleToPlayer(),1);
@@ -52,7 +70,6 @@ task SubAction01()
 	{
 		SetLife(30);
 		SetInvincibility( 100 );
-		SetAngle( GetAngle() );
 		MainAction();
 		SubAction01();
 	}
@@ -101,17 +118,21 @@ task MainAction()
 	yield;
 	if(GetArgument()==0)
 	{
-		while(1)
+		while(GetY()<GetCenterY()*1.5)
 		{
-			CreateShotA(0,GetX(),GetY(),0);
-			SetShotDataA(0,0,2,GetAngle()+180,[2,1,0.5,0.3][Level],0,0,RED11);
-			SetShotKillTime(0,250);
+			CreateLaserC(0,GetX(),GetY(),6,60,GREEN21,0);
+			SetLaserDataC(0,0,3,GetAngle+180+rand(-8,8),0,0,0);
+			let time_=1;
+			let i=0;
+			loop(5)
+			{
+				SetLaserDataC(0,time_,3,NULL,[rand(-1,-0.5),rand(0.5,1)][i%2],0,0);
+				time_+=rand(15,40);
+				i++;
+			}
 			FireShot(0);
-			CreateShotA(0,GetX(),GetY(),0);
-			SetShotDataA(0,0,2,GetAngle()+180,-1*[2,1,0.5,0.3][Level],0,0,BLUE11);
-			SetShotKillTime(0,250);
-			FireShot(0);
-			loop([30,20,12,8][Level]){yield;}
+			_Wait(rand(50,140)/(Level+1));
+
 		}
 	}
 }

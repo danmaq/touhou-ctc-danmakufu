@@ -15,21 +15,20 @@ task MainAction()
 
 	if(Level>1)
 	{
-		let n=0;
-		loop([0,0,2,5][Level])
+		ascent(i in 0..[0,0,2,5][Level])
 		{
-			CircleShot01( [0,0,12,8][Level], SlowDown( 3 , 1.5 , n , [0,0,2,5][Level] ) , WHITE11 , 20 );
-			n++;
+			CircleShot01( [0,0,12,8][Level], SlowDown( 3 , 1.5 , i , [0,0,2,5][Level] ) , WHITE11 , 20 );
 		}
 	}
 
 	_Wait(30);
 
-	let angle=-[10,16,25,32][Level];
-	while(angle<=[10,16,25,32][Level])
+	let angle=-180;
+	while(angle<180)
 	{
-		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),5,GetAngleToPlayer()+angle,0);
-		angle+=[10,8,5,4][Level];
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),5,GetAngleToPlayer()+angle,1);
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),5,GetAngleToPlayer()+angle,-1);
+		angle+=[180,90,45,36][Level];
 	}
 	
 	loop([20,40,70,100][Level])
@@ -65,7 +64,6 @@ task SubAction01()
 	{
 		SetLife(100);
 		SetInvincibility( 120 );
-		SetAngle( GetAngle() );
 		MainAction();
 		SubAction01();
 	}
@@ -146,6 +144,7 @@ task SubAction()
 		yield;
 		Deletemine();
 		BehaviorShadow( 0,0 );
+		if(count<200){SetAngle(GetAngle()+GetArgument());}
 		count++;
 	
 	if( IsOut( 32 ) ){ SetSpeed(0);AddLife(10); }

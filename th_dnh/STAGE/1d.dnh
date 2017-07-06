@@ -39,15 +39,71 @@ task Stage1D(){
 
 	_Wait(200);
 
+//---------------------------------------------------------------
+
+	loop(2)
+	{
+		loop(8)
+		{
+			CreateEnemyFromFile(z_o_03,GetCenterX()*1.5+rand(-50,+50),GetClipMinY()-20,rand(2,[6,8,10,13][m_nStageLevel]),90+rand(0,30),0);
+			_Wait(16);
+		}
+		_Wait(200);
+		loop(8)
+		{
+			CreateEnemyFromFile(z_o_03,GetCenterX()/2+rand(-50,+50),GetClipMinY()-20,rand(2,[6,8,10,13][m_nStageLevel]),90-rand(0,30),0);
+			_Wait(16);
+		}
+		_Wait(200);
+	}
+	_Wait(100);
+
+//---------------------------------------------------------------
+
+	CreateEnemyFromFile(z_m_13,GetCenterX(),GetClipMinY()-20,5,90,0);
+
+	_Wait(400);
+
+//---------------------------------------------------------------
+
+
+
+
+	_Wait(500);
+	DeleteEnemyShotToItem(ALL);
+	SetCommonData("DeleteEnemy",1);
+
+///////////////////////////////////////////////////////////////////////
+//ここに中ボスが入る
+	_Wait(100);
+///////////////////////////////////////////////////////////////////////
+
+	SetCommonData("DeleteEnemy",0);
+	_Wait(200);
 
 
 
 
 
+	SetCommonData("DeleteEnemy",1);
+	yield;
+	DeleteEnemyShotToItem(ALL);
+	SetCommonData("DeleteEnemy",0);
+
+
+///////////////////////////////////////////////////////////////////////
+//ここにボスが入る
+	_Wait(100);
+///////////////////////////////////////////////////////////////////////
 
 
 
-
+//ショットキーを押すと次のステージへ////////////////
+	while(GetKeyState(VK_SHOT) != KEY_PUSH)
+	{
+		yield;
+	}
+////////////////////////////////////////////////////
 
 	Stage2();
 }

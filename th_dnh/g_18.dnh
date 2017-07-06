@@ -1,0 +1,187 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	_Wait(100);
+	let angle=-180;
+	while(angle<180)
+	{
+		CreateLaserA(0,GetX(),GetY(),80,12,RED01,70);
+		SetLaserDataA(0,0,angle,0,0,0,0);
+		SetShotKillTime(0,140);
+		FireShot(0);
+		angle+=60;
+	}
+	_Wait(40);
+	let angle=-180;
+	while(angle<180)
+	{
+		CreateLaserA(0,GetX()+80*cos(angle),GetY()+80*sin(angle),80,12,RED01,70);
+		SetLaserDataA(0,0,angle-30,0,0,0,0);
+		SetShotKillTime(0,140);
+		FireShot(0);
+		CreateLaserA(0,GetX()+80*cos(angle),GetY()+80*sin(angle),80,12,RED01,70);
+		SetLaserDataA(0,0,angle+30,0,0,0,0);
+		SetShotKillTime(0,140);
+		FireShot(0);
+		angle+=60;
+	}
+	_Wait(40);
+	if(Level>1)
+	{
+		let angle=-180;
+		while(angle<180)
+		{
+			CreateLaserA(0,GetX()+80*cos(angle)+80*cos(angle-30),GetY()+80*sin(angle)+80*sin(angle-30),60,12,RED01,70);
+			SetLaserDataA(0,0,angle-75,0,0,0,0);
+			SetShotKillTime(0,140);
+			FireShot(0);
+			CreateLaserA(0,GetX()+80*cos(angle)+80*cos(angle-30),GetY()+80*sin(angle)+80*sin(angle-30),60,12,RED01,70);
+			SetLaserDataA(0,0,angle+75,0,0,0,0);
+			SetShotKillTime(0,140);
+			FireShot(0);
+			CreateLaserA(0,GetX()+80*cos(angle)+80*cos(angle+30),GetY()+80*sin(angle)+80*sin(angle+30),60,12,RED01,70);
+			SetLaserDataA(0,0,angle-75,0,0,0,0);
+			SetShotKillTime(0,140);
+			FireShot(0);
+			CreateLaserA(0,GetX()+80*cos(angle)+80*cos(angle+30),GetY()+80*sin(angle)+80*sin(angle+30),60,12,RED01,70);
+			SetLaserDataA(0,0,angle+75,0,0,0,0);
+			SetShotKillTime(0,140);
+			FireShot(0);
+			angle+=60;
+		}
+	}
+	_Wait(40);
+
+	let angle=-180;
+	while(angle<180)
+	{
+		let X=0;
+		while(X < 80)
+		{
+			if(rand(0,100)>[0,5,10,20][Level])
+			{
+				CreateShot02(GetX+X*cos(angle),GetY+X*sin(angle),0.5,[angle,angle+180][rand(0,100)<50],0.05,5,RED11,0);
+			}
+			else
+			{
+				CreateShot02(GetX+X*cos(angle),GetY+X*sin(angle),0,rand(0,360),0.006,1.2,WHITE11,0);
+			}
+			X+=[20,12,5,1.5][Level];
+		}
+		angle+=60;
+	}
+	_Wait(40);
+	let angle=-180;
+	while(angle<180)
+	{
+		let X=0;
+		while(X < 80)
+		{
+			if(rand(0,100)>[0,5,10,20][Level])
+			{
+				CreateShot02(GetX+80*cos(angle)+X*cos(angle-30),GetY+80*sin(angle)+X*sin(angle-30),0.5,[angle-30,angle-30+180][rand(0,100)<50],0.05,5,RED11,0);
+				CreateShot02(GetX+80*cos(angle)+X*cos(angle+30),GetY+80*sin(angle)+X*sin(angle+30),0.5,[angle+30,angle+30+180][rand(0,100)<50],0.05,5,RED11,0);
+			}
+			else
+			{
+				CreateShot02(GetX+80*cos(angle)+X*cos(angle-30),GetY+80*sin(angle)+X*sin(angle-30),0,rand(0,360),0.006,1.2,WHITE11,0);
+				CreateShot02(GetX+80*cos(angle)+X*cos(angle+30),GetY+80*sin(angle)+X*sin(angle+30),0,rand(0,360),0.006,1.2,WHITE11,0);
+			}
+			X+=[20,12,5,1.5][Level];
+		}
+		angle+=60;
+	}
+	_Wait(40);
+	if(Level>1)
+	{
+		let angle=-180;
+		while(angle<180)
+		{
+			let X=0;
+			while(X < 80)
+			{
+				if(rand(0,100)>[0,5,10,20][Level])
+				{
+					CreateShot02(GetX+80*cos(angle)+80*cos(angle-30)+X*cos(angle-75),GetY+80*sin(angle)+80*sin(angle-30)+X*sin(angle-75),0.5,[angle-75,angle-75+180][rand(0,100)<50],0.05,5,RED11,0);
+					CreateShot02(GetX+80*cos(angle)+80*cos(angle-30)+X*cos(angle+75),GetY+80*sin(angle)+80*sin(angle-30)+X*sin(angle+75),0.5,[angle+75,angle+75+180][rand(0,100)<50],0.05,5,RED11,0);
+					CreateShot02(GetX+80*cos(angle)+80*cos(angle+30)+X*cos(angle-75),GetY+80*sin(angle)+80*sin(angle+30)+X*sin(angle-75),0.5,[angle-75,angle-75+180][rand(0,100)<50],0.05,5,RED11,0);
+					CreateShot02(GetX+80*cos(angle)+80*cos(angle+30)+X*cos(angle+75),GetY+80*sin(angle)+80*sin(angle+30)+X*sin(angle+75),0.5,[angle+75,angle+75+180][rand(0,100)<50],0.05,5,RED11,0);
+				}
+				else
+				{
+					CreateShot02(GetX+80*cos(angle)+80*cos(angle-30)+X*cos(angle-75),GetY+80*sin(angle)+80*sin(angle-30)+X*sin(angle-75),0,rand(0,360),0.006,1.2,WHITE11,0);
+					CreateShot02(GetX+80*cos(angle)+80*cos(angle-30)+X*cos(angle+75),GetY+80*sin(angle)+80*sin(angle-30)+X*sin(angle+75),0,rand(0,360),0.006,1.2,WHITE11,0);
+					CreateShot02(GetX+80*cos(angle)+80*cos(angle+30)+X*cos(angle-75),GetY+80*sin(angle)+80*sin(angle+30)+X*sin(angle-75),0,rand(0,360),0.006,1.2,WHITE11,0);
+					CreateShot02(GetX+80*cos(angle)+80*cos(angle+30)+X*cos(angle+75),GetY+80*sin(angle)+80*sin(angle+30)+X*sin(angle+75),0,rand(0,360),0.006,1.2,WHITE11,0);
+				}
+				X+=[20,12,5,1.5][Level];
+			}
+			angle+=60;
+		}
+	}
+
+
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop(100)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		i++;
+		yield;
+	}
+	_Wait(240);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(50);
+		SetInvincibility( 350 );
+		MainAction();
+		SubAction01();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		count++;
+		//敵画像代わり------------------------------------
+		if(int(count/2)==count/2)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+			SetShotKillTime(0,2);
+			FireShot(0);
+		}
+		//------------------------------------------------
+		Collision( 20, 8 );
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		DropItem( 2 , 20 );
+		if(count<170){DeleteEnemyShot(CHILD);}
+	}
+}

@@ -157,9 +157,9 @@ task Stage2C(){
 	_Wait(200);
 
 
-	DeleteEnemyShotToItem(ALL);
 	SetCommonData("DeleteEnemy",1);
-	_Wait(10);
+	yield;
+	DeleteEnemyShotToItem(ALL);
 	SetCommonData("DeleteEnemy",0);
 
 

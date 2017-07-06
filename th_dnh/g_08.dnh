@@ -15,30 +15,24 @@ task MainAction()
 	_Wait([140,50][GetArgument()]);
 	while(1)
 	{
-		let angle=rand(0,360);
-		loop([4,6,10,15][Level])
+		let angle_b=-180+rand(1,30);
+		while(angle_b<180)
 		{
-			let angle_b=-180;
-			while(angle_b<180)
+			let angle=-32;
+			while(angle<32)
 			{
 				CreateShotA(0,GetX(),GetY(),20);
-				SetShotDataA(0,0,3,angle_b,0,-0.03,0,GREEN23);
-				SetShotDataA(0,80,1,angle_b+180,0,-0.01,0.3,GREEN23);
-				SetShotDataA(0,150,NULL,angle_b,angle^2,0.02,[0.3,0.5,0.8,1][Level],GREEN23);
-				SetShotDataA(0,153,NULL,NULL,0,0,0,GREEN23);
+				SetShotDataA(0,0,3-absolute(angle/15),angle+angle_b,0,-0.03,0,ORANGE23);
+				SetShotDirectionType(SEQUENCE);
+				SetShotDataA(0,120,0.1,[90,-90][angle<=0],absolute(angle/10),0,0,ORANGE23);
+				SetShotDataA(0,180,[0.6,1,1.4,1.8][Level],[90,-90][angle<=0],0,0,0,ORANGE23);
+				SetShotDirectionType(ABSOLUTE);
 				FireShot(0);
-				CreateShotA(0,GetX(),GetY(),20);
-				SetShotDataA(0,0,3,angle_b,0,-0.03,0,RED23);
-				SetShotDataA(0,80,1,angle_b+180,0,-0.01,0.3,RED23);
-				SetShotDataA(0,150,NULL,angle_b,-angle,0.02,[0.3,0.5,0.8,1][Level],GREEN23);
-				SetShotDataA(0,153,NULL,NULL,0,0,0,RED23);
-				FireShot(0);
-				angle_b+=[90,60,45,36][Level];
+				angle+=1.5;
 			}
-			loop(6){yield;}
-			angle+=4;
+			angle_b+=[120,60,45,30][Level];
 		}
-		_Wait([80,40,30,20][Level]);
+		_Wait(70);
 	}
 
 }
@@ -70,7 +64,7 @@ task SubAction01()
 		Deletemine();
 		yield;
 		count++;
-		if(count==1000){VanishEnemy();}
+		if(count==650){DropItem( 20 , 20 );VanishEnemy();}
 		//“G‰æ‘œ‘ã‚í‚è------------------------------------
 		if(int(count/2)==count/2)
 		{

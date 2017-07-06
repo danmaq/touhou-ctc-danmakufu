@@ -62,7 +62,7 @@ task Stage3B(){
 //---------------------------------------------------------------
 
 	CreateEnemyFromFile(z_g_08,GetCenterX(),GetClipMinY()-20,3,90,0);
-	_Wait(500);
+	_Wait(300);
 
 	loop(2)
 	{
@@ -81,7 +81,7 @@ task Stage3B(){
 
 //---------------------------------------------------------------
 
-	CreateEnemyFromFile(z_g_09,GetCenterX(),GetClipMinY()-20,3,90,0);
+	CreateEnemyFromFile(z_g_19,GetCenterX(),GetClipMinY()-20,3,90,0);
 	_Wait(300);
 
 	loop(2)
@@ -139,9 +139,9 @@ task Stage3B(){
 	CreateEnemyFromFile(z_g_10,GetCenterX()*1.5,GetClipMinY()-20,3.5,90,0);
 	_Wait(1000);
 
-	DeleteEnemyShotToItem(ALL);
 	SetCommonData("DeleteEnemy",1);
-	_Wait(10);
+	yield;
+	DeleteEnemyShotToItem(ALL);
 	SetCommonData("DeleteEnemy",0);
 
 

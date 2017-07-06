@@ -3,63 +3,56 @@ script_enemy_main
 
 #include_function ".\INCLUDE\Enemy.dnh"
 
+
 //変数宣言--------------------------------------
 	let count=0;
-	let Level=GetCommonData("Level");
-	let angle_b=GetAngleToPlayer();
+	let Level = GetCommonDataDefault( "Level", 1 );
 //タスクの作成----------------------------------
+
 task MainAction()
 {
 	yield;
-	_Wait(50);
-	
-	if(GetArgument() < 10)
+	_Wait(100);
+	let angle=-180;
+	while(angle<180)
 	{
-		let angle=-180;
-		while(angle<180)
-		{
-			CreateEnemyFromScript("t_ma_01",GetX(),GetY(),0,GetAngleToPlayer()+angle,0);
-			angle+=60;
-		}
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),2,angle+GetAngleToPlayer(),0);
+		angle+=[120,72,51.5,40][Level];
 	}
-	_Wait(40);
-
+	_Wait(100);
 	if(Level != 0)
 	{
-		RoundLineShot( GetX(),GetY(),0.8,[0,1,2.5,4][Level],GetAngleToPlayer(),[0,30,30,36][Level],[0,1,4,7][Level],ORANGE11,30);
+		SetShotDirectionType(PLAYER);
+		CircleShotGap01( [0,45,36,20][Level],[0,1.5,2,2.5][Level],WHITE02,20,0 );
+		CircleShotGap01( [0,45,36,20][Level],[0,1.3,1.8,2.3][Level],WHITE02,20,[0,22.5,18,10][Level] );
+		SetShotDirectionType(ABSOLUTE);
 	}
+
+
 
 }
 task SubAction01()
 {
 	yield;
-		let spmax=GetSpeed();
-		let i=0;
-		loop(50)
-		{
-			SetSpeed(SlowDown( spmax , 0 , i , 50 ));
-			i++;
-			yield;
-		}
-		_Wait(30);
-	if(GetArgument()%10 != 3)
+	let spmax=GetSpeed();
+	let i=0;
+	loop(100)
 	{
-		SetAngle([0,180][GetArgument()%10]);
-		SetSpeed(0.5);
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		i++;
+		yield;
 	}
-	if(GetArgument()%10 ==3)
-	{
-		SetAngle(-90);
-		SetSpeed(0.3);
-	}
+	_Wait(440);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
 }
 
 //実行部分---------------------------------------
 
 	@Initialize
 	{
-		SetLife(100);
-		SetInvincibility( 160 );
+		SetLife(50);
+		SetInvincibility( 350 );
 		MainAction();
 		SubAction01();
 	}
@@ -69,7 +62,6 @@ task SubAction01()
 		Gone();
 		Deletemine();
 		yield;
-		Collision(16 , 12);
 		count++;
 		//敵画像代わり------------------------------------
 		if(int(count/2)==count/2)
@@ -80,16 +72,17 @@ task SubAction01()
 			FireShot(0);
 		}
 		//------------------------------------------------
-
+		Collision( 20, 8 );
 	}
 	@DrawLoop
 	{
 	}
 	@Finalize
 	{
-		DropItem( 2 , 20 );
+		DropItem( 5 , 20 );
 	}
 }
+
 
 ////////////////////////////////////////////////////////////////////////
 //仮の使い魔、使い魔の書式の統一が必要なので雛形の作成をお願いします
@@ -106,42 +99,55 @@ script_enemy t_ma_01
 task MainAction()
 {
 	yield;
-	_Wait(10);
-	let angle=0;
-	while(1)
+	let spmax=GetSpeed();
+	let i=0;
+	loop(100)
 	{
-		_Wait(int(rand(2,10))*[40,20,10,5][Level]);
-		let angle=rand(0,360);
-		let speed=[1.2,1.5,3,4][Level];
-		while(speed>1.2)
-		{
-			CreateShot02(GetX(),GetY(),1,angle,0.1,speed,GREEN11,10);
-			speed=speed/1.1;
-		}
-	}
-
-}
-
-task SubAction01()
-{
-	yield;
-	SetCoordinateType(COODINATE_TYPE_PARENT);
-	let angle_b=GetAngle();
-	while(1)
-	{
-		SetX(70*cos(angle_b));
-		SetY(70*sin(angle_b));
-		angle_b+=3.1;
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		i++;
 		yield;
 	}
+	let angle=-180+GetAngle();
+	while(angle<180+GetAngle())
+	{
+		CreateLaserA(0,GetX(),GetY(),500,12,BLUE01,70);
+		SetLaserDataA(0,0,angle,0,0,0,0);
+		SetShotKillTime(0,140);
+		FireShot(0);
+		angle+=90;
+	}
+	_Wait(120);
+	let X=0;
+	while(X < 500)
+	{
+		if(rand(0,100)>[0,0,10,20][Level])
+		{
+			let angle=-180+GetAngle();
+			while(angle<180+GetAngle())
+			{
+				CreateShot02(GetX+X*cos(angle),GetY+X*sin(angle),0.5,[angle,angle+180][rand(0,100)<50],0.05,5,BLUE11,0);
+				angle+=90;
+			}
+		}
+		else
+		{
+			let angle=-180+GetAngle();
+			while(angle<180+GetAngle())
+			{
+				CreateShot02(GetX+X*cos(angle),GetY+X*sin(angle),0,rand(0,360),0.006,1.2,WHITE11,0);
+				angle+=90;
+			}
+		}
+		X+=[20,12,9,5][Level];
+	}
 }
+
 
 	@Initialize
 	{	
-		SetLife(70);
+		SetLife(100);
 		LoadGraphic(imgcircle_t);
 		MainAction();
-		SubAction01();
 	}
 	@MainLoop
 	{
@@ -150,7 +156,7 @@ task SubAction01()
 		Gone();
 		BehaviorShadow( 0,0 );
 		count++;
-	
+		if(count==250){VanishEnemy();}
 		if(GetKeyState(VK_SLOWMOVE)==KEY_FREE)
 		{
 			Collision( 16,12 );
@@ -171,5 +177,6 @@ task SubAction01()
 	@Finalize
 	{
 		DestructShadow( 40 );
+		if(count<170){DeleteEnemyShot(CHILD);}
 	}
 }

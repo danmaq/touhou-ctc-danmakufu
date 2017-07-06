@@ -65,7 +65,6 @@ task SubAction01()
 	{
 		SetLife(30);
 		SetInvincibility( 120 );
-		SetAngle( GetAngle() );
 		MainAction();
 		SubAction01();
 	}

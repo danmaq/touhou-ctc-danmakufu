@@ -170,6 +170,9 @@ function SetStage( let nStage ){
 function SetNextStage(){ SetStage( m_nStage + 1 ); }
 
 
+//	ステージ送り（デバッグ用）
+function SkipStage(){if(GetKeyState(VK_SKIP)==KEY_PUSH){SetNextStage();}}
+
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
 //	プレイヤー初期位置関連

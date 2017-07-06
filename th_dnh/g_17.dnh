@@ -12,36 +12,34 @@ script_enemy_main
 task MainAction()
 {
 	yield;
-	_Wait([140,50][GetArgument()]);
-	if(Level !=0)
-	{
-		loop([0,1,5,12][Level])
-		{
-			GravityShot( GetX(),GetY(),-[0.3,0.7,1,1.5][Level]*rand(0.5,1.5),GetAngleToPlayer()+[0,0,rand(-5,5),rand(-8,8)][Level],[0.3,0.7,1,1.5][Level]/60,GetAngleToPlayer(),BLUE04,0);
-		}
-	}
+	_Wait(100);
+	WideLineShot( GetX(),GetY(),1,6,GetAngleToPlayer()+90,[60,90,120,150][Level],10,6,ORANGE21,5);
+	WideLineShot( GetX(),GetY(),1,6,GetAngleToPlayer()-90,[60,90,120,150][Level],10,6,ORANGE21,5);
+	CreateShot02(GetX(),GetY(),[3,4,6,7][Level],GetAngleToPlayer(),-0.15,0.7,PURPLE03,0);
+
 }
 task SubAction01()
 {
 	yield;
 	let spmax=GetSpeed();
 	let i=0;
-	loop([100,45][GetArgument()])
+	loop(100)
 	{
-		SetSpeed(SlowDown( spmax , 0 , i , [100,45][GetArgument()] ));
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
 		i++;
 		yield;
 	}
-	_Wait(40);
+	_Wait(240);
 	let XX=GetX+rand(-100,100);
-	SetMovePositionHermite(XX,GetClipMaxY()+50,6*(XX-GetX()),0,100,-90,200);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
 }
 
 //ŽÀs•”•ª---------------------------------------
 
 	@Initialize
 	{
-		SetLife(13);
+		SetLife(30);
+		SetInvincibility( 80 );
 		MainAction();
 		SubAction01();
 	}
@@ -68,6 +66,6 @@ task SubAction01()
 	}
 	@Finalize
 	{
-		if(count>[100,30][GetArgument()]){DropItem( 1 , 20 );}
+		DropItem( 1 , 20 );
 	}
 }

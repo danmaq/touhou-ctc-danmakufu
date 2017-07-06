@@ -10,29 +10,48 @@ script_enemy_main
 task MainAction()
 {
 	yield;
-	_Wait(20);
-	if(Level != 0)
+	_Wait([1,rand(50,80),rand(30,60),rand(10,50)][Level]);
+	if(Level>0)
 	{
-		let angle=-180;
-		while(angle<180)
+		while(1)
 		{
-			CreateLaserB(0,[30,40,60,80][Level],8,PURPLE01,0);
-			SetLaserDataB(0,0,0,0,0,angle,4,angle,4);
-			FireShot(0);
-			angle+=[180,90,60,45][Level];
+			loop([0,1,4,7][Level])
+			{
+				CreateLaser01(GetX()+rand(-5,5),GetY()+rand(-5,5),[0,1.5,2.3,3.5][Level],GetAngleToPlayer()+[0,0,rand(-2,2),rand(-3,3)][Level],80,5,RED01,0);
+			}
+			_Wait([0,6500,rand(60,80),rand(40,80)][Level]);
 		}
-
 	}
+
 }
+
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop(80)
+	{
+		SetSpeed(SlowDown( spmax , spmax/2 , i , 80 ));
+		i++;
+		yield;
+	}
+	loop(int(rand(60,100)))
+	{
+		SetAngle(GetAngle+[-2,2][GetArgument()]);
+		yield;
+	}
+
+}
+
 
 //ŽÀs•”•ª---------------------------------------
 
 	@Initialize
 	{
-		SetLife(100);
-		SetInvincibility( 10 );
-		SetAngle( GetAngle() );
+		SetLife(60);
 		MainAction();
+		SubAction01();
 	}
 	
 	@MainLoop
@@ -59,7 +78,5 @@ task MainAction()
 	@Finalize
 	{
 		DropItem( 1 , 20 );
-		if(BeParentVanished() || BeVanished()){DeleteEnemyShot(CHILD);}
-		else{DeleteEnemyShotToItem(CHILD);}
 	}
 }

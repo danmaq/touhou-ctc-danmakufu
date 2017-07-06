@@ -1,0 +1,240 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level=GetCommonData("Level");
+	let angle_b=GetAngleToPlayer();
+//タスクの作成----------------------------------
+task MainAction()
+{
+	yield;
+	_Wait(140);
+	
+	let i=0;
+	while(1)
+	{
+
+
+//-------------------------------------------------------------------
+
+		let angle_b=rand(0,360);
+
+		SetShotDirectionType(ABSOLUTE);
+
+		let angle=-30;
+		while(angle<=210)
+		{
+
+			CreateShotA(1,GetX(),GetY(),70);
+			SetShotDataA(1,0,2,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			SetShotDataA(1,18,1,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			SetShotDataA(1,39,0,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			SetShotDataA(1,140,1,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+
+			let ID=2;
+			while(ID<=17)
+			{
+
+				CreateShotA(ID,0,0,0);
+				SetShotDataA(ID,0,1,angle+angle_b+90,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID,30-(ID-2)*2,0.7,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID,31,0,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID,30-(ID-2)*2+151,1,angle+angle_b+90+ID*4,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+
+				AddShot(ID,1,ID,0);
+
+				CreateShotA(ID+1,0,0,0);
+				SetShotDataA(ID+1,0,1,angle+angle_b-90,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID+1,30-(ID-2)*2,0.7,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID+1,31,0,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID+1,30-(ID-2)*2+151,1,angle+angle_b-90-ID*4,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+
+				AddShot(ID,1,ID+1,0);
+
+				ID+=2
+
+			}
+			angle+=120;
+
+		FireShot(1);
+
+		}
+
+		let angle=-90;
+		while(angle<=150)
+		{
+
+			CreateShotA(1,GetX(),GetY(),50);
+			SetShotDataA(1,0,2,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			SetShotDataA(1,18,1,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			SetShotDataA(1,59,0,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			SetShotDataA(1,140,1,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			
+			let ID=2;
+			while(ID<=17)
+			{
+
+				CreateShotA(ID+1,0,0,0);
+				SetShotDataA(ID,0,1,angle+angle_b+90,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID,30-(ID-2)*2,0.7,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID,31,0,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID,30-(ID-2)*2+151,1,angle+angle_b+90+ID*4,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+
+				AddShot(ID+20,1,ID,0);
+
+				CreateShotA(ID,0,0,0);
+				SetShotDataA(ID+1,0,1,angle+angle_b-90,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID+1,30-(ID-2)*2,0.7,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID+1,31,0,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID+1,30-(ID-2)*2+151,1,angle+angle_b-90-ID*4,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+
+				AddShot(ID+20,1,ID+1,0);
+
+				ID+=2
+
+			}
+			angle+=120;
+
+		FireShot(1);
+
+		}
+
+		let angle=-30;
+		while(angle<=210)
+		{
+
+			CreateShotA(1,GetX(),GetY(),30);
+			SetShotDataA(1,0,2,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			SetShotDataA(1,18,1,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			SetShotDataA(1,79,0,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			SetShotDataA(1,140,1,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			
+			let ID=2;
+			while(ID<=17)
+			{
+
+				CreateShotA(ID,0,0,0);
+				SetShotDataA(ID,0,1,angle+angle_b+90,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID,30-(ID-2)*2,0.7,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID,31,0,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID,30-(ID-2)*2+151,1,angle+angle_b+90+ID*4,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+
+				AddShot(ID+40,1,ID,0);
+
+				CreateShotA(ID+1,0,0,0);
+				SetShotDataA(ID+1,0,1,angle+angle_b-90,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID+1,30-(ID-2)*2,0.7,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID+1,31,0,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID+1,30-(ID-2)*2+151,1,angle+angle_b-90-ID*4,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+
+				AddShot(ID+40,1,ID+1,0);
+
+				ID+=2
+
+			}
+			angle+=120;
+
+		FireShot(1);
+
+		}
+
+		let angle=-60;
+		while(angle<=240)
+		{
+
+			CreateShotA(1,GetX(),GetY(),10);
+			SetShotDataA(1,0,2,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			SetShotDataA(1,18,1,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			SetShotDataA(1,99,0,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			SetShotDataA(1,140,1,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+			
+			let ID=2;
+			while(ID<=17)
+			{
+
+				CreateShotA(ID,0,0,0);
+				SetShotDataA(ID,0,1,angle+angle_b+90,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID,30-(ID-2)*2,0.7,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID,31,0,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID,30-(ID-2)*2+151,1,angle+angle_b+90+ID*4,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+
+				AddShot(ID+60,1,ID,0);
+
+				CreateShotA(ID+1,0,0,0);
+				SetShotDataA(ID+1,0,1,angle+angle_b-90,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID+1,30-(ID-2)*2,0.7,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID+1,31,0,angle+angle_b,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+				SetShotDataA(ID+1,30-(ID-2)*2+151,1,angle+angle_b-90-ID*4,0,0,0,[RED21,ORANGE21,PURPLE21,WHITE21,YELLOW21][i%5]);
+
+				AddShot(ID+60,1,ID+1,0);
+
+				ID+=2
+
+			}
+			angle+=60;
+
+		FireShot(1);
+		
+		}
+		i++;
+
+//-------------------------------------------------------------------
+
+		_Wait([160,100,70,50][Level]);
+	}
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop(100)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		i++;
+		yield;
+	}
+
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(2000);
+		SetAngle( GetAngle() );
+		MainAction();
+		SubAction01();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		Collision(16 , 12);
+		count++;
+		if(count==1000){DropItem( 20 , 20 );VanishEnemy();}
+		//敵画像代わり------------------------------------
+		if(int(count/2)==count/2)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+			SetShotKillTime(0,2);
+			FireShot(0);
+		}
+		//------------------------------------------------
+
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		DropItem( 2 , 20 );
+	}
+}
+

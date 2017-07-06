@@ -43,20 +43,16 @@ task Stage1C(){
 
 	loop(2)
 	{
-		let i=0;
-		loop(7)
+		ascent(i in 0..7)
 		{
 			CreateEnemyFromFile(z_s_07,Smooth( GetClipMinX()+40,GetClipMaxX()-40,i,7 ),GetClipMinY()-20,0,0,GetCenterX/3);
 			_Wait(20);
-			i++;
 		}
 		_Wait(150);
-		let i=0;
-		loop(7)
+		ascent(i in 0..7)
 		{
 			CreateEnemyFromFile(z_s_07,Smooth( GetClipMaxX()-40,GetClipMinX()+40,i,7 ),GetClipMinY()-20,0,0,GetCenterX()+GetCenterX/3*2);
 			_Wait(20);
-			i++;
 		}
 		_Wait(150);
 	}
@@ -132,9 +128,9 @@ task Stage1C(){
 	_Wait(650);
 
 
-	DeleteEnemyShotToItem(ALL);
 	SetCommonData("DeleteEnemy",1);
-	_Wait(10);
+	yield;
+	DeleteEnemyShotToItem(ALL);
 	SetCommonData("DeleteEnemy",0);
 
 

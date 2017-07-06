@@ -66,7 +66,7 @@ task SubAction01()
 		Deletemine();
 		yield;
 		count++;
-		if(count==1000){VanishEnemy();}
+		if(count==1000){DropItem( 20 , 20 );VanishEnemy();}
 		//“G‰æ‘œ‘ã‚í‚è------------------------------------
 		if(int(count/2)==count/2)
 		{
