@@ -6,6 +6,7 @@ let z_s_03 = GetCurrentScriptDirectory~"s_03.dnh";
 let z_s_04 = GetCurrentScriptDirectory~"s_04.dnh";
 let z_s_05 = GetCurrentScriptDirectory~"s_05.dnh";
 let z_s_06 = GetCurrentScriptDirectory~"s_06.dnh";
+let z_s_07 = GetCurrentScriptDirectory~"s_07.dnh";
 
 //è¨å^+í‚é~å^-------------------------------------------------
 
@@ -19,6 +20,8 @@ let z_g_07 = GetCurrentScriptDirectory~"g_07.dnh";
 let z_g_08 = GetCurrentScriptDirectory~"g_08.dnh";
 let z_g_09 = GetCurrentScriptDirectory~"g_09.dnh";
 let z_g_10 = GetCurrentScriptDirectory~"g_10.dnh";
+let z_g_11 = GetCurrentScriptDirectory~"g_11.dnh";
+let z_g_12 = GetCurrentScriptDirectory~"g_12.dnh";
 
 //íÜå^ã@-------------------------------------------------
 

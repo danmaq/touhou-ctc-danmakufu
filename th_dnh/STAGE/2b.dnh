@@ -190,7 +190,7 @@ task Stage2B(){
 
 //---------------------------------------------------------------
 
-	if(m_nStageLevel == 0 || m_nStageLevel == 1 || m_nStageLevel == 3)
+	if(m_nStageLevel == 0 || m_nStageLevel == 1 )
 	{CreateEnemyFromFile(z_m_10,GetCenterX(),GetClipMinY()-20,2,90,0);}
 	if(m_nStageLevel == 2 || m_nStageLevel == 3)
 	{

@@ -1,0 +1,263 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	弾・敵・使い魔の共通下位ライブラリ（定型弾）
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//		※イベントスクリプト・ステージスクリプトでは使用できません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////
+//	扇状に弾を発射する（いわゆるnWay）
+//////////////////////////////////////////////////////////////////////
+// 01：速度の変化がない場合はこちら（簡易版）
+function WideShot01( let x, let y, let speed, let angle, let wideAngle, let way, let graphic, let delay ){
+	let wayAngle = 0;
+	let baseAngle = angle;
+	if( way > 1 ){
+		wayAngle = wideAngle / ( way - 1 );
+		baseAngle -= wideAngle / 2;
+	}
+	ascent( let i in 0 .. way ){
+		let shotAngle = baseAngle + wayAngle * i;
+		CreateShot01( x, y, speed, shotAngle, graphic, delay );
+	}
+}
+
+// 02：速度の変化がある場合はこちら
+function WideShot02( let x, let y, let speed, let accSpeed, let maxSpeed, let angle, let wideAngle, let way, let graphic, let delay ){
+	let wayAngle = 0;
+	let baseAngle = angle;
+	if( way > 1 ){
+		wayAngle = wideAngle / ( way - 1 );
+		baseAngle -= wideAngle / 2;
+	}
+	ascent( let i in 0 .. way ){
+		let shotAngle = baseAngle + wayAngle * i;
+		CreateShot02( x, y, speed, shotAngle, accSpeed, maxSpeed, graphic, delay );
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+//	全方向に弾を発射する
+//////////////////////////////////////////////////////////////////////
+// 01：速度の変化がない場合はこちら（簡易版）
+function RoundShot01( let x, let y, let speed, let angle, let way, let graphic, let delay ){
+	let wayAngle = 360 / way;
+	ascent( let i in 0 .. way ){
+		let shotAngle = angle + wayAngle * i;
+		CreateShot01( x, y, speed, shotAngle, graphic, delay );
+	}
+}
+
+// 02：速度の変化がある場合はこちら
+function RoundShot02( let x, let y, let speed, let accSpeed, let maxSpeed, let angle, let way, let graphic, let delay ){
+	let wayAngle = 360 / way;
+	ascent( let i in 0 .. way ){
+		let shotAngle = angle + wayAngle * i;
+		CreateShot02( x, y, speed, shotAngle, accSpeed, maxSpeed, graphic, delay );
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+//	全方向に扇状の弾を発射する
+//	※1	wideWay には 扇を構成する弾の数を設定
+//	※2	roundWay には 扇の数を設定
+//////////////////////////////////////////////////////////////////////
+// 01：速度の変化がない場合はこちら（簡易版）
+function RoundWideShot01( let x, let y, let speed, let angle, let wideAngle, let wideWay, let roundWay, let graphic, let delay ){
+	let roundWayAngle = 360 / roundWay;
+	let wideWayAngle = 0;
+	if( wideWay > 1 ){ wideWayAngle = wideAngle / ( wideWay - 1 ); }
+	ascent( let i in 0 .. roundWay ){
+		let baseAngle = angle + roundWayAngle * i;
+		if( wideWay > 1 ){ baseAngle -= wideAngle / 2; }
+		ascent( let j in 0 .. wideWay ){
+			let shotAngle = baseAngle + wideWayAngle * j;
+			CreateShot01( x, y, speed, shotAngle, graphic, delay );
+		}
+	}
+}
+
+// 02：速度の変化がある場合はこちら
+function RoundWideShot02( let x, let y, let speed, let accSpeed, let maxSpeed, let angle, let wideAngle, let wideWay, let roundWay, let graphic, let delay ){
+	let roundWayAngle = 360 / roundWay;
+	let wideWayAngle = 0;
+	if( wideWay > 1 ){ wideWayAngle = wideAngle / ( wideWay - 1 ); }
+	ascent( let i in 0 .. roundWay ){
+		let baseAngle = angle + roundWayAngle * i;
+		if( wideWay > 1 ){ baseAngle -= wideAngle / 2; }
+		ascent( let j in 0 .. wideWay ){
+			let shotAngle = baseAngle + wideWayAngle * j;
+			CreateShot02( x, y, speed, shotAngle, accSpeed, maxSpeed, graphic, delay );
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+//	直線上に速度違いの弾を発射する
+//	※	弾数(num) = 1 の場合、最低速度(minSpeed)で発射される
+//////////////////////////////////////////////////////////////////////
+function LineShot( let x, let y, let minSpeed, let maxSpeed, let angle, let num, let graphic, let delay ){
+	let numSpeed = 0;
+	if( num > 1 ){ numSpeed = ( maxSpeed - minSpeed ) / ( num - 1 ); }
+	ascent( let i in 0 .. num ){
+		let speed = minSpeed + numSpeed * i;
+		CreateShot01( x, y, speed, angle, graphic, delay );
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+//	扇状に速度違いの弾を発射する
+//	※	直線上の弾数(num) = 1 の場合、最低速度(minSpeed)で発射される
+//////////////////////////////////////////////////////////////////////
+function WideLineShot( let x, let y, let minSpeed, let maxSpeed, let angle, let wideAngle, let way, let num, let graphic, let delay ){
+	let numSpeed = 0;
+	if( num > 1 ){ numSpeed = ( maxSpeed - minSpeed ) / ( num - 1 ); }
+	let wayAngle = 0;
+	let baseAngle = angle;
+	if( way > 1 ){
+		wayAngle = wideAngle / ( way - 1 );
+		baseAngle -= wideAngle / 2;
+	}
+	ascent( let i in 0 .. way ){
+		let shotAngle = baseAngle + wayAngle * i;
+		ascent( let j in 0 .. num ){
+			let speed = minSpeed + numSpeed * j;
+			CreateShot01( x, y, speed, shotAngle, graphic, delay );
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+//	全方向に速度違いの弾を発射する
+//	※	直線上の弾数(num) = 1 の場合、最低速度(minSpeed)で発射される
+//////////////////////////////////////////////////////////////////////
+function RoundLineShot( let x, let y, let minSpeed, let maxSpeed, let angle, let way, let num, let graphic, let delay ){
+	let numSpeed = 0;
+	if( num > 1 ){ numSpeed = ( maxSpeed - minSpeed ) / ( num - 1 ); }
+	let wayAngle = 360 / way;
+	ascent( let i in 0 .. way ){
+		let shotAngle = angle + wayAngle * i;
+		ascent( let j in 0 .. num ){
+			let speed = minSpeed + numSpeed * j;
+			CreateShot01( x, y, speed, shotAngle, graphic, delay );
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+//	全方向に扇状の速度違いの弾を発射する
+//	※1	直線上の弾数(num) = 1 の場合、最低速度(minSpeed)で発射される
+//	※2	wideWay には 扇を構成する弾の数を設定
+//	※3	roundWay には 扇の数を設定
+//////////////////////////////////////////////////////////////////////
+function RoundWideLineShot( let x, let y, let minSpeed, let maxSpeed, let angle, let wideAngle, let wideWay, let roundWay, let num, let graphic, let delay ){
+	let numSpeed = 0;
+	if( num > 1 ){ numSpeed = ( maxSpeed - minSpeed ) / ( num - 1 ); }
+	let roundWayAngle = 360 / roundWay;
+	let wideWayAngle = 0;
+	if( wideWay > 1 ){ wideWayAngle = wideAngle / ( wideWay - 1 ); }
+	ascent( let i in 0 .. roundWay ){
+		let baseAngle = angle + roundWayAngle * i;
+		if( wideWay > 1 ){ baseAngle -= wideAngle / 2; }
+		ascent( let j in 0 .. wideWay ){
+			let shotAngle = baseAngle + wideWayAngle * j;
+			ascent( let k in 0 .. num ){
+				let speed = minSpeed + numSpeed * k;
+				CreateShot01( x, y, speed, shotAngle, graphic, delay );
+			}
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+//	画面端で反射する弾を発射する
+//	※1	SetShotDirectionType は ABSOLUTE 固定（関数内で変更される）
+//	※2	速度(speed)が大きすぎると、画面端より前で反射する場合がある
+//	※3	reflect には 反射回数を設定
+//	※4	L,U,R,D には true / false を設定（左,上,右,下端で反射するかどうか）
+//////////////////////////////////////////////////////////////////////
+function ReflectShot( let x, let y, let speed, let angle, let reflect, let L, let U, let R, let D, let graphic, let delay ){
+	let totalFrame = 0;
+	let reflectEdge = [ U, D, L, R ];
+	SetShotDirectionType( ABSOLUTE );
+	CreateShotA( 0, x, y, delay );
+	SetShotDataA( 0, 0, speed, angle, 0, 0, 0, graphic );
+	while( reflect >= 1 ){
+		while( angle < 0 ){ angle += 360; }
+		if( angle >= 360 ){ angle %= 360; }
+		let angleLU = atan2( y - GetClipMinY, x - GetClipMinX ) + 180;
+		let angleRU = atan2( y - GetClipMinY, x - GetClipMaxX ) + 180;
+		let angleLD = atan2( y - GetClipMaxY, x - GetClipMinX ) + 180;
+		let angleRD = atan2( y - GetClipMaxY, x - GetClipMaxX ) + 180;
+		if( angleRU == 0 ){ angleRU = 360; }
+		if( angleRD == 360 ){ angleRD = 0; }
+		let rLength = 0;
+		let rFrame = 0;
+		let rx = 0;
+		let ry = 0;
+		let rAngle = 0;
+		let rEdge = 0;
+		if( angle >= angleRU || angle < angleRD ){
+			rLength = ( GetClipMaxX - x ) / cos( angle );
+			rFrame = rLength / speed;
+			rx = GetClipMaxX;
+			ry = y + rLength * sin( angle );
+			rAngle = 180 - angle;
+			rEdge = 3;
+		}
+		else if( angle >= angleLD && angle < angleLU ){
+			rLength = ( GetClipMinX - x ) / cos( angle );
+			rFrame = rLength / speed;
+			rx = GetClipMinX;
+			ry = y + rLength * sin( angle );
+			rAngle = 180 - angle;
+			rEdge = 2;
+		}
+		else if( angle >= angleLU && angle < angleRU ){
+			rLength = ( GetClipMinY - y ) / sin( angle );
+			rFrame = rLength / speed;
+			rx = x + rLength * cos( angle );
+			ry = GetClipMinY;
+			rAngle = - angle;
+			rEdge = 0;
+		}
+		else {
+			rLength = ( GetClipMaxY - y ) / sin( angle );
+			rFrame = rLength / speed;
+			rx = x + rLength * cos( angle );
+			ry = GetClipMaxY;
+			rAngle = - angle;
+			rEdge = 1;
+		}
+		if( !reflectEdge[ rEdge ] ){ break; }
+		x = rx;
+		y = ry;
+		angle = rAngle;
+		totalFrame += rFrame;
+		SetShotDataA( 0, totalFrame, NULL, angle, 0, 0, 0, graphic );
+		reflect --;
+	}
+	FireShot( 0 );
+}
+
+//////////////////////////////////////////////////////////////////////
+//	重力で加速する弾を発射する
+//	※1	gravSpeed には重力方向への加速度を設定
+//	※2	gravAngle には重力方向を設定
+//////////////////////////////////////////////////////////////////////
+function GravityShot( let x, let y, let speed, let angle, let gravSpeed, let gravAngle, let graphic, let delay ){
+	let xSpeed = speed * cos( angle );
+	let ySpeed = speed * sin( angle );
+	let accXSpeed = gravSpeed * cos( gravAngle );
+	let accYSpeed = gravSpeed * sin( gravAngle );
+	let maxXSpeed = 99;
+	let maxYSpeed = 99;
+	if( accXSpeed < 0 ){ maxXSpeed = -99; }
+	if( accYSpeed < 0 ){ maxYSpeed = -99; }
+	CreateShot12( x, y, xSpeed, ySpeed, accXSpeed, accYSpeed, maxXSpeed, maxYSpeed, graphic, delay );
+}

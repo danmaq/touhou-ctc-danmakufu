@@ -11,19 +11,16 @@ task MainAction()
 {
 	yield;
 	_Wait(rand(10,40));
-	while( GetY() < GetCenterY()+80 )
+	while( GetY() < GetCenterY()+40 )
 	{
 		if(Level != 0)
 		{
-			loop([0,15,25,40][Level])
+			loop([0,8,15,20][Level])
 			{
-				CreateShotA(0,GetX(),GetY(),0);
-				SetShotDataA(0,0,rand([0,0.5,0.8,1.5][Level],[0,1.5,2.3,3.7][Level]),rand(0,360),0,-0.03,0,WHITE04);
-				SetShotKillTime(0,150);
-				FireShot(0);
+				shotobjA (rand([0,0.6,1,2][Level],[0,2,3,4][Level]), rand(0,360));
 			}
 		}
-		_Wait([999,80,50,40][Level]);
+		_Wait([999,100,80,60][Level]+int(rand(-10,10)));
 	}
 }
 
@@ -61,5 +58,47 @@ task MainAction()
 	@Finalize
 	{
 		DropItem( 1 , 20 );
+		DeleteEnemyShot(CHILD);
 	}
+
+
+
+
+	task shotobjA (let speed, let angle)
+	{
+		//弾タスク初期化
+		let obj = Obj_Create(OBJ_SHOT);//弾オブジェクトを作成
+		Obj_SetX(obj, GetX());//x座標設定
+		Obj_SetY(obj, GetY());//y座標設定;
+		Obj_SetSpeed(obj, speed);//速度設定
+		Obj_SetAngle(obj, angle);//移動角度設定
+		ObjShot_SetGraphic(obj, PURPLE23 );//画像設定
+		ObjShot_SetDelay(obj,0);//遅延時間設定
+
+		//変数宣言
+
+		let count=0;
+		let alpha=0;
+		
+		while( !Obj_BeDeleted(obj) )
+		{//削除されるまでループを実行
+
+			alpha=Smooth( 255 ,150,count, 150 );
+			Obj_SetSpeed(obj, Smooth( speed ,0,count, 70 ));
+			Obj_SetAlpha(obj,alpha);
+			if(count==150)
+			{ObjShot_FadeDelete(obj);}
+
+			if(Obj_GetX(obj)<=GetClipMinX()-10 || Obj_GetX(obj)>=GetClipMaxX()+10 || Obj_GetY(obj)<=GetClipMinY()-10 || Obj_GetY(obj)>=GetClipMaxY()+10)
+			{
+				Obj_Delete(obj);
+				break;
+			}//画面外に出たら消える
+			count++;
+			yield;
+
+		}
+	}
+
+
 }
