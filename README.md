@@ -16,7 +16,7 @@ see: https://en.touhouwiki.net/wiki/Concealed_the_Conclusion
 * RAM: 512MB or more
 * VRAM: 64MB or more
 * HDD: 600MB Space or more
-* Others hardware: AC97 Sound / or later
+* Others hardware: AC97 Sound / or later, Favorite PC Gamepad compatible DirectInput.
 * Others software: DirectX 8.1 or later, Touhou Danmakufu (included release zip)
 
 ## License
