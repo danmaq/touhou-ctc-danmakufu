@@ -85,7 +85,7 @@ task SubAction01()
 				CreateShot02(GetX(),GetY(),rand([1,2,2.5,3.5][Level],[2,3,4,5.5][Level]),GetAngleToPlayer()+rand(-[0,3,5,10][Level],[0,3,5,10][Level]),-0.1,[0.5,1,1.5,2][Level],BLUE04,0);
 			}
 		}
-		DropItem( 2 , 20 );
+		DropItem( 1 , 20 );
 
 	}
 }

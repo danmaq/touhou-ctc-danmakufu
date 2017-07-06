@@ -107,7 +107,22 @@ task Stage1C(){
 	{
 		CreateEnemyFromFile(z_g_12,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,5,90,0);
 	}
-	_Wait(100);
+		_Wait(250);
+
+//---------------------------------------------------------------
+
+	loop(5)
+	{
+		CreateEnemyFromFile(z_g_12,GetCenterX()/3+rand(-20,20),GetClipMinY()-20,5,90,1);
+		_Wait(60);
+	}
+		_Wait(100);
+	loop(5)
+	{
+		CreateEnemyFromFile(z_g_12,GetCenterX()+GetCenterX()/3*2+rand(-20,20),GetClipMinY()-20,5,90,1);
+		_Wait(60);
+	}
+
 
 //---------------------------------------------------------------
 
