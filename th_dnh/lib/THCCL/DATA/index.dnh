@@ -1,0 +1,230 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//　CommonData関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//　フォントキャッシュ用インデックスのインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\THCCL\DATA\TT.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//　ファイル名
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//　名前空間
+//////////////////////////////////////////////////////////////////////
+
+/**	夢終劇リザルト関係保存専用名前空間です。 */
+let CL_CDNS_RESULT	= "__THC";
+/**	夢終劇設定関係保存専用名前空間です。 */
+let CL_CDNS_CONFIG	= "__THC_CONFIG";
+/**	夢終劇一時保存専用名前空間です。 */
+let CL_CDNS_TEMP	= "__THC_TEMP";
+
+
+//////////////////////////////////////////////////////////////////////
+//　未分類
+//////////////////////////////////////////////////////////////////////
+
+/**	名前空間が初期化されているかどうかが格納されます。 */
+let CL_CD_CDNS_INITIALIZED				= "CDNS_INITIALIZED";
+/**	書き込み可能なテクスチャが生成されたかどうかが格納されます。 */
+let CL_CD_WRITABLE_TEXTURE_CREATED		= "WRITABLE_TEXTURE_CREATED";
+/**	書き込み可能なテクスチャが生成されたかどうかが格納されます。 */
+let CL_CD_WRITABLE_TEXTURE_MID_CREATED	= "WRITABLE_TEXTURE_CREATED_MID";
+/**	書き込み可能なテクスチャが生成されたかどうかが格納されます。 */
+let CL_CD_WRITABLE_TEXTURE_MINI_CREATED	= "WRITABLE_TEXTURE_CREATED_MINI";
+
+
+//////////////////////////////////////////////////////////////////////
+//　レジューム関連
+//////////////////////////////////////////////////////////////////////
+
+/**	レジュームが有効かどうかが格納されます。 */
+let CL_CD_RESUME_ENABLE			= "RESUME_ENABLE";
+/**	リプレイレジューム用ハッシュキーが格納されます。 */
+let CL_CD_RESUME_HASH_KEYS		= "RESUME_HASH_KEYS";
+/**	リプレイレジューム用ハッシュキーが格納されます。 */
+let CL_CD_RESUME_HASH_VALUES	= "RESUME_HASH_VALUES";
+
+
+//////////////////////////////////////////////////////////////////////
+//　コンフィグ関連
+//////////////////////////////////////////////////////////////////////
+
+/**	背景表示が有効かどうかが格納されます。 */
+let CL_CD_CONFIG_BGG			= "CONFIG_BGG";
+/**	背景エフェクト効果が有効かどうかが格納されます。 */
+let CL_CD_CONFIG_BGG_EFFECT		= "CONFIG_BGG_EFFECT";
+/**	背景フォグ効果が有効かどうかが格納されます。 */
+let CL_CD_CONFIG_BGG_FOG		= "CONFIG_BGG_FOG";
+/**	背景ロングクリップが有効かどうかが格納されます。 */
+let CL_CD_CONFIG_BGG_CLIP		= "CONFIG_BGG_CLIP";
+/**	フォントの事前ラスタライズが有効かどうかが格納されます。 */
+let CL_CD_CONFIG_FONT_PRERENDER	= "CONFIG_FONT_PRERENDER";
+/**	BGMが有効かどうかが格納されます。 */
+let CL_CD_CONFIG_BGM			= "CONFIG_BGM";
+/**	効果音が有効かどうかが格納されます。 */
+let CL_CD_CONFIG_SE				= "CONFIG_SE";
+/**	残機数が格納されます。 */
+let CL_CD_CONFIG_PLAYER			= "CONFIG_PLAYER";
+/**	コンティニュー可能数が格納されます。 */
+let CL_CD_CONFIG_CONTINUE		= "CONFIG_CONTINUE";
+
+
+//////////////////////////////////////////////////////////////////////
+//　ステージ関連
+//////////////////////////////////////////////////////////////////////
+
+/**	シナリオ番号が格納されます。 */
+let CL_CD_STAGE_SCENARIO		= "STAGE_SCENARIO";
+/**	BGステータスが格納されます。 */
+let CL_CD_STAGE_BG_PARAMETER	= "STAGE_BG_PARAMETER";
+/**	現在BGMのインデックスが格納されます。 */
+let CL_CD_BGM_INDEX				= "BGM_INDEX";
+/**	ステージ背景のX軸誤差が格納されます。 */
+let CL_CD_STAGE_GAP_X			= "STAGE_GAP_X";
+/**	ステージ背景のY軸誤差が格納されます。 */
+let CL_CD_STAGE_GAP_Y			= "STAGE_GAP_Y";
+/**	ステージ背景のZ軸誤差が格納されます。 */
+let CL_CD_STAGE_GAP_Z			= "STAGE_GAP_Z";
+/**	アイテムドロップする雑魚を指定します。 */
+let CL_CD_STAGE_ITEM			= "STAGE_ITEM_DROP";
+
+
+//////////////////////////////////////////////////////////////////////
+//　アイテム関連
+//////////////////////////////////////////////////////////////////////
+
+/**	アイテム作成キューが格納されます。 */
+let CL_CD_ITEM_QUEUE_CREATE	= "ITEM_QUEUE_CREATE";
+/**	博麗小符所持量が格納されます。 */
+let CL_CD_ITEM_HAKUREI		= "ITEM_HAKUREI";
+
+
+//////////////////////////////////////////////////////////////////////
+//　リザルト関連
+//////////////////////////////////////////////////////////////////////
+
+/**	リザルト表示が有効かどうかが格納されます。 */
+let CL_CD_RESULT				= "RESULT_ENABLE";
+/**	リザルトで表示されるステージボーナス点数が格納されます。 */
+let CL_CD_RESULT_CLEAR			= "RESULT_CLEAR";
+/**	リザルトで表示される点アイテムボーナス点数が格納されます。 */
+let CL_CD_RESULT_POINT			= "RESULT_POINT";
+/**	リザルトで表示されるカスリボーナス点数が格納されます。 */
+let CL_CD_RESULT_GRAZE			= "RESULT_GRAZE";
+/**	リザルトで表示される博麗小符ボーナス点数が格納されます。 */
+let CL_CD_RESULT_HAKUREI		= "RESULT_HAKUREI";
+/**	リザルトで表示されるレートペナルティが格納されます。 */
+let CL_CD_RESULT_RATE			= "RESULT_RATE";
+/**	リザルトで表示される初期プレイヤー数ペナルティが格納されます。 */
+let CL_CD_RESULT_PLAYER_INIT	= "RESULT_PLAYER_INIT";
+/**	リザルトで表示される現在のプレイヤー残数ボーナスが格納されます。 */
+let CL_CD_RESULT_PLAYER			= "RESULT_PLAYER";
+/**	リザルトで表示されるボム残数ボーナスが格納されます。 */
+let CL_CD_RESULT_BOMB			= "RESULT_BOMB";
+/**	リザルトで表示されるトータル点数が格納されます。 */
+let CL_CD_RESULT_TOTAL			= "RESULT_TOTAL";
+
+
+//////////////////////////////////////////////////////////////////////
+//　スペルカットイン関連
+//////////////////////////////////////////////////////////////////////
+
+/**	スペルカットイン発動中かどうかが格納されます。 */
+let CL_CD_CUTIN_START			= "CUTIN_ENABLE";
+/**	スペルカットインがプレイヤーのものかどうかが格納されます。 */
+let CL_CD_CUTIN_PLAYER			= "CUTIN_PLAYER";
+/**	スペルカットインの画像ファイル名が格納されます。 */
+let CL_CD_CUTIN_IMAGE_FILE		= "CUTIN_IMAGE_FILE";
+/**	スペルカットインの切り出し位置が格納されます。 */
+let CL_CD_CUTIN_IMAGE_RECT		= "CUTIN_IMAGE_RECT";
+/**	スペル名が格納されます。 */
+let CL_CD_CUTIN_SPELL_NAME		= "CUTIN_SPELL_NAME";
+/**	スペルIDが格納されます。 */
+let CL_CD_CUTIN_SPELL_ID		= "CUTIN_SPELL_ID";
+/**	スペル名基本X座標が格納されます。 */
+let CL_CD_CUTIN_SPELL_X			= "CUTIN_SPELL_X";
+/**	スペル名カーニング相対値が格納されます。 */
+let CL_CD_CUTIN_SPELL_KERNING	= "CUTIN_SPELL_KERNING";
+
+
+//////////////////////////////////////////////////////////////////////
+//　スペル履歴関連
+//////////////////////////////////////////////////////////////////////
+
+/**	スペルねたばれレベルのリストが格納されます。 */
+let CL_CD_SPELL_HISTORY_RELEASE		= "SPELL_HISTORY_RELEASE";
+/**	スペルのハイスコアリストが格納されます。 */
+let CL_CD_SPELL_HISTORY_HISCORE		= "SPELL_HISTORY_HISCORE";
+/**	スペルの挑戦カウントが格納されます。 */
+let CL_CD_SPELL_HISTORY_COUNT_TRY	= "SPELL_HISTORY_COUNT_TRY";
+/**	スペルの取得カウントが格納されます。 */
+let CL_CD_SPELL_HISTORY_COUNT_GET	= "SPELL_HISTORY_COUNT_GET";
+
+
+//////////////////////////////////////////////////////////////////////
+//　その他各種履歴関連
+//////////////////////////////////////////////////////////////////////
+
+/**	ステージクリアした履歴が配列で格納されます。
+*	[自機種別,シナリオ種別,ステージ種別,レベル種別,スコア記録,コンティニューしたかどうか,プラクティスかどうか]
+*/
+let CL_CD_HISTORY_CLEAR			= "HISTORY_STAGE_CLEAR";
+/**	ステージにトライした履歴が配列で格納されます。
+*	[自機種別,シナリオ種別,ステージ種別,レベル種別,プラクティスかどうか]
+*/
+let CL_CD_HISTORY_TRY			= "HISTORY_STAGE_TRY";
+/**	各BGMを再生した数が格納されます。 */
+let CL_CD_HISTORY_BGM			= "HISTORY_BGM";
+/**	合計フレームカウンタが格納されます。 */
+let CL_CD_HISTORY_COUNT_TOTAL	= "HISTORY_COUNT_TOTAL";
+
+
+//////////////////////////////////////////////////////////////////////
+//　プレイヤー関連
+//////////////////////////////////////////////////////////////////////
+
+/**	プレイヤーが現在ミス中かどうかが格納されます。
+*	(現在のOnPlayerMissedに残機ゼロ時一瞬しかtrueにならない不都合があるためその回避用)
+*/
+let CL_CD_PLAYER_ONMISSED				= "PLAYER_ONMISSED";
+/**	プレイヤーが攻撃力アップした時の情報が格納されます。
+*	[ パワーアップしたかどうか, MAX POWERかどうか ]
+*/
+let CL_CD_PLAYER_POWER_UP				= "PLAYER_POWER_UP";
+/**	博麗システムが有効かどうかが格納されます。 */
+let CL_CD_PLAYER_INYAN					= "PLAYER_INYANSYSTEM_ENABLE";
+/**	博麗ゲージの多寡が格納されます。(0～255) */
+let CL_CD_PLAYER_INYAN_GAUGE			= "PLAYER_INYANSYSTEM_GAUGE";
+/**	博麗ゲージの初期値が格納されます。(0～255) */
+let CL_CD_PLAYER_INYAN_GAUGE_DEFAULT	= "PLAYER_INYANSYSTEM_GAUGE_DEFAULT";
+
+
+//////////////////////////////////////////////////////////////////////
+//　ボス・雑魚関連
+//////////////////////////////////////////////////////////////////////
+
+/**	ボスのデータを格納します。中ボス逃亡、ギミック、ボスのサブキャラ等で利用します。 */
+let CL_CD_BOSS_X				= "BOSS_X";
+let CL_CD_BOSS_Y				= "BOSS_Y";
+let CL_CD_BOSS_X2				= "BOSS_X2";
+let CL_CD_BOSS_Y2				= "BOSS_Y2";
+let CL_CD_BOSS_ANGLE			= "BOSS_ANGLE";
+let CL_CD_BOSS_DEAD				= "BOSS_DEAD";
+/**	ラストスペル中かどうかが格納されます。 */
+let CL_CD_BOSS_SPELL_LASTSPELL	= "SPELL_LASTSPELL";
+/** 弾スクリプトからExplosion01を使うためのパラメータ配列が格納されます。 */
+let CL_CD_SHOT_EXPLOSION_PARAM	= "SHOT_EXPLOSION_PARAM";
+/**	ボスIDを定義します。 */
+let CL_CD_BOSS_ID				= "BOSS_ID";
+/**	最終弾幕決闘タイムアウトまでの残りフレーム時間を格納します。 */
+let CL_CD_BOSS_FSD_TIME			= "BOSS_FSD_TIME";

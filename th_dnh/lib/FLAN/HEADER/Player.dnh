@@ -1,0 +1,110 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※プレイヤースクリプト用
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	下位ライブラリをインクルードする
+//////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\FLAN\LIB\Common.dnh"
+#include_function "\lib\FLAN\LIB\Common_without_Event.dnh"
+#include_function "\lib\FLAN\LIB\Enemy_Shot_Shadow_Stage_Player.dnh"
+#include_function "\lib\FLAN\LIB\Player_Spell_Enemy_Shot_Shadow.dnh"
+#include_function "\lib\FLAN\LIB\Stage_Player_Spell.dnh"
+#include_function "\lib\FLAN\LIB\Player.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	初期化処理(コンストラクタ)
+//////////////////////////////////////////////////////////////////////
+
+@Initialize(){
+	__FlanCommonSPSInitialize();
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_ENABLE, true );
+	onInitialize();
+	SetInitialBombCount( FLAN_PLAYER_BOMB );
+	if( FLAN_PLAYER_BORDERLIFE_REDUCE < 0 ){ SetRebirthFrameReduction( 0 ); }
+	else{
+		SetRebirthFrame( FLAN_PLAYER_BORDERLIFE_DEFAULT );
+		SetRebirthFrameReduction( FLAN_PLAYER_BORDERLIFE_REDUCE );
+	}
+	if( !GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_ENABLE, false ) ){
+		__SetSlowKeyStateDelayLoop();
+		__DrawCountLoop();
+	}
+	__MainTask();
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	毎フレーム呼ばれる処理
+//////////////////////////////////////////////////////////////////////
+
+@MainLoop(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	m_bFlanPlayerShotEnable = !GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_BOSS_EVENT_ENABLE, false ) && GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, true );
+	onMainLoop( m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase );
+	if( !m_bFranPlayerShot && m_bFlanKeyShot && m_bFlanPlayerShotEnable ){ __ShotBasicShot(); }
+	if( FLAN_PLAYER_BORDERLIFE_REDUCE < 0 ){ SetRebirthFrame( Max( FLAN_PLAYER_BORDERLIFE_DEFAULT - m_nFlanBorderLifeUsedCount, 0 ) ); }
+	if( FLAN_PLAYER_COLLISION_GRAZE > 0 ){ SetGrazeCircle( FLAN_PLAYER_COLLISION_GRAZE ); }
+	if( FLAN_PLAYER_COLLISION_HIT > 0 ){ SetIntersectionCircle( GetPlayerX(), GetPlayerY(), FLAN_PLAYER_COLLISION_HIT ); }
+	SetItemCollectLine( [ FLAN_PLAYER_ITEM_AUTOCOLLECT_LINE, GetClipMaxY() ][ FLAN_PLAYER_ITEM_AUTOCOLLECT_BOMB && OnBomb() ] );
+	SetSpeed( FLAN_PLAYER_SPEED_FAST, FLAN_PLAYER_SPEED_SLOW );
+	yield;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	ミス中の間@MainLoopの代わりに毎フレーム呼ばれる処理
+//////////////////////////////////////////////////////////////////////
+
+@Missed(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	onPlayerMissed( m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase );
+	if( FLAN_PLAYER_DELETE_KILLED_SHOT && m_nFlanPlayerMissedCount == 0 ){ DeleteEnemyShotImmediatelyInCircle( SHOT, GetPlayerX(), GetPlayerY(), 6 ); }
+	if( OnBorderOfLife() ){
+		m_nFlanBorderLifeUsedCount++;
+		if( FLAN_PLAYER_DELETE_KILLED_SHOT ){ DeleteEnemyShotImmediatelyInCircle( SHOT, GetPlayerX(), GetPlayerY(), 6 ); }
+	}
+	else{ m_nFlanBorderLifeUsedCount = 0; }
+	m_nFlanPlayerMissedCount++;
+	yield;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	スペルカード発動処理
+//////////////////////////////////////////////////////////////////////
+
+@SpellCard(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	onStartSpell( m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	終了処理(デストラクタ)
+//////////////////////////////////////////////////////////////////////
+
+@Finalize(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	onFinalize( m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	絵画処理
+//////////////////////////////////////////////////////////////////////
+
+@DrawLoop(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	onDrawLoop( m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase );
+}

@@ -1,0 +1,326 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージEx　ボス　伊吹 萃香　スペル7
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[SuikaB - スペル7]
+#Text[ステージEx ボス
+伊吹 萃香]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Suika.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 120;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		SetTimer( 63 );
+		SetLife( 500 );
+		SetDamageRate( 5, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+		Vanish();
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_EXPH + CL_TTH_CHARACTER_NAME_EXPH_SUIKA;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){ DropItemTHC( 24 ); }
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_EXTRA + CL_TTH_SPELL_EXPH_BOSS_7;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		/** 回転ビット */
+		SetAction( ACT_SHOT_B5, 150 );
+		PlaySEEx( sePower );
+		Concentration01( 120 );
+		__Wait( 120 );
+		RollBitShot();
+		__Wait( 90 );
+		SetDamageRate( 10, 0 );
+
+		/** 回転全方向弾 */
+		SetAction( ACT_SHOT_A5, 6000 );
+		RollRoundShot();
+
+	}
+
+	/**
+	*	全方向回転弾
+	*/
+	task RollRoundShot{
+
+		let nX = GetX();
+		let nY = GetY();
+		let nWay = 6;
+		let nSpeed = 2;
+		let nRollAngle = - 0.37;
+		let nAngle = nRollAngle * 90;
+		let nGraphic = US_RICE_M_GREEN;
+		let nDelay = 10;
+		let nShotFrame = 40;
+		let nFrame = 4;
+		let nWaitFrame = nShotFrame - nFrame * 2;
+		let nNum = nShotFrame / nFrame;
+
+		PlaySELoop( seShot1, 6000, 8 );
+		loop{
+			loop( nNum ){
+				_RoundShot01( nX, nY, nSpeed, nAngle, nWay, nGraphic, nDelay );
+				__Wait( nFrame );
+				nAngle += nRollAngle * nFrame;
+			}
+			loop( nWaitFrame ){
+				yield;
+				nAngle += nRollAngle;
+			}
+		}
+
+	}
+
+	/**
+	*	回転ビット
+	*/
+	task RollBitShot{
+
+		let nX = GetX();
+		let nY = GetY();
+		let nGapLength = ( CL_MAX_Y - nY ) / 3;
+		let _nGapLength = nGapLength;
+		let nNum = 3;
+		let nWay = 6;
+		let nWayAngle = 360 / nWay;
+		let nRollGapAngle = 0.37;
+		let nNumShotFrame = - 8;
+		let nShotFrame = 40 + nNumShotFrame;
+		let aanGraphic = [ [ US_BALL_L_SKY, US_RICE_M_SKY ], [ US_BALL_L_BLUE, US_RICE_M_BLUE ], [ US_BALL_L_PURPLE, US_RICE_M_PURPLE ] ];
+
+		PlaySEEx( seShot2 );
+		ascent( let i in 0 .. nNum ){
+			let nGapAngle = 0;
+			let _nRollGapAngle = nRollGapAngle;
+			if( i % 2 == 1 ){ _nRollGapAngle = - nRollGapAngle; }
+			loop( nWay ){
+				_RollBitShot( nX, nY, nGapAngle, _nRollGapAngle, _nGapLength, aanGraphic[ i ], nShotFrame );
+				nGapAngle += nWayAngle;
+			}
+			_nGapLength += nGapLength;
+			nShotFrame += nNumShotFrame;
+		}
+
+	}
+
+	/**
+	*	回転ビット（1発）
+	*	@param nX				弾源x座標
+	*	@param nY				弾源y座標
+	*	@param nGapAngle		間隔角度
+	*	@param nRollGapAngle	回転間隔角速度
+	*	@param nMaxGapLength	間隔長さ
+	*	@param anGraphic		弾画像配列
+	*	@param nShotFrame		弾を撃ち続けるフレーム数
+	*/
+	task _RollBitShot( let nX, let nY, let nGapAngle, let nRollGapAngle, let nMaxGapLength, let anGraphic, let nShotFrame ){
+
+		let obj = Obj_Create( OBJ_SHOT );
+		ObjShot_SetGraphic( obj, anGraphic[ 0 ] );
+		Obj_SetAutoDelete( obj, false );
+		ObjShot_SetBombResist( obj, true );
+
+		let _nX = nX;
+		let _nY = nY;
+		let nGapLength = 0;
+		_SetLocation();
+
+		/** 初期移動 */
+		let nFrame = 90;
+		let nAddGapLength = nMaxGapLength / nFrame;
+		loop( nFrame ){
+			nGapLength += nAddGapLength;
+			yield;
+		}
+
+		/** 壁弾 */
+		let nSpeed = 2;
+		let nDelay = 10;
+		nFrame = 4;
+		let nWaitFrame = nShotFrame - nFrame * 2;
+		let nNum = nShotFrame / nFrame;
+
+		loop{
+			loop( nNum ){
+				CreateShot01( _nX, _nY, nSpeed, nGapAngle, anGraphic[ 1 ], nDelay );
+				CreateShot01( _nX, _nY, nSpeed, nGapAngle - 180, anGraphic[ 1 ], nDelay );
+				__Wait( nFrame );
+			}
+			loop( nWaitFrame ){ yield; }
+		}
+
+		/** 位置設定 */
+		task _SetLocation{
+			loop{
+				_nX = GetGapX( nX, nGapLength, nGapAngle );
+				_nY = GetGapY( nY, nGapLength, nGapAngle );
+				Obj_SetPosition( obj, _nX, _nY );
+				yield;
+				nGapAngle += nRollGapAngle;
+			}
+		}
+
+	}
+
+}

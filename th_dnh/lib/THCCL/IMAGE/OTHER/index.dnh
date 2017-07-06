@@ -1,0 +1,17 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//Å@ñ¢ï™óﬁ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\THCCL\IMAGE\OTHER\CIRCLE\index.dnh"
+
+let DIR_CL_IMAGE_OTHER = "\lib\THCCL\IMAGE\OTHER\";
+
+let IMAGE_CL_BLACK				= DIR_CL_IMAGE_OTHER ~ "Black.png";
+let IMAGE_CL_WHITE				= DIR_CL_IMAGE_OTHER ~ "White.png";
+let IMAGE_CL_SHOT_ALL			= DIR_CL_IMAGE_OTHER ~ "shot_all.png";
+let IMAGE_CL_SPELL_LINE			= DIR_CL_IMAGE_OTHER ~ "spell_line.png";
+let IMAGE_CL_CUTIN_MARISA		= DIR_CL_IMAGE_OTHER ~ "Marisa.png";
+let IMAGE_CL_SHOCKWAVE_ADD		= DIR_CL_IMAGE_OTHER ~ "Shock_Add.png";
+let IMAGE_CL_SHOCKWAVE_ALPHA	= DIR_CL_IMAGE_OTHER ~ "Shock_Alpha.png";

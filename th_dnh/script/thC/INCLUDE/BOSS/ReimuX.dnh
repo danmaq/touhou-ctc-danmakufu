@@ -1,0 +1,62 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　博麗 霊夢（真）
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossReimuW;
+let m_szImageCutIn = cutReimuWS;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_REIMU_W;
+let m_aszImageBGList = LOADBGLIST_REIMU_W;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellReimu );
+
+	SetRenderState( ADD );
+	ascent( let i in 0 .. 3 ){
+		let j = ( m_nFlanCount + i * 83 ) % 250;
+		let nLightBack = ( 255 - j ) / 3;
+		SetColor( nLightBack * 1.2, nLightBack * 0.6, nLightBack * 1.5 );
+		let nScale = Smooth( 3.5, 0, j, 255 );
+		SetGraphicScale( nScale, nScale );
+		DrawRotateCenter( imgSpellRing2, - 0.5 );
+	}
+
+	SetColor( 255, 255, 255 );
+	SetRenderState( ALPHA );
+	SetGraphicScale( 1, 1 );
+
+}

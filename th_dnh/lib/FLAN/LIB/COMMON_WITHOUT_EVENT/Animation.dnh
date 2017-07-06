@@ -1,0 +1,90 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	パラメータは等速に変化します。
+*	内分カウンタ設定用定数です。
+*/
+let FLAN_ANIMATION_NORMAL		= 1;
+/**	パラメータは加速して変化します。
+*	内分カウンタ設定用定数です。
+*/
+let FLAN_ANIMATION_ACCELERATE	= 2;
+/**	パラメータは減速して変化します。
+*	内分カウンタ設定用定数です。
+*/
+let FLAN_ANIMATION_SLOWDOWN		= 3;
+/**	パラメータは加速→減速と変化します。
+*	内分カウンタ設定用定数です。
+*/
+let FLAN_ANIMATION_SFS			= 4;
+/**	パラメータは減速→加速と変化します。
+*	内分カウンタ設定用定数です。
+*/
+let FLAN_ANIMATION_FSF			= 5;
+/**	パラメータはランダムに変化します。
+*	内分カウンタ設定用定数です。
+*/
+let FLAN_ANIMATION_RANDOM		= 6;
+/**	パラメータ変化は分割され反転して初期値に戻るよう変化します。
+*	内分カウンタ分割設定用定数です。
+*	内分カウンタ設定用定数と掛け合わせて使用します。
+*/
+let FLAN_SPLIT_REVERSE			= -1;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	内分カウンタ
+//	0～nNowの時間の間nStart～nEndの中間値を返します
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**	複雑に制御出来る内分カウンタです。
+*	注意:絵画時(onDrawLoop/onBackGround/onBottomObject/onTopObject)ではFLAN_ANIMATION_RANDOMを絶対に設定しないでください
+*	(リプレイがずれます)
+*	@param nStart 現在時間==0の時の初期値
+*	@param nEnd 最終値
+*	@param nNow 現在時間
+*	@param nLimit 最終値に到達する時間
+*	@param anAnimationSplitParameter 内分変化分割用定数のリスト
+*	@return 初期値～最終値に対し0～到達時間の現在時間に相当する値
+*/
+function Animation( let nStart, let nEnd, let nNow, let nLimit, let anAnimationSplitParameter ){
+	let nSplitNum = length( anAnimationSplitParameter );
+	if( nSplitNum == 0 ){
+		nSplitNum = 1;
+		anAnimationSplitParameter = anAnimationSplitParameter ~ [ FLAN_ANIMATION_NORMAL ];
+	}
+	if( nNow <= 0 ){ return [ nStart, nEnd ][ anAnimationSplitParameter[ 0 ] < 0 ]; }
+	if( nNow > nLimit || nStart == nEnd || nLimit <= 0 ){ return [ nStart, nEnd ][ anAnimationSplitParameter[ nSplitNum - 1 ] >= 0 ]; }
+	let nLimitSplit = nLimit / nSplitNum;
+	let nNowSplit = nNow % nLimitSplit;
+	let nAnimationParameter = anAnimationSplitParameter[ Min( truncate( nNow / nLimitSplit ), nSplitNum - 1 ) ];
+	if( nAnimationParameter < 0 ){
+		let nTemp = nEnd;
+		nEnd = nStart;
+		nStart = nTemp;
+	}
+	if( nNow == nLimit ){ nNowSplit = nLimitSplit; }
+	alternative( absolute( nAnimationParameter ) )
+	case( FLAN_ANIMATION_NORMAL		){ return Smooth(			nStart, nEnd, nNowSplit, nLimitSplit ); }
+	case( FLAN_ANIMATION_ACCELERATE	){ return Accelerate(		nStart, nEnd, nNowSplit, nLimitSplit ); }
+	case( FLAN_ANIMATION_SLOWDOWN	){ return SlowDown(			nStart, nEnd, nNowSplit, nLimitSplit ); }
+	case( FLAN_ANIMATION_SFS		){ return SplineFakeSFS(	nStart, nEnd, nNowSplit, nLimitSplit ); }
+	case( FLAN_ANIMATION_FSF		){ return SplineFakeFSF(	nStart, nEnd, nNowSplit, nLimitSplit ); }
+	case( FLAN_ANIMATION_RANDOM		){ return rand(				nStart, nEnd ); }
+}

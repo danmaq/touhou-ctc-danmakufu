@@ -1,0 +1,53 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　パチュリー・ノーレッジ
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossPatchouli;
+let m_szImageCutIn = cutPatchouli;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_PACHOULI;
+let m_aszImageBGList = LOADBGLIST_PACHOULI;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+	let nSrcGap = m_nFlanCount * 3.5;
+	let nDstXGap = CL_MIN_X + 64;
+	let i = m_nFlanCount * 3.5;
+	SetGraphicRect( 0, i, 128, i + 128 );
+	ascent( let nX in 0 .. 3 ){
+		ascent( let nY in 0 .. 4 ){ __DrawChr( imgSpellScrollStone, nX * 128 + nDstXGap, nY * 128 + 64 ); }
+	}
+}
+
+

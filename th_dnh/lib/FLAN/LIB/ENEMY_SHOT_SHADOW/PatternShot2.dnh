@@ -1,0 +1,328 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定型弾B
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+/**
+*	指定した設定のとおりに等速全方位弾を発射します。
+*	__RoundShot02のラッパーです。
+*
+*	@param nStartX モーション開始時のX座標
+*	@param nEndX モーション終了時のX座標
+*	@param anXParameter X座標変化のパラメータリスト
+*	@param nStartY モーション開始時のY座標
+*	@param nEndY モーション終了時のY座標
+*	@param anYParameter Y座標変化のパラメータリスト
+*	@param nStartDelay モーション開始時遅延フレーム数
+*	@param nEndDelay モーション終了時の遅延フレーム数
+*	@param anDelayParameter 遅延フレーム数変化のパラメータリスト
+*	@param nStartSpeed モーション開始時の速度
+*	@param nEndSpeed モーション終了時の速度
+*	@param anSpeedParameter 速度変化のパラメータリスト
+*	@param nWay Way数
+*	@param anWaySpaceParameter Way間隔変化のパラメータリスト
+*	@param nBaseAngle 狙う基本角度
+*	@param nType 弾種
+*/
+function __RoundShot01(
+	let nStartX,		let nEndX,					let anXParameter,
+	let nStartY,		let nEndY,					let anYParameter,
+	let nStartDelay,	let nEndDelay,				let anDelayParameter,
+	let nStartSpeed,	let nEndSpeed,				let anSpeedParameter,
+	let nWay,			let anWaySpaceParameter,
+	let nBaseAngle,		let nType
+){
+	__RoundShot02(
+		nStartX,		nEndX,					anXParameter,
+		nStartY,		nEndY,					anYParameter,
+		nStartDelay,	nEndDelay,				anDelayParameter,
+		nStartSpeed,	nEndSpeed,				anSpeedParameter,
+		0,				0,						[],
+		nStartSpeed,	nEndSpeed,				anSpeedParameter,
+		nWay,			anWaySpaceParameter,
+		nBaseAngle,		nType
+	);
+}
+
+/**
+*	指定した設定のとおりに等加速全方位弾を発射します。
+*	__WayShot02のラッパーです。
+*
+*	@param nStartX モーション開始時のX座標
+*	@param nEndX モーション終了時のX座標
+*	@param anXParameter X座標変化のパラメータリスト
+*	@param nStartY モーション開始時のY座標
+*	@param nEndY モーション終了時のY座標
+*	@param anYParameter Y座標変化のパラメータリスト
+*	@param nStartDelay モーション開始時遅延フレーム数
+*	@param nEndDelay モーション終了時の遅延フレーム数
+*	@param anDelayParameter 遅延フレーム数変化のパラメータリスト
+*	@param nStartSpeed モーション開始時の速度
+*	@param nEndSpeed モーション終了時の速度
+*	@param anSpeedParameter 速度変化のパラメータリスト
+*	@param nStartAccelerate モーション開始時の加速度
+*	@param nEndAccelerate モーション終了時の加速度
+*	@param anAccelerateParameter 加速度変化のパラメータリスト
+*	@param nStartMaxSpeed モーション開始時の最大速度
+*	@param nEndMaxSpeed モーション終了時の最大速度
+*	@param anMaxSpeedParameter 最大速度変化のパラメータリスト
+*	@param nWay Way数
+*	@param anWaySpaceParameter Way間隔変化のパラメータリスト
+*	@param nBaseAngle 狙う基本角度
+*	@param nType 弾種
+*/
+function __RoundShot02(
+	let nStartX,			let nEndX,					let anXParameter,
+	let nStartY,			let nEndY,					let anYParameter,
+	let nStartDelay,		let nEndDelay,				let anDelayParameter,
+	let nStartSpeed,		let nEndSpeed,				let anSpeedParameter,
+	let nStartAccelerate,	let nEndAccelerate,			let anAccelerateParameter,
+	let nStartMaxSpeed,		let nEndMaxSpeed,			let anMaxSpeedParameter,
+	let nWay,				let anWaySpaceParameter,
+	let nBaseAngle,			let nType
+){
+	__WayShot02(
+		nStartX,			nEndX,			anXParameter,
+		nStartY,			nEndY,			anYParameter,
+		nStartDelay,		nEndDelay,		anDelayParameter,
+		nStartSpeed,		nEndSpeed,		anSpeedParameter,
+		nStartAccelerate,	nEndAccelerate,	anAccelerateParameter,
+		nStartMaxSpeed,		nEndMaxSpeed,	anMaxSpeedParameter,
+		nWay,				360,			anWaySpaceParameter,
+		nBaseAngle,			nType,
+	);
+}
+
+/**
+*	指定した設定のとおりに等速Way弾を発射します。
+*	__WayShot02のラッパーです。
+*
+*	@param nStartX モーション開始時のX座標
+*	@param nEndX モーション終了時のX座標
+*	@param anXParameter X座標変化のパラメータリスト
+*	@param nStartY モーション開始時のY座標
+*	@param nEndY モーション終了時のY座標
+*	@param anYParameter Y座標変化のパラメータリスト
+*	@param nStartDelay モーション開始時遅延フレーム数
+*	@param nEndDelay モーション終了時の遅延フレーム数
+*	@param anDelayParameter 遅延フレーム数変化のパラメータリスト
+*	@param nStartSpeed モーション開始時の速度
+*	@param nEndSpeed モーション終了時の速度
+*	@param anSpeedParameter 速度変化のパラメータリスト
+*	@param nWay Way数
+*	@param nTotalWayWidth Wayの射程に含まれる角度
+*	@param anWaySpaceParameter Way間隔変化のパラメータリスト
+*	@param nBaseAngle 狙う基本角度
+*	@param nType 弾種
+*/
+function __WayShot01(
+	let nStartX,		let nEndX,			let anXParameter,
+	let nStartY,		let nEndY,			let anYParameter,
+	let nStartDelay,	let nEndDelay,		let anDelayParameter,
+	let nStartSpeed,	let nEndSpeed,		let anSpeedParameter,
+	let nWay,			let nTotalWayWidth,	let anWaySpaceParameter,
+	let nBaseAngle,		let nType
+){
+	__WayShot02(
+		nStartX,		nEndX,			anXParameter,
+		nStartY,		nEndY,			anYParameter,
+		nStartDelay,	nEndDelay,		anDelayParameter,
+		nStartSpeed,	nEndSpeed,		anSpeedParameter,
+		0,				0,				[],
+		nStartSpeed,	nEndSpeed,		anSpeedParameter,
+		nWay,			nTotalWayWidth,	anWaySpaceParameter,
+		nBaseAngle,		nType
+	);
+}
+
+/**
+*	指定した設定のとおりに等加速Way弾を発射します。
+*	__RoundShot02のラッパーです。
+*
+*	@param nStartX モーション開始時のX座標
+*	@param nEndX モーション終了時のX座標
+*	@param anXParameter X座標変化のパラメータリスト
+*	@param nStartY モーション開始時のY座標
+*	@param nEndY モーション終了時のY座標
+*	@param anYParameter Y座標変化のパラメータリスト
+*	@param nStartDelay モーション開始時遅延フレーム数
+*	@param nEndDelay モーション終了時の遅延フレーム数
+*	@param anDelayParameter 遅延フレーム数変化のパラメータリスト
+*	@param nStartSpeed モーション開始時の速度
+*	@param nEndSpeed モーション終了時の速度
+*	@param anSpeedParameter 速度変化のパラメータリスト
+*	@param nStartAccelerate モーション開始時の加速度
+*	@param nEndAccelerate モーション終了時の加速度
+*	@param anAccelerateParameter 加速度変化のパラメータリスト
+*	@param nStartMaxSpeed モーション開始時の最大速度
+*	@param nEndMaxSpeed モーション終了時の最大速度
+*	@param anMaxSpeedParameter 最大速度変化のパラメータリスト
+*	@param nWay Way数
+*	@param nTotalWayWidth Wayの射程に含まれる角度
+*	@param anWaySpaceParameter Way間隔変化のパラメータリスト
+*	@param nBaseAngle 狙う基本角度
+*	@param nType 弾種
+*/
+function __WayShot02(
+	let nStartX,			let nEndX,			let anXParameter,
+	let nStartY,			let nEndY,			let anYParameter,
+	let nStartDelay,		let nEndDelay,		let anDelayParameter,
+	let nStartSpeed,		let nEndSpeed,		let anSpeedParameter,
+	let nStartAccelerate,	let nEndAccelerate,	let anAccelerateParameter,
+	let nStartMaxSpeed,		let nEndMaxSpeed,	let anMaxSpeedParameter,
+	let nWay,				let nTotalWayWidth,	let anWaySpaceParameter,
+	let nBaseAngle,			let nType
+){
+	let nX = nStartX;
+	let nY = nStartY;
+	let nDelay = nStartDelay;
+	let nSpeed = nStartSpeed;
+	let nAccelerate = nStartAccelerate;
+	let nMaxSpeed = nStartMaxSpeed;
+	let nHalfWayWidth = nTotalWayWidth / 2;
+	let nLimit = nWay - 1;
+
+	let bNoAnimationXPosition = nStartX == nEndX;
+	let bNoAnimationYPosition = nStartY == nEndY;
+	let bNoAnimationDelay = nStartDelay == nEndDelay;
+	let bNoAnimationSpeed = nStartSpeed == nEndSpeed;
+	let bNoAnimationAccelerate = nStartAccelerate == nEndAccelerate;
+	let bNoAnimationMaxSpeed = nStartMaxSpeed == nEndMaxSpeed;
+	let bNoAccelerate = bNoAnimationSpeed && bNoAnimationAccelerate && bNoAnimationMaxSpeed && nStartSpeed == nStartMaxSpeed && nStartAccelerate == 0;
+
+	ascent( let i in 0..nWay ){
+		if( !bNoAnimationXPosition	){ nX			= Animation( nStartX,			nEndX,			i, nLimit, anXParameter			); }
+		if( !bNoAnimationXPosition	){ nY			= Animation( nStartY,			nEndY,			i, nLimit, anYParameter			); }
+		if( !bNoAnimationDelay		){ nDelay		= Animation( nStartDelay,		nEndDelay,		i, nLimit, anDelayParameter		); }
+		if( !bNoAnimationSpeed		){ nSpeed		= Animation( nStartSpeed,		nEndSpeed,		i, nLimit, anSpeedParameter		); }
+		if( !bNoAnimationAccelerate	){ nAccelerate	= Animation( nStartAccelerate,	nEndAccelerate,	i, nLimit, anAccelerateParameter	); }
+		if( !bNoAnimationMaxSpeed	){ nMaxSpeed	= Animation( nStartMaxSpeed,	nEndMaxSpeed,	i, nLimit, anMaxSpeedParameter		); }
+
+		let nAngle = nBaseAngle + Animation( -nHalfWayWidth, nHalfWayWidth, i, nLimit, anWaySpaceParameter );
+
+		if( bNoAccelerate ){ CreateShot01( nX, nY, nSpeed, nAngle, nType, nDelay ); }
+		else{ CreateShot02( nX, nY, nSpeed, nAngle, nAccelerate, nMaxSpeed, nType, nDelay ); }
+	}
+}
+
+/**
+*	指定した設定のとおりに全方位にスクリプト弾を発射します。
+*	__WayShotScriptのラッパーです。
+*
+*	@param nStartX モーション開始時のX座標
+*	@param nEndX モーション終了時のX座標
+*	@param anXParameter X座標変化のパラメータリスト
+*	@param nStartY モーション開始時のY座標
+*	@param nEndY モーション終了時のY座標
+*	@param anYParameter Y座標変化のパラメータリスト
+*	@param nStartDelay モーション開始時遅延フレーム数
+*	@param nEndDelay モーション終了時の遅延フレーム数
+*	@param anDelayParameter 遅延フレーム数変化のパラメータリスト
+*	@param nStartSpeed モーション開始時の速度
+*	@param nEndSpeed モーション終了時の速度
+*	@param anSpeedParameter 速度変化のパラメータリスト
+*	@param nWay Way数
+*	@param anWaySpaceParameter Way間隔変化のパラメータリスト
+*	@param nBaseAngle 狙う基本角度
+*	@param szScriptName スクリプト名
+*	@param nArgument スクリプトに渡す任意の値
+*/
+function __RoundShotScript(
+	let nStartX,		let nEndX,					let anXParameter,
+	let nStartY,		let nEndY,					let anYParameter,
+	let nStartDelay,	let nEndDelay,				let anDelayParameter,
+	let nStartSpeed,	let nEndSpeed,				let anSpeedParameter,
+	let nWay,			let anWaySpaceParameter,
+	let nBaseAngle,		let szScriptName,			let nArgument
+){
+	__WayShotScript(
+		nStartX,		nEndX,					anXParameter,
+		nStartY,		nEndY,					anYParameter,
+		nStartDelay,	nEndDelay,				anDelayParameter,
+		nStartSpeed,	nEndSpeed,				anSpeedParameter,
+		nWay,			360,					anWaySpaceParameter,
+		nBaseAngle,		szScriptName,			nArgument
+	);
+}
+
+/**
+*	指定した設定のとおりにWay状にスクリプト弾を発射します。
+*
+*	@param nStartX モーション開始時のX座標
+*	@param nEndX モーション終了時のX座標
+*	@param anXParameter X座標変化のパラメータリスト
+*	@param nStartY モーション開始時のY座標
+*	@param nEndY モーション終了時のY座標
+*	@param anYParameter Y座標変化のパラメータリスト
+*	@param nStartDelay モーション開始時遅延フレーム数
+*	@param nEndDelay モーション終了時の遅延フレーム数
+*	@param anDelayParameter 遅延フレーム数変化のパラメータリスト
+*	@param nStartSpeed モーション開始時の速度
+*	@param nEndSpeed モーション終了時の速度
+*	@param anSpeedParameter 速度変化のパラメータリスト
+*	@param nWay Way数
+*	@param nTotalWayWidth Wayの射程に含まれる角度
+*	@param anWaySpaceParameter Way間隔変化のパラメータリスト
+*	@param nBaseAngle 狙う基本角度
+*	@param szScriptName スクリプト名
+*	@param nArgument スクリプトに渡す任意の値
+*/
+function __WayShotScript(
+	let nStartX,		let nEndX,			let anXParameter,
+	let nStartY,		let nEndY,			let anYParameter,
+	let nStartDelay,	let nEndDelay,		let anDelayParameter,
+	let nStartSpeed,	let nEndSpeed,		let anSpeedParameter,
+	let nWay,			let nTotalWayWidth,	let anWaySpaceParameter,
+	let nBaseAngle,		let szScriptName,	let nArgument
+){
+	let nX = nStartX;
+	let nY = nStartY;
+	let nDelay = nStartDelay;
+	let nSpeed = nStartSpeed;
+	let nHalfWayWidth = nTotalWayWidth / 2;
+	let nLimit = nWay - 1;
+
+	let bNoAnimationXPosition = nStartX == nEndX;
+	let bNoAnimationYPosition = nStartY == nEndY;
+	let bNoAnimationDelay = nStartDelay == nEndDelay;
+	let bNoAnimationSpeed = nStartSpeed == nEndSpeed;
+
+	ascent( let i in 0..nWay ){
+		if( !bNoAnimationXPosition	){ nX		= Animation( nStartX,		nEndX,		i, nLimit, anXParameter		); }
+		if( !bNoAnimationXPosition	){ nY		= Animation( nStartY,		nEndY,		i, nLimit, anYParameter		); }
+		if( !bNoAnimationDelay		){ nDelay	= Animation( nStartDelay,	nEndDelay,	i, nLimit, anDelayParameter	); }
+		if( !bNoAnimationSpeed		){ nSpeed	= Animation( nStartSpeed,	nEndSpeed,	i, nLimit, anSpeedParameter	); }
+
+		CreateShotFromScript( szScriptName, nX, nY,nSpeed, nBaseAngle + Animation( -nHalfWayWidth, nHalfWayWidth, i, nLimit, anWaySpaceParameter ), nDelay, nArgument );
+	}
+}

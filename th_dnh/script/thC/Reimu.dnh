@@ -1,0 +1,61 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージPh　ボス　博麗 霊夢　連続再生
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Reimu - 連続再生]
+#Text[ステージPh ボス
+博麗 霊夢]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	連続再生
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#ScriptPathData
+#ScriptPath[.\Reimu0.dnh]
+#ScriptPath[.\Reimu1.dnh]
+#ScriptPath[.\Reimu1S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Reimu2.dnh]
+#ScriptPath[.\Reimu2S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Reimu3.dnh]
+#ScriptPath[.\Reimu3S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Reimu4.dnh]
+#ScriptPath[.\Reimu4S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Reimu5.dnh]
+#ScriptPath[.\Reimu5S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Reimu6.dnh]
+#ScriptPath[.\Reimu6S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Reimu7.dnh]
+#ScriptPath[.\Reimu7S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Reimu8.dnh]
+#ScriptPath[.\Reimu8S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Reimu9S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Reimu10S.dnh]
+#ScriptNextStep
+#EndScriptPathData

@@ -1,0 +1,895 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Common without Event" file="without_event">
+	<category caption="概要" link="true">
+		<paragraph>
+			弾幕風標準の会話イベントスクリプト以外のすべてのスクリプトで利用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/COMMON_WITHOUT_EVENT/</path>となります。
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+		<define key="__e" type="var">
+			<paragraph>
+				自然対数の底eの近似値です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PHASE_DEFAULT" type="var">
+			<paragraph>
+				デフォルトのフェーズ値。
+			</paragraph>
+		</define>
+		<define key="FLAN_ANIMATION_NORMAL" type="var">
+			<paragraph>
+				内分カウンタ設定用定数です。
+				パラメータは等速に変化します。
+			</paragraph>
+		</define>
+		<define key="FLAN_ANIMATION_ACCELERATE" type="var">
+			<paragraph>
+				内分カウンタ設定用定数です。
+				パラメータは加速して変化します。
+			</paragraph>
+		</define>
+		<define key="FLAN_ANIMATION_SLOWDOWN" type="var">
+			<paragraph>
+				内分カウンタ設定用定数です。
+				パラメータは減速して変化します。
+			</paragraph>
+		</define>
+		<define key="FLAN_ANIMATION_SFS" type="var">
+			<paragraph>
+				内分カウンタ設定用定数です。
+				パラメータは加速→減速と変化します。
+			</paragraph>
+		</define>
+		<define key="FLAN_ANIMATION_FSF" type="var">
+			<paragraph>
+				内分カウンタ設定用定数です。
+				パラメータは減速→加速と変化します。
+			</paragraph>
+		</define>
+		<define key="FLAN_ANIMATION_RANDOM" type="var">
+			<paragraph>
+				内分カウンタ設定用定数です。
+				パラメータはランダムに変化します。
+			</paragraph>
+		</define>
+		<define key="FLAN_SPLIT_REVERSE" type="var">
+			<paragraph>
+				内分カウンタ分割設定用定数です。
+				パラメータ変化は反転して分割されます。
+				内分カウンタ設定用定数と掛け合わせて使用します。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="書換可能定数" link="true">
+		<define key="FLAN_STAGE_LEVEL_DEFAULT" type="var">
+			<paragraph>
+				ステージレベルのデフォルト値。<br />
+				デフォルト値は<value>0</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_RANDTABLE_LENGTH" type="var">
+			<paragraph>
+				擬似乱数テーブルの長さを設定します。
+				デフォルト値は<value>255</value>です。<br />
+				<caution>フィールド定義時以外で変更すると誤作動の原因となります。</caution>
+			</paragraph>
+		</define>
+		<define key="FLAN_RANDTABLE_NUM_MIN" type="var">
+			<paragraph>
+				擬似乱数テーブルの最小数を設定します。
+				デフォルト値は<value>0</value>です。<br />
+				<caution>フィールド定義時以外で変更すると誤作動の原因となります。</caution>
+			</paragraph>
+		</define>
+		<define key="FLAN_RANDTABLE_NUM_MAX" type="var">
+			<paragraph>
+				擬似乱数テーブルの最大数を設定します。
+				デフォルト値は<value>255</value>です。<br />
+				<caution>フィールド定義時以外で変更すると誤作動の原因となります。</caution>
+			</paragraph>
+		</define>
+		<define key="FLAN_KEY_REPEAT_CYCLE" type="var">
+			<paragraph>
+				キーリピートが発動した時のリピートサイクルを設定します。
+				デフォルト値は<value>6</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_KEY_REPEAT_TIME" type="var">
+			<paragraph>
+				キーリピートが発動するまでの待ちフレーム数を設定します。
+				デフォルト値は<value>20</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_RINGOUT_BORDER" type="var">
+			<paragraph>
+				画面枠からはみ出た際の許容範囲。
+				これを超えると自殺します。
+				デフォルト値は<value>48</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_INVALID_ENEMY_X" type="var">
+			<paragraph>
+				画面内に敵が存在しない場合に渡すデフォルトX座標を設定します。
+				デフォルト値は<value>65535</value>です。<br />
+				<caution>-128～512の範囲内の値を設定すると動作がおかしくなる場合があります。</caution>
+			</paragraph>
+		</define>
+		<define key="FLAN_INVALID_ENEMY_Y" type="var">
+			<paragraph>
+				画面内に敵が存在しない場合に渡すデフォルトY座標を設定します。
+				デフォルト値は<value>65535</value>です。<br />
+				<caution>-128～512の範囲内の値を設定すると動作がおかしくなる場合があります。</caution>
+			</paragraph>
+		</define>
+		<define key="FLAN_KEY_SLOW_DELAY" type="var">
+			<paragraph>
+				使い魔の為の低速ボタンを押してから反映されるまでのタイムラグを設定します。<br />
+				デフォルト値は<value>8</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_POWER_UPPOINT" type="var">
+			<paragraph>
+				プレイヤーの攻撃力がランクアップするパワー値の配列を設定します。<br />
+				デフォルト値は<value>[ 8, 24, 48, 80, 128 ]</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_POWER_MAX" type="var">
+			<paragraph>
+				プレイヤーの攻撃力最大値を設定します。<br />
+				デフォルト値は<value>128</value>です。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="メンバ変数" link="true">
+		<define key="m_nFlanLevel" type="var">
+			<paragraph>
+				ステージレベルが格納されます。
+			</paragraph>
+		</define>
+		<define key="m_anFlanRandomTable" type="var">
+			<paragraph>
+				絵画など乱数が使えない場面用の擬似乱数テーブルです。
+			</paragraph>
+		</define>
+		<define key="m_nFlanCount" type="var">
+			<paragraph>
+				<caption>最も基本のカウンタ</caption>です。
+				現在のスクリプトが動作を始めてからの経過フレーム数が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanPhaseCount" type="var">
+			<paragraph>
+				<caption>フェーズ用のカウンタ</caption>です。
+				フェーズが最後に変化してからの経過フレーム数が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanPhaseHandle" type="var">
+			<paragraph>
+				<caption>フェーズ用スタックハンドル</caption>が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanPrevPhase" type="var">
+			<paragraph>
+				<caption>前回のフェーズ値</caption>が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanPhaseTime" type="var">
+			<paragraph>
+				<caption>フェーズ変化時のカウンタ値</caption>が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanKeyHold" type="var">
+			<paragraph>
+				最後に押したキーの種類が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanKeyHoldTime" type="var">
+			<paragraph>
+				最後にキーを押した時のカウンタ値。
+			</paragraph>
+		</define>
+		<define key="m_nFlanInScreenEnemyX" type="var">
+			<paragraph>
+				敵存在判定関数を使用した際画面内の敵X座標が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanInScreenEnemyY" type="var">
+			<paragraph>
+				敵存在判定関数を使用した際画面内の敵Y座標が格納されます。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="フェーズ操作">
+		<paragraph>
+			主にフェーズ操作のための関数群です。
+			Commonカテゴリにあるスタック機能のラッパー機能です。
+		</paragraph>
+		<define key="InitializePhase">
+			<paragraph>
+				<caption>フェーズを初期化します</caption>。<br />
+				<caution>自動で初期化されますので意図して初期化する必要はありません。</caution>
+			</paragraph>
+		</define>
+		<define key="__StartPhase">
+			<paragraph>
+				<caption>フェーズカウンタをリセットします</caption>。<br />
+				<caution>
+					内部から自動的に呼ばれる関数です。
+					通常直接呼び出すことはありません。
+				</caution>
+			</paragraph>
+		</define>
+		<define key="GetPhase">
+			<return>フェーズ番号</return>
+			<paragraph>
+				<caption>現在のフェーズを取得</caption>します。
+				<code>GetStackValue</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="GetPhaseStack">
+			<return>スタック段数</return>
+			<paragraph>
+				<caption>現在フェーズのスタック段数を取得</caption>します。
+				<code>GetStackInstance</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="NextPhase">
+			<paragraph>
+				<caption>次のフェーズに移動します</caption>。
+				<code>AddPhase</code>のラッパーです。<br />
+				<caution>スタックには積まれません(現在のスタックに上書きされます)</caution>
+			</paragraph>
+		</define>
+		<define key="AddPhase">
+			<argument>先送りするフェーズ番号</argument>
+			<paragraph>
+				<caption>指定した番号分フェーズを先送りします</caption>。
+				<code>SetPhase</code>のラッパーです。<br />
+				<caution>スタックには積まれません(現在のスタックに上書きされます)</caution>
+			</paragraph>
+		</define>
+		<define key="SetPhase">
+			<argument>フェーズ番号</argument>
+			<paragraph>
+				<caption>指定したフェーズに移動します</caption>。<br />
+				<caution>スタックには積まれません(現在のスタックに上書きされます)</caution>
+			</paragraph>
+		</define>
+		<define key="GosubPhase">
+			<argument>フェーズ番号</argument>
+			<paragraph>
+				<caption>スタックを積んで、次のフェーズへ移動します</caption>。
+			</paragraph>
+		</define>
+		<define key="ReturnPhase">
+			<return>スタック段数があり、戻れたらtrue</return>
+			<paragraph>
+				一番<caption>最後に積んだスタックを破棄し、前のフェーズに戻ります</caption>。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="キー入力関連">
+		<paragraph>
+			キー入力関連の関数群です。
+		</paragraph>
+		<define key="IsPressKey">
+			<return>指定キーが押されている( <value>KEY_PUSH</value> / <value>KEY_HOLD</value> )状態で<value>true</value></return>
+			<paragraph>
+				指定した<caption>キーが押されているかどうかを返します。</caption>。
+			</paragraph>
+		</define>
+		<define key="IsPushDirKey">
+			<return>方向キーが押された瞬間のみ<value>true</value></return>
+			<paragraph>
+				<caption>方向キーを押したかどうかを返します</caption>。
+				<code>GetKeyState()</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="IsPushDirKeyEx">
+			<return>方向キーが押された瞬間およびキーリピート発動中は一定時間ごとに一度のみ<value>true</value></return>
+			<paragraph>
+				<caption>方向キーを押したかどうかを返します</caption>。
+				(キーリピート対応版)
+				<code>GetKeyStateEx()</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="GetKeyStateEx">
+			<argument>取得するキーの種類</argument>
+			<return>キーの状態</return>
+			<paragraph>
+				<caption>キー入力状態を取得します</caption>。
+				<code>GetKeyState()</code>のリピート対応型で、発動するとその度に<value>KEY_PUSH</value>を返します。
+			</paragraph>
+		</define>
+		<define key="__SetSlowKeyStateDelayLoop">
+			<paragraph>
+				<caption>毎フレーム低速キーの入力状態を取得します</caption>。
+				使い魔のディレイ対応版です。<br />
+				<caution>自動的に内部から呼ばれますので直接呼び出すことは通常ありません。</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="判定関連">
+		<paragraph>
+			判定関連の関数群です。
+		</paragraph>
+		<define key="IsOutPos">
+			<argument>判定対象とするX座標</argument>
+			<argument>判定対象とするY座標</argument>
+			<argument>画面端からの判定猶予距離</argument>
+			<return>画面端から指定の判定猶予距離以上はみ出ていればtrue</return>
+			<paragraph>
+				<caption>画面から一定以上はみ出ているか</caption>判定します。
+			</paragraph>
+		</define>
+		<define key="IsEnemyInScreen">
+			<return>画面内に敵が存在していればtrue</return>
+			<paragraph>
+				<caption>画面内に敵が存在しているか</caption>判定します。
+				<code>EnumEnemyGetIDInScreen</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="GetEnemyIDInScreen">
+			<return>画面内に存在する敵の中で最も若い内部ID、画面内に存在していなければ-1</return>
+			<paragraph>
+				<caption>画面内に存在している敵の内、最も内部IDが若い敵の内部IDを取得</caption>します。
+			</paragraph>
+		</define>
+		<define key="GetEnemyIDInScreenMoreNearX">
+			<argument>基準とするX座標</argument>
+			<return>画面内に存在し、かつ最も指定X座標に近い敵の内部ID、画面内に存在していなければ-1</return>
+			<paragraph>
+				画面内に存在している敵の内、<caption>指定X座標に最も近い敵の内部IDを取得</caption>します。
+			</paragraph>
+		</define>
+		<define key="GetEnemyIDInScreenMoreNearY">
+			<argument>基準とするY座標</argument>
+			<return>画面内に存在し、かつ最も指定Y座標に近い敵の内部ID、画面内に存在していなければ-1</return>
+			<paragraph>
+				画面内に存在している敵の内、<caption>指定Y座標に最も近い敵の内部IDを取得</caption>します。
+			</paragraph>
+		</define>
+		<define key="GetEnemyIDInScreenMoreNear">
+			<argument>基準とするX座標</argument>
+			<argument>基準とするY座標</argument>
+			<return>画面内に存在し、かつ最も指定座標に近い敵の内部ID、画面内に存在していなければ-1</return>
+			<paragraph>
+				画面内に存在している敵の内、<caption>指定座標に最も近い敵の内部IDを取得</caption>します。
+			</paragraph>
+		</define>
+		<define key="RandBlur">
+			<argument>誤差の幅(±exprとなります)</argument>
+			<return>0を中心とした誤差</return>
+			<paragraph>
+				乱数によって<caption>誤差を発生させます</caption>。<br />
+				<caution>絵画時(<code>onDrawLoop</code> / <code>onBackGround</code> / <code>onBottomObject</code> / <code>onTopObject</code>)には絶対に使用しないでください(リプレイがずれます)</caution>
+			</paragraph>
+		</define>
+		<define key="RandPercentage">
+			<argument>百分率</argument>
+			<return>指定した確率でtrue</return>
+			<paragraph>
+				<caption>指定の確率で真偽を返します</caption>。<br />
+				<caution>絵画時(<code>onDrawLoop</code> / <code>onBackGround</code> / <code>onBottomObject</code> / <code>onTopObject</code>)には絶対に使用しないでください(リプレイがずれます)</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="配列操作">
+		<paragraph>
+			主に配列操作の関数群です。<br />
+			<caution>絵画時(<code>onDrawLoop</code> / <code>onBackGround</code> / <code>onBottomObject</code> / <code>onTopObject</code>)には絶対に使用しないでください(リプレイがずれます)</caution>
+		</paragraph>
+		<define key="CreateMixOrderArray">
+			<argument>配列のサイズ</argument>
+			<return>各要素番号がランダムに代入された指定サイズの配列</return>
+			<paragraph>
+				<caption>指定要素数の配列を作り、全ての要素を要素番号で埋め、ランダムにソート</caption>します。
+			</paragraph>
+		</define>
+		<define key="MixArray">
+			<argument>対象の配列</argument>
+			<return>指定した配列をランダムに並び替えた配列</return>
+			<paragraph>
+				指定した<caption>配列の全要素をランダムに並び替えます</caption>。
+			</paragraph>
+		</define>
+		<define key="GetRandomArray">
+			<argument>対象の配列</argument>
+			<return>指定した配列からランダムに選ばれた要素</return>
+			<paragraph>
+				<caption>指定した配列から要素を1つランダムに選択</caption>し、取り出します。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="算術関連(三角関数)">
+		<paragraph>
+			主に三角関数や角度を扱う関数群です。
+		</paragraph>
+		<define key="ToRadian">
+			<argument>角度</argument>
+			<return>角度に対応したラジアン値</return>
+			<paragraph>
+				<caption>角度をラジアンに変換</caption>します。
+			</paragraph>
+		</define>
+		<define key="ToDegree">
+			<argument>ラジアン値</argument>
+			<return>ラジアン値に対応した角度</return>
+			<paragraph>
+				<caption>ラジアンを角度に変換</caption>します。
+			</paragraph>
+		</define>
+		<define key="CycricOrbit">
+			<argument>周回半径</argument>
+			<argument>速度</argument>
+			<return>周回軌道を回り続ける角速度</return>
+			<paragraph>
+				<caption>周回軌道の角速度</caption>を計算します。
+			</paragraph>
+		</define>
+		<define key="Exp">
+			<argument>対象値</argument>
+			<return>対象値の指数値</return>
+			<paragraph>
+				<caption>対数</caption>を計算します。
+			</paragraph>
+		</define>
+		<define key="LogN">
+			<argument>底数</argument>
+			<argument>対象値</argument>
+			<return>指定した底数を底とした対象値の対数</return>
+			<paragraph>
+				<caption>指数</caption>を計算します。
+				<code>log</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Sec">
+			<argument>角度</argument>
+			<return>角度に対応するセカント値</return>
+			<paragraph>
+				<caption>セカント</caption>を計算します。
+				<code>cos</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Cosec">
+			<argument>角度</argument>
+			<return>角度に対応するコセカント値</return>
+			<paragraph>
+				<caption>コセカント</caption>を計算します。
+				<code>sin</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Cotan">
+			<argument>角度</argument>
+			<return>角度に対応するコタンジェント値</return>
+			<paragraph>
+				<caption>コタンジェント</caption>を計算します。
+				<code>tan</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Asec">
+			<argument>角度</argument>
+			<return>角度に対応するアークセカント値</return>
+			<paragraph>
+				<caption>アークセカント</caption>を計算します。
+				<code>atan</code> / <code>GetSign</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Acosec">
+			<argument>角度</argument>
+			<return>角度に対応するアークコセカント値</return>
+			<paragraph>
+				<caption>アークコセカント</caption>を計算します。
+				<code>atan</code> / <code>GetSign</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Acotan">
+			<argument>角度</argument>
+			<return>角度に対応するアークコタンジェント値</return>
+			<paragraph>
+				<caption>アークコタンジェント</caption>を計算します。
+				<code>atan</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Square">
+			<argument>角度</argument>
+			<return>角度に対応する矩形波値</return>
+			<paragraph>
+				<caption>矩形波</caption>を計算します。
+			</paragraph>
+		</define>
+		<define key="Saw">
+			<argument>角度</argument>
+			<return>角度に対応する鋸波値</return>
+			<paragraph>
+				<caption>鋸波</caption>を計算します。
+				<code>Smooth</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Triangle">
+			<argument>角度</argument>
+			<return>角度に対応する三角波値</return>
+			<paragraph>
+				<caption>三角波</caption>を計算します。
+				<code>Animation</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="算術関連(双曲線関数)">
+		<paragraph>
+			主に双曲線関数を扱う関数群です。
+		</paragraph>
+		<define key="Hsin">
+			<argument>角度</argument>
+			<return>角度に対応するハイパーボリックサイン値</return>
+			<paragraph>
+				<caption>ハイパーボリックサイン</caption>を計算します。
+				<code>Exp</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Hcos">
+			<argument>角度</argument>
+			<return>角度に対応するハイパーボリックコサイン値</return>
+			<paragraph>
+				<caption>ハイパーボリックコサイン</caption>を計算します。
+				<code>Exp</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Htan">
+			<argument>角度</argument>
+			<return>角度に対応するハイパーボリックタンジェント値</return>
+			<paragraph>
+				<caption>ハイパーボリックタンジェント</caption>を計算します。
+				<code>Exp</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Hsec">
+			<argument>角度</argument>
+			<return>角度に対応するハイパーボリックセカント値</return>
+			<paragraph>
+				<caption>ハイパーボリックセカント</caption>を計算します。
+				<code>Exp</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Hcosec">
+			<argument>角度</argument>
+			<return>角度に対応するハイパーボリックコセカント値</return>
+			<paragraph>
+				<caption>ハイパーボリックコセカント</caption>を計算します。
+				<code>Exp</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Hcotan">
+			<argument>角度</argument>
+			<return>角度に対応するハイパーボリックコタンジェント値</return>
+			<paragraph>
+				<caption>ハイパーボリックコタンジェント</caption>を計算します。
+				<code>Exp</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Hasin">
+			<argument>角度</argument>
+			<return>角度に対応するハイパーボリックアークサイン値</return>
+			<paragraph>
+				<caption>ハイパーボリックアークサイン</caption>を計算します。
+				<code>log</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Hacos">
+			<argument>角度</argument>
+			<return>角度に対応するハイパーボリックアークコサイン値</return>
+			<paragraph>
+				<caption>ハイパーボリックアークコサイン</caption>を計算します。
+				<code>log</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Hatan">
+			<argument>角度</argument>
+			<return>角度に対応するハイパーボリックアークタンジェント値</return>
+			<paragraph>
+				<caption>ハイパーボリックアークタンジェント</caption>を計算します。
+				<code>log</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Hasec">
+			<argument>角度</argument>
+			<return>角度に対応するハイパーボリックアークセカント値</return>
+			<paragraph>
+				<caption>ハイパーボリックアークセカント</caption>を計算します。
+				<code>log</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Hacosec">
+			<argument>角度</argument>
+			<return>角度に対応するハイパーボリックアークコセカント値</return>
+			<paragraph>
+				<caption>ハイパーボリックアークコセカント</caption>を計算します。
+				<code>log</code> / <code>GetSign</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="Hacotan">
+			<argument>角度</argument>
+			<return>角度に対応するハイパーボリックアークコタンジェント値</return>
+			<paragraph>
+				<caption>ハイパーボリックアークコタンジェント</caption>を計算します。
+				<code>log</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="算術関連(二次元座標系)">
+		<paragraph>
+			主に二次元座標を扱う関数群です。
+		</paragraph>
+		<define key="Hypot">
+			<argument>X座標値</argument>
+			<argument>Y座標値</argument>
+			<return>原点(0,0)からの距離</return>
+			<paragraph>
+				2D座標において<caption>原点からの距離</caption>を返します。
+			</paragraph>
+		</define>
+		<define key="GetGapLength">
+			<argument>点1のX座標</argument>
+			<argument>点1のY座標</argument>
+			<argument>点2のX座標</argument>
+			<argument>点2のY座標</argument>
+			<return>二点間の距離</return>
+			<paragraph>
+				2D座標において<caption>二点間の距離</caption>を求めます。
+				<code>Hypot</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="GetGapAngle">
+			<argument>原点とするX座標</argument>
+			<argument>原点とするY座標</argument>
+			<argument>標的のX座標</argument>
+			<argument>標的のY座標</argument>
+			<return>角度(deg)</return>
+			<paragraph>
+				2D座標において指定した<caption>点から標的座標への角度</caption>を求めます。
+			</paragraph>
+		</define>
+		<define key="GetGapX">
+			<argument>原点とするX座標</argument>
+			<argument>距離</argument>
+			<argument>角度</argument>
+			<return>指定した点から特定距離・特定角度にある点のX座標</return>
+			<paragraph>
+				2D座標において指定した<caption>点から特定距離・特定角度にある点のX座標</caption>を求めます。
+			</paragraph>
+		</define>
+		<define key="GetGapY">
+			<argument>原点とするY座標</argument>
+			<argument>距離</argument>
+			<argument>角度</argument>
+			<return>指定した点から特定距離・特定角度にある点のY座標</return>
+			<paragraph>
+				2D座標において指定した<caption>点から特定距離・特定角度にある点のY座標</caption>を求めます。
+			</paragraph>
+		</define>
+		<define key="GetGapPosition">
+			<argument>原点とするX座標</argument>
+			<argument>原点とするY座標</argument>
+			<argument>距離</argument>
+			<argument>角度</argument>
+			<return>指定した点から特定距離・特定角度にある座標の配列[X,Y]</return>
+			<paragraph>
+				2D座標において指定した<caption>点から特定距離・特定角度にある座標</caption>を求めます。
+				<code>GetGapX</code>/<code>GetGapY</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="内分カウンタ">
+		<paragraph>
+			最初の位置と最後の位置を指定すると一定時間内に対応した値を返す内分カウンタです。
+		</paragraph>
+		<define key="Animation">
+			<argument>(現在時間==0)の時の初期値</argument>
+			<argument>最終値</argument>
+			<argument>現在時間</argument>
+			<argument>最終値に到達する時間</argument>
+			<argument>内分変化分割用定数のリスト</argument>
+			<return>初期値～最終値に対し0～到達時間の現在時間に相当する値</return>
+			<paragraph>
+				<caption>複雑に制御出来る内分カウンタ</caption>です。<br />
+				<caution>絵画時(<code>onDrawLoop</code> / <code>onBackGround</code> / <code>onBottomObject</code> / <code>onTopObject</code>)では<var>FLAN_ANIMATION_RANDOM</var>を絶対に設定しないでください(リプレイがずれます)</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="BGM/効果音関連">
+		<paragraph>
+			主にBGM/効果音関連の関数群です。
+		</paragraph>
+		<define key="PlaySELoop">
+			<argument>効果音へのファイルパス</argument>
+			<argument>効果音を再生する合計時間</argument>
+			<argument>待機するフレーム数</argument>
+			<paragraph>
+				<caption>効果音を一定時間ごとに再生します</caption>。
+			</paragraph>
+		</define>
+		<define key="PlaySEDelay">
+			<argument>効果音へのファイルパス</argument>
+			<argument>遅延フレーム数</argument>
+			<paragraph>
+				<caption>指定フレーム後に効果音を再生します</caption>。
+			</paragraph>
+		</define>
+		<define key="PlaySEEx">
+			<argument>効果音へのファイルパス</argument>
+			<paragraph>
+				<caption>効果音を再生します</caption>。
+				但しCommonDataを参照し、効果音が無効な場合再生しません。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="マイクロスレッド制御">
+		<paragraph>
+			主にマイクロスレッド制御関連の関数群です。
+		</paragraph>
+		<define key="__Wait">
+			<argument>待機するフレーム数</argument>
+			<paragraph>
+				現在のマイクロスレッドを停止し<caption>指定フレーム数待機</caption>します。<br />
+				<caution>少ないフレーム数でみだりに呼び出さないでください(過負荷の原因となります)</caution><br />
+				<caution>オブジェクト弾では原則この関数を使わずに<code>WaitObject</code>を使用してください。</caution>
+			</paragraph>
+		</define>
+		<define key="WaitZeroEnemy">
+			<paragraph>
+				現在のマイクロスレッドを停止し<caption>敵が誰も居なくなるまで待機</caption>します。<br />
+				<caution>敵スクリプトでこの関数を呼び出すとそのマイクロスレッドは二度と動作を再開しなくなります。</caution>
+			</paragraph>
+		</define>
+		<define key="WaitPushKey">
+			<argument>受け付けるキーの種類</argument>
+			<argument>待機するフレーム数</argument>
+			<return>指定フレーム数以内にキー入力を受け付けたら<value>true</value></return>
+			<paragraph>
+				現在のマイクロスレッドを停止し<caption>指定フレーム数キー入力を受け付けます</caption>。
+			</paragraph>
+		</define>
+		<define key="WaitRealTime">
+			<argument>待機するミリ秒</argument>
+			<paragraph>
+				現在のマイクロスレッドを停止し<caption>指定ミリ秒間待機</caption>します。<br />
+				<caution>この機能を使用するとほぼ確実にリプレイずれが生じますので影響の無いところで使用してください。</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="エフェクトオブジェクト">
+		<paragraph>
+			主にエフェクトオブジェクト制御関連の関数群です。
+		</paragraph>
+		<define key="CreateCircleEffectObject">
+			<argument>頂点数</argument>
+			<argument>半径</argument>
+			<argument>各頂点のα値</argument>
+			<argument>各頂点の赤輝度</argument>
+			<argument>各頂点の緑輝度</argument>
+			<argument>各頂点の青輝度</argument>
+			<return>エフェクトオブジェクトハンドル</return>
+			<paragraph>
+				真<caption>円形エフェクトオブジェクトを生成</caption>します。<br />
+				<caution>三角形の集合体で円が形成されますが、ピザやケーキのような均等分割ではなく団扇のような扇状の分割となります。</caution>
+			</paragraph>
+		</define>
+		<define key="CreateSquareEffectObject">
+			<argument>画像ファイルパス</argument>
+			<argument>テクスチャの切り出し左端X座標</argument>
+			<argument>テクスチャの切り出し上端Y座標</argument>
+			<argument>テクスチャの切り出し幅</argument>
+			<argument>テクスチャの切り出し高さ</argument>
+			<argument>本体の幅</argument>
+			<argument>本体の高さ</argument>
+			<return>エフェクトオブジェクトハンドル</return>
+			<paragraph>
+				<caption>四角形のエフェクトオブジェクトを生成</caption>します。
+			</paragraph>
+		</define>
+		<define key="CreateFillScreenEffectObject">
+			<argument>フィールドの画像ファイルパス</argument>
+			<argument>枠の画像ファイルパス</argument>
+			<return>配列[ フィールドのエフェクトオブジェクト, 枠のエフェクトオブジェクト ]</return>
+			<paragraph>
+				<caption>全画面を埋め尽くすエフェクトオブジェクトを生成</caption>します。
+				但し、<code>onDrawTopObject</code>の絵画はフィールド内に限り表示可能です。
+			</paragraph>
+		</define>
+		<define key="SetFillScreenEffectObjectColor">
+			<argument><code>CreateFillScreenEffectObject</code>オブジェクト</argument>
+			<argument>透明度</argument>
+			<argument>赤輝度</argument>
+			<argument>緑輝度</argument>
+			<argument>青輝度</argument>
+			<paragraph>
+				<caption><code>CreateFillScreenEffectObject</code>で生成したオブジェクトのRGB輝度や透明度を設定</caption>します。
+			</paragraph>
+		</define>
+		<define key="GetAngleToPlayerObject">
+			<argument>基準となるオブジェクトハンドル</argument>
+			<return>プレイヤーへの角度</return>
+			<paragraph>
+				<caption>オブジェクトからプレイヤーへの角度を算出します</caption>。
+				<code>GetAngleToPointObject</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="GetAngleToPointObject">
+			<argument>基準となるオブジェクトハンドル</argument>
+			<return>ターゲットのX座標</return>
+			<return>ターゲットのY座標</return>
+			<return>指定ターゲットへの角度</return>
+			<paragraph>
+				<caption>オブジェクトから指定座標への角度を算出します</caption>。
+				<code>GetGapAngle</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="WaitObject">
+			<argument>オブジェクトハンドル</argument>
+			<argument>待機するフレーム数</argument>
+			<return>待機中にオブジェクトが実体を失った場合true</return>
+			<paragraph>
+				指定フレーム数<caption>オブジェクトのマイクロスレッドを一時停止し待機します</caption>。
+				オブジェクトが実体を失った場合、即座に処理を再開します。<br />
+				<caution>少ないフレーム数でみだりに呼び出さないでください(過負荷の原因となります)</caution>
+			</paragraph>
+		</define>
+		<define key="ReflectObject">
+			<argument>オブジェクトハンドル</argument>
+			<argument>下端で反射するかどうか</argument>
+			<argument>左右端で反射するかどうか</argument>
+			<argument>上端で反射するかどうか</argument>
+			<return>実際に反射したらtrue</return>
+			<paragraph>
+				<caption>オブジェクトを画面端で反射</caption>させます。<br />
+				<caution>反射させる場合、そのオブジェクトタスク内にて毎フレーム呼び出してください。</caution>
+			</paragraph>
+		</define>
+		<define key="SetVectorObject">
+			<argument>オブジェクトハンドル</argument>
+			<argument>角度</argument>
+			<argument>速度</argument>
+			<paragraph>
+				オブジェクトの<caption>ベクトルを設定</caption>します。
+				<code>Obj_SetAngle</code> / <code>Obj_SetSpeed</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="絵画処理">
+		<paragraph>
+			主に絵画制御関連の関数群です。
+		</paragraph>
+		<define key="__DrawCountLoop">
+			<paragraph>
+				<caption>絵画対象のフレームカウントを刻みます</caption>。<br />
+				<caution>自動的に内部から呼ばれますので直接呼び出すことは通常ありません。</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="共通処理">
+		<paragraph>
+			このライブラリセットの読み込み対象となる全てのスクリプトで実行される共通処理です。<br />
+			<caution>
+				内部から自動的に呼ばれる関数です。
+				通常直接呼び出すことはありません。
+			</caution>
+		</paragraph>
+		<define key="__FlanCommonInitialize">
+			<paragraph>
+				<caption>スクリプトの共通初期化処理</caption>です。
+			</paragraph>
+		</define>
+		<define key="__FlanCommonMainLoop">
+			<paragraph>
+				<caption>スクリプトの共通メインループ処理</caption>です。
+				主にカウンタ更新などを行います。
+			</paragraph>
+		</define>
+	</category>
+</contents>

@@ -1,133 +1,240 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ3C　ボス　四季映姫・ヤマザナドゥ　戦闘後
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#BackGround[User]
+#ScriptVersion[2]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_enemy_main{
 
-	// 共通関数読み込み
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
 	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Eiki.dnh"
 
-	// 画像及び効果音ファイル
-	let imgCutInEnemy=cutEiki;
-	let imgCutInPlayer=cutMarisa;
-	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
-	let imgList=[imgCutInEnemy,imgCutInPlayer];
-	let seList=[];
 
-	// 各種設定値
-	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
 
-	// -------------------------------------------------------------------------
-	@Initialize{
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y - 1000;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+	FLAN_ENEMY_COLLISION_A = 0;
+	FLAN_ENEMY_COLLISION_B = 0;
 
-		// ボス初期設定（ファイルのロード他）
-		if(!THC){
-			imgList=imgList~imgFontList;
-			seList=seList~seListEnemy;
-		}
-		InitializeBoss(imgList,seList);
 
-		// スペルカード設定
-		SetLife(1);
-		SetDamageRate(0,0);
-		SetEnemyMarker(false);
-		SetX(minX-128);
-		SetY(minY-128);
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
 
-		// メイン処理
-		Main;
 
-	}
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
 
-	// -------------------------------------------------------------------------
-	@MainLoop{
 
-		// カウンタ加算
-		m_nCount++;
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
 
-		yield;
 
-	}
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
 
-	// メイン処理 --------------------------------------------------------------
-	task Main{
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
 
-		yield;
+		/** 共通初期設定 */
+		m_bDemo = true;
+		InitializeBoss();
 
-		PlaySE(seBossExplode);
-
-		// 会話開始
-		CreateEventFromScript("Talk");
-		SetCommonData(CD_STAGE_EVENT,true);
-		while(GetEventStep!=1){yield;}
-
-		// リザルト
-		CreateResult( 3 );
-		while(OnEvent){yield;}
-		DeleteCommonData(CD_STAGE_EVENT);
-
-		VanishEnemy;
+		/** 個別初期設定 */
+		SetLife( 1 );
+		SetDamageRate( 0, 0 );
+		SetPosition( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y );
+		SetEnemyMarker( false );
 
 	}
 
-	// -------------------------------------------------------------------------
-	@Finalize{
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-		// ロードしたファイルを削除
-		DeleteGraphicList(imgList,seList);
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
 
 	}
 
-	// -------------------------------------------------------------------------
-	@DrawLoop{
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 撃破音 */
+		PlaySEEx( seBossExplode );
+
+		/** 会話開始 */
+		CreateEventFromScript( "Talk" );
+		while( GetEventStep() != 1 ){ yield; }
+
+		/** リザルト */
+		SetResult();
+		while( OnEvent() ){ yield; }
+
+		/** 戦闘終了 */
+		VanishEnemy();
 
 	}
 
 }
 
-// 会話 ------------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	会話
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_event Talk{
 
-	// 共通関数読み込み
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
 	#include_function ".\INCLUDE\Event.dnh"
 
-	// 画像及び効果音ファイル
-	let imgCutInEnemy=cutEiki;
-	let imgCutInPlayer=cutMarisa;
 
-	// -------------------------------------------------------------------------
-	@Initialize{
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
 
-		// メイン処理
-		Main;
+	/** 敵カットイン画像 */
+	m_aszImageCutInEnemy = [
+		cutEiki,
+		cutEiki,
+		cutEiki2,
+		cutEiki,
+		cutEiki,
+		cutEiki,
+		cutEiki,
+		cutEiki,
+		cutEiki,
+		cutEiki3
+	];
 
-	}
 
-	// -------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
 	@MainLoop{
 
-		yield;
-
-	}
-
-	// メイン処理 --------------------------------------------------------------
-	task Main{
-
-		ChrIn(imgCutInPlayer,LEFT,CUT_NORMAL);
-		Player;
-		TextOut("\c[BLUE]悪いが甘々だな、本気になれば私など小指一つで地獄に落とせるんじゃないのか？");
-		TextOut("\c[BLUE]私にすら敵わないようじゃ閻魔なんてとても務まらんぜ");
-		ChrIn(imgCutInEnemy,RIGHT,CUT_NORMAL);
-		Enemy;
-		TextOut("\c[RED]いえ、もう満足したので手を引いたまでです");
-		TextOut("\c[RED]貴方が彼女に会いたいと言う誠意を認めました");
-		Player;
-		TextOut("\c[BLUE]だから言われるまでもないぜ");
-		Enemy;
-		TextOut("\c[RED]では…貴方の探している巫女はここには居ません");
-		TextOut("\c[RED]彼女は例え死んでもこの先に行くことは不可能です…");
-		TextOut("\c[RED]…この意味が分かりますか？");
-		Player;
-		TextOut("\c[BLUE]あぁ分かったぜ");
-		SetStep(1);
-		TextOut("\c[BLUE]死者がここ以外に流れ着く場所と言えばあと一箇所しかない、ってことだろ？");
-		End;
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayerC( m_nWaitFrame, "悪いが甘々だな" );
+		TextOutPlayer( "本気になれば私など小指一つで\n地獄に落とせるんじゃないのか？" );
+		InCharPlayer( CUT_PLAYER_BAD );
+		TextOutPlayer( "私にすら敵わないようじゃ\n閻魔なんてとても務まらんぜ" );
+		InCharEnemy( CUT_ENEMY_CRY );
+		TextOutEnemy( "いえ、もう満足したので手を引いたまでです" );
+		TextOutEnemy( "貴方が彼女に会いたいと言う\n誠意を認めました" );
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "言われるまでもないぜ" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "それじゃあ改めて聞くが\n霊夢は何処にいるんだ？" );
+		TextOutEnemy( "先にも言ったように\n貴方の探している巫女はここには居ません" );
+		TextOutEnemy( "彼女は例え死んでも\nこの先に行くことは不可能です…" );
+		TextOutEnemy( "…この意味が分かりますか？" );
+		TextOutPlayer( "なるほど分かったぜ" );
+		SetStep( 1 );
+		TextOutPlayer( "死者がここ以外に流れ着く場所と言えば\nあと一箇所しかない、ってことだろ？" );
+		End();
 
 	}
 

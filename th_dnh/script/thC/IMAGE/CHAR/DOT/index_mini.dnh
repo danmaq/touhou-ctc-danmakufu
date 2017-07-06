@@ -1,0 +1,22 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//　ドット絵
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+let dirImageCharDot = GetCurrentScriptDirectory ~ "IMAGE\CHAR\DOT\";
+
+//　ザコ
+let dotKedama = dirImageCharDot ~ "zako_kedama.png";
+let dotYousei = dirImageCharDot ~ "zako_yousei.png";
+
+//　魔法陣
+let dotCircle6s = dirImageCharDot ~ "circle6_s.png";
+let dotCircle6m = dirImageCharDot ~ "circle6_m.png";
+let dotCircle8s = dirImageCharDot ~ "circle8_s.png";
+let dotCircle8m = dirImageCharDot ~ "circle8_m.png";
+
+//　使い魔
+let dotShadow = dirImageCharDot ~ "servant.png";
+
+//	幽々子扇
+let dotOugi = dirImageCharDot ~ "ougi.png";

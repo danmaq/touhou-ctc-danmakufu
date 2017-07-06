@@ -1,3 +1,0 @@
-let imgGaugeBase = GetCurrentScriptDirectory() ~ "IMAGE\GAUGE\Base.png";
-let imgGaugeGreen = GetCurrentScriptDirectory() ~ "IMAGE\GAUGE\Green.png";
-let imgGaugeRed = GetCurrentScriptDirectory() ~ "IMAGE\GAUGE\Red.png";

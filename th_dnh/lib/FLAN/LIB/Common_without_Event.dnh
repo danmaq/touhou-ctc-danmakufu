@@ -1,0 +1,25 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	下位ライブラリをインクルードする
+//////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\FLAN\LIB\COMMON_WITHOUT_EVENT\Misc.dnh"
+#include_function "\lib\FLAN\LIB\COMMON_WITHOUT_EVENT\Object.dnh"
+#include_function "\lib\FLAN\LIB\COMMON_WITHOUT_EVENT\Math\index.dnh"
+#include_function "\lib\FLAN\LIB\COMMON_WITHOUT_EVENT\Animation.dnh"
+#include_function "\lib\FLAN\LIB\COMMON_WITHOUT_EVENT\Judge.dnh"
+#include_function "\lib\FLAN\LIB\COMMON_WITHOUT_EVENT\Key.dnh"
+#include_function "\lib\FLAN\LIB\COMMON_WITHOUT_EVENT\Phase.dnh"
+#include_function "\lib\FLAN\LIB\COMMON_WITHOUT_EVENT\Common.dnh"

@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Shadow" file="shadow">
+	<category caption="概要" link="true">
+		<paragraph>
+			使い魔スクリプトでのみ使用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/Shadow.dnh</path>となります。
+			(関数の数が少ないので1ファイルのみの構成となります)
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+	</category>
+	<category caption="書換可能定数" link="true">
+		<define key="FLAN_SHADOW_LIGHTING" type="var">
+			<paragraph>
+				使い魔が発光するかどうかを設定します。
+				デフォルト値は<value>true</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_SHADOW_LIGHTING_COLOR" type="var">
+			<paragraph>
+				使い魔の発光色を設定します。
+				デフォルト値は<value>WHITE03</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_SHADOW_LIGHTING_INTERVAL" type="var">
+			<paragraph>
+				使い魔の発光間隔を設定します。
+				デフォルト値は<value>3</value>です。<br />
+				<caution><value>1</value>未満の数値を設定すると動作が不安定になる可能性があります。</caution>
+			</paragraph>
+		</define>
+		<define key="FLAN_SHADOW_LIGHTING_LIMITTME" type="var">
+			<paragraph>
+				使い魔の発光期限を設定します。
+				デフォルト値は<value>15</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_SHADOW_COLLISION" type="var">
+			<paragraph>
+				当たり判定を持つかどうかを設定します。
+				デフォルト値は<value>false</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_SHADOW_DELETE_SHOT" type="var">
+			<paragraph>
+				使い魔破壊時の弾消し半径を設定します。
+				デフォルト値は<value>32</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_SHADOW_SE_HIDDEN" type="var">
+			<paragraph>
+				使い魔が隠れる時の効果音を設定します。
+				デフォルト値は<value>&quot;&quot;</value>(空文字列)です。<br />
+				<caution>効果音ファイルは自動的にロードされません(各自でロードする必要があります。</caution>
+			</paragraph>
+		</define>
+		<define key="FLAN_SHADOW_SE_APPEAR" type="var">
+			<paragraph>
+				使い魔が具現化する時の効果音を設定します。
+				デフォルト値は<value>&quot;&quot;</value>(空文字列)です。<br />
+				<caution>効果音ファイルは自動的にロードされません(各自でロードする必要があります。</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="メンバ変数" link="true">
+		<define key="m_bFlanCollisionA" type="var">
+			<paragraph>
+				使い魔の被弾判定有無が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_bFlanCollisionB" type="var">
+			<paragraph>
+				使い魔の体当たり判定有無が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanPrevSlowStat" type="var">
+			<paragraph>
+				前フレームの低速ボタン入力状態が格納されます。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="判定関連">
+		<paragraph>
+			判定関連の関数群です。
+		</paragraph>
+		<define key="__SetShadowModeLoop">
+			<paragraph>
+				毎ループ<caption>低速キーの状態を確認し、使い魔の状態を決定します</caption>。<br />
+				<caution>自動的に内部から呼ばれますので直接呼び出すことは通常ありません。</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="エフェクト関連">
+		<paragraph>
+			エフェクト関連の関数群です。<br />
+			<caution>
+				画面効果を扱いますが絵画系ではありません。
+				よって絵画時(<code>onDrawLoop</code> / <code>onBackGround</code> / <code>onBottomObject</code> / <code>onTopObject</code>)には使用できません。
+			</caution><br />
+			<caution>
+				内部から自動的に呼ばれる関数です。
+				通常直接呼び出すことはありません。
+			</caution>
+		</paragraph>
+		<define key="__LightShadowLoop">
+			<paragraph>
+				<caption>使い魔を発光させる(発光体を作る)ループです</caption>。
+			</paragraph>
+		</define>
+		<define key="__LightShadowObject">
+			<paragraph>
+				<caption>使い魔を発光させる(発光体を作る)ループです</caption>。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="移動制御関連">
+		<paragraph>
+			移動制御関連の関数群です。
+		</paragraph>
+		<define key="MoveRotate">
+			<argument>速度</argument>
+			<argument>半径</argument>
+			<argument>中心点のX座標</argument>
+			<argument>中心点のY座標</argument>
+			<paragraph>
+				<caption>使い魔を周回運動させます</caption>。
+				敵本体を中心として回転させる場合<code>SetCoordinateType( COODINATE_TYPE_PARENT )</code>を併用すると便利です。
+			</paragraph>
+		</define>
+	</category>
+</contents>

@@ -1,0 +1,459 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージEx　ボス　伊吹 萃香　戦闘前
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#BackGround[User]
+#ScriptVersion[2]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Suika.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** ザコ画像ファイル */
+	let m_szImageZako = dotYousei;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_aszImageFileListNotStage = m_aszImageFileListNotStage ~ [ m_szImageZako ];
+		m_bDemo = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetLife( 1 );
+		SetDamageRate( 0, 0 );
+		BehaviorBoss( ACT_STAND3 );
+		SetPosition( CL_MAX_X + 140, CL_MIN_Y );
+		SetEnemyMarker( false );
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 会話開始 */
+		CreateEventFromScript( "Talk" );
+		while( GetEventStep() != 1 ){ yield; }
+
+		/** 移動＋ボスID設定 */
+		SetEnemyMarker( true );
+		let nFrame = 90;
+		let nEventCount = m_nFlanCount;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		let nBossID = CL_TTH_CHARACTER_NAME_EXPH + CL_TTH_CHARACTER_NAME_EXPH_SUIKA;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		while( GetEventStep() != 2 || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** ザコ召喚 */
+		nFrame = 120;
+		nEventCount = m_nFlanCount;
+		SetAction( ACT_SHOT_A5, 60 );
+		CreateEnemyFromScript( "Enemy", GetX() - 30, GetY() - 15, 0, 0, 0 );
+		PlaySEEx( seShadow );
+		while( GetEventStep() != 3 || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** BGM */
+		PlayMusicEx( 34 );
+		nFrame = 30;
+		nEventCount = m_nFlanCount;
+		while( OnEvent() || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** 戦闘開始 */
+		AddLife( -1 );
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	ザコ
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy Enemy{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Zako.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ZAKO_ACTION_EXISTBOSS = FLAN_ZAKO_EXISTBOSS_NONEACTION;
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ENEMY_COLLISION_A = 0;
+	FLAN_ENEMY_COLLISION_B = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		SetLife( 1 );
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 妖精描画 */
+		DrawYousei( RECT_YOUSEI_RED );
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nArgv, let nLevel ){
+
+		/** 出現 */
+		let nFrame = 30;
+		Concentration01( nFrame );
+		__Wait( nFrame );
+
+		/** 移動 */
+		let nX = GetX() - 60;
+		let nY = CL_MIN_Y - 40;
+		let nForce1 = 100;
+		let nAngle1 = 180;
+		let nForce2 = 300;
+		let nAngle2 = 270;
+		nFrame = 90;
+		SetMovePositionHermite( nX, nY, nForce1, nAngle1, nForce2, nAngle2, nFrame );
+		__Wait( nFrame );
+
+		/** 消滅 */
+		VanishEnemy();
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	会話
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_event Talk{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Event.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 敵カットイン画像 */
+	m_aszImageCutInEnemy = [
+		cutSuika,
+		cutSuika2,
+		cutSuika,
+		cutSuika,
+		cutSuika,
+		cutSuika,
+		cutSuika,
+		cutSuika,
+		cutSuika3,
+		cutSuika4
+	];
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	@MainLoop{
+
+		InCharPlayer( CUT_PLAYER_SURPRISE );
+		TextOutPlayerC( m_nWaitFrame, "これは…久しいな\nどこをどう見ても幻想郷だぜ" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "服もあの時のままだし" );
+		SetStep( 1 );
+		TextOutEnemyB( 90, "お、やっと見つけた！" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "私の分身が倒されたって\n聞いて探してたのよー" );
+		InCharPlayer( CUT_PLAYER_SURPRISE );
+		TextOutPlayer( "お前は……？" );
+		SetNameFromTextEnemy( "伊吹 萃香", "萃まる夢、幻、そして百鬼夜行" );
+		InCharEnemy( CUT_ENEMY_DISLIKE );
+		TextOutEnemy( "もう忘れちゃったの？" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "私はあんたのことをすべて知ってるわ" );
+		TextOutEnemy( "あんたを萃めたのも私\n宴会の幹事をやらせたのも…" );
+		DeleteNameEnemy();
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "私は誰の命も受けた覚えはないぜ" );
+		InCharPlayer( CUT_PLAYER_BAD );
+		TextOutPlayer( "よーく思い出した、あの時のデバガメか" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "覚えてくれて光栄だよ" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "んで、どうだい？私が萃め直した幻想郷は" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "てかお前らよく生きてられたな\n幻想郷はバラバラに砕け散ったじゃないか" );
+		InCharEnemy( CUT_ENEMY_DISLIKE );
+		TextOutEnemy( "んー、私の分身のいくつかが\nホントに偶然なんだけど" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "たまたま幻想郷のかけらに\n上手いこと引っかかっててね" );
+		TextOutEnemy( "んで私が散らばった幻想郷を萃め直して\n妖力でそれらを継ぎ接ぎして" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "あとは妖怪が居ない幻想郷なんてアレだし\n妖精を作ってはあちこちにばら撒いて" );
+		InCharPlayer( CUT_PLAYER_REGRET );
+		TextOutPlayer( "なるほど、だから雑魚の割には\nやたら統率取れていたわけだ" );
+		InCharPlayer( CUT_PLAYER_SURPRISE );
+		TextOutPlayer( "って、お前そんな芸当出来たんだ？" );
+		TextOutEnemy( "んー？出来るよ？\nこの程度なら…" );
+		SetStep( 2 );
+		TextOutEnemyB( 120, "ほら" );
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "へぇ～、じゃあ\nみんなも直るのか？アリスとか" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "まだ無理だね。\n幻想郷が余り萃まりきってないのもあるし" );
+		TextOutEnemy( "それに仮にこうやって生成しても\n肉体と魂は元に戻るかもしれないけど" );
+		TextOutEnemy( "どうやら精神…つまり\n性格とか記憶までは戻らないみたい" );
+		InCharPlayer( CUT_PLAYER_TEMPER );
+		TextOutPlayer( "それでも肉体はよみがえるんだろ？\nなぜそれをしないんだ？" );
+		InCharEnemy( CUT_ENEMY_DISLIKE );
+		TextOutEnemy( "…あんたが「俺」とか\n言い出す光景を想像してみたら？" );
+		InCharPlayer( CUT_PLAYER_BAD );
+		TextOutPlayer( "う…" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "あるいはひょっとしたら私みたいに" );
+		TextOutEnemy( "砕け散った幻想郷のかけらにしがみついて\n生きのびているかもしれないし" );
+		InCharPlayer( CUT_PLAYER_REGRET );
+		TextOutPlayer( "そうか…残念だぜ\n折角みんなに会えると思ったが" );
+		TextOutEnemy( "さーて…っと！" );
+		InCharPlayer( CUT_PLAYER_SURPRISE );
+		TextOutPlayer( "？" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "こうやって超久々に会ったわけだから\n久々にやろうか？あれ" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "おー？アレってソレのことか？" );
+		TextOutEnemy( "ここのところずっと\n創造主の真似事みたいなことばっかでねぇ" );
+		InCharEnemy( CUT_ENEMY_DISLIKE );
+		TextOutEnemy( "そういうことあんまり趣味じゃないから\n飽きてきちゃって" );
+		SetStep( 3 );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "そろそろ体もなまってきたし\n久々に弾の一つでも吐かせてくれよ" );
+		InCharPlayer( CUT_PLAYER_SMILE );
+		TextOutPlayer( "こっちだって超久々だ。言っておくが\n加減の仕方忘れちまったぜ？" );
+		TextOutEnemy( "結構結構。それでは新生幻想郷\n最初の１０ラウンド、行ってみようか！" );
+		End();
+
+	}
+
+}

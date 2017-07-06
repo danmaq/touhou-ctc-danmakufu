@@ -1,0 +1,611 @@
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		専用魔理沙スクリプト
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#東方弾幕風[Player]
+#ScriptVersion[2]
+#ReplayName[THC_MD]
+#Menu[魔理沙 恋符]
+#Image[.\IMAGE\Select.png]
+#Text[貫通タイプ]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_player_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\player.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_PLAYER_ITEM_AUTOCOLLECT_LINE = 176;
+	CL_CUTIN_SPELLNAME_KERNING = -3;
+	CL_CUTIN_SPELLNAME_X_PLAYER = 128;
+	PLAYER_INYAN_GAUGE_RATE = 1.04;
+	PLAYER_SHOT_BASIC_WIDTH_FASTMOVE = 12;
+	PLAYER_SHOT_BASIC_WIDTH_SLOWMOVE = 6;
+	PLAYER_SPELL_NAME_FASTMOVE = "恋符「ノンディレクショナルレーザー」";
+	PLAYER_SPELL_NAME_SLOWMOVE = "恋符「マスタースパーク」";
+	PLAYER_SPELL_FUNCTION_FASTMOVE = "SpellMarisaD1";
+	PLAYER_SPELL_FUNCTION_SLOWMOVE = "SpellMarisaD2";
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	let m_nMarisaLastShot	= 0;
+	let m_nBitLeftObject	= -1;
+	let m_nBitRightObject	= -1;
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	task DoLaser( let nParentDir ){
+		let nParentObj;
+		loop{
+			nParentObj = [ m_nBitLeftObject, m_nBitRightObject ][ nParentDir == 1 ];
+			if( nParentObj >= 0 ){ break; }
+			yield;
+		}
+		loop{
+			yield;
+			let obj = Obj_Create( OBJ_LASER );
+			Obj_SetAngle( obj, 270 );
+			Obj_SetAutoDelete( obj, false );
+			Obj_SetAutoDelete( obj, false );
+			ObjShot_SetGraphic( obj, US_LASER );
+			ObjLaser_SetLength( obj, 448 );
+			ObjLaser_SetSource( obj, false );
+			__LaserDamage( obj );
+			while( !Obj_BeDeleted( obj ) ){
+				Obj_SetPosition( obj, Obj_GetX( nParentObj ), Obj_GetY( nParentObj ) );
+				yield;
+			}
+			while( m_nFlanCount - m_nMarisaLastShot > 1 ){ yield; }
+		}
+	}
+
+	task __LaserDamage( let obj ){
+		let nKeyPullAlpha = 1;
+		let bForbidShot = true;
+		while( !Obj_BeDeleted( obj ) ){
+			yield;
+			let nPhase = GetPhase();
+			let nLaserWidthMin = 8 + nPhase;
+			let nLaserWidthMax = 24 + nPhase * 2;
+			let nSlowKeyChangeCount = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_KEY_SLOW_TIME, 0 );
+			ObjLaser_SetWidth( obj, Smooth( [ nLaserWidthMax, nLaserWidthMin ][ m_bFlanKeySlow ], [ nLaserWidthMin, nLaserWidthMax ][ m_bFlanKeySlow ], nSlowKeyChangeCount, 50 ) );
+			if( !bForbidShot ){ nKeyPullAlpha = MinMax( nKeyPullAlpha + [ -6, 5 ][ m_nFlanCount - m_nMarisaLastShot < FLAN_PLAYER_SHOT_INTERVAL * 2 ], 0, 255 ); }
+			if( nKeyPullAlpha == 0 ){
+				bForbidShot = true;
+				Obj_Delete( obj );
+				return;
+			}
+			let nAngleCircle = m_nFlanCount * Smooth( 2, 0.5, nPhase, 5 );
+			if( nAngleCircle % 360 < 10 ){ bForbidShot = false; }
+			let nAlpha = Min( Triangle( nAngleCircle ) * 255 * ( nPhase + 1 ), nKeyPullAlpha );
+			Obj_SetAlpha( obj, Min( nAlpha, 112 ) );
+			ObjShot_SetDamage( obj, Accelerate( 0, 1.3, Max( nAlpha - 64, 0 ), 192 ) * [ 1, 1.5 ][ m_bFlanKeySlow ] );
+		}
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*/
+	task MainTaskTHC(){
+	}
+
+	/**
+	*	初期化時に呼ばれます。
+	*/
+	function onInitializeTHC(){
+		ascent( let i in 0..2 ){ DoLaser( [ -1, 1 ][ i ] ); }
+	}
+
+	/**
+	*	ショット発射時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onShotTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	サブショット発射時に呼ばれます。
+	*
+	*	@param nParentBitObj 親ビットのオブジェクトハンドル
+	*	@param nParentBitDir 親ビットの左右位置関係
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onSubShotTHC( let nParentBitObj, let nParentBitDir, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		m_nMarisaLastShot = nCount;
+		if( nParentBitDir == -1 ){ m_nBitLeftObject = nParentBitObj; }
+		if( nParentBitDir == 1 ){ m_nBitRightObject = nParentBitObj; }
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		FLAN_PLAYER_SPEED_FAST = [ 4.7, [ 0.7, 2 ][ m_nPlayerSpellType == MOVE_NORMAL ] ][ OnBomb() ];
+		FLAN_PLAYER_SPEED_SLOW = [ 2.5, [ 0.8, 1.6 ][ m_nPlayerSpellType == MOVE_NORMAL ] ][ OnBomb() ];
+	}
+
+	/**
+	*	ミス時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onPlayerMissedTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	スペル発動時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onStartSpellTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部ここまで
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スペルカードスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_spell SpellMarisaD1{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\spell.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数
+//////////////////////////////////////////////////////////////////////
+
+	let NL_TIMEOUT			= 330;
+	let NL_TIMEOUT_SCALE	= 50;
+	let NL_TIMEOUT_BRIGHT	= 100;
+	let NL_LASER_DIAM		= 460;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	回転レーザー本体です。
+	*
+	*	@param nBaseAngle 基本角度
+	*	@param nSrcX 規定の元画像X座標
+	*/
+	task DoLaser( let nBaseAngle, let nSrcX ){
+		let nAngle = nBaseAngle;
+		let obj = CreateLaserObject( nSrcX, 128, 1024 );
+		ObjEffect_SetLayer( obj, 4 );
+		__ScaleAnimation( obj );
+		ascent( let i in 0..NL_TIMEOUT ){
+			let nDstX = GetPlayerX() + sin( nAngle ) * NL_LASER_DIAM;
+			let nDstY = GetPlayerY() - cos( nAngle ) * NL_LASER_DIAM;
+			Obj_SetPosition( obj, nDstX, nDstY );
+			ObjSpell_SetIntersecrionLine( obj, GetPlayerX(), GetPlayerY(), nDstX, nDstY, 64, 3.6, true );
+			ObjEffect_SetAngle( obj, 0, 0, nAngle );
+			nAngle += Smooth( 0.8, 5, i, NL_TIMEOUT );
+			if( i == NL_TIMEOUT - NL_TIMEOUT_BRIGHT ){ __BrightOutAnimation( obj ); }
+			yield;
+		}
+		Obj_Delete( obj );
+	}
+
+	/**
+	*	拡大率アニメーションです。
+	*
+	*	@param nBaseAngle 基本角度
+	*	@param nSrcX 規定の元画像X座標
+	*/
+	task __ScaleAnimation( let obj ){
+		ascent( let i in 0..NL_TIMEOUT_SCALE ){
+			let nScaleX = SlowDown( 0, 1, i, NL_TIMEOUT_SCALE );
+			ObjEffect_SetScale( obj, nScaleX, 1 );
+			yield;
+		}
+	}
+
+	/**
+	*	輝度アニメーションです。
+	*
+	*	@param nBaseAngle 基本角度
+	*	@param nSrcX 規定の元画像X座標
+	*/
+	task __BrightOutAnimation( let obj ){
+		ascent( let i in 0..NL_TIMEOUT_BRIGHT ){
+			let nBright = SlowDown( 255, 0, i, NL_TIMEOUT_BRIGHT );
+			ascent( let j in 0..4 ){ ObjEffect_SetVertexColor( obj, j, nBright, nBright, nBright, nBright ); }
+			yield;
+		}
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*/
+	task MainTask( let nArgv ){
+		PlaySEEx( SE_SPARK );
+		ascent( let i in 0..3 ){ DoLaser( Smooth( 0, 360, i, 3 ), [ SPELL_LASER_SRC_X_BLUE, SPELL_LASER_SRC_X_ORANGE, SPELL_LASER_SRC_X_RED ][ i ] ); }
+		__Wait( 288 );
+		End();
+	}
+
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*/
+	function onInitializeTHC( let nArgv ){
+		LoadSE( SE_SPARK );
+		SetPlayerInvincibility( NL_TIMEOUT );
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+			let nBlur = SlowDown( 4, 0, nCount, NL_TIMEOUT );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_X, RandBlur( nBlur ) );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Y, RandBlur( nBlur ) );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Z, RandBlur( nBlur ) );
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_X );
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Y );
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Z );
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スペルカードスクリプト部ここまで
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スペルカードスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_spell SpellMarisaD2{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\spell.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数
+//////////////////////////////////////////////////////////////////////
+
+	let MS_FLASH_PHASE1_INTERVAL	= 30;
+	let MS_FLASH_PHASE2_INTERVAL	= 144;
+	let MS_FLASH_GAP_Y				= 256;
+	let MS_FLASH_SCALE_DECAY		= 0.75;
+	let MS_SPARK_PHASE1_INTERVAL	= 50;
+	let MS_SPARK_PHASE2_INTERVAL	= 160;
+	let MS_SPARK_GAP_Y				= 320;
+	let MS_SPARK_ALPHA_DECAY		= 160;
+	let MS_SPARK_PHASE3_INTERVAL	= 60;
+
+	let SPELL_LASER_SRC_X_BLUE	= 406;
+	let SPELL_LASER_SRC_X_RED	= 256;
+	let SPELL_LASER_SRC_X_ORANGE	= 286;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	フラッシュエフェクトです。
+	*/
+	task DoFlash(){
+		let obj = CreateLaserObject( SPELL_LASER_SRC_X_ORANGE, 2048, 2048 );
+		ObjEffect_SetLayer( obj, 3 );
+		DoFlashDamage( obj, 1 );
+		ascent( let i in 0..MS_FLASH_PHASE1_INTERVAL ){
+			Obj_SetPosition( obj, GetPlayerX(), GetPlayerY() - SlowDown( 0, MS_FLASH_GAP_Y, i, MS_FLASH_PHASE1_INTERVAL ) );
+			let nScale = SlowDown( 0, MS_FLASH_SCALE_DECAY, i, MS_FLASH_PHASE1_INTERVAL );
+			ObjEffect_SetScale( obj, nScale, nScale );
+			yield;
+		}
+		ascent( let i in 0..MS_FLASH_PHASE2_INTERVAL ){
+			let nBrightR = Accelerate( 255, 0, i, MS_FLASH_PHASE2_INTERVAL );
+			let nBrightG = Smooth( 255, 0, i, MS_FLASH_PHASE2_INTERVAL );
+			let nBrightB = SlowDown( 255, 0, i, MS_FLASH_PHASE2_INTERVAL );
+			ascent( let j in 0..4 ){ ObjEffect_SetVertexColor( obj, j, 255, nBrightR, nBrightG, nBrightB ); }
+			Obj_SetPosition( obj, GetPlayerX(), GetPlayerY() - MS_FLASH_GAP_Y );
+			let nScale = Smooth( MS_FLASH_SCALE_DECAY, 1, i, MS_FLASH_PHASE2_INTERVAL );
+			ObjEffect_SetScale( obj, nScale, nScale );
+			yield;
+		}
+		Obj_Delete( obj );
+	}
+
+	/**
+	*	フラッシュエフェクトの間ダメージを与えます。
+	*
+	*	@param nAngle エフェクトオブジェクトハンドル
+	*/
+	task DoFlashDamage( let obj, let nDamage ){
+		__Wait( truncate( MS_FLASH_PHASE1_INTERVAL / 2 ) );
+		while( !Obj_BeDeleted( obj ) ){
+			yield;
+			ObjSpell_SetIntersecrionCircle( obj, Obj_GetX( obj ), Obj_GetY( obj ), 192, nDamage, true );
+			ObjSpell_SetIntersecrionCircle( obj, Obj_GetX( obj ), Obj_GetY( obj ) + MS_FLASH_GAP_Y / 1.3, 80, nDamage, true );
+		}
+	}
+
+	/**
+	*	ごんぶとレーザー本体です。
+	*
+	*	@param nAngle 角度
+	*	@param nSrcX 規定の元画像X座標
+	*/
+	task DoSpark( let nAngle, let nSrcX ){
+		let obj = CreateLaserObject( nSrcX, 512, 1024 );
+		let nAlphaDecay = Smooth( 32, -32, absolute( nAngle ), 20 );
+		ObjEffect_SetLayer( obj, 4 );
+		ObjEffect_SetAngle( obj, 0, 0, nAngle );
+		DoFlashDamage( obj, 2.2 );
+		ascent( let i in 0..MS_SPARK_PHASE1_INTERVAL ){
+			let nGapY = SlowDown( 0, MS_SPARK_GAP_Y, i, MS_SPARK_PHASE1_INTERVAL );
+			Obj_SetPosition( obj, GetPlayerX() + sin( nAngle ) * nGapY , GetPlayerY() - nGapY );
+			let nScale = SlowDown( 0, 1, i, MS_SPARK_PHASE1_INTERVAL );
+			ObjEffect_SetScale( obj, Min( nScale * 2, 1 ), nScale );
+			yield;
+		}
+		ascent( let i in 0..MS_SPARK_PHASE2_INTERVAL ){
+			let nAngleSustain = Accelerate( nAngle, nAngle / 3, i, MS_SPARK_PHASE2_INTERVAL );
+			let nAlphaDecay = Smooth( 32, -32, absolute( nAngle ), 20 );
+			let nBright = Accelerate( 255, MS_SPARK_ALPHA_DECAY + nAlphaDecay, i, MS_SPARK_PHASE2_INTERVAL );
+			ascent( let j in 0..4 ){ ObjEffect_SetVertexColor( obj, j, 255, nBright, nBright, nBright ); }
+			Obj_SetPosition( obj, GetPlayerX() + sin( nAngleSustain ) * MS_SPARK_GAP_Y, GetPlayerY() - MS_SPARK_GAP_Y );
+			ObjEffect_SetAngle( obj, 0, 0, nAngleSustain );
+			yield;
+		}
+		ascent( let i in 0..MS_SPARK_PHASE3_INTERVAL ){
+			let nBright = SlowDown( MS_SPARK_ALPHA_DECAY + nAlphaDecay, 0, i, MS_SPARK_PHASE3_INTERVAL );
+			let nScaleX = Accelerate( 1, 0, i, MS_SPARK_PHASE3_INTERVAL );
+			ascent( let j in 0..4 ){ ObjEffect_SetVertexColor( obj, j, 255, nBright, nBright, nBright ); }
+			Obj_SetPosition( obj, GetPlayerX() + sin( nAngle / 3 ) * MS_SPARK_GAP_Y, GetPlayerY() - MS_SPARK_GAP_Y );
+			ObjEffect_SetScale( obj, nScaleX, 1 );
+			yield;
+		}
+		Obj_Delete( obj );
+	}
+
+	/**
+	*	背景を揺らします。
+	*/
+	task DoQuake(){
+		ascent( let i in 0..MS_SPARK_PHASE1_INTERVAL ){
+			let nBlur = SlowDown( 64, 8, i, MS_SPARK_PHASE1_INTERVAL );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_X, RandBlur( nBlur ) );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Y, RandBlur( nBlur ) );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Z, RandBlur( nBlur ) );
+			yield;
+		}
+		let nDecayTime = 320 - MS_SPARK_PHASE1_INTERVAL;
+		ascent( let i in 0..nDecayTime ){
+			let nBlur = SlowDown( 8, 1, i, nDecayTime );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_X, RandBlur( nBlur ) );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Y, RandBlur( nBlur ) );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Z, RandBlur( nBlur ) );
+			yield;
+		}
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*/
+	task MainTask( let nArgv ){
+		PlaySEEx( SE_SPARK );
+		DoQuake();
+		DoFlash();
+		__Wait( 16 );
+		ascent( let i in 0..3 ){ DoSpark( [ -16, 0, 16 ][ i ], [ SPELL_LASER_SRC_X_BLUE, SPELL_LASER_SRC_X_ORANGE, SPELL_LASER_SRC_X_RED ][ i ] ); }
+		__Wait( 288 );
+		End();
+	}
+
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*/
+	function onInitializeTHC( let nArgv ){
+		LoadSE( SE_SPARK );
+		SetPlayerInvincibility( 420 );
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_X );
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Y );
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Z );
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スペルカードスクリプト部ここまで
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+}

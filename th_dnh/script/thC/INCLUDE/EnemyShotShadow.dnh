@@ -1,138 +1,547 @@
 //////////////////////////////////////////////////////////////////////
 //====================================================================
 //
-//	弾・敵・使い魔などの共通下位ライブラリ
+//	THC Extend-Library (extends FLAN)
+//		敵・弾・使い魔共通ライブラリ
 //
-//		※各上位ライブラリから間接的にインクルードされます。
-//			直接インクルードすることはありません。
-//		※イベントスクリプト・ステージスクリプトでは使用できません。
+//		※Boss.dnh/Zako.dnh/Shot.dnh/Shadow.dnhからインクルードしてください。
+//			それ以外からはインクルードしないでください。
 //
 //====================================================================
 //////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
 //	下位ライブラリをインクルード
-//--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
 #include_function ".\INCLUDE\Common.dnh"
-#include_function ".\INCLUDE\withoutEvent.dnh"
-#include_function ".\INCLUDE\CutIn.dnh"
-#include_function ".\INCLUDE\patternShot.dnh"
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
 //	インデックスをインクルード
-//	※夢終劇以外に流用する場合は必要に応じて削除してください
-//--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-#include_function ".\IMAGE\index.dnh"
-#include_function ".\SOUND\index.dnh"
+#include_function "\lib\THCCL\_index_UserShot.dnh"
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	判定関数
-//--------------------------------------------------------------------
+//	定数(書換不可)
 //////////////////////////////////////////////////////////////////////
-
-//	自分が画面から出ているかどうか判定する
-function IsOut( let nDeadline ){ return IsOutPos( GetX(), GetY(), nDeadline ); }
 
 
 //////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+/**	敵が落とすデフォルトアイテムの量を設定します。 */
+let ENEMY_ITEMEX_NUM_DEFAULT		= 0;
+/**	敵が落とす[P]アイテムの量を設定します。 */
+let ENEMY_ITEMEX_NUM_POWER			= 0;
+/**	敵が落とす大[P]アイテムの量を設定します。 */
+let ENEMY_ITEMEX_NUM_POWER_BIG		= 0;
+/**	敵が落とす点アイテムの量を設定します。 */
+let ENEMY_ITEMEX_NUM_POINT			= 0;
+/**	敵が落とす小点アイテムの量を設定します。 */
+let ENEMY_ITEMEX_NUM_POINT_SMALL	= 0;
+/**	ボムアイテムを敵が落とすかどうかを設定します。 */
+let ENEMY_ITEMEX_ENABLE_BOMB		= false;
+/**	エクステンドアイテムを敵が落とすかどうかを設定します。 */
+let ENEMY_ITEMEX_ENABLE_EXTEND		= false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	マイクロスレッド制御
+// 定型弾幕
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	自分が一定速度以下になるまで待機
-function WaitSpeedDown( let nSpeed ){ yield; while( GetSpeed() > nSpeed ){ yield; } }
-
-//	自分が停止するまで待機
-function WaitZeroSpeed(){ WaitSpeedDown( 0 ); }
-
-
-//////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	オブジェクト弾制御
-//--------------------------------------------------------------------
-//////////////////////////////////////////////////////////////////////
-
-//	オブジェクト弾生成
-function _SetObject( let x, let y, let fSpeed, let fAngle, let nDelay, let bAutoDelete ){
-	let obj = Obj_Create( OBJ_SHOT );
-	Obj_SetX( obj, x );
-	Obj_SetY( obj, y );
-	Obj_SetSpeed( obj, fSpeed );
-	Obj_SetAngle( obj, fAngle );
-	Obj_SetAutoDelete( obj, bAutoDelete );
-	ObjShot_SetDelay( obj, nDelay );
-	return obj;
-}
-
-//	オブジェクト生成
-function SetShotObject( let x, let y, let fSpeed, let fAngle, let Color, let nDelay ){
-	let obj = _SetObject( x, y, fSpeed, fAngle, nDelay, true );
-	ObjShot_SetGraphic( obj, Color );
-	return obj;
-}
-
-//	隠しオブジェクト生成
-function SetHiddenObject( let x, let y, let fSpeed, let fAngle, let nDelay, let bRedist, let bAutoDelete ){
-	let obj = _SetObject( x, y, fSpeed, fAngle, nDelay, bAutoDelete );
-	Obj_SetCollisionToPlayer( obj, false );
-	ObjShot_SetBombResist( obj, bRedist );
-	return obj;
-}
-
-//	GetAngleToPlayer()のオブジェクト弾対応版
-function GetAngleToPlayerObject( let obj ){ return atan2( GetPlayerY() - Obj_GetY( obj ), GetPlayerX() - Obj_GetX( obj ) ); }
-
-//	一定フレーム待機(オブジェクト弾に_Wait()を使ってはいけない)
-function WaitObject( let obj, let frame ){
-	let count = 0;
-	while( !Obj_BeDeleted( obj ) && count < frame ){
-		yield;
-		count++;
+/**
+*	扇状に弾を発射します。
+*	速度の変化がない場合はこちら。
+*
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		発射速度
+*	@param nAngle		発射角度
+*	@param nWideAngle	扇全体の角度
+*	@param nWay			Way数
+*	@param nGraphicID	弾画像
+*	@param nDelay		遅延フレーム数
+*/
+function _WideShot01( let nX, let nY, let nSpeed, let nAngle, let nWideAngle, let nWay, let nGraphicID, let nDelay ){
+	let nWayAngle = 0;
+	if( nWay > 1 ){
+		nWayAngle = nWideAngle / ( nWay - 1 );
+		nAngle -= nWideAngle / 2;
 	}
-	return Obj_BeDeleted( obj );
+	loop( nWay ){
+		CreateShot01( nX, nY, nSpeed, nAngle, nGraphicID, nDelay );
+		nAngle += nWayAngle;
+	}
 }
 
-//	反射弾
-function ReflectObject( let object, let bBottom, let bSide, let bTop ){
-	let fAngle = Obj_GetAngle( object ) % 360;
-	if( ( bTop && Obj_GetY( object ) < GetClipMinY() ) || ( bBottom && Obj_GetY( object ) > GetClipMaxY() ) ){
-		Obj_SetAngle( object, -fAngle );
-		return true;
+/**
+*	扇状に弾を発射します。
+*	速度の変化がある場合はこちら。
+*
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		発射速度
+*	@param nAccelSpeed	加速度
+*	@param nMaxSpeed	最大速度（最低速度）
+*	@param nAngle		発射角度
+*	@param nWideAngle	扇全体の角度
+*	@param nWay			Way数
+*	@param nGraphicID	弾画像
+*	@param nDelay		遅延フレーム数
+*/
+function _WideShot02( let nX, let nY, let nSpeed, let nAccelSpeed, let nMaxSpeed, let nAngle, let nWideAngle, let nWay, let nGraphicID, let nDelay ){
+	let nWayAngle = 0;
+	if( nWay > 1 ){
+		nWayAngle = nWideAngle / ( nWay - 1 );
+		nAngle -= nWideAngle / 2;
 	}
-	if( bSide && ( Obj_GetX( object ) < GetClipMinX() || Obj_GetX( object ) > GetClipMaxX() ) ){
-		Obj_SetAngle( object, 180 - fAngle );
-		return true;
+	loop( nWay ){
+		CreateShot02( nX, nY, nSpeed, nAngle, nAccelSpeed, nMaxSpeed, nGraphicID, nDelay );
+		nAngle += nWayAngle;
 	}
-	return false;
+}
+
+/**
+*	全方向に弾を発射します。
+*	速度の変化がない場合はこちら。
+*
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		発射速度
+*	@param nAngle		発射角度
+*	@param nWay			Way数
+*	@param nGraphicID	弾画像
+*	@param nDelay		遅延フレーム数
+*/
+function _RoundShot01( let nX, let nY, let nSpeed, let nAngle, let nWay, let nGraphicID, let nDelay ){
+	let nWayAngle = 360 / nWay;
+	loop( nWay ){
+		CreateShot01( nX, nY, nSpeed, nAngle, nGraphicID, nDelay );
+		nAngle += nWayAngle;
+	}
+}
+
+/**
+*	全方向に弾を発射します。
+*	速度の変化がある場合はこちら。
+*
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		発射速度
+*	@param nAccelSpeed	加速度
+*	@param nMaxSpeed	最大速度（最低速度）
+*	@param nAngle		発射角度
+*	@param nWay			Way数
+*	@param nGraphicID	弾画像
+*	@param nDelay		遅延フレーム数
+*/
+function _RoundShot02( let nX, let nY, let nSpeed, let nAccelSpeed, nMaxSpeed, let nAngle, let nWay, let nGraphicID, let nDelay ){
+	let nWayAngle = 360 / nWay;
+	loop( nWay ){
+		CreateShot02( nX, nY, nSpeed, nAngle, nAccelSpeed, nMaxSpeed, nGraphicID, nDelay );
+		nAngle += nWayAngle;
+	}
+}
+
+/**
+*	全方向に扇状の弾を発射します。
+*	速度の変化がない場合はこちら。
+*
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		発射速度
+*	@param nAngle		発射角度
+*	@param nWideAngle	扇全体の角度
+*	@param nWideWay		扇を構成するWay数
+*	@param nRoundWay	扇の数
+*	@param nGraphicID	弾画像
+*	@param nDelay		遅延フレーム数
+*/
+function _RoundWideShot01( let nX, let nY, let nSpeed, let nAngle, let nWideAngle, let nWideWay, let nRoundWay, let nGraphicID, let nDelay ){
+	let nRoundWayAngle = 360 / nRoundWay;
+	let nWideWayAngle = 0;
+	if( nWideWay > 1 ){ nWideWayAngle = nWideAngle / ( nWideWay - 1 ); }
+	loop( nRoundWay ){
+		let _nAngle = nAngle;
+		if( nWideWay > 1 ){ _nAngle -= nWideAngle / 2; }
+		loop( nWideWay ){
+			CreateShot01( nX, nY, nSpeed, _nAngle, nGraphicID, nDelay );
+			_nAngle += nWideWayAngle;
+		}
+		nAngle += nRoundWayAngle;
+	}
+}
+
+/**
+*	全方向に扇状の弾を発射します。
+*	速度の変化がある場合はこちら。
+*
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		発射速度
+*	@param nAccelSpeed	加速度
+*	@param nMaxSpeed	最大速度（最低速度）
+*	@param nAngle		発射角度
+*	@param nWideAngle	扇全体の角度
+*	@param nWideWay		扇を構成するWay数
+*	@param nRoundWay	扇の数
+*	@param nGraphicID	弾画像
+*	@param nDelay		遅延フレーム数
+*/
+function _RoundWideShot02( let nX, let nY, let nSpeed, let nAccelSpeed, nMaxSpeed, let nAngle, let nWideAngle, let nWideWay, let nRoundWay, let nGraphicID, let nDelay ){
+	let nRoundWayAngle = 360 / nRoundWay;
+	let nWideWayAngle = 0;
+	if( nWideWay > 1 ){ nWideWayAngle = nWideAngle / ( nWideWay - 1 ); }
+	loop( nRoundWay ){
+		let _nAngle = nAngle;
+		if( nWideWay > 1 ){ _nAngle -= nWideAngle / 2; }
+		loop( nWideWay ){
+			CreateShot02( nX, nY, nSpeed, _nAngle, nAccelSpeed, nMaxSpeed, nGraphicID, nDelay );
+			_nAngle += nWideWayAngle;
+		}
+		nAngle += nRoundWayAngle;
+	}
+}
+
+/**
+*	直線上に等間隔速度の弾を発射します。
+*
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		基本発射速度（nNum=1の場合はこの速度となる）
+*	@param nMaxSpeed	最大発射速度（最低発射速度）
+*	@param nAngle		発射角度
+*	@param nNum			弾の数
+*	@param nGraphicID	弾画像
+*	@param nDelay		遅延フレーム数
+*/
+function _LineShot( let nX, let nY, let nSpeed, let nMaxSpeed, let nAngle, let nNum, let nGraphicID, let nDelay ){
+	let nNumSpeed = 0;
+	if( nNum > 1 ){ nNumSpeed = ( nMaxSpeed - nSpeed ) / ( nNum - 1 ); }
+	loop( nNum ){
+		CreateShot01( nX, nY, nSpeed, nAngle, nGraphicID, nDelay );
+		nSpeed += nNumSpeed;
+	}
+}
+
+/**
+*	扇状に_LineShotを発射します。
+*
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		基本発射速度（nNum=1の場合はこの速度となる）
+*	@param nMaxSpeed	最大発射速度（最低発射速度）
+*	@param nAngle		発射角度
+*	@param nWideAngle	扇全体の角度
+*	@param nWay			Way数
+*	@param nNum			直線上の弾の数
+*	@param nGraphicID	弾画像
+*	@param nDelay		遅延フレーム数
+*/
+function _WideLineShot( let nX, let nY, let nSpeed, let nMaxSpeed, let nAngle, let nWideAngle, let nWay, let nNum, let nGraphicID, let nDelay ){
+	let nNumSpeed = 0;
+	if( nNum > 1 ){ nNumSpeed = ( nMaxSpeed - nSpeed ) / ( nNum - 1 ); }
+	let nWayAngle = 0;
+	if( nWay > 1 ){
+		nWayAngle = nWideAngle / ( nWay - 1 );
+		nAngle -= nWideAngle / 2;
+	}
+	loop( nWay ){
+		let _nSpeed = nSpeed;
+		loop( nNum ){
+			CreateShot01( nX, nY, _nSpeed, nAngle, nGraphicID, nDelay );
+			_nSpeed += nNumSpeed;
+		}
+		nAngle += nWayAngle;
+	}
+}
+
+/**
+*	全方向に_LineShotを発射します。
+*
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		基本発射速度（nNum=1の場合はこの速度となる）
+*	@param nMaxSpeed	最大発射速度（最低発射速度）
+*	@param nAngle		発射角度
+*	@param nWay			Way数
+*	@param nNum			直線上の弾の数
+*	@param nGraphicID	弾画像
+*	@param nDelay		遅延フレーム数
+*/
+function _RoundLineShot( let nX, let nY, let nSpeed, let nMaxSpeed, let nAngle, let nWay, let nNum, let nGraphicID, let nDelay ){
+	let nNumSpeed = 0;
+	if( nNum > 1 ){ nNumSpeed = ( nMaxSpeed - nSpeed ) / ( nNum - 1 ); }
+	let nWayAngle = 360 / nWay;
+	loop( nWay ){
+		let _nSpeed = nSpeed;
+		loop( nNum ){
+			CreateShot01( nX, nY, _nSpeed, nAngle, nGraphicID, nDelay );
+			_nSpeed += nNumSpeed;
+		}
+		nAngle += nWayAngle;
+	}
+}
+
+/**
+*	全方向に扇状の_LineShotを発射します。
+*
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		基本発射速度（nNum=1の場合はこの速度となる）
+*	@param nMaxSpeed	最大発射速度（最低発射速度）
+*	@param nAngle		発射角度
+*	@param nWideAngle	扇全体の角度
+*	@param nWideWay		扇を構成するWay数
+*	@param nRoundWay	扇の数
+*	@param nNum			直線上の弾の数
+*	@param nGraphicID	弾画像
+*	@param nDelay		遅延フレーム数
+*/
+function _RoundWideLineShot( let nX, let nY, let nSpeed, let nMaxSpeed, let nAngle, let nWideAngle, let nWideWay, let nRoundWay, let nNum, let nGraphicID, let nDelay ){
+	let nNumSpeed = 0;
+	if( nNum > 1 ){ nNumSpeed = ( nMaxSpeed - nSpeed ) / ( nNum - 1 ); }
+	let nRoundWayAngle = 360 / nRoundWay;
+	let nWideWayAngle = 0;
+	if( nWideWay > 1 ){ nWideWayAngle = nWideAngle / ( nWideWay - 1 ); }
+	loop( nRoundWay ){
+		let _nAngle = nAngle;
+		if( nWideWay > 1 ){ _nAngle -= nWideAngle / 2; }
+		loop( nWideWay ){
+			let _nSpeed = nSpeed;
+			loop( nNum ){
+				CreateShot01( nX, nY, _nSpeed, _nAngle, nGraphicID, nDelay );
+				_nSpeed += nNumSpeed;
+			}
+			_nAngle += nWideWayAngle;
+		}
+		nAngle += nRoundWayAngle;
+	}
+}
+
+/**
+*	画面端で反射する弾を発射します。
+*	SetShotDirectionTypeはABSOLUTEである必要があります。
+*
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		発射速度（大きすぎると画面端より前で反射する場合がある）
+*	@param nAngle		発射角度
+*	@param nReflectNum	反射回数
+*	@param bReflectL	画面左端で反射するか
+*	@param bReflectU	画面上端で反射するか
+*	@param bReflectR	画面右端で反射するか
+*	@param bReflectD	画面下端で反射するか
+*	@param nGraphicID	弾画像
+*	@param nDelay		遅延フレーム数
+*/
+function _ReflectShot( let nX, let nY, let nSpeed, let nAngle, let nReflectNum, let bReflectL, let bReflectU, let bReflectR, let bReflectD, let nGraphicID, let nDelay ){
+	let nTotalFrame = 0;
+	let abReflectEdge = [ bReflectU, bReflectD, bReflectL, bReflectR ];
+	CreateShotA( 0, nX, nY, nDelay );
+	SetShotDataA( 0, 0, nSpeed, nAngle, 0, 0, 0, nGraphicID );
+	while( nReflectNum >= 1 ){
+		while( nAngle < 0 ){ nAngle += 360; }
+		if( nAngle >= 360 ){ nAngle %= 360; }
+		let nAngleLU = atan2( nY - CL_MIN_Y, nX - CL_MIN_X ) + 180;
+		let nAngleRU = atan2( nY - CL_MIN_Y, nX - CL_MAX_X ) + 180;
+		let nAngleLD = atan2( nY - CL_MAX_Y, nX - CL_MIN_X ) + 180;
+		let nAngleRD = atan2( nY - CL_MAX_Y, nX - CL_MAX_X ) + 180;
+		if( nAngleRU == 0 ){ nAngleRU = 360; }
+		if( nAngleRD == 360 ){ nAngleRD = 0; }
+		let nReflectLength = 0;
+		let nReflectX = 0;
+		let nReflectY = 0;
+		let nReflectAngle = 0;
+		let nReflectEdge = 0;
+		if( nAngle >= nAngleRU || nAngle < nAngleRD ){
+			nReflectLength = ( CL_MAX_X - nX ) / cos( nAngle );
+			nReflectX = CL_MAX_X;
+			nReflectY = nY + nReflectLength * sin( nAngle );
+			nReflectAngle = 180 - nAngle;
+			nReflectEdge = 3;
+		}
+		else if( nAngle >= nAngleLD && nAngle < nAngleLU ){
+			nReflectLength = ( CL_MIN_X - nX ) / cos( nAngle );
+			nReflectX = CL_MIN_X;
+			nReflectY = nY + nReflectLength * sin( nAngle );
+			nReflectAngle = 180 - nAngle;
+			nReflectEdge = 2;
+		}
+		else if( nAngle >= nAngleLU && nAngle < nAngleRU ){
+			nReflectLength = ( CL_MIN_Y - nY ) / sin( nAngle );
+			nReflectX = nX + nReflectLength * cos( nAngle );
+			nReflectY = CL_MIN_Y;
+			nReflectAngle = - nAngle;
+			nReflectEdge = 0;
+		}
+		else{
+			nReflectLength = ( CL_MAX_Y - nY ) / sin( nAngle );
+			nReflectX = nX + nReflectLength * cos( nAngle );
+			nReflectY = CL_MAX_Y;
+			nReflectAngle = - nAngle;
+			nReflectEdge = 1;
+		}
+		if( !abReflectEdge[ nReflectEdge ] ){ break; }
+		nX = nReflectX;
+		nY = nReflectY;
+		nAngle = nReflectAngle;
+		nTotalFrame += nReflectLength / nSpeed;
+		SetShotDataA( 0, nTotalFrame, NULL, nAngle, 0, 0, 0, nGraphicID );
+		nReflectNum --;
+	}
+	FireShot( 0 );
 }
 
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	絵画関数
+//	アイテム生成予約関連
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	自分の上にテクスチャ貼り付け(Y座標のずれを指定できる)
-function DrawChrGap( let szTexFile, let nGap ){ _DrawChr( szTexFile, GetX(), GetY() + nGap ); }
+/**
+*	指定アイテムを指定数自身の位置に落下させます。
+*	(厳密にはアイテム落下の「予約」をします)
+*	FLANの設定に従い自身の位置より若干拡散します。
+*
+*	@param 種別
+*	@param 個数
+*/
+function __DropItemTHC( let nType, let nNum ){
+	let aanPutItemPosList = GetDropItemPosList( nNum );
+	ascent( let i in 0..length( aanPutItemPosList ) ){
+		let anPutItemPos = aanPutItemPosList[ i ];
+		SetItemQueue( nType, anPutItemPos[ FLAN_ITEM_X ], anPutItemPos[ FLAN_ITEM_Y ], 2.8, 270 );
+	}
+}
 
-//	自分の上にテクスチャ貼り付け(縦に正弦波運動しあたかも浮遊しているかのように見える)
-function DrawChr( let szTexFile, let nCount ){ DrawChrGap( szTexFile, sin( nCount * 2.5 ) * 8 ); }
+/**
+*	[点]・[P]・大[P]が一定法則で変化するアイテムを指定数自身の位置に落下させます。
+*	__DropItemのラッパーです。
+*
+*	@param 個数
+*/
+function DropItemTHC( let nNum ){ __DropItemTHC( ITEMEX_DEFAULT, nNum ); }
 
-//	自分の上にテクスチャを回転貼り付け
-function DrawRotate( let szTexFile, let nCount ){
-	SetGraphicAngle( 0, 0, nCount );
-	DrawChrGap( szTexFile, 0 );
+/**
+*	ボムアイテムを自身の位置に落下させます。
+*	__DropItemのラッパーです。
+*/
+function DropItemBombTHC(){ __DropItemTHC( ITEMEX_BOMB, 1 ); }
+
+/**
+*	エクステンドアイテムを自身の位置に落下させます。
+*	__DropItemのラッパーです。
+*/
+function DropItemExtendTHC(){ __DropItemTHC( ITEMEX_EXTEND, 1 ); }
+
+/**
+*	点ボーナスアイテムを自身の位置に落下させます。
+*	__DropItemのラッパーです。
+*
+*	@param 個数
+*/
+function DropItemPointTHC( let nNum ){ __DropItemTHC( ITEMEX_SCORE, nNum ); }
+
+/**
+*	小点ボーナスアイテムを自身の位置に落下させます。
+*	__DropItemのラッパーです。
+*
+*	@param 個数
+*/
+function DropItemPointSmallTHC( let nNum ){ __DropItemTHC( ITEMEX_SCORE_SMALL, nNum ); }
+
+/**
+*	[P]アイテムを自身の位置に落下させます。
+*	__DropItemのラッパーです。
+*
+*	@param 個数
+*/
+function DropItemPowerTHC( let nNum ){ __DropItemTHC( ITEMEX_POWER, nNum ); }
+
+/**
+*	大[P]アイテムを自身の位置に落下させます。
+*	__DropItemのラッパーです。
+*
+*	@param 個数
+*/
+function DropItemPowerBigTHC( let nNum ){ __DropItemTHC( ITEMEX_POWER_BIG, nNum ); }
+
+/**
+*	[F]アイテムを自身の位置に落下させます。
+*	__DropItemのラッパーです。
+*
+*	@param 個数
+*/
+function DropItemPowerFullTHC( let nNum ){ __DropItemTHC( ITEMEX_POWER_FULL, nNum ); }
+
+/**
+*	THCEL設定に基づいて全てのアイテムを出力します。
+*	注意 : 内部から自動的に呼び出されますので直接呼び出すことはありません。
+*/
+function DropAllItemTHC(){
+	if( ENEMY_ITEMEX_NUM_DEFAULT		> 0 ){ __DropItemTHC( ITEMEX_DEFAULT,		ENEMY_ITEMEX_NUM_DEFAULT		); }
+	if( ENEMY_ITEMEX_NUM_POWER			> 0 ){ __DropItemTHC( ITEMEX_POWER,			ENEMY_ITEMEX_NUM_POWER			); }
+	if( ENEMY_ITEMEX_NUM_POWER_BIG		> 0 ){ __DropItemTHC( ITEMEX_POWER_BIG,		ENEMY_ITEMEX_NUM_POWER_BIG		); }
+	if( ENEMY_ITEMEX_NUM_POINT			> 0 ){ __DropItemTHC( ITEMEX_SCORE,			ENEMY_ITEMEX_NUM_POINT			); }
+	if( ENEMY_ITEMEX_NUM_POINT_SMALL	> 0 ){ __DropItemTHC( ITEMEX_SCORE_SMALL,	ENEMY_ITEMEX_NUM_POINT_SMALL	); }
+	if( ENEMY_ITEMEX_ENABLE_BOMB			){ __DropItemTHC( ITEMEX_BOMB,			1								); }
+	if( ENEMY_ITEMEX_ENABLE_EXTEND			){ __DropItemTHC( ITEMEX_EXTEND,		1								); }
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	指定画像を画面中心で回転描画します。
+*
+*	@param szImageFile	画像ファイル
+*	@param nSpeed		回転速度
+*/
+function DrawRotateCenter( let szImageFile, let nSpeed ){
+	SetGraphicAngle( 0, 0, m_nFlanCount * nSpeed );
+	DrawCenter( szImageFile );
 	SetGraphicAngle( 0, 0, 0 );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	移動処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	指定フレームで減速移動します。
+*	nFrame>=2としてください。また、nFrame経過するまで他の移動を行わないでください。
+*
+*	@param nX		移動先x座標
+*	@param nY		移動先y座標
+*	@param nFrame	移動完了までのフレーム数
+*/
+task SlowMove( let nX, let nY, let nFrame ){
+	let _nX = GetX();
+	let _nY = GetY();
+	let nForce = GetGapLength( _nX, _nY, nX, nY ) * 2;
+	let nAngle = GetGapAngle( _nX, _nY, nX, nY );
+	SetMovePositionHermite( nX, nY, nForce, nAngle, 0, 0, nFrame - 1 );
+	loop( nFrame - 1 ){ yield; }
+	SetMovePosition02( nX, nY, 1 );
 }

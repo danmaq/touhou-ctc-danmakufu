@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Stage / Player / Spell" file="stage_player_spell">
+	<category caption="概要" link="true">
+		<paragraph>
+			ステージ・プレイヤー・スペルスクリプトで使用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/Stage_Player_Spell.dnh</path>となります。
+			(関数の数が少ないので1ファイルのみの構成となります)
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+	</category>
+	<category caption="書換可能定数" link="true">
+	</category>
+	<category caption="メンバ変数" link="true">
+		<define key="m_bFlanKeyBomb" type="var">
+			<paragraph>
+				ボムキーが押されているかどうかが格納されます。
+			</paragraph>
+		</define>
+		<define key="m_bFlanKeyShot" type="var">
+			<paragraph>
+				ショットキーが押されているかどうかが格納されます。
+			</paragraph>
+		</define>
+		<define key="m_bFlanKeySkip" type="var">
+			<paragraph>
+				会話スキップキーが押されているかどうかが格納されます。
+			</paragraph>
+		</define>
+		<define key="m_bFlanKeySlow" type="var">
+			<paragraph>
+				低速移動キーが押されているかどうかが格納されます。
+			</paragraph>
+		</define>
+		<define key="m_bFlanKeyUser" type="var">
+			<paragraph>
+				ユーザ定義キーが押されているかどうかが格納されます。
+			</paragraph>
+		</define>
+		<define key="m_bFlanKeyUp" type="var">
+			<paragraph>
+				上方向キーが押されているかどうかが格納されます。
+			</paragraph>
+		</define>
+		<define key="m_bFlanKeyDown" type="var">
+			<paragraph>
+				下方向キーが押されているかどうかが格納されます。
+			</paragraph>
+		</define>
+		<define key="m_bFlanKeyLeft" type="var">
+			<paragraph>
+				左方向キーが押されているかどうかが格納されます。
+			</paragraph>
+		</define>
+		<define key="m_bFlanKeyRight" type="var">
+			<paragraph>
+				右方向キーが押されているかどうかが格納されます。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="キー入力判定処理">
+		<paragraph>
+			キー入力判定処理などの関数群です。<br />
+			<caution>
+				内部から自動的に呼ばれる関数です。
+				通常直接呼び出すことはありません。
+			</caution>
+		</paragraph>
+		<define key="GetAngleFromInput">
+			<return>方向キー入力に対応した角度、何も押されていない場合は負数</return>
+			<paragraph>
+				方向<caption>キー入力情報に基づいた角度を返します</caption>。
+			</paragraph>
+		</define>
+		<define key="__GetKeyLoop">
+			<paragraph>
+				毎フレーム<caption>キー入力の有無を取得し、変数に記録します</caption>。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="共通処理">
+		<paragraph>
+			このライブラリセットの読み込み対象となる全てのスクリプトで実行される共通処理です。<br />
+			<caution>
+				内部から自動的に呼ばれる関数です。
+				通常直接呼び出すことはありません。
+			</caution>
+		</paragraph>
+		<define key="__FlanCommonSPSInitialize">
+			<paragraph>
+				該当<caption>スクリプトの共通初期化処理</caption>です。
+			</paragraph>
+		</define>
+	</category>
+</contents>

@@ -1,0 +1,1343 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ6　ボス　博麗 霊夢（白）　スペル5
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[ReimuW - スペル5]
+#Text[ステージ6 ボス
+博麗 霊夢（白）]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\ReimuW.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 100;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 140;
+	FLAN_ENEMY_SE_DAMAGE_CHANGE = 10;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+	/** フェイズ番号 */
+	let CL_CD_REIMUW5_PHASE = "ReimuW5_Phase";
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 召喚ボス画像 */
+	let m_aszImageStand = [ dotBossRemilia, dotBossYuyuko, dotBossKaguya, dotBossEiki ];
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDeadEffect = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetTimer( 91 );
+		SetLife( 500 );
+		SetDamageRate( 5, 2.5 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 421 );
+		BehaviorBoss( ACT_STAND3 );
+		CheckExplosion01Ex();
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		else{ CheckDuelTimer(); }
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_YOUMU + CL_TTH_CHARACTER_NAME_YOUMU_REIMU;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+		/** 個別終了設定 */
+		EndExplosion01Ex();
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_REIMUW5_PHASE );
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 残像描画 */
+		DrawBlur( m_szImageBoss );
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG5();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		SetBlur( nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+		if( m_bDead ){ break; }
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_YOUMU + CL_TTH_SPELL_STAGE6_BOSS_5 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE_NEXTPHASE, true );
+		if( m_bDead ){ break; }
+
+		/** 回転全方向弾 */
+		RollRoundShot();
+		__Wait( 240 );
+
+		/** ボス召喚 */
+		SummonBoss();
+
+		/** フェイズチェック */
+		CheckPhase();
+
+		/** 全方向直線弾 */
+		let nFrame = 20;
+		RoundLineShotEx( nFrame );
+		nFrame *= 3;
+
+		loop{
+
+			SetAction( ACT_SHOT_A5, nFrame );
+			__Wait( nFrame );
+			if( m_bDead ){ break; }
+
+			/** 移動 */
+			Move( nFrame );
+			__Wait( nFrame );
+			if( m_bDead ){ break; }
+
+		}
+
+	}
+
+	/**
+	*	回転全方向弾
+	*/
+	task RollRoundShot{
+
+		let nFrame = 5;
+		let nNum = 18;
+		let _nWay = 14 + 2 * m_nLevel;
+		let nWay = _nWay * 4;
+		let nX = GetX();
+		let nY = GetY();
+		let nStopFrame = 20;
+		let nAccelFrame = 120;
+		let nSpeed = 5.4 + 0.4 * m_nLevel;
+		let _nSpeed = 1;
+		let nNumSpeed = ( 5.4 - _nSpeed ) / ( nNum - 1 );
+		let nWayAngle = 360 / nWay;
+		let nNumAngle = nWayAngle * 2;
+		let nAddAngle = ( 30 + 30 * m_nLevel ) / ( nStopFrame - 1 );
+		if( m_nLevel % 2 == 1 ){ nAddAngle = - nAddAngle; }
+		let nAngle = GetAngleToPlayer();
+		let anGraphic = [ US_RICE_S_RED, US_RICE_S_BLUE, US_RICE_S_YELLOW, US_RICE_S_PURPLE ];
+		let nDelay = 4;
+
+		SetAction( ACT_SHOT_A5, nAccelFrame );
+		PlaySELoopEx( seShot1, nFrame * nNum, nFrame );
+		loop( nNum ){
+			let _nAngle = nAngle;
+			ascent( let i in 0 .. 4 ){
+				loop( _nWay ){
+					CreateShotA( 0, nX, nY, nDelay );
+					SetShotDataA( 0, 0, nSpeed, _nAngle, nAddAngle, 0, 0, anGraphic[ i ] );
+					SetShotDataA( 0, nStopFrame, 0, NULL, 0, 0, 0, anGraphic[ i ] );
+					SetShotDataA( 0, nAccelFrame, - _nSpeed, NULL, 0, 0, 0, anGraphic[ i ] );
+					FireShot( 0 );
+					_nAngle += nWayAngle;
+				}
+			}
+			__Wait( nFrame );
+			_nSpeed += nNumSpeed;
+			nAngle += nNumAngle;
+			nAccelFrame -= nFrame;
+		}
+		SetAction( ACT_SHOT_B5, 90 );
+		__Wait( nAccelFrame );
+		PlaySEEx( seKira1 );
+		SetColor( 255, 181, 95 );
+		Concentration01( 30 );
+		SetColor( 255, 255, 255 );
+
+	}
+
+	/**
+	*	全方向直線弾
+	*	@param nFrame	弾間隔フレーム数
+	*/
+	task RoundLineShotEx( let nFrame ){
+
+		let nWay = [ 14, 16 ][ m_nLevel >= 2 ];
+		let nNum = 2;
+		let nNumSpeed = 0.06;
+		let nSpeed = 1.74 + nNumSpeed * m_nLevel;
+		let nMaxSpeed = nSpeed + nNumSpeed;
+		let nAngle = 90;
+		let nRollAngle = - 360 / nWay * 0.5;
+		let nGraphic = US_BILL_WHITE;
+		let nDelay = 8;
+
+		loop{
+			_RoundLineShot( GetX(), GetY(), nSpeed, nMaxSpeed, nAngle, nWay, nNum, nGraphic, nDelay );
+			PlaySEEx( seShot3 );
+			__Wait( nFrame );
+			if( m_bDead ){ break; }
+			nAngle += nRollAngle;
+		}
+
+	}
+
+	/**
+	*	フェイズチェック
+	*/
+	task CheckPhase{
+
+		let nPhase = 0;
+		let anNextLife = [ 420, 340, 260, 180 ];
+		let anNextTime = [ 69, 55, 41, 27 ];
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_REIMUW5_PHASE, nPhase );
+
+		while( nPhase < 4 ){
+			while( GetLife() > anNextLife[ nPhase ] && GetTimer() > anNextTime[ nPhase ] ){ yield; }
+			SetColor( 255, 181, 95 );
+			Concentration01( 120 );
+			SetColor( 255, 255, 255 );
+			PlaySEEx( sePower );
+			__Wait( 120 );
+			if( m_bDead ){ break; }
+			nPhase ++;
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_REIMUW5_PHASE, nPhase );
+			PlaySEEx( seShadow );
+		}
+
+	}
+
+	/**
+	*	ボス召喚
+	*/
+	task SummonBoss{
+
+		let anX = [ CL_MAX_X, CL_MIN_X, CL_MAX_X + 64, CL_MIN_X - 64 ];
+		let anY = [ CL_MIN_Y - 64, CL_MIN_Y - 64, CL_MIN_Y + 120, CL_MIN_Y + 120 ];
+		let _anX = [ CL_CEN_X - 80, CL_CEN_X + 80, CL_CEN_X - 140, CL_CEN_X + 140 ];
+		let _anY = [ CL_MIN_Y + 140, CL_MIN_Y + 140, CL_MIN_Y + 80, CL_MIN_Y + 80 ];
+
+		CreateShotFromScript( "StandRemilia", anX[ 0 ], anY[ 0 ], 0, 0, 0, [ _anX[ 0 ], _anY[ 0 ] ] );
+		CreateShotFromScript( "StandYuyuko", anX[ 1 ], anY[ 1 ], 0, 0, 0, [ _anX[ 1 ], _anY[ 1 ] ] );
+		CreateShotFromScript( "StandKaguya", anX[ 2 ], anY[ 2 ], 0, 0, 0, [ _anX[ 2 ], _anY[ 2 ] ] );
+		CreateShotFromScript( "StandEiki", anX[ 3 ], anY[ 3 ], 0, 0, 0, [ _anX[ 3 ], _anY[ 3 ] ] );
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 30;
+		let nMaxMoveX = 60;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 20;
+
+		SetAction( ACT_MOVE, nFrame );
+		SetBlur( nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	幽体レミリア
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_shot StandRemilia{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\BossAnimation.dnh"
+	#include_function ".\INCLUDE\Shot.dnh"
+	#include_function ".\INCLUDE\BOSS\Remilia.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+	/** フェイズ番号 */
+	let CL_CD_REIMUW5_PHASE = "ReimuW5_Phase";
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 弾を撃つか */
+	let m_bShot = false;
+
+	/** 基本位置 */
+	let m_nX;
+	let m_nY;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		m_bShadowDead = true;
+		SetBombResist();
+		m_nX = nArgv[ 0 ];
+		m_nY = nArgv[ 1 ];
+		BehaviorBoss( ACT_STAND4 );
+		CheckBossLife();
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 色設定 */
+		_SetColor();
+
+		/** フェイズチェック */
+		CheckPhase();
+
+		loop{
+
+			/** 扇状弾 */
+			if( m_bShot ){ WideShotEx(); }
+			loop( 105 ){ yield; }
+
+			/** 移動 */
+			if( m_bShot ){ Move( 60 ); }
+			loop( 75 ){ yield; }
+
+		}
+
+	}
+
+	/**
+	*	扇状弾
+	*/
+	task WideShotEx{
+
+		let nFrame = 8;
+		let nNum = 10;
+		let nWay = 7;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 2.8 + 0.2 * m_nLevel;
+		let nWideAngle = 82.5 - 7.5 * m_nLevel;
+		let nNumAngle = - nWideAngle / ( nWay - 1 );
+		let nAngle = GetAngleToPlayer() + nWideAngle / 2;
+		let nGraphic = US_KNIFE_KOUMA_RED;
+		let nDelay = 8;
+
+		SetAction( ACT_SHOT_A5, 90 );
+		loop( nNum ){
+			_WideShot01( nX, nY, nSpeed, nAngle, nWideAngle, nWay, nGraphic, nDelay );
+			PlaySEEx( seShot2 );
+			loop( nFrame ){ yield; }
+			nAngle += nNumAngle;
+		}
+
+	}
+
+	/**
+	*	フェイズチェック
+	*/
+	task CheckPhase{
+
+		/** 待機 */
+		while( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_REIMUW5_PHASE, 0 ) < 1 ){ yield; }
+
+		/** 移動 */
+		let nFrame = 60;
+		SetAction( ACT_MOVE, nFrame );
+		SlowMove( m_nX + RandBlur( 0.1 ), m_nY + RandBlur( 0.1 ), nFrame );
+		loop( nFrame ){ yield; }
+		m_bShot = true;
+
+	}
+
+	/**
+	*	色設定
+	*/
+	task _SetColor{
+
+		let nFrame = 32;
+		let anMaxRGB = [ 255, 95, 95 ];
+		let anMinRGB = [ anMaxRGB[ 0 ] * 0.4, anMaxRGB[ 1 ] * 0.4, anMaxRGB[ 2 ] * 0.4 ];
+		let anAddRGB = [ ( anMaxRGB[ 0 ] - anMinRGB[ 0 ] ) / nFrame, ( anMaxRGB[ 1 ] - anMinRGB[ 1 ] ) / nFrame, ( anMaxRGB[ 2 ] - anMinRGB[ 2 ] ) / nFrame ];
+		let anRGB = anMinRGB;
+
+		loop{
+			loop( nFrame ){
+				anRGB += anAddRGB;
+				SetColor( anRGB[ 0 ], anRGB[ 1 ], anRGB[ 2 ] );
+				yield;
+			}
+			loop( nFrame ){
+				anRGB -= anAddRGB;
+				SetColor( anRGB[ 0 ], anRGB[ 1 ], anRGB[ 2 ] );
+				yield;
+			}
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了までのフレーム数
+	*/
+	task Move( let nFrame ){
+
+		let _nX = GetX();
+		let _nY = GetY();
+		let nMoveX = rand( 10, 30 );
+		let nMoveY = rand( 10, 30 );
+		if( _nX > m_nX ){ nMoveX = - nMoveX; }
+		if( _nY > m_nY ){ nMoveY = - nMoveY; }
+		let nX = _nX + nMoveX;
+		let nY = _nY + nMoveY;
+
+		SetAction( ACT_MOVE, nFrame );
+		SlowMove( nX, nY, nFrame );
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	幽体幽々子
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_shot StandYuyuko{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\BossAnimation.dnh"
+	#include_function ".\INCLUDE\Shot.dnh"
+	#include_function ".\INCLUDE\BOSS\Yuyuko.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+	/** フェイズ番号 */
+	let CL_CD_REIMUW5_PHASE = "ReimuW5_Phase";
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 弾を撃つか */
+	let m_bShot = false;
+
+	/** 基本位置 */
+	let m_nX;
+	let m_nY;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		m_bShadowDead = true;
+		SetBombResist();
+		m_nX = nArgv[ 0 ];
+		m_nY = nArgv[ 1 ];
+		BehaviorBoss( ACT_STAND3 );
+		CheckBossLife();
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 色設定 */
+		_SetColor();
+
+		/** フェイズチェック */
+		CheckPhase();
+
+		loop( 90 ){ yield; }
+
+		loop{
+
+			/** 扇状弾 */
+			if( m_bShot ){ WideShotEx(); }
+			loop( 105 ){ yield; }
+
+			/** 移動 */
+			if( m_bShot ){ Move( 60 ); }
+			loop( 75 ){ yield; }
+
+		}
+
+	}
+
+	/**
+	*	扇状弾
+	*/
+	task WideShotEx{
+
+		let nFrame = 8;
+		let nNum = 10;
+		let nWay = 7;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 2.8 + 0.2 * m_nLevel;
+		let nWideAngle = 82.5 - 7.5 * m_nLevel;
+		let nNumAngle = nWideAngle / ( nWay - 1 );
+		let nAngle = GetAngleToPlayer() - nWideAngle / 2;
+		let nGraphic = US_KNIFE_YOUMU_BLUE;
+		let nDelay = 8;
+
+		SetAction( ACT_SHOT_A5, 90 );
+		loop( nNum ){
+			_WideShot01( nX, nY, nSpeed, nAngle, nWideAngle, nWay, nGraphic, nDelay );
+			PlaySEEx( seShot2 );
+			loop( nFrame ){ yield; }
+			nAngle += nNumAngle;
+		}
+
+	}
+
+	/**
+	*	フェイズチェック
+	*/
+	task CheckPhase{
+
+		/** 待機 */
+		while( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_REIMUW5_PHASE, 0 ) < 2 ){ yield; }
+
+		/** 移動 */
+		let nFrame = 60;
+		SetAction( ACT_MOVE, nFrame );
+		SlowMove( m_nX + RandBlur( 0.1 ), m_nY + RandBlur( 0.1 ), nFrame );
+		loop( nFrame ){ yield; }
+		m_bShot = true;
+
+	}
+
+	/**
+	*	色設定
+	*/
+	task _SetColor{
+
+		let nFrame = 32;
+		let nQuarterFrame = nFrame / 4;
+		let anMaxRGB = [ 95, 95, 255 ];
+		let anMinRGB = [ anMaxRGB[ 0 ] * 0.4, anMaxRGB[ 1 ] * 0.4, anMaxRGB[ 2 ] * 0.4 ];
+		let anAddRGB = [ ( anMaxRGB[ 0 ] - anMinRGB[ 0 ] ) / nFrame, ( anMaxRGB[ 1 ] - anMinRGB[ 1 ] ) / nFrame, ( anMaxRGB[ 2 ] - anMinRGB[ 2 ] ) / nFrame ];
+		let anRGB = anMinRGB;
+
+		loop( nQuarterFrame ){ yield; }
+		loop{
+			loop( nFrame ){
+				anRGB += anAddRGB;
+				SetColor( anRGB[ 0 ], anRGB[ 1 ], anRGB[ 2 ] );
+				yield;
+			}
+			loop( nFrame ){
+				anRGB -= anAddRGB;
+				SetColor( anRGB[ 0 ], anRGB[ 1 ], anRGB[ 2 ] );
+				yield;
+			}
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了までのフレーム数
+	*/
+	task Move( let nFrame ){
+
+		let _nX = GetX();
+		let _nY = GetY();
+		let nMoveX = rand( 10, 30 );
+		let nMoveY = rand( 10, 30 );
+		if( _nX > m_nX ){ nMoveX = - nMoveX; }
+		if( _nY > m_nY ){ nMoveY = - nMoveY; }
+		let nX = _nX + nMoveX;
+		let nY = _nY + nMoveY;
+
+		SetAction( ACT_MOVE, nFrame );
+		SlowMove( nX, nY, nFrame );
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	幽体輝夜
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_shot StandKaguya{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\BossAnimation.dnh"
+	#include_function ".\INCLUDE\Shot.dnh"
+	#include_function ".\INCLUDE\BOSS\Kaguya.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+	/** フェイズ番号 */
+	let CL_CD_REIMUW5_PHASE = "ReimuW5_Phase";
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 弾を撃つか */
+	let m_bShot = false;
+
+	/** 基本位置 */
+	let m_nX;
+	let m_nY;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		m_bShadowDead = true;
+		SetBombResist();
+		m_nX = nArgv[ 0 ];
+		m_nY = nArgv[ 1 ];
+		BehaviorBoss( ACT_STAND3 );
+		CheckBossLife();
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 色設定 */
+		_SetColor();
+
+		/** フェイズチェック */
+		CheckPhase();
+
+		loop{
+
+			/** 全方向弾 */
+			if( m_bShot ){ RoundShotEx(); }
+			loop( 105 ){ yield; }
+
+			/** 移動 */
+			if( m_bShot ){ Move( 60 ); }
+			loop( 75 ){ yield; }
+
+		}
+
+	}
+
+	/**
+	*	全方向弾
+	*/
+	task RoundShotEx{
+
+		let nFrame = 12;
+		let nNum = 7;
+		let nWay = 15 + 3 * m_nLevel;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 2;
+		let nNumAngle = 360 / nWay * 0.4;
+		let nAngle = rand( 0, 360 );
+		let nGraphic = US_STAR_S_YELLOW;
+		let nDelay = 8;
+
+		SetAction( ACT_SHOT_A3, 90 );
+		loop( nNum ){
+			_RoundShot01( nX, nY, nSpeed, nAngle, nWay, nGraphic, nDelay );
+			PlaySEEx( seShot1 );
+			loop( nFrame ){ yield; }
+			nAngle += nNumAngle;
+		}
+
+	}
+
+	/**
+	*	フェイズチェック
+	*/
+	task CheckPhase{
+
+		/** 待機 */
+		while( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_REIMUW5_PHASE, 0 ) < 3 ){ yield; }
+
+		/** 移動 */
+		let nFrame = 60;
+		SetAction( ACT_MOVE, nFrame );
+		SlowMove( m_nX + RandBlur( 0.1 ), m_nY + RandBlur( 0.1 ), nFrame );
+		loop( nFrame ){ yield; }
+		m_bShot = true;
+
+	}
+
+	/**
+	*	色設定
+	*/
+	task _SetColor{
+
+		let nFrame = 32;
+		let nQuarterFrame = nFrame / 4;
+		let anMaxRGB = [ 255, 255, 95 ];
+		let anMinRGB = [ anMaxRGB[ 0 ] * 0.4, anMaxRGB[ 1 ] * 0.4, anMaxRGB[ 2 ] * 0.4 ];
+		let anAddRGB = [ ( anMaxRGB[ 0 ] - anMinRGB[ 0 ] ) / nFrame, ( anMaxRGB[ 1 ] - anMinRGB[ 1 ] ) / nFrame, ( anMaxRGB[ 2 ] - anMinRGB[ 2 ] ) / nFrame ];
+		let anRGB = anMinRGB;
+
+		loop( nQuarterFrame * 2 ){ yield; }
+		loop{
+			loop( nFrame ){
+				anRGB += anAddRGB;
+				SetColor( anRGB[ 0 ], anRGB[ 1 ], anRGB[ 2 ] );
+				yield;
+			}
+			loop( nFrame ){
+				anRGB -= anAddRGB;
+				SetColor( anRGB[ 0 ], anRGB[ 1 ], anRGB[ 2 ] );
+				yield;
+			}
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了までのフレーム数
+	*/
+	task Move( let nFrame ){
+
+		let _nX = GetX();
+		let _nY = GetY();
+		let nMoveX = rand( 10, 30 );
+		let nMoveY = rand( 10, 30 );
+		if( _nX > m_nX ){ nMoveX = - nMoveX; }
+		if( _nY > m_nY ){ nMoveY = - nMoveY; }
+		let nX = _nX + nMoveX;
+		let nY = _nY + nMoveY;
+
+		SetAction( ACT_MOVE, nFrame );
+		SlowMove( nX, nY, nFrame );
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	幽体映姫
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_shot StandEiki{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\BossAnimation.dnh"
+	#include_function ".\INCLUDE\Shot.dnh"
+	#include_function ".\INCLUDE\BOSS\Eiki.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+	/** フェイズ番号 */
+	let CL_CD_REIMUW5_PHASE = "ReimuW5_Phase";
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 弾を撃つか */
+	let m_bShot = false;
+
+	/** 基本位置 */
+	let m_nX;
+	let m_nY;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		m_bShadowDead = true;
+		SetBombResist();
+		m_nX = nArgv[ 0 ];
+		m_nY = nArgv[ 1 ];
+		BehaviorBoss( ACT_STAND3 );
+		CheckBossLife();
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 色設定 */
+		_SetColor();
+
+		/** フェイズチェック */
+		CheckPhase();
+
+		loop( 90 ){ yield; }
+
+		loop{
+
+			/** 全方向弾 */
+			if( m_bShot ){ RoundShotEx(); }
+			loop( 105 ){ yield; }
+
+			/** 移動 */
+			if( m_bShot ){ Move( 60 ); }
+			loop( 75 ){ yield; }
+
+		}
+
+	}
+
+	/**
+	*	全方向弾
+	*/
+	task RoundShotEx{
+
+		let nFrame = 12;
+		let nNum = 7;
+		let nWay = 15 + 3 * m_nLevel;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 2;
+		let nNumAngle = - 360 / nWay * 0.4;
+		let nAngle = rand( 0, 360 );
+		let nGraphic = US_TABLET;
+		let nDelay = 8;
+
+		SetAction( ACT_SHOT_A3, 90 );
+		loop( nNum ){
+			_RoundShot01( nX, nY, nSpeed, nAngle, nWay, nGraphic, nDelay );
+			PlaySEEx( seShot1 );
+			loop( nFrame ){ yield; }
+			nAngle += nNumAngle;
+		}
+
+	}
+
+	/**
+	*	フェイズチェック
+	*/
+	task CheckPhase{
+
+		/** 待機 */
+		while( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_REIMUW5_PHASE, 0 ) < 4 ){ yield; }
+
+		/** 移動 */
+		let nFrame = 60;
+		SetAction( ACT_MOVE, nFrame );
+		SlowMove( m_nX + RandBlur( 0.1 ), m_nY + RandBlur( 0.1 ), nFrame );
+		loop( nFrame ){ yield; }
+		m_bShot = true;
+
+	}
+
+	/**
+	*	色設定
+	*/
+	task _SetColor{
+
+		let nFrame = 32;
+		let nQuarterFrame = nFrame / 4;
+		let anMaxRGB = [ 255, 95, 191 ];
+		let anMinRGB = [ anMaxRGB[ 0 ] * 0.4, anMaxRGB[ 1 ] * 0.4, anMaxRGB[ 2 ] * 0.4 ];
+		let anAddRGB = [ ( anMaxRGB[ 0 ] - anMinRGB[ 0 ] ) / nFrame, ( anMaxRGB[ 1 ] - anMinRGB[ 1 ] ) / nFrame, ( anMaxRGB[ 2 ] - anMinRGB[ 2 ] ) / nFrame ];
+		let anRGB = anMinRGB;
+
+		loop( nQuarterFrame * 3 ){ yield; }
+		loop{
+			loop( nFrame ){
+				anRGB += anAddRGB;
+				SetColor( anRGB[ 0 ], anRGB[ 1 ], anRGB[ 2 ] );
+				yield;
+			}
+			loop( nFrame ){
+				anRGB -= anAddRGB;
+				SetColor( anRGB[ 0 ], anRGB[ 1 ], anRGB[ 2 ] );
+				yield;
+			}
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了までのフレーム数
+	*/
+	task Move( let nFrame ){
+
+		let _nX = GetX();
+		let _nY = GetY();
+		let nMoveX = rand( 10, 30 );
+		let nMoveY = rand( 10, 30 );
+		if( _nX > m_nX ){ nMoveX = - nMoveX; }
+		if( _nY > m_nY ){ nMoveY = - nMoveY; }
+		let nX = _nX + nMoveX;
+		let nY = _nY + nMoveY;
+
+		SetAction( ACT_MOVE, nFrame );
+		SlowMove( nX, nY, nFrame );
+
+	}
+
+}

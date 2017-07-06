@@ -1,0 +1,239 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　風見 幽香
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossYuka;
+let m_szImageCutIn = cutYuka;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_YUKA;
+let m_aszImageBGList = LOADBGLIST_YUKA;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+	let i = m_nFlanCount * 4;
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellBlack );
+	SetGraphicRect( 0, i, 512, 512 + i );
+	i = m_nFlanCount % 300;
+	SetColor( [ Smooth( 0, 70, i, 300 ), Smooth( 70, 0, i, 300 ) ][ m_nFlanCount % 600 >= 300 ], 0, 100 );
+	i = m_nFlanCount % 170;
+	SetAlpha( [ Smooth( 100, 200, i, 170 ), Smooth( 200, 100, i, 170 ) ][ m_nFlanCount % 340 >= 170 ] );
+	DrawCenter( imgSpellYuka01 );
+	i = - m_nFlanCount * 1.5;
+	SetColor( 255, 255, 255 );
+	SetGraphicRect( 0, i, 512, 512 + i );
+	SetAlpha( 60 );
+	DrawCenter( imgSpellYuka02 );
+	SetAlpha( 255 );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	未分類
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	傘スイング＋フェードエフェクト
+*	@param nVanish	消滅パラメーター
+*	1 :スイング＋フェードイン
+*	0 :スイングのみ
+*	-1:スイング＋フェードアウト
+*/
+task Swing( let nVanish ){
+
+	let nBaseX = GetX();
+	let nBaseY = GetY();
+	let nFrame = 42;
+	let nXGapLength = 24;
+	let nXAngle = 180;
+	let nAddXAngle = 540 / nFrame;
+	let nYGapLength = 30;
+	let nYAngle = 180;
+	let nAddYAngle = 90 / nFrame;
+	let nAddAlpha = 255 / nFrame * nVanish;
+
+	SetAction( ACT_ROLL, 0 );
+	loop( nFrame ){
+		let nX = GetGapX( nBaseX, nXGapLength, nXAngle );
+		let nY = GetGapY( nBaseY + nYGapLength / 2, nYGapLength, nYAngle );
+		if( nYAngle < 221 || nYAngle > 229 ){ Light( nX, nY ); }
+		if( nVanish != 0 ){
+			m_nEnemyAlpha += nAddAlpha;
+			SetAlpha( m_nEnemyAlpha );
+		}
+		yield;
+		if( m_bDead ){ break; }
+		nXAngle += nAddXAngle;
+		nYAngle += nAddYAngle;
+	}
+
+}
+
+/**
+*	傘スイング＋フェードエフェクト（分身付き）
+*	SetSubAction( ACT_ROLL, 0 ); は別途行う必要があります
+*	@param nBaseSubX	分身x座標
+*	@param nVanish		消滅パラメーター
+*/
+task SubSwing( let nBaseSubX, let nVanish ){
+
+	let nBaseX = GetX();
+	let nBaseY = GetY();
+	let nFrame = 42;
+	let nXGapLength = 24;
+	let nXAngle = 180;
+	let nAddXAngle = 540 / nFrame;
+	let nYGapLength = 30;
+	let nYAngle = 180;
+	let nAddYAngle = 90 / nFrame;
+	let nAddAlpha = 255 / nFrame * nVanish;
+
+	SetAction( ACT_ROLL, 0 );
+	loop( nFrame ){
+		let nX = GetGapX( nBaseX, nXGapLength, nXAngle );
+		let nSubX = GetGapX( nBaseSubX, nXGapLength, nXAngle );
+		let nY = GetGapY( nBaseY + nYGapLength / 2, nYGapLength, nYAngle );
+		if( nYAngle < 221 || nYAngle > 229 ){
+			Light( nX, nY );
+			Light( nSubX, nY );
+		}
+		if( nVanish != 0 ){
+			m_nEnemyAlpha += nAddAlpha;
+			SetAlpha( m_nEnemyAlpha );
+		}
+		yield;
+		if( m_bDead ){ break; }
+		nXAngle += nAddXAngle;
+		nYAngle += nAddYAngle;
+	}
+
+}
+
+/**
+*	傘軌跡
+*	Swing、SubSwingから呼ばれるもので、直接呼ぶことはありません
+*	@param nX	中心x座標
+*	@param nY	中心y座標
+*/
+task Light( let nX, let nY ){
+
+	loop( 10 ){
+		_Light;
+		yield;
+		if( m_bDead ){ break; }
+	}
+
+	task _Light{
+
+		let nDelay = 2;
+		let obj = SetShotObject( nX, nY, 500, 0, US_BALL_SS_YELLOW, nDelay );
+		Obj_SetAlpha( obj, 0 );
+		Obj_SetCollisionToPlayer( obj, false );
+		ObjShot_SetBombResist( obj, true );
+		ObjShot_ToItem( obj, false );
+
+		loop( nDelay ){ yield; }
+		Obj_Delete( obj );
+
+	}
+
+}
+
+/**
+*	平行弾
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		速度
+*	@param nAccelSpeed	加速度
+*	@param nMaxSpeed	最大速度
+*	@param nAngle		角度
+*	@param nDelay		遅延フレーム数
+*/
+function TwinShot( let nX, let nY, let nSpeed, let nAccelSpeed, let nMaxSpeed, let nAngle, let nDelay ){
+
+	let nGapLength = 3;
+	let nGapAngle = nAngle - 90;
+	let nGraphic = US_NEEDLE_BLUE;
+
+	loop(2){
+		let _nX = GetGapX( nX, nGapLength, nGapAngle );
+		let _nY = GetGapY( nY, nGapLength, nGapAngle );
+		CreateShot02( _nX, _nY, nSpeed, nAngle, nAccelSpeed, nMaxSpeed, nGraphic, nDelay );
+		nGapAngle += 180;
+	}
+
+}
+
+/**
+*	レーザー源
+*	@param nX		レーザー源x座標
+*	@param nY		レーザー源y座標
+*	@param nDelay	遅延フレーム数
+*	@param nKill	消滅までのフレーム数
+*	@param nWidth	発射するレーザーの幅
+*	@param nGraphic	レーザー源画像
+*/
+task LaserSource( let nX, let nY, let nDelay, let nKill, let nWidth, let nGraphic ){
+
+	let obj = Obj_Create( OBJ_LASER );
+	Obj_SetX( obj, nX );
+	Obj_SetY( obj, nY );
+	Obj_SetAngle( obj, 90 );
+	ObjShot_SetGraphic( obj, nGraphic );
+	ObjShot_SetDelay( obj, nDelay );
+	ObjLaser_SetLength( obj, 0 );
+	ObjLaser_SetWidth( obj, 0 );
+	Obj_SetCollisionToPlayer( obj, false );
+	ObjShot_ToItem( obj, false );
+	ObjLaser_SetSource( obj, false );
+
+	loop( nDelay ){ yield; }
+	let nFrame = 10;
+	let nLength = 0;
+	let nAddLength = nWidth * 1.1 / nFrame;
+	loop( nFrame ){
+		nLength += nAddLength;
+		nY -= nAddLength / 2;
+		ObjLaser_SetLength( obj, nLength );
+		ObjLaser_SetWidth( obj, nLength );
+		Obj_SetY( obj, nY );
+		yield;
+	}
+	loop( nKill - nDelay - nFrame * 2 ){ yield; }
+	ObjShot_FadeDelete( obj );
+
+}
+

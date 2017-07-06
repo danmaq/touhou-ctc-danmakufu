@@ -1,0 +1,291 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ3B　ボス　因幡 てゐ　戦闘前
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#BackGround[User]
+#ScriptVersion[2]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Tewi.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDemo = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetLife( 1 );
+		SetDamageRate( 0, 0 );
+		BehaviorBoss( ACT_STAND3 );
+		SetPosition( CL_MAX_X + 60, CL_MIN_Y - 140 );
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 移動＋ボスID設定 */
+		Move();
+		let nBossID = CL_TTH_CHARACTER_NAME_EIYA + CL_TTH_CHARACTER_NAME_EIYA_TEWI;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		__Wait( 90 );
+
+		/** 会話開始 */
+		CreateEventFromScript( "Talk" );
+		while( GetEventStep() != 1 ){ yield; }
+
+		/** BGM */
+		PlayMusicEx( 13 );
+		let nFrame = 30;
+		let nEventCount = m_nFlanCount;
+		while( OnEvent() || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** 戦闘開始 */
+		AddLife( -1 );
+
+	}
+
+	/**
+	*	移動
+	*/
+	task Move{
+
+		SetAction( ACT_MOVE_L, 90 );
+		SlowMove( CL_CEN_X + 60, CL_MIN_Y + 130, 60 );
+		__Wait( 60 );
+		SetAction( ACT_MOVE_L, 30 );
+		BossMoveHome( 30, true );
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	会話
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_event Talk{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Event.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 敵カットイン画像 */
+	m_aszImageCutInEnemy = [
+		cutTewi,
+		cutTewi2,
+		cutTewi,
+		cutTewi,
+		cutTewi,
+		cutTewi,
+		cutTewi,
+		cutTewi,
+		cutTewi,
+		cutTewi3
+	];
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	@MainLoop{
+
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemyC( m_nWaitFrame, "や、また会った" );
+		InCharPlayer( CUT_PLAYER_SMILE );
+		TextOutPlayer( "竹林で道を失ったら白兎を探せ、とは\nよく言ったものだからな" );
+		SetNameFromTextEnemy( "因幡 てゐ", "幸運の素兎" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "私のナビシステムはあなたの運を運賃に\n何処まででも案内するよ" );
+		InCharPlayer( CUT_PLAYER_SURPRISE );
+		TextOutPlayer( "そうだな、じゃあ霊夢のところまで\n案内してもらおうか" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "残念ながら運賃不足ね" );
+		DeleteNameEnemy();
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "そんな運尽きた状態で行ってみなさいな\nたちまち不幸で死んじゃうよ？" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "ちなみにこの場で教えたげるだけなら\nタダなんだけど…" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "けど？" );
+		TextOutEnemy( "きっと聞いただけでも悶え死んじゃうよ？" );
+		TextOutPlayer( "成程、霊夢は無間地獄に落ちたのか" );
+		TextOutEnemy( "半正解。\nあなたは半分大きな勘違いをしてるわね" );
+		InCharPlayer( CUT_PLAYER_TEMPER );
+		TextOutPlayer( "あー？何が言いたいんだ？" );
+		TextOutEnemy( "あなたが誰に会って、その後\n紅白さんのところに行って何するかまで" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "悲しいくらいに私には読めちゃうのよねー" );
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "人の心を読まれるっていい気分じゃないな" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "そもそもいつの間に\nそんな能力身に着けたんだ？" );
+		TextOutEnemy( "こんなの心理術の基本よ？" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "このくらい読めないようじゃ\n詐欺師は務まらないわ" );
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "おいおい自ら認める詐欺師って一体…\nってまさか、今までの発言全部！" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "うふふふー" );
+		SetStep( 1 );
+		InCharPlayer( CUT_PLAYER_REGRET );
+		TextOutPlayer( "なんてこった…どうやら\n私はこれから夜摩天に代わって" );
+		InCharPlayer( CUT_PLAYER_TEMPER );
+		TextOutPlayer( "お前の舌を抜かねばならないようだ" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "さぁ私の詐欺師入門講座は\nいかがだったかしら？" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "あ、受講料はこの賽銭箱に入れてね" );
+		InCharEnemy( CUT_PLAYER_BAD );
+		TextOutPlayer( "誰が詐欺師になるもんか！" );
+		End();
+
+	}
+
+}

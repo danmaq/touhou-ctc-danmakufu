@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Enemy" file="enemy">
+	<category caption="概要" link="true">
+		<paragraph>
+			弾幕風標準の敵スクリプト(ボス/雑魚・ただし使い間を除く)でのみ使用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/Enemy.dnh</path>となります。
+			(関数の数が少ないので1ファイルのみの構成となります)
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+	</category>
+	<category caption="書換可能定数" link="true">
+	</category>
+	<category caption="メンバ変数" link="true">
+	</category>
+	<category caption="共通処理">
+		<paragraph>
+			このライブラリセットの読み込み対象となる全てのスクリプトで実行される共通処理です。<br />
+			<caution>
+				内部から自動的に呼ばれる関数です。
+				通常直接呼び出すことはありません。
+			</caution>
+		</paragraph>
+		<define key="__FlanCommonEnemyInitialize">
+			<paragraph>
+				該当<caption>スクリプトの共通初期化処理</caption>です。
+			</paragraph>
+		</define>
+		<define key="__FlanCommonEnemyMainLoop">
+			<paragraph>
+				該当<caption>スクリプトの共通メインループ処理</caption>です。
+			</paragraph>
+		</define>
+		<define key="__FlanCommonEnemyFinalize">
+			<paragraph>
+				該当<caption>スクリプトの共通終了処理</caption>です。
+			</paragraph>
+		</define>
+	</category>
+</contents>

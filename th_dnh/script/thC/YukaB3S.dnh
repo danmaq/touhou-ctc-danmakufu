@@ -1,0 +1,441 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ2D　ボス　風見 幽香　スペル3
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[YukaB - スペル3]
+#Text[ステージ2D ボス
+風見 幽香]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\BossSub.dnh"
+	#include_function ".\INCLUDE\BOSS\Yuka.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDeadEffect = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		SetTimer( 49 );
+		SetLife( 500 );
+		SetDamageRate( 13.5, 13.5 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+		BehaviorSub( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_LOTUS + CL_TTH_CHARACTER_NAME_LOTUS_YUKA;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 当たり判定 */
+		if( m_nEnemyAlpha >= 95 ){
+			FLAN_ENEMY_COLLISION_A = 32;
+			FLAN_ENEMY_COLLISION_B = 16;
+			if( m_nFlanCount >= 360 ){ __Collision( GetSubX(), GetY(), 32, 16 ); }
+		}
+		else{
+			FLAN_ENEMY_COLLISION_A = 0;
+			FLAN_ENEMY_COLLISION_B = 0;
+		}
+
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){
+			if( IsTryLastSpell() ){ DropItemTHC( 14 ); }
+		}
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+		/** 分身描画 */
+		let nX = GetSubX();
+		let nY = GetY();
+		if( m_nFlanCount < 360 ){
+			nX = CL_CEN_X;
+			nY = CL_MIN_Y - 1000;
+		}
+		DrawSub( m_szImageBoss, CHAR_BOSS, nX, nY );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 55 );
+		if( m_bDead ){ break; }
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_LOTUS + CL_TTH_SPELL_STAGE2_BOSS_3 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+		if( m_bDead ){ break; }
+
+		Concentration01( 120 );
+		PlaySEEx( sePower );
+		__Wait( 120 );
+		if( m_bDead ){ break; }
+
+		let nAssign = 0;
+
+		loop{
+
+			/** ワープ移動 */
+			Warp( 1 );
+			__Wait( 120 );
+			if( m_bDead ){ break; }
+
+			/** 全方向ツイン弾 or 狙い弾 */
+			RoundTwinShot( nAssign );
+			__Wait( 180 );
+			if( m_bDead ){ break; }
+
+			/** ワープ移動 */
+			Warp( - 1 );
+			__Wait( 120 );
+			if( m_bDead ){ break; }
+
+			/** レーザー */
+			Laser();
+			__Wait( 180 );
+			if( m_bDead ){ break; }
+
+			nAssign = 1 - nAssign;
+
+		}
+
+	}
+
+	/**
+	*	全方向ツイン弾 or 狙い弾
+	*	@param nAssign	割り振り係数
+	*/
+	task RoundTwinShot(let nAssign ){
+
+		let nNum = 10;
+		let nFrame = 18;
+		let anX = [ GetX(), GetSubX() ];
+		let nY = GetY();
+
+		SetAction( ACT_SHOT_A5, nFrame * nNum );
+		SetSubAction( ACT_SHOT_A5, nFrame * nNum );
+		ascent( let i in 0 .. nNum ){
+			_RoundTwinShot( anX[ nAssign ], nY, i );
+			SearchShot( anX[ 1 - nAssign ], nY );
+			PlaySEEx( seShot1 );
+			__Wait( nFrame );
+			if( m_bDead ){ break; }
+		}
+
+	}
+
+	/**
+	*	全方向ツイン弾（1セット）
+	*	@param _nX		弾源x座標
+	*	@param _nY		弾源y座標
+	*	@param _nNumber	弾番号
+	*/
+	function _RoundTwinShot( let _nX, let _nY, let nNumber ){
+
+		let nGapLength = 24;
+		let nWay = 20 + 6 * m_nLevel;
+		if( m_nLevel == 3 ){ nWay += 4; }
+		let nSpeed = 4;
+		let nMaxSpeed = 1.6 + 0.1 * m_nLevel;
+		let nAccelSpeed = ( nMaxSpeed - nSpeed ) / 30;
+		let nWayAngle = 360 / nWay;
+		let nAngle = 90 + nWayAngle * 0.4 * nNumber;
+		let nDelay = 5;
+
+		loop( nWay ){
+			let nX = GetGapX( _nX, nGapLength, nAngle );
+			let nY = GetGapY( _nY, nGapLength, nAngle );
+			TwinShot( nX, nY, nSpeed, nAccelSpeed, nMaxSpeed, nAngle, nDelay );
+			nAngle += nWayAngle;
+		}
+
+	}
+
+	/**
+	*	狙い弾
+	*	@param nX	弾源x座標
+	*	@param nY	弾源y座標
+	*/
+	function SearchShot( let nX, let nY ){
+
+		let nDelay = 5;
+		let nSpeed0 = 6 + 0.4 * m_nLevel;
+		let nSpeed1 = 2 + 0.3 * m_nLevel;
+		let nAngle = GetGapAngle( nX, nY, GetPlayerX(), GetPlayerY() );
+		let nGraphic = US_BALL_L_YELLOW;
+		let nFrame = 12;
+
+		CreateShotA( 0, nX, nY, nDelay );
+		SetShotDataA( 0, 0, nSpeed0, nAngle, 0, 0, 0, nGraphic );
+		SetShotDataA( 0, nFrame, nSpeed1, NULL, 0, 0, 0, nGraphic );
+		FireShot( 0 );
+
+	}
+
+	/**
+	*	レーザー
+	*/
+	task Laser{
+
+		let nX = GetX();
+		let nY = GetY();
+
+		SetAction( ACT_SHOT_B5, 180 );
+		_Laser( nX, nY + 22 );
+		RollLaser( nX, nY );
+
+		SetSubAction( ACT_SHOT_B5, 180 );
+		_Laser( GetSubX(), nY + 22 );
+		RollLaser( GetSubX(), nY );
+
+		__Wait( 18 );
+		PlaySEEx( seLaser1 );
+		PlaySELoopEx( seLaser2, 160, 10 );
+
+	}
+
+	/**
+	*	設置レーザー
+	*	@param nX	レーザー源x座標
+	*	@param nY	レーザー源y座標
+	*/
+	task _Laser( let nX, let nY ){
+
+		__Wait( 18 );
+
+		let nLength = 0;
+		let nWidth = 40 + 40 * m_nLevel;
+		let anGraphic = [ US_BALL_M_A_BLUE, US_BEAM_BLUE ];
+		let nDelay = 44 - 4 * m_nLevel;
+		let nKill = 162;
+		let nAngle = 90;
+		let nFrame = 20;
+		let nAddLength = 350 / nFrame;
+
+		LaserSource( nX, nY, nDelay, nKill, nWidth, anGraphic[ 0 ] );
+		CreateLaserA( 0, nX, nY, nLength, nWidth, anGraphic[ 1 ], nDelay );
+		SetLaserDataA( 0, 0, nAngle, 0, nAddLength, 0, 0 );
+		SetLaserDataA( 0, nFrame, NULL, 0, 0, 0, 0 );
+		SetShotKillTime( 0, nKill );
+		FireShot( 0 );
+
+	}
+
+	/**
+	*	回転レーザー
+	*	@param nX	レーザー源x座標
+	*	@param nY	レーザー源y座標
+	*/
+	task RollLaser( let nX, let nY ){
+
+		__Wait( 18 );
+
+		let nGapLength = 24;
+		let nNum = 32 + 6 * m_nLevel;
+		if( m_nLevel == 3 ){ nNum += 4; }
+		let nSpeed = 3 + 0.3 * m_nLevel;
+		let nNumAngle = 360 / ( nNum - 1 );
+		let nAngle = - 90;
+		let nLength = 100;
+		let nWidth = 6;
+		let nGraphic = US_BALL_M_A_BLUE;
+		let nDelay = 5;
+		let nLoopFrame = 80;
+
+		loop( 2 ){
+			let nRandAngle = RandBlur( nNumAngle / 2 );
+			let _nAngle = nAngle;
+			loop( nNum ){
+				let __nAngle = _nAngle;
+				loop( 2 ){
+					let ___nAngle = __nAngle + nRandAngle;
+					let _nX = GetGapX( nX, nGapLength, ___nAngle );
+					let _nY = GetGapY( nY, nGapLength, ___nAngle );
+					CreateLaser01( _nX, _nY, nSpeed, ___nAngle, nLength, nWidth, nGraphic, nDelay );
+					__nAngle = 180 - __nAngle;
+				}
+				yield;
+				if( m_bDead ){ break; }
+				_nAngle += nNumAngle;
+			}
+			__Wait( nLoopFrame - nNum );
+			if( m_bDead ){ break; }
+		}
+
+	}
+
+	/**
+	*	ワープ移動
+	*	@param nAssign	割り振り係数
+	*/
+	task Warp( let nAssign ){
+
+		let nX = CL_CEN_X + 80 * nAssign + RandBlur( 64 );
+		let nY = CL_MIN_Y + 120 + RandBlur( 20 );
+
+		SetSubAction( ACT_ROLL, 0 );
+		PlaySEEx( seKira4 );
+		SubSwing( GetSubX(), - 1 );
+		__Wait( 55 );
+
+		SetMovePosition02( nX, nY, 5 );
+		__Wait( 5 );
+		if( m_bDead ){ break; }
+
+		SetSubAction( ACT_ROLL, 0 );
+		PlaySEEx( seKira4 );
+		SubSwing( GetSubX(), 1 );
+
+	}
+
+	/**
+	*	分身x座標取得
+	*	return	分身x座標
+	*/
+	function GetSubX{ return CL_CEN_X + CL_CEN_X - GetX(); }
+
+}

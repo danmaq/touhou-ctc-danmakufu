@@ -1,0 +1,370 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ6　ボス　博麗 霊夢（白）　スペル1
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[ReimuW - スペル1]
+#Text[ステージ6 ボス
+博麗 霊夢（白）]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\ReimuW.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 120;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetTimer( 63 );
+		SetLife( 500 );
+		SetDamageRate( 5, 5 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		else{ CheckDuelTimer(); }
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_YOUMU + CL_TTH_CHARACTER_NAME_YOUMU_REIMU;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){ DropItemTHC( 18 ); }
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 残像描画 */
+		DrawBlur( m_szImageBoss );
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG1();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		SetBlur( nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_YOUMU + CL_TTH_SPELL_STAGE6_BOSS_1 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE_NEXTPHASE, true );
+
+		let nAssign = 1;
+
+		loop{
+
+			/** 全方向分岐レーザー */
+			SetAction( ACT_SHOT_B5, 255 );
+			SetColor( 255, 95, 95 );
+			Concentration01( 150 );
+			SetColor( 255, 255, 255 );
+			__Wait( 30 );
+			RoundSplitLaser( nAssign );
+			__Wait( 120 );
+
+			/** 全方向弾 */
+			RoundShotEx();
+			__Wait( 150 );
+
+			/** 移動 */
+			Move( 60 );
+			__Wait( 60 );
+			SetDamageRate( 14, 9 );
+
+			nAssign = - nAssign;
+
+		}
+
+	}
+
+	/**
+	*	全方向分岐レーザー
+	*	@param nAssign	割り振り係数
+	*/
+	task RoundSplitLaser( let nAssign ){
+
+		let nWay = 6 + 2 * m_nLevel;
+		let nX = GetX();
+		let nY = GetY();
+		let nAngle = rand( 0, 360 );
+		let nWayAngle = 360 / nWay;
+
+		loop( nWay ){
+			SplitLaser( nX, nY, nAngle, nAssign );
+			nAngle += nWayAngle;
+		}
+
+	}
+
+	/**
+	*	分岐レーザー
+	*	@param nX		レーザー源x座標
+	*	@param nY		レーザー源y座標
+	*	@param nAngle	角度
+	*	@param nAssign	割り振り係数
+	*/
+	task SplitLaser( let nX, let nY, let nAngle, let nAssign ){
+
+		let nGraphic = US_BALL_M_A_RED;
+		let nDelay = 60;
+		let nWidth = 18;
+		let nGrowFrame = 30;
+		let nAddLength = 800 / nGrowFrame;
+		let nSplitLength = 240;
+		let nKill = 180;
+
+		CreateLaserA( 0, nX, nY, 0, nWidth, nGraphic, nDelay );
+		SetLaserDataA( 0, 0, nAngle, 0, nAddLength, 0, 0 );
+		SetLaserDataA( 0, nGrowFrame, NULL, 0, 0, 0, 0 );
+		SetLaserDataA( 0, nKill - nGrowFrame, NULL, 0, - nAddLength, 0, 0 );
+		SetShotKillTime( 0, nKill );
+
+		let _nAssign = 1;
+
+		PlaySEEx( seLaser1 );
+		PlaySEDelay( seLaser1, nGrowFrame );
+		PlaySEDelay( seLaser1, nGrowFrame * 2 );
+		PlaySEDelay( seShot2, nGrowFrame * 2 + nDelay );
+
+		loop( 2 ){
+
+			let _nAngle = nAngle + 150 * _nAssign;
+			let _nKill = nKill - nGrowFrame;
+
+			CreateLaserA( 1, 0, 0, 0, nWidth, nGraphic, nDelay );
+			SetLaserDataA( 1, 0, _nAngle, 0, nAddLength, 0, 0 );
+			SetLaserDataA( 1, nGrowFrame, NULL, 0, 0, 0, 0 );
+			SetLaserDataA( 1, _nKill - nGrowFrame, NULL, 0, - nAddLength, 0, 0 );
+			SetShotKillTime( 1, _nKill );
+
+			let __nAssign = 1;
+
+			loop( 2 ){
+
+				let __nAngle = _nAngle + 70 * __nAssign;
+				let __nKill = _nKill - nGrowFrame;
+
+				CreateLaserA( 2, 0, 0, 0, nWidth, nGraphic, nDelay );
+				SetLaserDataA( 2, 0, __nAngle, 0, nAddLength, 0, 0 );
+				SetLaserDataA( 2, nGrowFrame, NULL, 0, 0, 0, 0 );
+				SetLaserDataA( 2, __nKill - nGrowFrame, NULL, 0, - nAddLength, 0, 0 );
+				SetShotKillTime( 2, __nKill );
+				AddShot( nGrowFrame, 1, 2, nSplitLength + 20 );
+				_AddShot( nGrowFrame + nDelay, 1, nSplitLength + 20, __nAngle, nAssign );
+
+				__nAssign = - __nAssign;
+
+			}
+
+			AddShot( nGrowFrame, 0, 1, nSplitLength );
+			_nAssign = - _nAssign;
+
+		}
+
+		FireShot( 0 );
+
+	}
+
+	/**
+	*	追加弾
+	*	@param nFrame	弾発射までのフレーム数
+	*	@param nID		このIDのレーザーから発射する
+	*	@param nLength	レーザー源から弾源までの距離
+	*	@param nAngle	レーザー角度
+	*	@param nAssign	割り振り係数
+	*/
+	function _AddShot( let nFrame, let nID, let nLength, let nAngle, let nAssign ){
+
+		let nWay = 12;
+		let nMaxSpeed = 1;
+		let nAccelSpeed = - nMaxSpeed / 60;
+		let nWayAngle = 360 / nWay * nAssign;
+		let nGraphic = US_BALL_M_RED;
+		let nDelay = 10;
+
+		ascent( let i in 0 .. nWay ){
+			let _nMaxSpeed = nMaxSpeed * ( 0.9 + 0.1 * i % 3 );
+			CreateShotA( 3, 0, 0, nDelay );
+			SetShotDataA( 3, 0, 0, nAngle, 0, nAccelSpeed, _nMaxSpeed, nGraphic );
+			AddShot( nFrame, nID, 3, nLength );
+			nAngle += nWayAngle;
+		}
+
+	}
+
+	/**
+	*	全方向弾
+	*/
+	task RoundShotEx{
+
+		let nWay = 6 + 2 * m_nLevel;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 2;
+		let nAngle = GetAngleToPlayer();
+		let nWayAngle = 360 / nWay;
+		let nGraphic = US_BALL_L_RED;
+
+		_RoundShot01( nX, nY, nSpeed, nAngle, nWay, nGraphic, 0 );
+		_RoundShot01( nX, nY, nSpeed * 0.4, nAngle + nWayAngle / 2, nWay, nGraphic, 0 );
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 40;
+		let nMaxMoveX = 80;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 20;
+
+		SetAction( ACT_MOVE, nFrame );
+		SetBlur( nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Introduction" file="main">
+	<category caption="概要" link="true">
+		<paragraph>
+			東方弾幕風スクリプト製作の支援となるフレームワークキットです。
+			元々『妖々夢外伝～幻寇戦乱録』に使っていたライブラリを拡張して出来たものだったりします。
+			その所為かかなりステージスクリプト用に特化したライブラリと化してしまい、単発ものだとちょっと荷が重いかもしれません。
+		</paragraph>
+		<paragraph>
+			従来の弾幕風支援ライブラリはほとんどがコンポーネント形式だったのに対しこのライブラリは一部『フレームワーク』方式をとっているのが大きな特徴です。
+		</paragraph>
+	</category>
+	<category caption="基礎知識:コンポーネント" link="true" id="component" image="component.png">
+		<paragraph>
+			パズルに例えるとピースのような存在で、便利な機能をひとまとめにして関数一発で呼び出すことが出来る形式のことを指します。
+			この機能を使うことにより何度も同じコードを書く必要がなくなり、またある程度コードの量を減らすことができますが、原則単体では使用できず他のコンポーネントやコードなどを組み合わせて機能を実現する必要があります。
+			また、どんなコードを減らしても『処理を呼ぶ』処理はどうしても残ってしまいます。
+		</paragraph>
+		<paragraph>
+			従来の弾幕風支援ライブラリの多くがこの方式でした。
+		</paragraph>
+	</category>
+	<category caption="基礎知識:フレームワーク" link="true" id="framework" image="framework.png">
+		<paragraph>
+			パズルに例えるとパズルのフレームのような存在で、毎回呼ばれる定型機能をまとめてスクリプトの土台として動く形式の事を指します。
+			これの利点は何もせずにフレームごとに毎回定型機能が呼ばれるので自ら呼ぶ必要すら一切なくなります。
+			利用者は独自の動作を記述するだけでスクリプトが出来上がります。
+		</paragraph>
+		<paragraph>
+			本ライブラリはこの形式を採用しています。
+			百聞は一見にしかず。<a href="tutorial.xml">Tutorial Manual</a>を参照するとよいでしょう。
+		</paragraph>
+	</category>
+	<category caption="このマニュアルについて" link="true" id="component">
+		<paragraph>
+			現状このマニュアルIEじゃないとなんか左側メニューがうまく表示してくれないぽ…（´・ω・｀）
+		</paragraph>
+	</category>
+	<category caption="インストール方法" link="true" id="install">
+		<paragraph>
+			このライブラリは一つで自機スクリプトと敵スクリプト・ステージスクリプト共通のため、<strong>libフォルダを弾幕風フォルダ直下</strong>に設置してください。
+			(scriptフォルダや各スクリプトの下におくと正常に動作しません)
+		</paragraph>
+	</category>
+	<category caption="呼び出し方法" link="true" id="include">
+		<paragraph>
+			呼び出す際は必ず
+			<code>script_enemy_main</code> /
+			<code>script_shot_main</code> /
+			<code>script_event_main</code> /
+			<code>script_stage_main</code> /
+			<code>script_player_main</code> /
+			<code>script_spell</code>
+			ブロック内の一番最初にて下記のようにインクルードしてください。
+			その際条件に合ったスクリプトを<strong>1つだけ</strong>選択してインクルードしてください。
+			詳細は<a href="tutorial.xml">Tutorial Manual</a>を参照してください。
+			<pre>
+				<code><header>#include_function</header> &quot;\lib\FLAN\HEADER\Boss.dnh&quot;		<comment>// ボススクリプト本体の場合</comment></code><br />
+				<code><header>#include_function</header> &quot;\lib\FLAN\HEADER\Zako.dnh&quot;		<comment>// 雑魚スクリプト本体または使い魔でない子スクリプトの場合</comment></code><br />
+				<code><header>#include_function</header> &quot;\lib\FLAN\HEADER\Shadow.dnh&quot;	<comment>// 使い魔の場合</comment></code><br />
+				<code><header>#include_function</header> &quot;\lib\FLAN\HEADER\Shot.dnh&quot;		<comment>// 弾スクリプトの場合</comment></code><br />
+				<code><header>#include_function</header> &quot;\lib\FLAN\HEADER\Player.dnh&quot;	<comment>// プレイヤースクリプト本体の場合</comment></code><br />
+				<code><header>#include_function</header> &quot;\lib\FLAN\HEADER\Spell.dnh&quot;	<comment>// スペルスクリプトの場合</comment></code><br />
+				<code><header>#include_function</header> &quot;\lib\FLAN\HEADER\Event.dnh&quot;	<comment>// イベントスクリプトの場合</comment></code><br />
+				<code><header>#include_function</header> &quot;\lib\FLAN\HEADER\Stage.dnh&quot;	<comment>// ステージスクリプトの場合</comment></code><br />
+			</pre>
+		</paragraph>
+	</category>
+	<category caption="著作権/使用条件" link="true" id="copyright">
+		<list>
+			<item>本ライブラリ著作権は、ゲーム製作サークルdanmaq(以下danmaq)が所有します。</item>
+			<item>一部東方夢終劇スタッフにより記述されたものをMcが修正したソースを含んでいます。</item>
+			<item>一部<a target="__blank" href="http://abyss.dw.land.to/">魔界展望台</a>の「弾幕風ライブラリKDL」コードを含んでいます。</item>
+			<item>本ライブラリが原因で万一何らかの危害を受けた場合、danmaqはその責任を負わないものとします。</item>
+			<item>本ライブラリを使用する際は必ずREADMEなどに使用した旨を明記してください。</item>
+			<item>ここに記述されていないその他条件は原則<a target="__blank" href="http://www.opensource.org/licenses/mit-license.php">MITライセンス</a>に従います。</item>
+			<item>連絡先情報など&lt;<a href="http://danmaq.com/feedback/">http://danmaq.com/feedback/</a>&gt;</item>
+		</list>
+	</category>
+</contents>

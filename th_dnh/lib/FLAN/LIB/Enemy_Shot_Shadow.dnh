@@ -1,0 +1,22 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	下位ライブラリをインクルードする
+//////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\FLAN\LIB\ENEMY_SHOT_SHADOW\Misc.dnh"
+#include_function "\lib\FLAN\LIB\ENEMY_SHOT_SHADOW\PatternShot.dnh"
+#include_function "\lib\FLAN\LIB\ENEMY_SHOT_SHADOW\PatternShot2.dnh"
+#include_function "\lib\FLAN\LIB\ENEMY_SHOT_SHADOW\Draw.dnh"
+#include_function "\lib\FLAN\LIB\ENEMY_SHOT_SHADOW\Common.dnh"

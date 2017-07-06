@@ -1,0 +1,736 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Common-Library
+//		プロポーショナル(*)ビットマップフォントライブラリ v2.0
+//
+//	(*)半角のみ。全角は固定ピッチ。
+//	※ステージ・ボス・プレイヤースクリプトでは内部から自動的に
+//		インクルードされるので直接インクルードすることはありません。
+//	※雑魚や使い魔でデバッグ用などに使用したい場合のみ
+//		直接各スクリプトからインクルードしてください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+//
+//	■TODO :
+//	FLANのサブセット化(フォントはヒラギノ角ゴでいいかな？＿？)
+//	半角ｶﾅ
+//	全角のプロポーショナル化(死んでみるか？)
+//	半角全角混在時半角がずれる(ある程度緩和したがまだずれる)
+//	右揃え・中央揃え・均等割付
+//
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(変更不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	SJISマルチバイトコードの空白ポイントを示すリストです。 */
+let CL_FONT_SJIS_GAPPOS	= [
+	0,		62,		108,	115,	122,	137,	145,	146,	156,	182,	208,	291,	354,	378,	401,	425,	458,	473,	491,	523,	553,	576,	577,	606,	700,
+	763,	888,	951,	1076,	1139,	1264,	1327,	1452,	1515,	1640,	1703,	1828,	1891,	2016,	2079,	2204,	2267,	2392,	2455,	2580,	2643,	2768,	2831,	2956,	3019,
+	3144,	3207,	3332,	3395,	3520,	3571,	3665,	3728,	3853,	3916,	4041,	4104,	4229,	4292,	4417,	4480,	4605,	4668,	4793,	4856,	4981,	5044,	5169,	5232,
+	5357,	5420,	5545,	5608,	5733,	5796,	5921,	5984,	6109,	6172,	6297,	6360,	6485,	6548,	6673,	6736,	6861,	6924,	6961,	6996,	7121,	7184,	7309,	7321
+];
+/**	SJISマルチバイトコードの対応する空白長を示すリストです。 */
+let CL_FONT_SJIS_GAPLEN	= [
+	33088,	1,		11,		8,		11,		7,		4,		82,		7,		7,		4,		78,		1,		8,		8,		105,	15,		1,		13,		641,	1,		8,		1,		258,	67,
+	1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,
+	67,		1,		67,		1,		67,		44,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		16451,	1,		67,		1,
+	67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		67,		1,		4023,	1,		67,		1,		67,		2
+];
+/**	SJISマルチバイトコードフォントの開始X座標です。 */
+let CL_FONT_SJIS16_X = 1;
+/**	SJISマルチバイトコードフォントの画像1行に収まっている文字列長です。 */
+let CL_FONT_SJIS16_WIDTH = 20;
+/**	SJISマルチバイトコードフォントの画像全体の行数です。 */
+let CL_FONT_SJIS16_HEIGHT = 21;
+/**	SJISマルチバイトコードフォントのカーニングの広さです。 */
+let CL_FONT_SJIS16_KERNING = 3;
+/**	SJISマルチバイトコードフォントの頭スペースの高さです。 */
+let CL_FONT_SJIS16_SPACING_HEIGHT = 1;
+
+/**	48ptASCIIフォントのX座標リストです。 */
+let CL_FONT_48_X = [
+	8, 36, 72, 117, 162, 211, 260, 289, 322, 355, 402, 449, 479, 526, 556, 614, 658, 686, 730, 772, 819, 862, 904, 947, 989,
+	8, 37, 66, 113, 160, 208, 250, 298, 350, 396, 443, 491, 537, 582, 631, 679, 707, 747, 794, 840, 888, 934, 982,
+	8, 56, 104, 149, 198, 244, 293, 346, 394, 442, 489, 520, 567, 598, 636, 696, 732, 773, 813, 855, 895, 938, 976,
+	8, 49, 78, 114, 158, 185, 232, 272, 313, 354, 394, 431, 471, 509, 551, 595, 642, 687, 729, 771, 803, 829, 861
+];
+/**	48ptASCIIフォントの右端切捨て量リストです。 */
+let CL_FONT_48_RIGHTCUT = [ -7, -3, 10, 104 ];
+/**	48ptASCIIフォントの開始Y座標です。 */
+let CL_FONT_48_Y = -1;
+/**	48ptASCIIフォントの高さです。 */
+let CL_FONT_48_HEIGHT = 58;
+/**	48ptASCIIフォントのカーニングの広さです。 */
+let CL_FONT_48_KERNING = 18;
+/**	48ptASCIIフォントのスペースの幅です。 */
+let CL_FONT_48_SPACING = 8;
+/**	48ptASCIIフォントの頭スペースの高さです。 */
+let CL_FONT_48_SPACING_HEIGHT = 4;
+
+/**	32ptASCIIフォントのX座標リストです。 */
+let CL_FONT_32_X = [
+	5, 27, 55, 89, 122, 158, 194, 216, 241, 268, 302, 338, 360, 395, 419, 461, 494, 516, 550, 580, 616, 647, 680, 711, 744, 776, 798, 820, 855, 892, 927, 957,
+	5, 43, 77, 112, 148, 182, 214, 252, 287, 309, 340, 374, 407, 443, 477, 514, 546, 583, 618, 652, 688, 723, 759, 797, 833, 869, 902, 926, 
+	4, 29, 57, 100, 129, 160, 189, 221, 252, 283, 312, 343, 373, 396, 424, 456, 478, 513, 542, 575, 604, 634, 664, 694, 722, 754, 787, 822, 855, 887, 919, 942, 964, 988
+];
+/**	32ptASCIIフォントの右端切捨て量リストです。 */
+let CL_FONT_32_RIGHTCUT = [ 31, 62, -8 ];
+/**	32ptASCIIフォントの開始Y座標です。 */
+let CL_FONT_32_Y = 234;
+/**	32ptASCIIフォントの高さです。 */
+let CL_FONT_32_HEIGHT = 40;
+/**	32ptASCIIフォントのカーニングの広さです。 */
+let CL_FONT_32_KERNING = 15;
+/**	32ptASCIIフォントのスペースの幅です。 */
+let CL_FONT_32_SPACING = 6;
+/**	32ptASCIIフォントの頭スペースの高さです。 */
+let CL_FONT_32_SPACING_HEIGHT = 3;
+
+/**	24ptASCIIフォントのX座標リストです。 */
+let CL_FONT_24_X = [
+	7, 21, 39, 62, 84, 109, 133, 148, 164, 180, 204, 228, 242, 266, 281, 310, 332, 346, 368, 389, 413, 434, 455, 476,
+	498, 519, 533, 548, 572, 595, 619, 640, 664, 690, 713, 737, 761, 783, 806, 831, 855, 869, 889, 912, 935, 959,
+	7, 31, 54, 77, 102, 124, 149, 172, 196, 223, 247, 271, 294, 310, 333, 349, 368, 398, 416, 436, 456, 477, 497, 519, 538,
+	558, 579, 593, 611, 633, 646, 669, 690, 710, 730, 751, 769, 789, 808, 829, 851, 875, 897, 918, 940, 955, 968, 984
+];
+/**	24ptASCIIフォントの右端切捨て量リストです。 */
+let CL_FONT_24_RIGHTCUT = [ 42, 10 ];
+/**	24ptASCIIフォントの開始Y座標です。 */
+let CL_FONT_24_Y = 355;
+/**	24ptASCIIフォントの高さです。 */
+let CL_FONT_24_HEIGHT = 32;
+/**	24ptASCIIフォントのカーニングの広さです。 */
+let CL_FONT_24_KERNING = 9;
+/**	24ptASCIIフォントのスペースの幅です。 */
+let CL_FONT_24_SPACING = 6;
+/**	24ptASCIIフォントの頭スペースの高さです。 */
+let CL_FONT_24_SPACING_HEIGHT = 3;
+
+/**	16ptASCIIフォントのX座標リストです。 */
+let CL_FONT_16_X = [
+	8, 25, 43, 66, 87, 111, 134, 151, 169, 187, 210, 232, 249, 272, 289, 316, 337, 354, 375, 396, 419, 440, 462, 483,
+	504, 525, 542, 559, 582, 604, 627, 648, 671, 696, 718, 741, 764, 786, 808, 832, 854, 871, 891, 914, 936, 959,
+	8, 31, 53, 76, 99, 121, 145, 167, 191, 215, 238, 261, 284, 301, 324, 342, 361, 388, 407, 428, 448, 469, 490, 511, 531,
+	551, 572, 588, 607, 629, 645, 668, 688, 709, 730, 750, 770, 790, 810, 831, 852, 875, 897, 918, 939, 957, 973, 990
+];
+/**	16ptASCIIフォントの右端切捨て量リストです。 */
+let CL_FONT_16_RIGHTCUT = [ 44, 7 ];
+/**	16ptASCIIフォントの開始Y座標です。 */
+let CL_FONT_16_Y = 421;
+/**	16ptASCIIフォントの高さです。 */
+let CL_FONT_16_HEIGHT = 24;
+/**	16ptASCIIフォントのカーニングの広さです。 */
+let CL_FONT_16_KERNING = 12;
+/**	16ptASCIIフォントのスペースの幅です。 */
+let CL_FONT_16_SPACING = 5;
+/**	16ptASCIIフォントの頭スペースの高さです。 */
+let CL_FONT_16_SPACING_HEIGHT = 1;
+
+/**	12ptASCIIフォントのX座標リストです。 */
+let CL_FONT_12_X = [
+	7, 25, 44, 66, 88, 111, 134, 152, 171, 190, 212, 235, 253, 275, 293, 319, 340, 358, 380, 401, 423, 445, 466, 487,
+	509, 530, 548, 566, 588, 611, 633, 654, 677, 701, 723, 746, 768, 790, 812, 835, 858, 876, 896, 919, 941, 964,
+	7, 30, 52, 74, 97, 119, 142, 164, 187, 211, 234,256, 279, 297, 320, 338, 358, 384, 404, 424, 445, 466, 487, 508, 529,
+	549, 570, 588, 608, 629, 647, 669, 690, 711, 732, 753, 773, 793, 813, 835, 856, 879, 901, 922, 943, 962, 979, 997,
+];
+/**	12ptASCIIフォントの右端切捨て量リストです。 */
+let CL_FONT_12_RIGHTCUT = [ 38, 2 ];
+/**	12ptASCIIフォントの開始Y座標です。 */
+let CL_FONT_12_Y = 470;
+/**	12ptASCIIフォントの高さです。 */
+let CL_FONT_12_HEIGHT = 20;
+/**	12ptASCIIフォントのカーニングの広さです。 */
+let CL_FONT_12_KERNING = 13;
+/**	12ptASCIIフォントのスペースの幅です。 */
+let CL_FONT_12_SPACING = 5;
+/**	12ptASCIIフォントの頭スペースの高さです。 */
+let CL_FONT_12_SPACING_HEIGHT = 1;
+
+/**	空白を示します。 */
+let CL_FONT_CODE_SPACE = -1;
+/**	改行を示します。 */
+let CL_FONT_CODE_CRLF = -2;
+/**	無効なフォントハンドルを示します。 */
+let CL_TT_INVALID = -1;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(変更可能)
+//////////////////////////////////////////////////////////////////////
+
+/**	フォントキャッシュのROM領域を設定します。
+*	ROM領域を設定するとその領域内は書き換えできなくなります。
+*	(誤操作を未然に防げるだけでなく新規フォントキャッシュ作成時の負荷が若干軽くなるメリットがあります)
+*	負数を設定すると無効となります。
+*/
+let CL_TT_ROM_AREA = -1;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	フォントが初期化されているかどうかを格納します。 */
+let m_bCLFontInitialize = false;
+/** SJISマルチバイトフォントの画像リストを格納します。 */
+let m_aszCLFontImageSjis16 = [];
+/** ASCIIフォントの画像を格納します。 */
+let m_szCLFontImageAscii = "";
+/** 指定したフォントハンドルが使用されているかどうかを格納します。 */
+let m_aCLTTCBeUsed = [];
+/** 指定したフォントハンドルの内容を格納します。 */
+let m_aCLTTCValue = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	初期設定
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	フォントを初期化します。
+*	その際に自動的に画像がロードされます。
+*
+*	@param szFontImageAscii ASCIIフォントの画像
+*	@param aszFontImageSjis16 SJISマルチバイトフォントの画像リストを格納します
+*/
+function FontInitialize( let szFontImageAscii, let aszFontImageSjis16 ){
+	ClearTexTextHandle();
+	m_aszCLFontImageSjis16 = m_aszCLFontImageSjis16[ 0..0 ] ~ aszFontImageSjis16;
+	m_szCLFontImageAscii = szFontImageAscii;
+	m_bCLFontInitialize = true;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	キャッシュ関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	特定文字列をプリレンダリングし、キャッシュハンドルを作成します。
+*	この関数を直接呼ばずに下記のラッパー関数を使用すると便利です。
+*	CreateTexText48Cache / CreateTexText32Cache / CreateTexText24Cache / CreateTexText16Cache / CreateTexText12Cache
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param anSrcXTable フォント元画像のX座標リスト
+*	@param anSrcXRightCut フォント元画像の右端切り捨て量リスト
+*	@param nSpacing スペースの幅
+*	@param nSrcY フォント元画像の開始Y座標
+*	@param nSrcHeight フォント元画像の高さ
+*	@param nSrcKerning カーニングの広さ
+*	@param nHeadSpacing 頭位置揃え用スペース
+*	@param szText 文章
+*	@return キャッシュハンドル
+*/
+function __CreateTexTextCache( let anSrcXTable, let anSrcXRightCut, let nSpacing, let nSrcY, let nSrcHeight, let nSrcKerning, let nHeadSpacing, let szText ){
+	if( !m_bCLFontInitialize ){ return -1; }
+	let aszImageFile = [];
+	let anSrcX = [];
+	let anSrcY = [];
+	let anWidth = [];
+	let anHeight = [];
+	let anKerning = [];
+	let anHeadSpace = [];
+	let i = 0;
+	while( i < length( szText ) ){
+		let nCode = szText[ i ] - 0;	//	引き算して初めて数値型なる
+		if( nCode < 128 ){	//	ASCII
+			aszImageFile = aszImageFile ~ [ -1 ];
+			let nCodeIndex = nCode - 33;
+			if( nCodeIndex < 0 ){
+				anSrcX = anSrcX ~ [ CL_FONT_CODE_SPACE ];
+				anSrcY = anSrcY ~ [ CL_FONT_CODE_SPACE ];
+				anWidth = anWidth ~ [ nSpacing ];
+			}
+			else if( szText[ i ] == '\' && szText[ i + 1 ] == 'n' ){
+				anSrcX = anSrcX ~ [ CL_FONT_CODE_CRLF ];
+				anSrcY = anSrcY ~ [ CL_FONT_CODE_CRLF ];
+				anWidth = anWidth ~ [ 0 ];
+				i++;
+			}
+			else{
+				let nYLine = 0;
+				ascent( let i in 0..( nCodeIndex + 1 ) ){ if( anSrcXTable[ Max( i - 1, 0 ) ] > anSrcXTable[ i ] ){ nYLine++; } }
+				anSrcX = anSrcX ~ [ anSrcXTable[ nCodeIndex ] ];
+				anSrcY = anSrcY ~ [ nYLine * nSrcHeight + nSrcY ];
+				if( nCodeIndex + 1 >= length( anSrcXTable ) || anSrcXTable[ nCodeIndex + 1 ] - anSrcXTable[ nCodeIndex ] < 0 ){ anWidth = anWidth ~ [ 1024 - anSrcXRightCut[ nYLine ] - anSrcXTable[ nCodeIndex ] ]; }
+				else{ anWidth = anWidth ~ [ anSrcXTable[ nCodeIndex + 1 ] - anSrcXTable[ nCodeIndex ] ]; }
+			}
+			anHeight = anHeight ~ [ nSrcHeight ];
+			anKerning = anKerning ~ [ nSrcKerning ];
+			anHeadSpace = anHeadSpace ~ [ nHeadSpacing ];
+		}
+		else{	//	SJIS
+			let pos = Max( szText[ i ] * 256 + szText[ i + 1 ], 0 );
+			ascent( let j in 0..length( CL_FONT_SJIS_GAPPOS ) ){ if( pos > CL_FONT_SJIS_GAPPOS[ j ] ){ pos -= CL_FONT_SJIS_GAPLEN[ j ]; } }
+			if( pos < 0 ){ pos = 0; }
+			let y = ( trunc( pos / 51 ) * CL_FONT_SJIS16_HEIGHT );
+			aszImageFile = aszImageFile ~ [ trunc( y / 1008 ) ];
+			anSrcX = anSrcX ~ [ pos % 51 * CL_FONT_SJIS16_WIDTH + CL_FONT_SJIS16_X ];
+			anSrcY = anSrcY ~ [ y % 1008 ];
+			anWidth = anWidth ~ [ CL_FONT_SJIS16_WIDTH ];
+			anHeight = anHeight ~ [ CL_FONT_SJIS16_HEIGHT ];
+			anKerning = anKerning ~ [ CL_FONT_SJIS16_KERNING ];
+			anHeadSpace = anHeadSpace ~ [ CL_FONT_SJIS16_SPACING_HEIGHT ];
+			i++;
+		}
+		i++;
+	}
+	return AddTexTextHandle( aszImageFile, anSrcX, anSrcY, anWidth, anHeight, anKerning, anHeadSpace );
+}
+
+/**
+*	プリレンダリング結果をキャッシュに格納し、キャッシュハンドルを返します。
+*	※この関数を直接呼び出すことは通常まずありません(内部から自動的に呼ばれます)
+*
+*	@param aszImageID イメージIDリスト
+*	@param anSrcX X座標リスト
+*	@param anSrcY Y座標リスト
+*	@param anSrcWidth 幅リスト
+*	@param anSrcHeight 高さリスト
+*	@param anKerningGap 相対カーニングリスト
+*	@return キャッシュハンドル
+*/
+function AddTexTextHandle( let aszImageID, let anSrcX, let anSrcY, let anSrcWidth, let anSrcHeight, let anKerningGap, let anHeadSpace ){
+	let anCacheValue = [ aszImageID, anSrcX, anSrcY, anSrcWidth, anSrcHeight, anKerningGap, anHeadSpace ];
+	let nFontCacheSize = length( m_aCLTTCBeUsed );
+	if( nFontCacheSize > CL_TT_ROM_AREA ){
+		ascent( let i in Max( CL_TT_ROM_AREA, 0 )..nFontCacheSize ){
+			if( !m_aCLTTCBeUsed[ i ] ){
+				m_aCLTTCBeUsed[ i ] = true;
+				m_aCLTTCValue[ i ] = anCacheValue;
+				return i;
+			}
+		}
+	}
+	return AddTexTextHandleList( [ anCacheValue ] );
+}
+
+/**
+*	プリレンダリングされたキャッシュリストを現在のキャッシュに連結します。
+*
+*	@param anCacheValueList キャッシュリスト
+*	@return 追加格納された一番先頭のキャッシュハンドル
+*/
+function AddTexTextHandleList( let anCacheValueList ){
+	let nLength = length( m_aCLTTCBeUsed );
+	m_aCLTTCValue = m_aCLTTCValue ~ anCacheValueList;
+	ascent( let i in 0..length( anCacheValueList ) ){ m_aCLTTCBeUsed = m_aCLTTCBeUsed ~ [ true ]; }
+	return nLength;
+}
+
+/**
+*	キャッシュハンドルが有効かどうかを返します。
+*
+*	@param nHandle キャッシュハンドル
+*	@return 指定のキャッシュハンドルが有効ならtrue
+*/
+function IsValidTexTextCacheHandle( let nHandle ){
+	let nLen = length( m_aCLTTCBeUsed );
+	return ( nLen > 0 && m_bCLFontInitialize && nHandle >= 0 && nHandle < nLen && nHandle == truncate( nHandle ) && m_aCLTTCBeUsed[ nHandle ] );
+}
+
+/**
+*	特定のキャッシュを削除し、対応するキャッシュハンドルを無効にします。
+*
+*	@param nHandle キャッシュハンドル
+*/
+function DeleteTexTextHandle( let nHandle ){
+	if( !IsValidTexTextCacheHandle( nHandle ) || nHandle <= CL_TT_ROM_AREA ){ return; }
+	m_aCLTTCBeUsed[ nHandle ] = false;
+	m_aCLTTCValue[ nHandle ] = [];
+}
+
+/**
+*	全てのキャッシュを削除します。
+*	ROM領域も問答無用に削除されます。
+*/
+function ClearTexTextHandle(){
+	m_aCLTTCBeUsed = m_aCLTTCBeUsed[ 0..0 ];
+	m_aCLTTCValue = m_aCLTTCValue[ 0..0 ];
+	CL_TT_ROM_AREA = -1;
+}
+
+/*	↓↓↓以下全て_CreateTexTextCache()のラッパー関数↓↓↓	*/
+
+/**
+*	文字列を12ポイントフォントでプリレンダリングし、キャッシュハンドルを作成します。
+*	__CreateTexTextCache()のラッパー関数です。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param szText 文章
+*	@return キャッシュハンドル
+*/
+function CreateTexText12Cache( let szText ){
+	return __CreateTexTextCache( CL_FONT_12_X, CL_FONT_12_RIGHTCUT, CL_FONT_12_SPACING, CL_FONT_12_Y, CL_FONT_12_HEIGHT, CL_FONT_12_KERNING, CL_FONT_12_SPACING_HEIGHT, szText );
+}
+
+/**
+*	文字列を16ポイントフォントでプリレンダリングし、キャッシュハンドルを作成します。
+*	__CreateTexTextCache()のラッパー関数です。
+*
+*	@param szText 文章
+*	@return キャッシュハンドル
+*/
+function CreateTexText16Cache( let szText ){
+	return __CreateTexTextCache( CL_FONT_16_X, CL_FONT_16_RIGHTCUT, CL_FONT_16_SPACING, CL_FONT_16_Y, CL_FONT_16_HEIGHT, CL_FONT_16_KERNING, CL_FONT_16_SPACING_HEIGHT, szText );
+}
+
+/**
+*	文字列を24ポイントフォントでプリレンダリングし、キャッシュハンドルを作成します。
+*	__CreateTexTextCache()のラッパー関数です。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param szText 文章
+*	@return キャッシュハンドル
+*/
+function CreateTexText24Cache( let szText ){
+	return __CreateTexTextCache( CL_FONT_24_X, CL_FONT_24_RIGHTCUT, CL_FONT_24_SPACING, CL_FONT_24_Y, CL_FONT_24_HEIGHT, CL_FONT_24_KERNING, CL_FONT_24_SPACING_HEIGHT, szText );
+}
+
+/**
+*	文字列を32ポイントフォントでプリレンダリングし、キャッシュハンドルを作成します。
+*	__CreateTexTextCache()のラッパー関数です。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param szText 文章
+*	@return キャッシュハンドル
+*/
+function CreateTexText32Cache( let szText ){
+	return __CreateTexTextCache( CL_FONT_32_X, CL_FONT_32_RIGHTCUT, CL_FONT_32_SPACING, CL_FONT_32_Y, CL_FONT_32_HEIGHT, CL_FONT_32_KERNING, CL_FONT_32_SPACING_HEIGHT, szText );
+}
+
+/**
+*	文字列を48ポイントフォントでプリレンダリングし、キャッシュハンドルを作成します。
+*	__CreateTexTextCache()のラッパー関数です。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param szText 文章
+*	@return キャッシュハンドル
+*/
+function CreateTexText48Cache( let szText ){
+	return __CreateTexTextCache( CL_FONT_48_X, CL_FONT_48_RIGHTCUT, CL_FONT_48_SPACING, CL_FONT_48_Y, CL_FONT_48_HEIGHT, CL_FONT_48_KERNING, CL_FONT_48_SPACING_HEIGHT, szText );
+}
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	キャッシュハンドルを使用してプリレンダリング済みの文字列を絵画します。
+*
+*	@param nHandle キャッシュハンドル
+*	@param nKerning 相対カーニング値
+*	@param nLineHeight 相対行高さ
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*/
+function DrawTexTextOnCache( let nHandle, let nKerning, let nLineHeight, let nX, let nY ){
+	if( !IsValidTexTextCacheHandle( nHandle ) ){ return; }
+	let anCacheValue = m_aCLTTCValue[ nHandle ];
+	let aszFileName = anCacheValue[ 0 ];
+	let anSrcX = anCacheValue[ 1 ];
+	let anSrcY = anCacheValue[ 2 ];
+	let anSrcWidth = anCacheValue[ 3 ];
+	let anSrcHeight = anCacheValue[ 4 ];
+	let anKerningGap = anCacheValue[ 5 ];
+	let anHeadSpace = anCacheValue[ 6 ];
+	let nLen  = length( anSrcWidth );
+	let nPosX = nX;
+	ascent( let i in 0..nLen ){
+		let nGap = 0;
+		alternative( anSrcX[ i ] )
+		case( CL_FONT_CODE_SPACE ){
+			nGap = anSrcWidth[ i ];
+			if( i > 0 ){ nGap += anSrcWidth[ i - 1 ] / 2; }
+		}
+		case( CL_FONT_CODE_CRLF ){
+			nPosX = nX;
+			nY += anSrcHeight[ i ] - 6 + nLineHeight;
+		}
+		others{
+			if( aszFileName[ i ] == -1 ){
+				if( i != 0 && aszFileName[ i - 1 ] != -1 ){ nPosX += 4; }
+				SetTexture( m_szCLFontImageAscii );
+			}
+			else{ SetTexture( m_aszCLFontImageSjis16[ aszFileName[ i ] ] ); }
+			SetGraphicRect( anSrcX[ i ], anSrcY[ i ], anSrcX[ i ] + anSrcWidth[ i ], anSrcY[ i ] + anSrcHeight[ i ] );
+			DrawGraphic( nPosX, nY + anHeadSpace[ i ] );
+			nGap = anSrcWidth[ i ] / 2;
+		}
+		if( ( i + 1 ) < nLen ){ nGap += anSrcWidth[ i + 1 ] / 2; }
+		nPosX += Max( 0, nGap - anKerningGap[ i ] + nKerning );
+	}
+	
+}
+
+/**
+*	キャッシュハンドルを使用してプリレンダリング済みの文字列を絵画します。
+*
+*	@param nHandle キャッシュハンドル
+*	@param nKerning 相対カーニング値
+*	@param nLineHeight 相対行高さ
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*	@param nGapXStart 左端文字のX座標の間隔の相対ズレ
+*	@param nGapXEnd 右端文字のX座標の間隔の相対ズレ
+*	@param nGapXLimit1 右端文字のX座標の間隔の相対ズレの限界値1
+*	@param nGapXLimit2 右端文字のX座標の間隔の相対ズレの限界値2
+*	@param anGapXSplitParameter X座標の間隔の相対ズレの内分変化分割用定数のリスト
+*	@param nGapYStart 左端文字のY座標の間隔の相対ズレ
+*	@param nGapYEnd 右端文字のY座標の間隔の相対ズレ
+*	@param nGapYLimit1 右端文字のY座標の間隔の相対ズレの限界値1
+*	@param nGapYLimit2 右端文字のY座標の間隔の相対ズレの限界値2
+*	@param anGapYSplitParameter Y座標の間隔の相対ズレの内分変化分割用定数のリスト
+*	@param nScaleXStart 左端文字のX軸拡大率
+*	@param nScaleXEnd 右端文字のX軸拡大率
+*	@param nScaleXLimit1 右端文字のX軸拡大率の限界値1
+*	@param nScaleXLimit2 右端文字のX軸拡大率の限界値2
+*	@param anScaleXSplitParameter X軸拡大率の内分変化分割用定数のリスト
+*	@param nScaleYStart 左端文字のY軸拡大率
+*	@param nScaleYEnd 右端文字のY軸拡大率
+*	@param nScaleYLimit1 右端文字のY軸拡大率の限界値1
+*	@param nScaleYLimit2 右端文字のY軸拡大率の限界値2
+*	@param anScaleYSplitParameter Y軸拡大率の内分変化分割用定数のリスト
+*	@param nRotateXStart 左端文字のX軸回転角度
+*	@param nRotateXEnd 右端文字のX軸回転角度
+*	@param nRotateXLimit1 右端文字のX軸回転角度の限界値1
+*	@param nRotateXLimit2 右端文字のX軸回転角度の限界値2
+*	@param anRotateXSplitParameter X軸回転角度の内分変化分割用定数のリスト
+*	@param nRotateYStart 左端文字のY軸回転角度
+*	@param nRotateYEnd 右端文字のY軸回転角度
+*	@param nRotateYLimit1 右端文字のY軸回転角度の限界値1
+*	@param nRotateYLimit2 右端文字のY軸回転角度の限界値2
+*	@param anRotateYSplitParameter Y軸回転角度の内分変化分割用定数のリスト
+*	@param nRotateZStart 左端文字のZ軸回転角度
+*	@param nRotateZEnd 右端文字のZ軸回転角度
+*	@param nRotateZLimit1 右端文字のZ軸回転角度の限界値1
+*	@param nRotateZLimit2 右端文字のZ軸回転角度の限界値2
+*	@param anRotateZSplitParameter Z軸回転角度の内分変化分割用定数のリスト
+*	@param nAlphaStart 左端文字の透明度
+*	@param nAlphaEnd 右端文字の透明度
+*	@param nAlphaLimit1 右端文字の透明度の限界値1
+*	@param nAlphaLimit2 右端文字の透明度の限界値2
+*	@param anAlphaSplitParameter 透明度の内分変化分割用定数のリスト
+*	@param nColorRStart 左端文字の赤輝度
+*	@param nColorREnd 右端文字の赤輝度
+*	@param nColorRLimit1 右端文字の赤輝度の限界値1
+*	@param nColorRLimit2 右端文字の赤輝度の限界値2
+*	@param anColorRSplitParameter 赤輝度の内分変化分割用定数のリスト
+*	@param nColorGStart 左端文字の緑輝度
+*	@param nColorGEnd 右端文字の緑輝度
+*	@param nColorGLimit1 右端文字の緑輝度の限界値1
+*	@param nColorGLimit2 右端文字の緑輝度の限界値2
+*	@param anColorGSplitParameter 緑輝度の内分変化分割用定数のリスト
+*	@param nColorBStart 左端文字の青輝度
+*	@param nColorBEnd 右端文字の青輝度
+*	@param nColorBLimit1 右端文字の青輝度の限界値1
+*	@param nColorBLimit2 右端文字の青輝度の限界値2
+*	@param anColorBSplitParameter 青輝度の内分変化分割用定数のリスト
+*/
+function DrawTexTextOnCacheEx(
+	let nHandle,		let nKerning,		let nLineHeight,	let nX,				let nY,
+	let nGapXStart,		let nGapXEnd,		let nGapXLimit1,	let nGapXLimit2,	let anGapXSplitParameter,
+	let nGapYStart,		let nGapYEnd,		let nGapYLimit1,	let nGapYLimit2,	let anGapYSplitParameter,
+	let nScaleXStart,	let nScaleXEnd,		let nScaleXLimit1,	let nScaleXLimit2,	let anScaleXSplitParameter,
+	let nScaleYStart,	let nScaleYEnd,		let nScaleYLimit1,	let nScaleYLimit2,	let anScaleYSplitParameter,
+	let nRotateXStart,	let nRotateXEnd,	let nRotateXLimit1,	let nRotateXLimit2,	let anRotateXSplitParameter,
+	let nRotateYStart,	let nRotateYEnd,	let nRotateYLimit1,	let nRotateYLimit2,	let anRotateYSplitParameter,
+	let nRotateZStart,	let nRotateZEnd,	let nRotateZLimit1,	let nRotateZLimit2,	let anRotateZSplitParameter,
+	let nAlphaStart,	let nAlphaEnd,		let nAlphaLimit1,	let nAlphaLimit2,	let anAlphaSplitParameter,
+	let nColorRStart,	let nColorREnd,		let nColorRLimit1,	let nColorRLimit2,	let anColorRSplitParameter,
+	let nColorGStart,	let nColorGEnd,		let nColorGLimit1,	let nColorGLimit2,	let anColorGSplitParameter,
+	let nColorBStart,	let nColorBEnd,		let nColorBLimit1,	let nColorBLimit2,	let anColorBSplitParameter
+){
+	if( !IsValidTexTextCacheHandle( nHandle ) ){ return; }
+
+	let bNoAnimationDestGap = ( nGapXStart == nGapXEnd && nGapYStart == nGapYEnd );
+	let bNoAnimationAlpha = ( nAlphaStart == nAlphaEnd );
+	let bNoAnimationScale = ( nScaleXStart == nScaleXEnd && nScaleYStart == nScaleYEnd );
+	let bNoAnimationRotate = ( nRotateXStart == nRotateXEnd && nRotateYStart == nRotateYEnd && nRotateZStart == nRotateZEnd );
+	let bNoAnimationColor = ( nColorRStart == nColorREnd && nColorGStart == nColorGEnd && nColorBStart == nColorBEnd );
+
+	let anCacheValue = m_aCLTTCValue[ nHandle ];
+	let aszFileName = anCacheValue[ 0 ];
+	let anSrcX = anCacheValue[ 1 ];
+	let anSrcY = anCacheValue[ 2 ];
+	let anSrcWidth = anCacheValue[ 3 ];
+	let anSrcHeight = anCacheValue[ 4 ];
+	let anKerningGap = anCacheValue[ 5 ];
+	let anHeadSpace = anCacheValue[ 6 ];
+	let nLen  = length( anSrcWidth );
+	let nPosX = nX;
+
+	if( bNoAnimationAlpha	){ SetAlpha( nAlphaEnd ); }
+	if( bNoAnimationScale	){ SetGraphicScale( nScaleXEnd, nScaleYEnd ); }
+	if( bNoAnimationRotate	){ SetGraphicAngle( nRotateXEnd, nRotateYEnd, nRotateZEnd ); }
+	if( bNoAnimationColor	){ SetColor( nColorREnd, nColorGEnd, nColorBEnd ); }
+	ascent( let i in 0..nLen ){
+		let nGap = 0;
+		alternative( anSrcX[ i ] )
+		case( CL_FONT_CODE_SPACE ){
+			nGap = anSrcWidth[ i ];
+			if( i > 0 ){ nGap += anSrcWidth[ i - 1 ] / 2; }
+		}
+		case( CL_FONT_CODE_CRLF ){
+			nPosX = nX;
+			nY += anSrcHeight[ i ] - 6 + nLineHeight;
+		}
+		others{
+			if( aszFileName[ i ] == -1 ){
+				if( i != 0 && aszFileName[ i - 1 ] != -1 ){ nPosX += 4; }
+				SetTexture( m_szCLFontImageAscii );
+			}
+			else{ SetTexture( m_aszCLFontImageSjis16[ aszFileName[ i ] ] ); }
+			SetGraphicRect( anSrcX[ i ], anSrcY[ i ], anSrcX[ i ] + anSrcWidth[ i ], anSrcY[ i ] + anSrcHeight[ i ] );
+
+			if( !bNoAnimationAlpha ){ SetAlpha( MinMax( Animation( nAlphaStart, nAlphaEnd, i, nLen - 1, anAlphaSplitParameter ), nAlphaLimit1, nAlphaLimit2 ) ); }
+			if( !bNoAnimationScale ){
+				let nScaleX = MinMax( Animation( nScaleXStart, nScaleXEnd, i, nLen - 1, anScaleXSplitParameter ), nScaleXLimit1, nScaleXLimit2 );
+				let nScaleY = MinMax( Animation( nScaleYStart, nScaleYEnd, i, nLen - 1, anScaleYSplitParameter ), nScaleYLimit1, nScaleYLimit2 );
+				SetGraphicScale( nScaleX, nScaleY );
+			}
+			if( !bNoAnimationRotate ){
+				let nRotateX = MinMax( Animation( nRotateXStart, nRotateXEnd, i, nLen - 1, anRotateXSplitParameter ), nRotateXLimit1, nRotateXLimit2 );
+				let nRotateY = MinMax( Animation( nRotateYStart, nRotateYEnd, i, nLen - 1, anRotateYSplitParameter ), nRotateYLimit1, nRotateYLimit2 );
+				let nRotateZ = MinMax( Animation( nRotateZStart, nRotateZEnd, i, nLen - 1, anRotateZSplitParameter ), nRotateZLimit1, nRotateZLimit2 );
+				SetGraphicAngle( nRotateX, nRotateY, nRotateZ );
+			}
+			if( !bNoAnimationColor ){
+				let nColorR = MinMax( Animation( nColorRStart, nColorREnd, i, nLen - 1, anColorRSplitParameter ), nColorRLimit1, nColorRLimit2 );
+				let nColorG = MinMax( Animation( nColorGStart, nColorGEnd, i, nLen - 1, anColorGSplitParameter ), nColorGLimit1, nColorGLimit2 );
+				let nColorB = MinMax( Animation( nColorBStart, nColorBEnd, i, nLen - 1, anColorBSplitParameter ), nColorBLimit1, nColorBLimit2 );
+				SetColor( nColorR, nColorG, nColorB );
+			}
+			let nGapX = nGapXEnd;
+			let nGapY = nGapYEnd;
+			if( !bNoAnimationDestGap ){
+				nGapX = MinMax( Animation( nGapXStart, nGapXEnd, i, nLen - 1, anGapXSplitParameter ), nGapXLimit1, nGapXLimit2 );
+				nGapY = MinMax( Animation( nGapYStart, nGapYEnd, i, nLen - 1, anGapYSplitParameter ), nGapYLimit1, nGapYLimit2 );
+			}
+
+//			DrawGraphic( nPosX + nGapX, nY * nGapY );
+			DrawGraphic( nPosX + nGapX, nY + anHeadSpace[ i ] + nGapY );
+			nGap = anSrcWidth[ i ] / 2;
+		}
+		if( ( i + 1 ) < nLen ){ nGap += anSrcWidth[ i + 1 ] / 2; }
+		nPosX += Max( 0, nGap - anKerningGap[ i ] + nKerning );
+	}
+	SetAlpha( 255 );
+	SetGraphicScale( 1, 1 );
+	SetGraphicAngle( 0, 0, 0 );
+	SetColor( 255, 255, 255 );
+}
+
+/**
+*	キャッシュハンドルを使用せず直接指定文字列を絵画します。
+*	この関数を直接呼ばずに下記のラッパー関数を使用すると便利です。
+*	DrawTexText48 / DrawTexText32 / DrawTexText24 / DrawTexText16 / DrawTexText12
+*	注:キャッシュを使わず毎回レンダリングするので結構重いです。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param anSrcXTable フォント元画像のX座標リスト
+*	@param anSrcXRightCut フォント元画像の右端切り捨て量リスト
+*	@param nSpacing スペースの幅
+*	@param nSrcY フォント元画像の開始Y座標
+*	@param nSrcHeight フォント元画像の高さ
+*	@param nSrcKerning カーニングの広さ
+*	@param nHeadSpacing 頭位置揃え用スペース
+*	@param szText 文章
+*	@param nKerning 相対カーニング値
+*	@param nLineHeight 相対行高さ
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*/
+function __DrawTexText( let anSrcXTable, let anSrcXRightCut, let nSpacing, let nSrcY, let nSrcHeight, let nSrcKerning, let nHeadSpacing, let szText, let nKerning, let nLineHeight, let nX, let nY ){
+	if( !m_bCLFontInitialize ){ return; }
+	let nHandle = __CreateTexTextCache( anSrcXTable, anSrcXRightCut, nSpacing, nSrcY, nSrcHeight, nSrcKerning, nHeadSpacing, szText );
+	DrawTexTextOnCache( nHandle, nKerning, nLineHeight, nX, nY );
+	DeleteTexTextHandle( nHandle );
+}
+
+/*	↓↓↓以下全て_DrawTexText()のラッパー関数↓↓↓	*/
+
+/**
+*	キャッシュハンドルを使用せずに直接指定文字列を12ポイントフォントで絵画します。
+*	__DrawTexText()のラッパー関数です。
+*	注:キャッシュを使わず毎回レンダリングするので結構重いです。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param szText 文章
+*	@param nKerning 相対カーニング値
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*/
+function DrawTexText12( let szText, let nKerning, let nLineHeight, let nX, let nY ){
+	__DrawTexText( CL_FONT_12_X, CL_FONT_12_RIGHTCUT, CL_FONT_12_SPACING, CL_FONT_12_Y, CL_FONT_12_HEIGHT, CL_FONT_12_KERNING, CL_FONT_12_SPACING_HEIGHT, szText, nKerning, nLineHeight, nX, nY );
+}
+
+/**
+*	キャッシュハンドルを使用せずに直接指定文字列を16ポイントフォントで絵画します。
+*	__DrawTexText()のラッパー関数です。
+*	注:キャッシュを使わず毎回レンダリングするので結構重いです。
+*
+*	@param szText 文章
+*	@param nKerning 相対カーニング値
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*/
+function DrawTexText16( let szText, let nKerning, let nLineHeight, let nX, let nY ){
+	__DrawTexText( CL_FONT_16_X, CL_FONT_16_RIGHTCUT, CL_FONT_16_SPACING, CL_FONT_16_Y, CL_FONT_16_HEIGHT, CL_FONT_16_KERNING, CL_FONT_16_SPACING_HEIGHT, szText, nKerning, nLineHeight, nX, nY );
+}
+
+/**
+*	キャッシュハンドルを使用せずに直接指定文字列を24ポイントフォントで絵画します。
+*	__DrawTexText()のラッパー関数です。
+*	注:キャッシュを使わず毎回レンダリングするので結構重いです。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param szText 文章
+*	@param nKerning 相対カーニング値
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*/
+function DrawTexText24( let szText, let nKerning, let nLineHeight, let nX, let nY ){
+	__DrawTexText( CL_FONT_24_X, CL_FONT_24_RIGHTCUT, CL_FONT_24_SPACING, CL_FONT_24_Y, CL_FONT_24_HEIGHT, CL_FONT_24_KERNING, CL_FONT_24_SPACING_HEIGHT, szText, nKerning, nLineHeight, nX, nY );
+}
+
+/**
+*	キャッシュハンドルを使用せずに直接指定文字列を32ポイントフォントで絵画します。
+*	__DrawTexText()のラッパー関数です。
+*	注:キャッシュを使わず毎回レンダリングするので結構重いです。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param szText 文章
+*	@param nKerning 相対カーニング値
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*/
+function DrawTexText32( let szText, let nKerning, let nLineHeight, let nX, let nY ){
+	__DrawTexText( CL_FONT_32_X, CL_FONT_32_RIGHTCUT, CL_FONT_32_SPACING, CL_FONT_32_Y, CL_FONT_32_HEIGHT, CL_FONT_32_KERNING, CL_FONT_32_SPACING_HEIGHT, szText, nKerning, nLineHeight, nX, nY );
+}
+
+/**
+*	キャッシュハンドルを使用せずに直接指定文字列を48ポイントフォントで絵画します。
+*	__DrawTexText()のラッパー関数です。
+*	注:キャッシュを使わず毎回レンダリングするので結構重いです。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param szText 文章
+*	@param nKerning 相対カーニング値
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*/
+function DrawTexText48( let szText, let nKerning, let nLineHeight, let nX, let nY ){
+	__DrawTexText( CL_FONT_48_X, CL_FONT_48_RIGHTCUT, CL_FONT_48_SPACING, CL_FONT_48_Y, CL_FONT_48_HEIGHT, CL_FONT_48_KERNING, CL_FONT_48_SPACING_HEIGHT, szText, nKerning, nLineHeight, nX, nY );
+}

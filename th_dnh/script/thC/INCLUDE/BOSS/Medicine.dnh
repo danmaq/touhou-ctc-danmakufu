@@ -1,0 +1,60 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　メディスン・メランコリー
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossMedicine;
+let m_szImageCutIn = cutMedicine;
+let m_szImageShadowChar = dotShadow;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShot = dotShotPoison;
+let m_aszImageList = IMAGE_LIST_MEDICINE;
+let m_aszImageBGList = LOADBGLIST_MEDICINE;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+	let i = m_nFlanCount * 0.1;
+	let j = m_nFlanCount * 1.41;
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellP2 );
+	SetAlpha( 64 );
+	SetGraphicRect( i, j, 512 + i, 512 + j );
+	DrawCenter( imgSpellP1 );
+	i = - m_nFlanCount * 0.13;
+	j = - m_nFlanCount;
+	SetAlpha( 144 );
+	SetGraphicRect( i, j, 512 + i, 512 + j );
+	DrawCenter( imgSpellP1 );
+	SetAlpha( 255 );
+}
+
+

@@ -1,0 +1,71 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※使い魔スクリプト用
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	下位ライブラリをインクルードする
+//////////////////////////////////////////////////////////////////////
+
+#include_function "\lib\FLAN\LIB\Common.dnh"
+#include_function "\lib\FLAN\LIB\Common_without_Event.dnh"
+#include_function "\lib\FLAN\LIB\Enemy_Shot_Shadow_Stage_Player.dnh"
+#include_function "\lib\FLAN\LIB\Player_Spell_Enemy_Shot_Shadow.dnh"
+#include_function "\lib\FLAN\LIB\Spell_Enemy_Shot_Shadow.dnh"
+#include_function "\lib\FLAN\LIB\Stage_Enemy_Shot_Shadow.dnh"
+#include_function "\lib\FLAN\LIB\Enemy_Shot_Shadow.dnh"
+#include_function "\lib\FLAN\LIB\Enemy_Shadow.dnh"
+#include_function "\lib\FLAN\LIB\Shadow.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	初期化処理(コンストラクタ)
+//////////////////////////////////////////////////////////////////////
+
+@Initialize(){
+	m_nFlanEnemyKind = FLAN_ENEMY_KIND_SHADOW;
+	__FlanCommonEnemyShadowInitialize( true );
+	__LightShadowLoop();
+	__SetShadowModeLoop();
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	毎フレーム呼ばれる処理
+//////////////////////////////////////////////////////////////////////
+
+@MainLoop(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	onMainLoop( m_vFlanArgv, m_nFlanLevel, m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase, m_bFlanCollisionA );
+	Collision( [ 0, FLAN_ENEMY_COLLISION_A ][ m_bFlanCollisionA ], [ 0, FLAN_ENEMY_COLLISION_B ][ FLAN_SHADOW_COLLISION && m_bFlanCollisionB ] );
+	yield;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	終了処理(デストラクタ)
+//////////////////////////////////////////////////////////////////////
+
+@Finalize(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	if( FLAN_SHADOW_DELETE_SHOT > 0 && !BeVanished() ){ DeleteEnemyShotToItemInCircle( SHOT, GetX(), GetY(), FLAN_SHADOW_DELETE_SHOT ); }
+	DeleteEnemyShotInCircle( ALL, GetX(), GetY(), 0 );
+	onFinalize( m_vFlanArgv, m_nFlanLevel, m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase, m_bFlanCollisionA );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//	絵画処理
+//////////////////////////////////////////////////////////////////////
+
+@DrawLoop(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	onDrawLoop( m_vFlanArgv, m_nFlanLevel, m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase, m_bFlanCollisionA );
+}

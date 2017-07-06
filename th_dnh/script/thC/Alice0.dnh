@@ -1,0 +1,325 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ3D　ボス　アリス・マーガトロイド　戦闘前
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#BackGround[User]
+#ScriptVersion[2]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\BossSub.dnh"
+	#include_function ".\INCLUDE\BOSS\Alice.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** サブキャラ間隔角度 */
+	let m_nDollGapAngle = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDemo = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetLife( 1 );
+		SetDamageRate( 0, 0 );
+		BehaviorBoss( ACT_STAND3 );
+		BehaviorSub( ACT_STAND3 );
+		SetPosition( CL_MIN_X - 140, CL_MIN_Y + 120 );
+		SetEnemyMarker( false );
+		m_nDollGapAngle = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_ANGLE, 90 );
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** サブキャラ間隔角度設定 */
+		m_nDollGapAngle -= 360 / 180;
+
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+		/** 個別終了設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ANGLE );
+		}
+		else{
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ANGLE, m_nDollGapAngle );
+		}
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス＆サブキャラ描画 */
+		let nDollGapLength = 24;
+		let nX = GetGapX( GetX(), nDollGapLength, m_nDollGapAngle );
+		let nY = GetGapY( GetY(), nDollGapLength * 0.4, m_nDollGapAngle );
+		if( sin( m_nDollGapAngle ) > 0 ){
+			DrawBoss( m_szImageBoss );
+			DrawSub( m_szImageBoss, CHAR_DOLL, nX, nY );
+		}
+		else{
+			DrawSub( m_szImageBoss, CHAR_DOLL, nX, nY );
+			DrawBoss( m_szImageBoss );
+		}
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 会話開始 */
+		CreateEventFromScript( "Talk" );
+		while( GetEventStep() != 1 ){ yield; }
+
+		/** 移動＋ボスID設定 */
+		SetEnemyMarker( true );
+		let nFrame = 90;
+		let nEventCount = m_nFlanCount;
+		Move();
+		let nBossID = CL_TTH_CHARACTER_NAME_LOTUS + CL_TTH_CHARACTER_NAME_LOTUS_ALICE;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		while( GetEventStep() != 2 || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** BGM */
+		PlayMusicEx( 25 );
+		nFrame = 30;
+		nEventCount = m_nFlanCount;
+		while( OnEvent() || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** 戦闘開始 */
+		AddLife( -1 );
+
+	}
+
+	/**
+	*	移動
+	*/
+	task Move{
+
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		SlowMove( CL_MIN_X + 64, CL_MIN_Y + 150, nFrame );
+		__Wait( nFrame );
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	会話
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_event Talk{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Event.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 敵カットイン画像 */
+	m_aszImageCutInEnemy = [
+		cutAlice,
+		cutAlice,
+		cutAlice,
+		cutAlice2,
+		cutAlice,
+		cutAlice,
+		cutAlice,
+		cutAlice,
+		cutAlice,
+		cutAlice3
+	];
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	@MainLoop{
+
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayerC( m_nWaitFrame, "さて、魔界は流石にハズレなようだ\n仕方ない、引き返して…" );
+		SetStep( 1 );
+		TextOutEnemyB( 90, "ちょっと待ちなさい！" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "まったく、来るなら来るって\n事前に言いなさいよ" );
+		InCharPlayer( CUT_PLAYER_SURPRISE );
+		TextOutPlayer( "おー久しいな、どこに消えたかと思ったら\n帰省してたのか" );
+		SetNameFromTextEnemy( "アリス・マーガトロイド", "七色の人形遣い" );
+		InCharEnemy( CUT_ENEMY_ANGRY );
+		TextOutEnemy( "そうよ、ってかさっきはよくも\n私のママを包帯ぐるぐるにしてくれたわね" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "髪が飛び出てなかったら\nきっと私でも気づかなかったわ" );
+		InCharPlayer( CUT_PLAYER_BAD );
+		TextOutPlayer( "なぁに、あれはたくましい母方への\nほんの挨拶代わりだ" );
+		DeleteNameEnemy();
+		InCharEnemy( CUT_ENEMY_ANGRY );
+		TextOutEnemy( "余計なお世話！" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "んでまぁ久々のところ何だが\nお前霊夢が何処消えたか知ってるか？" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "知ってるも何も…まぁ\n教えてあげてもいいんだけど" );
+		TextOutEnemy( "そしたらあんたと会うことは\n二度となくなるわ" );
+		InCharPlayer( CUT_PLAYER_BAD );
+		TextOutPlayer( "…は？" );
+		TextOutEnemy( "ねぇ魔理沙、私と\nここ魔界で一緒に暮らさない？" );
+		TextOutEnemy( "もうじき魔界と幻想郷は接点が切れて\nもう二度とつながることは無いわ" );
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "だからもう会えないってことか\nならなおさらだ、私は霊夢に会いに行く" );
+		TextOutPlayer( "なんならお前も来い\n魔界の総勢引き連れて幻想郷に来い" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "幻想郷は全てを受け入れるんだぜ？" );
+		TextOutEnemy( "どうしても霊夢のことが\n忘れられないのね…" );
+		TextOutPlayer( "当然だ" );
+		InCharEnemy( CUT_ENEMY_ANGRY );
+		TextOutEnemy( "私なんてどうでもいいくらい\n霊夢が大事なのね！" );
+		InCharPlayer( CUT_PLAYER_TEMPER );
+		TextOutPlayer( "誰もそこまで言ってないだろうが" );
+		TextOutEnemy( "…いいわ、じゃあ好きになさい\nもうあんたのことは止めないわ" );
+		TextOutEnemy( "その代わり今宵は…" );
+		SetStep( 2 );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "私の本気を二度と忘れられないよう\nあんたの記憶に刻んであげるから！" );
+		InCharPlayer( CUT_PLAYER_UNEASY );
+		TextOutPlayer( "あー、だから\n言ってるじゃないかさっきから…" );
+		InCharEnemy( CUT_ENEMY_ANGRY );
+		TextOutEnemy( "私のあんたへの思いなんて\nこれっぽっちも理解できてないくせに！" );
+		InCharPlayer( CUT_PLAYER_TEMPER );
+		TextOutPlayer( "いい加減私も頭に来たぜ\n分からず屋はお前だろうが！" );
+		End();
+
+	}
+
+}

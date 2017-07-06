@@ -1,0 +1,105 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スペルエフェクトオブジェクト
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	TODO : この辺うまいことOBJ_EFFECTのラッパーにする
+/**
+*	真円形スペルエフェクトオブジェクトを生成します。
+*	注:三角形の集合体で円が形成されますが、ピザやケーキのような
+*	均等分割ではなく団扇のような扇状の分割となります。
+*
+*	@param nVertex 頂点数
+*	@param nRadius 半径
+*	@param nAlpha 各頂点のα値
+*	@param nColorR 各頂点の赤輝度
+*	@param nColorG 各頂点の緑輝度
+*	@param nColorB 各頂点の青輝度
+*	@return エフェクトオブジェクトハンドル
+*/
+function CreateCircleSpellEffectObject( let nVertex, let nRadius, let nAlpha, let nColorR, let nColorG, let nColorB ){
+	let obj = Obj_Create( OBJ_SPELL );
+	ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLEFAN );
+	ObjEffect_CreateVertex( obj, nVertex );
+	ascent( let i in 0..nVertex ){
+		let nVangle = Smooth( 0, 360, i, nVertex );
+		ObjEffect_SetVertexXY( obj, i, nRadius * cos( nVangle ), nRadius * sin( nVangle ) );
+		ObjEffect_SetVertexColor( obj, i, nAlpha, nColorR, nColorG, nColorB );
+	}
+	return obj;
+}
+
+/**
+*	四角形のスペルエフェクトオブジェクトを生成します。
+*
+*	@param szImageFile 画像ファイルパス
+*	@param nSrcX テクスチャの切り出し左端X座標
+*	@param nSrcY テクスチャの切り出し上端Y座標
+*	@param nSrcWidth テクスチャの切り出し幅
+*	@param nSrcHeight テクスチャの切り出し高さ
+*	@param nDstWidth 本体の幅
+*	@param nDstHeight 本体の高さ
+*	@return エフェクトオブジェクトハンドル
+*/
+function CreateSquareSpellEffectObject( let szImageFile, let nSrcX, let nSrcY, let nSrcWidth, let nSrcHeight, let nDstWidth, let nDstHeight ){
+	let nDstWidthHalf = nDstWidth / 2;
+	let nDstHeightHalf = nDstHeight / 2;
+	let obj = Obj_Create( OBJ_SPELL );
+	Obj_SetAutoDelete( obj, false );
+	ObjEffect_SetTexture( obj, szImageFile );
+	ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
+	ObjEffect_CreateVertex( obj, 4 );
+	ascent( let i in 0..4 ){
+		let nXIndex = truncate( i / 2 );
+		let nYIndex = i % 2;
+		ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 255 );
+		ObjEffect_SetVertexXY( obj, i, nDstWidthHalf * [ -1, 1 ][ nXIndex ], nDstHeightHalf * [ -1, 1 ][ nYIndex ] );
+		ObjEffect_SetVertexUV( obj, i, nSrcX + [ 0, nSrcWidth ][ nXIndex ], nSrcY + [ 0, nSrcHeight ][ nYIndex ] );
+	}
+	return obj;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	共通処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	該当スクリプトのメインタスク呼び出し処理です。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+task __MainTask(){
+	yield;
+	MainTask( m_vFlanArgv );
+}

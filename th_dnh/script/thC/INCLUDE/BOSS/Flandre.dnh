@@ -1,0 +1,54 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　フランドール・スカーレット
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossFlandre;
+let m_szImageCutIn = cutFlandre;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_FLANDRE;
+let m_aszImageBGList = LOADBGLIST_FRANDRE;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawRotateCenter( imgSpellRedMoon, 1 );
+	SetAlpha( 144 + sin( m_nFlanCount ) * 16 );
+	SetGraphicRect( 0, 0, 384, 448 );
+	ascent( let i in 0 .. 2 ){
+		__DrawChr( imgSpellRedWall, CL_CEN_X, CL_CEN_Y + i * 448 - m_nFlanCount * 3 % 448 );
+	}
+	SetAlpha( 255 );
+}
+
+

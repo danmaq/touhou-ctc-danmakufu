@@ -1,0 +1,85 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(原則書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**	テクスチャszTexFileの内容を指定部分のみクリッピングして画面中央に絵画します。
+*	DrawCenterのラッパーです。
+*	@param szTexFile 貼り付ける画像のファイルパス
+*	@param nDstX 絵画する位置のX座標
+*	@param nDstY 絵画する位置のY座標
+*	@param nSrcX 元画像のクリップする左上端のX座標
+*	@param nSrcY 元画像のクリップする左上端のY座標
+*	@param nWidth 元画像のクリップする左上端からの幅
+*	@param nHeight 元画像のクリップする左上端からの高さ
+*/
+function DrawCenterRect( let szTexFile, let nSrcX, let nSrcY, let nSrcWidth, let nSrcHeight ){
+	SetGraphicRect( nSrcX, nSrcY, nSrcX + nSrcWidth, nSrcY + nSrcHeight );
+	DrawCenter( szTexFile );
+}
+
+/**	テクスチャszTexFileの内容を画面中央に絵画します。
+*	__DrawChrのラッパーです。
+*	@param szTexFile 貼り付ける画像のファイルパス
+*/
+function DrawCenter( let szTexFile ){ __DrawChr( szTexFile, GetCenterX(), GetCenterY() ); }
+
+/**	テクスチャszTexFileの内容をプレイヤー位置に絵画します。
+*	__DrawChrのラッパーです。
+*	@param szTexFile 貼り付ける画像のファイルパス
+*/
+function DrawPlayer( let szTexFile ){ __DrawChr( szTexFile, GetPlayerX(), GetPlayerY() ); }
+
+/**	テクスチャszTexFileの内容を指定部分のみクリッピングして指定位置に絵画します。
+*	__DrawChrのラッパーです。
+*	@param szTexFile 貼り付ける画像のファイルパス
+*	@param nDstX 絵画する位置のX座標
+*	@param nDstY 絵画する位置のY座標
+*	@param nSrcX 元画像のクリップする左上端のX座標
+*	@param nSrcY 元画像のクリップする左上端のY座標
+*	@param nWidth 元画像のクリップする左上端からの幅
+*	@param nHeight 元画像のクリップする左上端からの高さ
+*/
+function __DrawChrRect( let szTexFile, let nDstX, let nDstY, let nSrcX, let nSrcY, let nSrcWidth, let nSrcHeight ){
+	SetGraphicRect( nSrcX, nSrcY, nSrcX + nSrcWidth, nSrcY + nSrcHeight );
+	__DrawChr( szTexFile, nDstX, nDstY );
+}
+
+/**	テクスチャszTexFileの内容を指定位置に絵画します。
+*	@param szTexFile 貼り付ける画像のファイルパス
+*	@param nX 絵画する位置のX座標
+*	@param nY 絵画する位置のY座標
+*/
+function __DrawChr( let szTexFile, let nX, let nY ){
+	SetTexture( szTexFile );
+	DrawGraphic( nX, nY );
+}

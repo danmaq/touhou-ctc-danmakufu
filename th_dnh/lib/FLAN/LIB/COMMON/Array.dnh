@@ -1,0 +1,142 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(変更可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(変更不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(変更不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	配列操作
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	指定要素数の配列を作り、全ての要素を指定値で埋めます。
+*
+*	@param nSize 配列のサイズ
+*	@param nExpr 要素の値
+*	@return 指定値が代入された指定サイズの配列
+*/
+function CreateArray( let nSize, let nExpr ){
+	if( nSize <= 0 ){ return; }
+	let array = [];
+	ascent( let i in 0 .. nSize ){ array = array ~ [ nExpr ]; }
+	return array;
+}
+
+/**
+*	指定要素数の配列を作り、全ての要素を要素番号で埋めます。
+*
+*	@param nSize 配列のサイズ
+*	@return 各要素番号が代入された指定サイズの配列
+*/
+function CreateOrderArray( let nSize ){
+	if( nSize <= 0 ){ return; }
+	let array = [];
+	ascent( let i in 0 .. nSize ){ array = array ~ [ i ]; }
+	return array;
+}
+
+/**
+*	指定した配列の全要素を昇順にソートします。
+*	注意:ソートアルゴリズムに最も単純な(と同時に最も重い)バブルソート法を用いているため、
+*	極端に大きな配列を渡したりループ内で何度も繰り返してソートすると重くなることがあります。
+*
+*	@param array 対象の配列
+*	@return 指定した配列を昇順に並び替えた配列
+*/
+function SortArray( let array ){
+	let nLength = length( array );
+	ascent( let i in 0..nLength ){
+		ascent( let j in 1..( nLength - 1 ) ){
+			if( array[ j - 1 ] > array[ j ] ){
+				let arrayEntry = array[ j - 1 ];
+				array[ j - 1 ] = array[ j ];
+				array[ j ] = arrayEntry;
+			}
+		}
+	}
+	return array;
+}
+
+/**
+*	指定した配列の値を検索します。
+*
+*	@param array 対象の配列
+*	@param char 値(数値・単文字)
+*	@return マッチした場合はその要素番号、しなかった場合は配列の要素数
+*/
+function SearchArray( let array, let char ){
+	let total = length( array );
+	let pos = 0;
+	while( pos < total && array[ pos ] != char ){ pos++; }
+	return pos;
+}
+
+/**
+*	指定した配列の値を逆順に検索します。
+*
+*	@param array 対象の配列
+*	@param char 値(数値・単文字)
+*	@return マッチした場合はその要素番号、しなかった場合は-1
+*/
+function SearchArrayRight( let array, let char ){
+	let total = length( array );
+	let pos = total - 1;
+	while( pos >= 0 && array[ pos ] != char ){ pos--; }
+	return pos;
+}
+
+/**
+*	配列の要素を逆順にソートします。
+*
+*	@param array 対象の配列
+*	@return 指定した配列を逆順に並び替えた配列
+*/
+function Reverse( let array ){
+	let mArray = [];
+	let total = length( array );
+	descent( let i in 0..total ){ mArray = mArray ~ [ array[ i ] ]; }
+	return mArray;
+}
+
+/**
+*	配列を特定キーワードで分割し、配列にして返します。
+*	例えば[1,2,3,4,5]の配列を3をキーに分割すると戻り値は[[1,2],[4,5]]となります。
+*	文字列の分割にも応用できます。
+*
+*	@param szString 対象の配列
+*	@param cKeyword キーとなる値
+*	@return 分割された配列の配列
+*/
+function Split( let array, let nKeyword ){
+	let res = [];
+	while( length( array ) <= 0 ){
+		let nPos = SearchArray( array, nKeyword );
+		res = res ~ [ array[ 0..nPos ] ];
+		array = array[ nPos..length( array ) ];
+	}
+	return res;
+}

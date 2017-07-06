@@ -1,179 +1,281 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ1C　ボス　メディスン・メランコリー　戦闘前
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#BackGround[User]
+#ScriptVersion[2]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_enemy_main{
 
-	// 共通関数読み込み
-	#include_function ".\INCLUDE\Boss.dnh"
 
-	// 画像及び効果音ファイル
-	let imgBoss=dotBossMedicine;
-	let imgCutInEnemy=cutMedicine;
-	let imgCutInPlayer=cutMarisa;
-	let imgList=[imgBoss,imgCutInEnemy,imgCutInPlayer];
-	let seList=[];
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
 
-	// 各種設定値
-	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
-	Debug_SetLevel;
+	#include_function ".\INCLUDE\BossSub.dnh"
+	#include_function ".\INCLUDE\BOSS\Medicine.dnh"
 
-	let dollGapAngle=GetCommonDataDefault("DollGapAngle",-90);
 
-	// -------------------------------------------------------------------------
-	@Initialize{
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
 
-		// ボス初期設定（ファイルのロード他）
-		if(!THC){seList=seList~seListEnemy;}
-		InitializeBoss(imgList,seList);
-		DeleteEnemyShotToItem(ALL);
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 110;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
 
-		// スペルカード設定
-		SetLife(1);
-		SetDamageRate(0,0);
-		SetEnemyMarker(false);
-		SetX(minX-64);
-		SetY(minY-128);
 
-		// ボス基本処理、メイン処理
-		BehaviorBoss(ACT_STAND3);
-		BehaviorSub(ACT_STAND3);
-		Main;
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
 
-	}
 
-	// -------------------------------------------------------------------------
-	@MainLoop{
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
 
-		// 当たり判定（自弾,体当たり）
-		Collision(32,24);
 
-		// ダメージ音
-		PlayDamageSE(seDamage);
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
 
-		// スーさん角度設定
-		dollGapAngle+=360/240;
+	/** サブキャラ間隔角度 */
+	let m_nDollGapAngle = 0;
 
-		// カウンタ加算
-		m_nCount++;
 
-		yield;
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
 
-	}
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
 
-	// メイン処理 --------------------------------------------------------------
-	task Main{
+		/** 共通初期設定 */
+		m_bDemo = true;
+		InitializeBoss();
 
-		yield;
-
-		// 会話開始
-		CreateEventFromScript("Talk");
-		SetCommonData(CD_STAGE_EVENT,true);
-		while(GetEventStep!=1){yield;}
-
-		SetEnemyMarker(true);
-		move(cenX,minY+110+RandBlur(0.1),90);
-		while(GetEventStep!=2){yield;}
-
-		// BGM
-		DeleteMusic( bgmList[ 14 ] );
-		_PlayMusicEx( bgmList[ 15 ], "" );
-		let bgmCount=m_nCount;
-		while(OnEvent||m_nCount-bgmCount<=30){yield;}
-		DeleteCommonData(CD_STAGE_EVENT);
-
-		AddLife(-1);
+		/** 個別初期設定 */
+		SetLife( 1 );
+		SetDamageRate( 0, 0 );
+		BehaviorBoss( ACT_STAND3 );
+		BehaviorSub( ACT_STAND3 );
+		SetPosition( CL_MAX_X - 60, CL_MIN_Y - 140 );
+		SetEnemyMarker( false );
+		m_nDollGapAngle = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_ANGLE, -90 );
 
 	}
 
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-	// 移動 --------------------------------------------------------------------
-	function move(let x, let y, let fr){
-
-		let power=GetGapLength(GetX,GetY,x,y)*2;
-		let angle=GetGapAngle(GetX,GetY,x,y);
-		SetMovePositionHermite(x,y,power,angle,0,0,fr);
-		SetAction(ACT_MOVE,fr);
-
-	}
-
-	// -------------------------------------------------------------------------
-	@Finalize{
-
-		// ロードしたファイルを削除
-		DeleteGraphicList(imgList,seList);
-
-		// スーさん角度設定
-		SetCommonData("DollGapAngle",dollGapAngle);
+		/** サブキャラ間隔角度設定 */
+		m_nDollGapAngle += 360 / 240;
 
 	}
 
-	// -------------------------------------------------------------------------
-	@DrawLoop{
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		// ボス＆スーさん描画
-		let dollGapLength=32;
-		let x=GetGapX(GetX,dollGapLength,dollGapAngle);
-		let y=GetGapY(GetY,dollGapLength*0.4,dollGapAngle*2);
-		if(sin(dollGapAngle)>0){
-			DrawBoss(imgBoss);
-			DrawSub(imgBoss,CHAR_DOLL,x,y);
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+		/** 個別終了設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ANGLE );
 		}
 		else{
-			DrawSub(imgBoss,CHAR_DOLL,x,y);
-			DrawBoss(imgBoss);
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ANGLE, m_nDollGapAngle );
 		}
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス＆サブキャラ描画 */
+		let nDollGapLength = 32;
+		let nX = GetGapX( GetX(), nDollGapLength, m_nDollGapAngle );
+		let nY = GetGapY( GetY(), nDollGapLength * 0.4, m_nDollGapAngle * 2 );
+		if( sin( m_nDollGapAngle ) > 0 ){
+			DrawBoss( m_szImageBoss );
+			DrawSub( m_szImageBoss, CHAR_DOLL, nX, nY );
+		}
+		else{
+			DrawSub( m_szImageBoss, CHAR_DOLL, nX, nY );
+			DrawBoss( m_szImageBoss );
+		}
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 会話開始 */
+		CreateEventFromScript( "Talk" );
+		while( GetEventStep() != 1 ){ yield; }
+
+		/** 移動＋ボスID設定 */
+		SetEnemyMarker( true );
+		let nFrame = 90;
+		let nEventCount = m_nFlanCount;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		let nBossID = CL_TTH_CHARACTER_NAME_KAEI + CL_TTH_CHARACTER_NAME_KAEI_MEDICINE;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		while( GetEventStep() != 2 || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** BGM */
+		PlayMusicEx( 15 );
+		nFrame = 30;
+		nEventCount = m_nFlanCount;
+		while( OnEvent() || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** 戦闘開始 */
+		AddLife( -1 );
 
 	}
 
 }
 
-// 会話 ------------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	会話
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_event Talk{
 
-	// 共通関数読み込み
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
 	#include_function ".\INCLUDE\Event.dnh"
 
-	// 画像及び効果音ファイル
-	let imgCutInEnemy=cutMedicine;
-	let imgCutInPlayer=cutMarisa;
 
-	// -------------------------------------------------------------------------
-	@Initialize{
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
 
-		// メイン処理
-		Main;
+	/** 敵カットイン画像 */
+	m_aszImageCutInEnemy = [
+		cutMedicine,
+		cutMedicine2,
+		cutMedicine,
+		cutMedicine,
+		cutMedicine,
+		cutMedicine,
+		cutMedicine,
+		cutMedicine,
+		cutMedicine,
+		cutMedicine	
+	];
 
-	}
 
-	// -------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
 	@MainLoop{
 
-		yield;
-
-	}
-
-	// メイン処理 --------------------------------------------------------------
-	task Main{
-
-		ChrIn(imgCutInPlayer,LEFT,CUT_NORMAL);
-		Player;
-		TextOut("\c[BLUE]しかし、もう春だと言うのに花が元気ないなぁ");
-		TextOut("\c[BLUE]まぁあの時が異常だっただけだがな");
-		Enemy;
-		TextOut("\c[RED]コンパロコンパロ、毒よ集ｍ");
-		SetStep(1);
-		Player;
-		TextOutB(90,"\c[BLUE]集まったぜ");
-		ChrIn(imgCutInEnemy,RIGHT,CUT_NORMAL);
-		SetNameFromText(RIGHT,TEXT_RED,"メディスン・メランコリー","小さなスイートポイズン");
-		Enemy;
-		TextOut("\c[RED]あなたは何て言う毒？");
-		Player;
-		TextOut("\c[BLUE]魔理沙って言う毒だぜ");
-		Enemy;
-		TextOut("\c[RED]覚えのない毒ね…まぁいいわ");
-		SetStep(2);
-		TextOut("\c[RED]毒なあなたは私が取り込んであげる");
-		Player;
-		TextOut("\c[BLUE]無理だな、私の毒はお前には少々刺激が強すぎるぜ");
-		End;
+		InCharPlayer( CUT_PLAYER_SURPRISE );
+		TextOutPlayerC( m_nWaitFrame, "しかし、もう春だと言うのに\n花が元気ないなぁ" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "まぁあの時が異常だっただけだがな" );
+		TextOutEnemy( "コンパロコンパロ、毒よ集ま" );
+		SetStep( 1 );
+		TextOutPlayerB( 90, "集まったぜ" );
+		SetNameFromTextEnemy( "メディスン・メランコリー", "小さなスイートポイズン" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "あなたは何て言う毒？" );
+		TextOutPlayer( "魔理沙って言う毒だぜ" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "覚えのない毒ね…まぁいいわ" );
+		DeleteNameEnemy();
+		SetStep( 2 );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "毒なあなたは私が取り込んであげる" );
+		InCharPlayer( CUT_PLAYER_SMILE );
+		TextOutPlayer( "無理だな、私の毒は\nお前には少々刺激が強すぎるぜ" );
+		End();
 
 	}
 

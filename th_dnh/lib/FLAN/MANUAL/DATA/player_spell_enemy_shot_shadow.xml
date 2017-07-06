@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Enemy / Shot / Shadow / Player / Spell" file="player_spell_enemy_shot_shadow">
+	<category caption="概要" link="true">
+		<paragraph>
+			敵・使い魔・弾・プレイヤー・スペルスクリプトで利用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/Player_Spell_Enemy_Shot_Shadow.dnh</path>となります。
+			(関数の数が少ないので1ファイルのみの構成となります)
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+	</category>
+	<category caption="書換可能定数" link="true">
+	</category>
+	<category caption="メンバ変数" link="true">
+	</category>
+	<category caption="オブジェクト制御">
+		<paragraph>
+			主にオブジェクト制御関連の関数群です。
+		</paragraph>
+		<define key="SetHiddenObject">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>速度</argument>
+			<argument>角度</argument>
+			<argument>遅延時間</argument>
+			<argument>ボム耐性があるかどうか</argument>
+			<argument>画面外に出ると自動的に削除されるかどうか</argument>
+			<return>オブジェクトハンドル</return>
+			<paragraph>
+				<caption>不可視オブジェクト弾</caption>を生成します。
+				<code>__SetObject</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="SetShotObject">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>速度</argument>
+			<argument>角度</argument>
+			<argument>弾種</argument>
+			<argument>遅延時間</argument>
+			<return>オブジェクトハンドル</return>
+			<paragraph>
+				<caption>基本的なオブジェクト弾</caption>を生成します。
+				<code>__SetObject</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="__SetObject">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>速度</argument>
+			<argument>角度</argument>
+			<argument>遅延時間</argument>
+			<argument>画面外に出ると自動的に削除されるかどうか</argument>
+			<return>オブジェクトハンドル</return>
+			<paragraph>
+				<caption>基本的なオブジェクト弾</caption>を生成します。
+			</paragraph>
+		</define>
+	</category>
+</contents>

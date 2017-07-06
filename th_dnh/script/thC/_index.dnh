@@ -1,4 +1,4 @@
-#include_function ".\_index_UserShot.dnh"
+#include_function "lib\THCCL\_index_UserShot.dnh"
 #include_function ".\_index_zako.dnh"
 #include_function ".\_index_boss.dnh"
 let _enemyExtend = GetCurrentScriptDirectory ~ "Extend.dnh";

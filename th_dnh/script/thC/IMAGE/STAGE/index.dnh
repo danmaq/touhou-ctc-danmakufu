@@ -3,5 +3,24 @@
 //　ステージタイトル
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
-let dirImageStage = GetCurrentScriptDirectory ~ "IMAGE\STAGE\";
+let DIR_THC_IMAGE_STAGE = GetCurrentScriptDirectory() ~ "IMAGE\STAGE\";
 
+let IMAGE_THC_STAGE_LOGO = [
+	DIR_THC_IMAGE_STAGE ~ "1a.png",
+	DIR_THC_IMAGE_STAGE ~ "1b.png",
+	DIR_THC_IMAGE_STAGE ~ "1c.png",
+	DIR_THC_IMAGE_STAGE ~ "1d.png",
+	DIR_THC_IMAGE_STAGE ~ "2a.png",
+	DIR_THC_IMAGE_STAGE ~ "2b.png",
+	DIR_THC_IMAGE_STAGE ~ "2c.png",
+	DIR_THC_IMAGE_STAGE ~ "2d.png",
+	DIR_THC_IMAGE_STAGE ~ "3a.png",
+	DIR_THC_IMAGE_STAGE ~ "3b.png",
+	DIR_THC_IMAGE_STAGE ~ "3c.png",
+	DIR_THC_IMAGE_STAGE ~ "3d.png",
+	DIR_THC_IMAGE_STAGE ~ "4.png",
+	DIR_THC_IMAGE_STAGE ~ "5.png",
+	DIR_THC_IMAGE_STAGE ~ "6.png",
+	DIR_THC_IMAGE_STAGE ~ "ex.png",
+	DIR_THC_IMAGE_STAGE ~ "ex__.png",
+];

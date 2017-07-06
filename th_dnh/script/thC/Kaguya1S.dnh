@@ -1,0 +1,298 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ1B　ボス　蓬莱山 輝夜　スペル1
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Kaguya - スペル1]
+#Text[ステージ1B ボス
+蓬莱山 輝夜]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Kaguya.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 130;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 100;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** ダメージ率（スペルプラクティス及び単体テスト時に固くする） */
+	let m_nDamageRate = 1;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+			m_nDamageRate = 0.8;
+		}
+		else if( m_bStagePractice ){ m_nDamageRate = 0.8; }
+		SetTimer( 63 );
+		SetLife( 400 );
+		SetDamageRate( 13.5 * m_nDamageRate, 13.5 * m_nDamageRate );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_EIYA + CL_TTH_CHARACTER_NAME_EIYA_KAGUYA;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){ DropItemTHC( 8 ); }
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_EIYA + CL_TTH_SPELL_STAGE1_BOSS_1 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		let nTurn = 0;
+
+		loop{
+
+			/** 全方向分裂レーザー */
+			SetAction( ACT_SHOT_A3, 90 );
+			Concentration01( 30 );
+			__Wait( 30 );
+			RoundSplitLaser( nTurn );
+			__Wait( 120 );
+
+			/** 移動 */
+			Move( 90 );
+			__Wait( 90 );
+
+			nTurn ++;
+
+		}
+
+	}
+
+	/**
+	*	全方向分裂レーザー
+	*	@param nTurn	ターン数
+	*/
+	task RoundSplitLaser( let nTurn ){
+
+		nTurn %= 2;
+		let nWay = 5;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = [ 3.2, 3.2, 2.9, 3.4 ][ m_nLevel ];
+		let nWayAngle = 360 / nWay;
+		let nAngle = - 90;
+		let nSplitAngle = [ 114.5, 108 ][ nTurn ];
+		if( m_nLevel == 1 && nTurn == 0 ){ nSplitAngle = 120; }
+		let nSplit = [ 4, 4, 5, 6 ][ m_nLevel ];
+		let nSplitFrame = 20;
+
+		PlaySELoop( seLaser2, nSplitFrame * nSplit, nSplitFrame );
+		loop( nWay ){
+			SplitLaser( nX, nY, nSpeed, nAngle, nSplitAngle, nSplit, nSplitFrame, nTurn );
+			nAngle += nWayAngle;
+		}
+
+	}
+
+	/**
+	*	分裂レーザー
+	*	@param nX			弾源x座標
+	*	@param nY			弾源y座標
+	*	@param nSpeed		速度
+	*	@param nAngle		角度
+	*	@param nSplitAngle	分裂角度
+	*	@param nSplit		分裂回数
+	*	@param nSplitFrame	分裂までのフレーム数
+	*	@param nTurn		ターン数（奇数/偶数）
+	*/
+	task SplitLaser( let nX, let nY, let nSpeed, let nAngle, let nSplitAngle, let nSplit, let nSplitFrame, let nTurn ){
+
+		let obj = Obj_Create( OBJ_SHOT );
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetSpeed( obj, nSpeed );
+		Obj_SetAngle( obj, nAngle );
+		ObjShot_SetGraphic( obj, WHITE05 );
+		Obj_SetAlpha( obj, 0 );
+		Obj_SetCollisionToPlayer( obj, false );
+		ObjShot_SetBombResist( obj, true );
+		ObjShot_ToItem( obj, false );
+
+		/** レーザー */
+		nSplit --;
+		let nLength = 140;
+		let nWidth = 10;
+		let anGraphic = [ US_SCALE_A_RED, US_SCALE_A_YELLOW, US_SCALE_A_GREEN, US_SCALE_A_SKY, US_SCALE_A_BLUE, US_SCALE_A_PURPLE ];
+		if( nTurn == 1 ){ anGraphic = Reverse( anGraphic ); }
+		let nGra = nSplit % 7;
+		CreateLaser01( nX, nY, nSpeed, nAngle, nLength, nWidth, anGraphic[ nGra ], 0 );
+		loop( nSplitFrame ){ yield; }
+
+		/** 分裂 */
+		if( nSplit > 0 ){
+			nX = Obj_GetX( obj );
+			nY = Obj_GetY( obj );
+			SplitLaser( nX, nY, nSpeed, nAngle + nSplitAngle, nSplitAngle, nSplit, nSplitFrame, nTurn );
+			SplitLaser( nX, nY, nSpeed, nAngle - nSplitAngle, nSplitAngle, nSplit, nSplitFrame, nTurn );
+		}
+		Obj_Delete( obj );
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 40;
+		let nMaxMoveX = 80;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 10;
+
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

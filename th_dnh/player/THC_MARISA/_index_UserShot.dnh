@@ -1,6 +1,0 @@
-let fileUserShot = GetCurrentScriptDirectory() ~ "Shot.dnh";
-let US_MAINSHOT = 1;
-let US_SUBSHOT = 2;
-let US_SUBSHOT_LONG = 3;
-let US_BALL_L_WHITE	= 172;
-let US_BLANK64 = 253;

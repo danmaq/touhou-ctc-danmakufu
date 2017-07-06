@@ -1,0 +1,594 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Tutorial Manual" file="tutorial">
+	<category caption="共通事項" link="true" id="common">
+		<list>
+			<item>下記の雛形(スケルトン)をコピってそのままお使い戴けます。</item>
+			<item>コメントは補足用なのでうざったければ削除してしまってかまいません。</item>
+			<item>自動的に毎フレーム<code>yield</code>が呼ばれますのでわざわざ呼ぶ必要がありません。</item>
+			<item>それぞれのパラメータには該当する値が自動的に代入してライブラリから呼ばれます。</item>
+			<item><em><code>@MainLoop</code>などはライブラリ側で使用していますので、代わりに下記サンプルのような<code>onMainLoop</code>などをご利用ください。</em></item>
+			<item>更なる詳細は同梱のExRumiaサンプル(<path>/script/ExRumiaFran/</path>)を参照してください。</item>
+			<item>一応上位互換を保つよう工夫はしますが一部上位互換を保てない場合もありますのでご容赦ください。</item>
+			<item>
+				<strong>[書換可能定数]</strong>はライブラリ内部より参照され値により動作変化します。
+				各スクリプトのフィールド初期化時に必要に応じて適宜上書きしてください。
+				誤動作の原因となるのでライブラリを直接書き換えたりしないでください。
+			</item>
+			<item>
+				<strong>[書換不可定数]</strong>は原則参照専用で上書きしないでください。
+				(C++で言うところの<code>const</code>、Javaで言うところの<code>final</code>みたいなものと認識してください)
+			</item>
+			<item>
+				<strong>[メンバ変数]</strong>は誤動作の原因となりますので上書きしないでください。
+				また、参照もアクセサがあればアクセサを通すようにしてください。
+				(いわゆる<code>private</code>変数みたいなものと認識してください)
+			</item>
+		</list>
+	</category>
+	<category caption="ボススクリプト本体" link="true" id="boss">
+		<paragraph>
+			<pre>
+script_enemy_main{
+<header>#include_function</header> &quot;\lib\FLAN\HEADER\Boss.dnh&quot;
+	<comment>/**
+	*	敵固有のタスクです。onInitialize()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/</comment>
+	task MainTask( let nArgv, let nLevel ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/</comment>
+	function onInitialize( let nArgv, let nLevel ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onMainLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onFinalize( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onDrawLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	背景絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onBackGround( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+}
+			</pre>
+		</paragraph>
+	</category>
+	<category caption="雑魚/子敵スクリプト(使い魔以外)" link="true" id="zako">
+		<paragraph>
+			<pre>
+script_enemy_main{
+<header>#include_function</header> &quot;\lib\FLAN\HEADER\Zako.dnh&quot;
+	<comment>/**
+	*	敵固有のタスクです。onInitialize()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/</comment>
+	task MainTask( let nArgv, let nLevel ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/</comment>
+	function onInitialize( let nArgv, let nLevel ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onMainLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onFinalize( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onDrawLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+}
+			</pre>
+		</paragraph>
+	</category>
+	<category caption="使い魔" link="true" id="shadow">
+		<paragraph>
+			<pre>
+script_enemy HogeShadow{
+<header>#include_function</header> &quot;\lib\FLAN\HEADER\Shadow.dnh&quot;
+	<comment>/**
+	*	固有動作のタスクです。onInitialize()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/</comment>
+	task MainTask( let nArgv, let nLevel ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/</comment>
+	function onInitialize( let nArgv, let nLevel ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*	@param bIsAppear 具現化中かどうか
+	*/</comment>
+	function onMainLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase, let bIsAppear ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*	@param bIsAppear 具現化中かどうか
+	*/</comment>
+	function onFinalize( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase, let bIsAppear ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*	@param bIsAppear 具現化中かどうか
+	*/</comment>
+	function onDrawLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase, let bIsAppear ){
+		<comment>//	ここに処理を記述</comment>
+	}
+}
+			</pre>
+		</paragraph>
+	</category>
+	<category caption="弾スクリプト" link="true" id="shot">
+		<paragraph>
+			<pre>
+script_shot HogeShot{
+<header>#include_function</header> &quot;\lib\FLAN\HEADER\Shot.dnh&quot;
+	<comment>/**
+	*	固有動作のタスクです。onInitialize()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/</comment>
+	task MainTask( let nArgv, let nLevel ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/</comment>
+	function onInitialize( let nArgv, let nLevel ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onMainLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onFinalize( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onDrawLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+}
+			</pre>
+		</paragraph>
+	</category>
+	<category caption="ステージスクリプト" link="true" id="stage">
+		<paragraph>
+			<pre>
+script_stage_main{
+<header>#include_function</header> &quot;\lib\FLAN\HEADER\Stage.dnh&quot;
+	<comment>/**
+	*	固有動作のタスクです。onInitialize()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nStage ステージ
+	*	@param nLevel レベル(0～3)
+	*/</comment>
+	task MainTask( let nStage, let nLevel ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nStage ステージ
+	*	@param nLevel レベル(0～3)
+	*/</comment>
+	function onInitialize( let nStage, let nLevel ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nStage 現在のステージ
+	*	@param nStageCount 現在のステージカウンタ値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onMainLoop( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nStage 現在のステージ
+	*	@param nStageCount 現在のステージカウンタ値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onFinalize( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	背景絵画時に呼ばれます。
+	*
+	*	@param nStage 現在のステージ
+	*	@param nStageCount 現在のステージカウンタ値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onBackGround( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	下位レイヤ絵画時に呼ばれます。
+	*
+	*	@param nStage 現在のステージ
+	*	@param nStageCount 現在のステージカウンタ値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onDrawBottomObject( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	上位レイヤ絵画時に呼ばれます。
+	*
+	*	@param nStage 現在のステージ
+	*	@param nStageCount 現在のステージカウンタ値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onDrawTopObject( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+}
+			</pre>
+		</paragraph>
+	</category>
+	<category caption="プレイヤースクリプト" link="true" id="player">
+		<paragraph>
+			<pre>
+script_player_main{
+<header>#include_function</header> &quot;\lib\FLAN\HEADER\Player.dnh&quot;
+	<comment>/**
+	*	固有動作のタスクです。onInitialize()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*/</comment>
+	task MainTask(){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	初期化時に呼ばれます。
+	*/</comment>
+	function onInitialize(){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	ショット発射時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onShot( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onMainLoop( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	ミス時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onPlayerMissed( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	スペル発動時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onStartSpell( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onFinalize( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onDrawLoop( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+}
+			</pre>
+		</paragraph>
+	</category>
+	<category caption="スペルスクリプト" link="true" id="spell">
+		<paragraph>
+			<pre>
+script_spell HogeSpark{
+<header>#include_function</header> &quot;\lib\FLAN\HEADER\Spell.dnh&quot;
+	<comment>/**
+	*	固有動作のタスクです。onInitialize()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*/</comment>
+	task MainTask( let nArgv ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*/</comment>
+	function onInitialize( let nArgv ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onMainLoop( let nArgv, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+
+	<comment>/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/</comment>
+	function onFinalize( let nArgv, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		<comment>//	ここに処理を記述</comment>
+	}
+}
+			</pre>
+		</paragraph>
+	</category>
+	<category caption="会話イベントスクリプト" link="true" id="event">
+		<paragraph>
+			<pre>
+script_event HogeTalk{
+<header>#include_function</header> &quot;\lib\FLAN\HEADER\Event.dnh&quot;
+	<comment>//	イベントスクリプトには独自のフレームワークは実装しておりません。
+	//	弾幕風標準の記述にてかまいません。
+	</comment>
+}
+			</pre>
+		</paragraph>
+	</category>
+</contents>

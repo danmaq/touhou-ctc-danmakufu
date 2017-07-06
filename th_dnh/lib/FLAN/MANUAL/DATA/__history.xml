@@ -1,0 +1,244 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="History" file="__history">
+	<category caption="TO-DO" link="true">
+		<list>
+			<item>(Common)bit演算とか</item>
+			<item>(Common)<code>SetCommonDataExArray</code>系列の関数に不足した配列を自動補完する機能の追加</item>
+			<item>(withoutEvent)<code>ExtendPlayerEx</code>の要領で<code>Explosion01</code>が使用できないスクリプトからでも爆発衝撃波エフェクトを表示させる機能</item>
+			<item>(Event)NeXTStep</item>
+			<item>(Event)前後関係を記憶し自動で入れ替える機能</item>
+			<item>(ヘッダ)多量インクルードなんとか共通化できない？</item>
+			<item>(マニュアル)OperaやFirefoxで表示が乱れるので事前にXSLT通してHTML化する</item>
+			<item>(マニュアル)チュートリアルをもうちょっとチュートリアルっぽくする</item>
+			<item>(マニュアル)全体的にちょっとゴチャつき始めてねーの？</item>
+			<item>(サンプル)EXルーミア完全移植</item>
+			<item>(サンプル)会話/使い魔サンプル追加</item>
+			<item>(その他)要望とかあれば実装する</item>
+		</list>
+	</category>
+	<category caption="既知バグ" link="true" id="bug">
+		<paragraph>
+			スペル・ステージ中にてデフォルト背景を使用することが出来ない。
+			使用するにはライブラリの一部をコメントアウトする必要がある。
+		</paragraph>
+		<paragraph>
+			<var>FLAN_ENEMY_ARGV_DEFAULT</var>に数値型しか渡せない。
+		</paragraph>
+		<paragraph>
+			<code>GetRandomArray</code>に空の配列を渡すと落ちる。
+		</paragraph>
+		<paragraph>
+			円周弾を発射する関数においてn Wayのところが( n - 1 )Wayとなってしまう。
+		</paragraph>
+	</category>
+	<category caption="非推奨の変数/関数" link="true" id="deprecated">
+	</category>
+	<category caption="更新履歴" link="true" id="history">
+		<paragraph>
+			本来2004/8に製作したステージスクリプト『妖々夢外伝 ～ 幻寇戦乱録』に収録されているライブラリがこのフレームワークの原型だったりするのですが、ここの更新履歴はあくまで『Framework of LunAtic Notation』としての履歴ってことで。
+			(そもそも当時からの履歴なんて残ってないのが現状)
+		</paragraph>
+		<define key="v0.2e (2006/12/17)" type="version">
+			<list>
+				<item>(ヘッダ)一部ソースの可読性よりパフォーマンスが最優先とみなしインライン展開を施した</item>
+				<item>(ヘッダ)プレイヤー単発で敵やステージにFLANを使用しない場合、共通データ<var>FLAN_CD_KEY_SLOW_TIME</var>及び<var>FLAN_CD_KEY_SLOW_STAT</var>が機能しないことがある不都合を修正</item>
+				<item>(マニュアル)一部マニュアルの内容と実装が異なる部分があったので修正</item>
+				<item>(Player)被弾時に被弾した弾を即座に抹消するオプション定数<var>FLAN_PLAYER_DELETE_KILLED_SHOT</var>を追加</item>
+				<item>(Player)定型弾処理など、一部の関数においてはソースの可読性よりパフォーマンスが最優先とみなしインライン展開を施した</item>
+				<item>(Stage)メニューにてコンフィグの設定を書き換える関数<code>MenuRealConfigSubmit</code>を追加</item>
+				<item>(StagePlayerSpell)キー入力処理など、一部の関数においてはソースの可読性よりパフォーマンスが最優先とみなしインライン展開を施した</item>
+				<item>(Boss)魔方陣の円形にあわせてアイテムを落とす座標を生成する関数<code>GetDropItemPosListCircle</code>を追加</item>
+				<item>(Boss)現在のカウントダウン値が格納されるメンバ変数<var>m_nFlanTimer</var>を追加</item>
+				<item>(EnemyShadow)判定処理など、一部の関数においてはソースの可読性よりパフォーマンスが最優先とみなしインライン展開を施した</item>
+				<item>(EnemyShotShadow)<code>GetDropItemPosList</code>の結果が明らかに少なくなる不都合を修正。同時に画面からはみ出ても強制的に指定サイズの配列を吐くように仕様変更</item>
+				<item>(EnemyShotShadowPlayerSpell)オブジェクト弾制御処理など、一部の関数においてはソースの可読性よりパフォーマンスが最優先とみなしインライン展開を施した</item>
+				<item>(EnemyShotShadowStagePlayer)絵画処理など、一部の関数においてはソースの可読性よりパフォーマンスが最優先とみなしインライン展開を施した</item>
+				<item>(withoutEvent)<code>CreateFillScreenEffectObject</code>で生成したオブジェクトのRGB輝度や透明度を設定する関数<code>SetFillScreenEffectObjectColor</code>を追加</item>
+				<item>(withoutEvent)指定ミリ秒間マイクロスレッドを停止する関数<code>WaitRealTime</code>を追加</item>
+				<item>(withoutEvent)算術関連、フェーズ制御、判定処理など、一部の関数においてはソースの可読性よりパフォーマンスが最優先とみなしインライン展開を施した</item>
+				<item>(withoutEvent)一部ゴミファイルが残っていたので削除</item>
+				<item>(Common)二重・三重配列共通データの指定要素の値に指定値を加算する関数<code>AddCommonDataExArray2D</code>及び<code>AddCommonDataExArray3D</code>を追加</item>
+				<item>(Common)多重配列共通データの末尾に配列の要素を追加する関数<code>PushCommonDataExArray</code>を追加</item>
+				<item>(Common)共通データを別の名前空間へコピー/移動する関数<code>CopyCommonData</code>を追加</item>
+				<item>(Common)算術関連、スタック制御、内分カウンタ、文字列処理など、一部の関数においてはソースの可読性よりパフォーマンスが最優先とみなしインライン展開を施した</item>
+				<item>(CommonData)絵画フレームカウンタが格納される共通データ<var>FLAN_CD_COUNT_DRAW</var>を追加</item>
+			</list>
+		</define>
+		<define key="v0.2d (2006/11/8)" type="version">
+			<list>
+				<item>(ヘッダ)プレイヤーがミス中の間、マイクロスレッドが硬直する不都合を修正</item>
+				<item>(マニュアル)一部引数の解説が不適切だったのを修正</item>
+				<item>(Stage)<code>MoveMenuCursor</code>において、選択負荷の項目が選択できてしまう不都合を修正</item>
+				<item>(StagePlayerSpell)方向キー入力情報に基づいた角度を取得する関数<code>GetAngleFromInput</code>を追加</item>
+				<item>(Event)左右カットインを同時に前面に出す関数<code>AllFront</code>を追加</item>
+				<item>(Common)共通データを乗算する関数<code>MultiplyCommonData</code>及び<code>MultiplyCommonDataEx</code>を追加</item>
+				<item>(Common)FLANのバージョン情報を定義した定数<var>FLAN_COMMON_VERSION</var>を追加</item>
+				<item>(CommonData)現在取得予定のスペルカードボーナスが格納される共通データ<var>FLAN_CD_BOSS_SPELL_SCORE</var>を追加</item>
+				<item>(その他)一部内部変数の命名が不適切だったので修正</item>
+			</list>
+		</define>
+		<define key="v0.2c (2006/10/23)" type="version">
+			<list>
+				<item>(マニュアル)READMEをもう少し綺麗に書き直した</item>
+				<item>(Stage)ディスクリソースを時間差で読み込む関数<code>LoadResourceProgress</code>を追加</item>
+				<item>(Stage)ステージ開始されたときの高精度タイマ値が格納されるメンバ変数<var>m_nFlanStageSystemTime</var>を追加</item>
+				<item>(Stage)<strong>ステージ開始からのフレーム数が格納されるメンバ変数<var>m_nFlanStageCount</var>を廃止</strong></item>
+				<item>(ヘッダ)ステージスクリプトからボスを呼び出すと、特定条件で使い魔が誤作動することがある不都合を修正</item>
+			</list>
+		</define>
+		<define key="v0.2b (2006/10/15)" type="version">
+			<list>
+				<item>(ヘッダ)<strong>旧配置版ヘッダを削除</strong></item>
+				<item>(ヘッダ)使い魔の弾消し優先順序変更(打ち返し弾などの対策用)</item>
+				<item>(ヘッダ)雑魚を単発再生すると使い魔の挙動がおかしくなる不都合を修正</item>
+				<item>(Player)現在のフレームでショット発射可能かどうかを格納するメンバ変数<var>m_bFlanPlayerShotEnable</var>を追加</item>
+				<item>(Player)イベントスクリプト再生中もショットを撃ててしまう不都合を修正</item>
+				<item>(Spell)スペル用エフェクトオブジェクトカテゴリ追加</item>
+				<item>(Stage)ポイントエクステンド機能搭載。<var>FLAN_STAGE_NORMLIST</var>の配列の中身を空っぽにすることで無効に出来ます</item>
+				<item>(Stage)弾幕風標準の効果音を出してエクステンドする関数<code>ExtendPlayerEx</code>を追加</item>
+				<item>(Stage)メニューにてコンフィグの設定を書き換える関数<code>MenuBooleanConfigSubmit</code>を追加</item>
+				<item>(Shadow)高速移動時、使い魔の当たり判定を意図して消そうとしても残ってしまうバグを修正</item>
+				<item>(EnemyShotShadow)アイテムが画面側方外にはみ出るのを補正する精度を設定する定数<var>FLAN_ITEM_OUT_COMPENSATION</var>を追加</item>
+				<item>(EnemyShotShadow)自分自身が画面外の状態で<code>GetDropItemPosList</code>を呼び出すとフリーズする現象を修正</item>
+				<item>(withoutEvent)算術関数に矩形波・鋸波・三角波の計算をする関数群を追加</item>
+				<item>(withoutEvent)<code>WaitObject</code>の処理がなんかおかしいのを修正</item>
+				<item>(CommonData)イベントスクリプトが再生中かどうかが格納される共通データ<var>FLAN_CD_BOSS_EVENT_ENABLE</var>を追加</item>
+				<item>(CommonData)自機ショットが有効かどうかが格納される共通データ<var>FLAN_CD_PLAYER_SHOT_ENABLE</var>を追加</item>
+				<item>(Common)連想配列(ハッシュ)機能もどきを実装</item>
+			</list>
+		</define>
+		<define key="v0.2a (2006/10/9)" type="version">
+			<list>
+				<item>(ヘッダ)雑魚の仕様追加により若干内部的な変更</item>
+				<item>(Stage)メニュー制御処理新設</item>
+				<item>(Stage)画面内の雑魚敵を一斉に自殺させる関数<code>AllZakoEnemyKill</code>を追加</item>
+				<item>(Boss)Plural単体テスト用にレベルを設定する関数<code>SetLevelTemp</code>を追加、あわせてPluralスクリプトかどうかを取得できる変数<var>m_bFlanPlural</var>を追加</item>
+				<item>(Boss)タイムアウト時のカウントダウン効果音機能を追加</item>
+				<item>(Enemy)アイテム関連が太ってきたので内部的に分割</item>
+				<item>(Enemy)敵の落とすアイテムが画面側端外にはみ出てしまう現象を修正</item>
+				<item>(EnemyShadow)その場で自殺する関数<code>OwnKill</code>を追加</item>
+				<item>(EnemyShadow)敵専用カテゴリからアイテム関連関数を移動</item>
+				<item>(EnemyShadow)<strong><var>FLAN_ESS_ARGV_DEFAULT</var>を<var>FLAN_ENEMY_ARGV_DEFAULT</var>と変更し、弾スクリプトからは使用できなくなりました。</strong></item>
+				<item>(EnemyShotShadow)<strong><var>FLAN_ENEMY_ITEM_WIDTH</var>を<var>FLAN_ITEM_WIDTH</var>と変更。</strong>また、<var>FLAN_ITEM_WIDTH</var>、<var>FLAN_ITEM_X</var>、<var>FLAN_ITEM_Y</var>が弾スクリプトから使用できるようになった</item>
+				<item>(EnemyShotShadow)敵の落とすアイテムを設置する座標リストを得る関数<code>GetDropItemPosList</code>を追加</item>
+				<item>(EnemyShotShadowStagePlayer)絵画元の切り出し情報を幅で設定する関数<code>SetGraphicRectWidth</code>を追加</item>
+				<item>(withoutEvent)エフェクトオブジェクト関連の新関数2つ追加( <code>CreateSquareEffectObject</code> / <code>CreateFillScreenEffectObject</code> )、同時にエフェクトオブジェクト関連が太ってきたので内部的に分割</item>
+				<item>(withoutEvent)指定X座標/Y座標に近い敵を取得する関数2つ追加( <code>GetEnemyIDInScreenMoreNearX</code> / <code>GetEnemyIDInScreenMoreNearY</code> )</item>
+				<item>(withoutEvent)フェーズ変化した時<var>m_nFlanPhaseCount</var>が1フレーム遅れてリセットされるバグを修正</item>
+				<item>(Common)デバッグモードかどうかを返す関数<code>IsDebugMode</code>を追加</item>
+				<item>(Common)<strong><code>CreateStack</code>の仕様変更、引数が1つ増えましたので使用している方は注意してください。</strong></item>
+				<item>(Common)<code>GetCharType</code>が不正な値を返していたバグを修正</item>
+				<item>(CommonData)雑魚が無条件自殺するかどうかを定義するCommonData定数、<var>FLAN_CD_ENEMY_OWNKILL</var>を追加</item>
+				<item>(マニュアル)一部誤字脱字・説明不足な部分の修正、メンバ変数のコメントに若干不統一があったので統一</item>
+			</list>
+		</define>
+		<define key="v0.1j (2006/9/21)" type="version">
+			<list>
+				<item>(withoutEvent)GetEnemyIDInScreenMoreNearが機能していないバグを修正</item>
+				<item>(withoutEvent)敵の画面内在籍判定関数を使用した際敵の座標をメンバ変数に格納する機能を追加</item>
+				<item>(withoutEvent)一部のオブジェクト操作関数をステージからも使用できるようEnemyShotShadowPlayerSpellカテゴリから移動</item>
+				<item>(マニュアル)古い更新履歴を整理、一部リンクがおかしいところがあったので修正</item>
+			</list>
+		</define>
+		<define key="v0.1i (2006/9/2)" type="version">
+			<list>
+				<item>(withoutEvent)エフェクトオブジェクトを生成する関数<code>CreateCircleEffectObject</code>を追加</item>
+				<item>(Common)定型文エラー出力機能追加</item>
+				<item>(Common)小数点以下の無駄な0を削る関数<code>StringToStringEx</code>、<code>ToStringEx</code>を追加</item>
+				<item>(Common)配列を逆順サーチする関数<code>SearchArrayRight</code>を追加</item>
+				<item>(CommonData)攻撃力値の有効無効を定義するCommonData定数、<var>FLAN_CD_PLAYER_POWER_ENABLE</var>を追加</item>
+				<item>(マニュアル)プレイヤースクリプトの雛形サンプルに抜けがあったので修正</item>
+			</list>
+		</define>
+		<define key="v0.1h (2006/8/29)" type="version">
+			<list>
+				<item>(Event)<code>__MoveChar</code>のラッパー関数における記述ミスを修正(最近こればっかorz)</item>
+				<item>(Common)算術関連の機能のうち補正系の一部のみ会話イベントでも使用できるように戻し</item>
+				<item>(サンプル)自機ルーミアのソースコードを若干整理</item>
+			</list>
+		</define>
+		<define key="v0.1g (2006/8/27)" type="version">
+			<list>
+				<item>(withoutEvent)算術関連の機能を全てCommonカテゴリから移動(会話イベントスクリプトから算術関数が使用できなくなります)</item>
+				<item>(Shadow)一部メンバ変数の記述ミスを修正</item>
+				<item>
+					(その他)FLAN設置場所を<strong>&quot;th_dnh/FLAN&quot;から&quot;th_dnh/lib/FLAN&quot;に変更</strong>。
+					柔軟に移行できるようにするため旧フォルダ配置場所に新フォルダ配置へのリダイレクタを設置してありますが、<strong>v0.2bまでに削除されますのでなるべく早めにインクルード先を変更することを強く勧めます</strong>。
+				</item>
+			</list>
+		</define>
+		<define key="v0.1f (2006/8/24)" type="version">
+			<list>
+				<item>(Shadow)使い魔の自動発光機能を制御する定数<var>FLAN_SHADOW_LIGHTING</var>が有効に機能していないバグを修正</item>
+				<item>(Shadow)<code>__SetShadowModeLoop</code>において効果音が効果音無効モードでも再生されてしまうバグを修正</item>
+				<item>(Shadow)一部コメントが説明不足だったのを修正</item>
+				<item>(EnemyShadow)<code>__PlayDamageSELoop</code>において効果音が効果音無効モードでも再生されてしまうバグを修正</item>
+				<item>(EnemyShadow)一部コメントが説明不足だったのを修正</item>
+			</list>
+		</define>
+		<define key="v0.1e (2006/8/22)" type="version">
+			<list>
+				<item>(ヘッダ)使い魔周りの記述ミス修正</item>
+				<item>(Boss)スペルカード発動時以外でも<code>onBackGround</code>の呼び出しが有効となるオプションの追加(<var>FLAN_BOSS_ENABLE_BGG_ON_UNSPELL</var>)</item>
+				<item>(withoutEvent)<code>__SetSlowKeyStateDelayLoop</code>で格納される遅延キー状態が異常な値だったのを修正</item>
+			</list>
+		</define>
+		<define key="v0.1d (2006/8/20)" type="version">
+			<list>
+				<item>(Shadow)初期化処理及びエフェクト周りの記述ミス修正</item>
+				<item>(EnemyShotShadow)一部古いコードがゴミとして残っていたのを削除</item>
+				<item>(マニュアル)一部更新履歴の日付が狂っていたのを修正</item>
+			</list>
+		</define>
+		<define key="v0.1c (2006/8/8)" type="version">
+			<list>
+				<item>(Player)定型弾新関数<code>WayPlayerShot01</code>一式を追加</item>
+				<item>(EnemyShotShadow)定型弾新関数<code>RoundShot</code>、<code>WayShot</code>一式を追加</item>
+				<item>(マニュアル)一部更新履歴の日付が狂っていたのを修正</item>
+			</list>
+		</define>
+		<define key="v0.1b (2006/8/5)" type="version">
+			<list>
+				<item>(全共通)上位の共通処理関数削除、共通処理はヘッダ部で処理するよう仕様変更</item>
+				<item>(Player)新カテゴリ追加、プレイヤースクリプトに新対応</item>
+				<item>(Spell)新カテゴリ追加、スペルスクリプトに新対応</item>
+				<item>(Stage)敵スクリプトを一度に大量に読み込み・コンパイルする機能を追加</item>
+				<item>(Stage)定数・変数定義ミス、ステージ制御・共通処理周りの記述ミスを修正</item>
+				<item>(StagePlayerSpell)新カテゴリ追加</item>
+				<item>(Zako)ボス検出周りの記述ミスで雑魚が問答無用で即死していたバグを修正</item>
+				<item>(Enemy)共通処理周りの記述ミスを修正</item>
+				<item>(Shadow)フレームワーク仕様変更、定型移動周りの記述ミスを修正</item>
+				<item>(Shot)場外検出判定処理周りの記述ミスを修正</item>
+				<item>(EnemyShot)新カテゴリ追加</item>
+				<item>(EnemyShadow)変数定義ミス、共通処理周りの記述ミスを修正</item>
+				<item>(EnemyShotShadow)定型弾/オブジェクト定型弾を大幅整理と共に新関数追加</item>
+				<item>(EnemyShotShadow)KDLより一部移動制御関連関数を移植</item>
+				<item>(EnemyShotShadow)多重定義を削除、絵画・共通処理周りの記述ミスを修正</item>
+				<item>(EnemyShotShadowSpell)一部の変数・定数を親カテゴリから独立</item>
+				<item>(EnemyShotShadowSstage)(withoutEnemy)の移動関連処理を親カテゴリから独立</item>
+				<item>(EnemyShotShadowStagePlayer)(withoutEvent)の絵画関連カテゴリを親カテゴリから独立、新関数追加</item>
+				<item>(PlayerSpellEnemyShotShadow)(EnemyShotShadow)のオブジェクト弾制御カテゴリを親カテゴリから独立、新関数追加</item>
+				<item>(withoutEvent)共通内分カウンタ・有効/無効設定可能な効果音再生機能追加、またキー入力処理に新関数追加、これによりキー入力処理ガ太ってきたので判定カテゴリから独立化</item>
+				<item>(withoutEvent)KDLより一部算術関連・移動制御関連関数を移植</item>
+				<item>(withoutEvent)定数・変数定義ミス、フェーズ・判定周りの記述ミス及び擬似乱数テーブルの設定が反映されないバグ・入力処理周りの記述ミスで無限ループに陥っていたバグを修正</item>
+				<item>(Common)文字列処理・配列処理・算術処理に新関数追加、さらにKDLより一部算術関連関数を移植</item>
+				<item>(Coomon)算術関数カテゴリがかなり太ってきたのでカテゴリを分割</item>
+				<item>(Common)<code>SplineFakeFSF</code>の軌道がおかしいのを修正、内分カウンタの一部処理を統合及び高速化</item>
+				<item>(Common)定数・変数定義ミス、スタック・算術・内分カウンタ周りの記述ミス及びスタック初期化時に落ちるバグを修正</item>
+				<item>(インクルードヘッダ)不備を修正</item>
+				<item>(マニュアル)メニュー配置整理、各カテゴリへのショートカット追加、基礎知識カテゴリに簡単な図解を追加</item>
+				<item>(マニュアル)<var>FLAN_ANIMATION_RANDOM</var>がダブって記述されていたバグを修正</item>
+				<item>(マニュアル)使い魔カテゴリの不備、その他一部説明不足だった箇所、誤字・XSLの記述ミスを修正</item>
+				<item>(サンプル)弾幕風標準のEXルーミアステージ(但し毛玉＆EXルーミア通常1/スペル1のみ)、及びプレイヤールーミアを移植</item>
+				<item>(その他)READMEテキストを追加</item>
+			</list>
+		</define>
+		<define key="v0.0a (2006/7/21)" type="version">
+			<list>
+				<item>ライブラリ単体としては初フリー公開版</item>
+				<item>暫定的にステージ/敵(ボス/雑魚/使い魔)/弾/イベントスクリプトに対応</item>
+			</list>
+		</define>
+	</category>
+</contents>

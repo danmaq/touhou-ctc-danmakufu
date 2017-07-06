@@ -1,0 +1,77 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　因幡 てゐ
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossTewi;
+let m_szImageCutIn = cutTewi;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_TEWI;
+let m_aszImageBGList = LOADBGLIST_TEWI;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+	SetAlpha( 30 + absolute( m_nFlanCount % 400 - 200 ) * 0.7 );
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellLight );
+	let i = m_nFlanCount * 2;
+	SetAlpha( 70 );
+	SetGraphicScale( 0.5, 1 );
+	SetGraphicRect( 0, i, 512, 512 + i );
+	__DrawChr( imgSpellBamboo2, CL_CEN_X - 130, CL_CEN_Y );
+	__DrawChr( imgSpellBamboo2, CL_CEN_X + 130, CL_CEN_Y );
+	SetGraphicScale( 1, 1 );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	未分類
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	子兎弾
+*	@param nX			弾源x座標
+*	@param nY			弾源y座標
+*	@param nSpeed		速度
+*	@param nAngle		角度
+*	@param nAccelSpeed	加速度
+*	@param nMaxSpeed	最大速度
+*	@param nDelay		遅延フレーム数
+*/
+function LeveretShot( let nX, let nY, let nSpeed, let nAngle, let nAccelSpeed, let nMaxSpeed, let nDelay ){
+	CreateShot02( nX, nY, nSpeed, nAngle, nAccelSpeed, nMaxSpeed, US_BALL_SS_WHITE, nDelay );
+	CreateShot02( nX + 10 * cos( nAngle ), nY + 10 * sin( nAngle ), nSpeed, nAngle, nAccelSpeed, nMaxSpeed, US_BALL_S_WHITE, nDelay );
+}
+

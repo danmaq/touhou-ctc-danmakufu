@@ -1,1 +1,1 @@
-let imgDnhItem = "img\Item.png";
+let MAGE_DNH_ITEM = "img\Item.png";

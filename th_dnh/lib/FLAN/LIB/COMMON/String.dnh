@@ -1,0 +1,216 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	16進文字列テーブルです。 */
+let FLAN_HEX_TABLE = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F" ];
+/**	ASCIIコード識別用値の配列です。 */
+let FLAN_ASCII_TYPE = [
+	[ 0, 31 ],
+	[ 48, 57 ],
+	[ 65, 90 ],
+	[ 97, 122 ],
+	[ 127, 255 ]
+];
+/**	文字制御コードを示す文字タイプです。 */
+let FLAN_ASCII_TYPE_CC		= 0;
+/**	数値を示す文字タイプです。 */
+let FLAN_ASCII_TYPE_NUMERIC	= 1;
+/**	大文字を示す文字タイプです。 */
+let FLAN_ASCII_TYPE_UPPER	= 2;
+/**	小文字を示す文字タイプです。 */
+let FLAN_ASCII_TYPE_LOWER	= 3;
+/**	SJIS2バイトコードを示す文字タイプです。 */
+let FLAN_ASCII_TYPE_SJIS		= 4;
+/**	記号その他を示す文字タイプです。 */
+let FLAN_ASCII_TYPE_UNKNOWN	= 5;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(原則書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	文字列操作
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	指定した単文字の文字種を調べます。
+*	注意:文字列を1バイトずつ調べていく場合は、FLAN_ASCII_TYPE_SJISを検出した際に1バイトスキップしないと誤判定します。
+*
+*	@param cChar 対象の単文字
+*	@return 文字タイプ定数
+*/
+function GetCharType( let cChar ){
+	let nExpr = cChar - 0;
+	ascent( let i in 0..length( FLAN_ASCII_TYPE ) ){
+		let nType = FLAN_ASCII_TYPE[ i ];
+		if( nExpr >= nType[ 0 ] && nExpr <= nType[ 1 ] ){ return i; }
+	}
+	return FLAN_ASCII_TYPE_UNKNOWN;
+}
+
+/**
+*	浮動小数点文字列の小数点以下を切り捨て、整数文字列に変換します。
+*
+*	@param szFloat 対象の浮動小数点文字列
+*	@return 整数文字列
+*/
+function StringToStringInt( let szFloat ){
+	let nLength = length( szFloat );
+	let nPos = 0;
+	while( nPos < nLength && szFloat[ nPos ] != '.' ){ nPos++; }
+	return szFloat[ 0..nPos ];
+}
+
+/**
+*	数値の小数点以下を切り捨て、整数文字列に変換します。
+*
+*	@param nNum 対象の数値
+*	@return 整数文字列
+*/
+function ToStringInt( let nNum ){
+	let szFloat = ToString( nNum );
+	let nLength = length( szFloat );
+	let nPos = 0;
+	while( nPos < nLength && szFloat[ nPos ] != '.' ){ nPos++; }
+	return szFloat[ 0..nPos ];
+}
+
+/**
+*	浮動小数点文字列の小数位以下における無駄な0を省きます。
+*
+*	@param szExpr 対象の浮動小数点文字列
+*	@return 小数位以下の無駄な0を省いた文字列
+*/
+function StringToStringEx( let szExpr ){
+	loop{
+		let nIndexEnd = length( szExpr ) - 1;
+		if( nIndexEnd >= 1 && ( SearchArray( szExpr, '.' ) <= nIndexEnd || szExpr[ nIndexEnd ] == '.' ) && ( szExpr[ nIndexEnd ] == '0' || szExpr[ nIndexEnd ] == '.' ) ){ szExpr = szExpr[ 0..nIndexEnd ]; }
+		else{ break; }
+	}
+	return szExpr;
+}
+
+/**
+*	数値の小数位以下の無駄な0を省き、整数文字列に変換します。
+*	StringToStringExのラッパーです。
+*
+*	@param nNum 対象の数値
+*	@return 無駄な小数位以下の0を省いた数字文字列
+*/
+function ToStringEx( let nNum ){ return StringToStringEx( ToString( nNum ) ); }
+
+/**
+*	数値の小数点以下を切り捨て、指定最低桁以上の桁を有する整数文字列に変換します。
+*	ToStringInのラッパーです。
+*
+*	@param nNum 対象の数値
+*	@param nGrade 桁数
+*	@return 整数文字列
+*/
+function ToStringIntGrade( let nNum, let nGrade ){
+	let szNum = ToStringInt( nNum );
+	while( length( szNum ) < nGrade ){ szNum = [ '0' ] ~ szNum; }
+	return szNum;
+}
+
+/**
+*	数字の単文字を(かなり外道なやり方で)数値化します。
+*	@param cChar 対象の単文字(1～9であること)
+*	@return 数値化した値
+*/
+function CharToInteger( let cChar ){ return cChar - [ 0, 48 ][ GetCharType( cChar ) == FLAN_ASCII_TYPE_NUMERIC ]; }
+
+/**
+*	数字の文字列を数値化します。
+*	但し小数以下は切り捨てられます。
+*
+*	@param num 対象の数字文字列
+*	@return 数値化した値
+*/
+function StringToInteger( let str ){
+	let strint = StringToStringInt( str );
+	let res = 0;
+	ascent( let grade in 0..length( strint ) ){ res += CharToInteger( strint[ grade ] ) * 10 ^ grade; }
+	return res;
+}
+
+/**
+*	文字列に含まれる半角大文字を半角小文字に変換します。
+*	__ConvertStringのラッパーです。
+*
+*	@param szString 対象の文字列
+*	@return 変換された文字列
+*/
+function ToUpper( let szString ){ return __ConvertString( szString, FLAN_ASCII_TYPE_LOWER, -32 ); }
+
+/**
+*	文字列に含まれる半角小文字を半角大文字に変換します。
+*	__ConvertStringのラッパーです。
+*
+*	@param szString 対象の文字列
+*	@return 変換された文字列
+*/
+function ToLower( let szString ){ return __ConvertString( szString, FLAN_ASCII_TYPE_UPPER, 32 ); }
+
+/**
+*	文字を特定条件に従って変換します。
+*	コードシフト限界は0～255です。
+*	(-65536とか指定しても変換されたコードは0以下にはなりません)
+*
+*	@param szString 対象の文字列
+*	@param nType 変換する対象となる文字タイプ
+*	@param nShift 文字コードのシフト量
+*	@return 変換された文字列
+*/
+function __ConvertString( let szString, let nType, let nShift ){
+	let nLength = length( szString );
+	let nIndex = 0;
+	while( nIndex < nLength ){
+		let nType = GetCharType( szString[ nIndex ] );
+		alternative( nType )
+		case( nType ){ szString[ nIndex ] = MinMax( szString[ nIndex ] + nShift, 0, 255 ); }
+		case( FLAN_ASCII_TYPE_SJIS ){ nIndex++; }
+		nIndex++;
+	}
+	return szString;
+}
+
+/**
+*	数字を16進文字列化します。
+*
+*	@param num 対象の数値
+*	@return 16進表記の文字列
+*/
+function Hex( let num ){
+	let szHex = "";
+	let i = num;
+	loop{	// do{ ... }while( nExpr )がほしい・・・
+		szHex = FLAN_HEX_TABLE[ i % 16 ] ~ szHex;
+		i = truncate( Shift( i, -4 ) );
+		if( i <= 0 ){ break; }
+	}
+	return "0x" ~ szHex;
+}

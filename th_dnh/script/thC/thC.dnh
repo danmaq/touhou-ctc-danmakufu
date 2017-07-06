@@ -1,3 +1,4 @@
+//////////////////////////////////////////////////////////////////////
 //====================================================================
 //
 //	東方夢終劇 ～ Concealed the Conclusion
@@ -15,10 +16,11 @@
 //////////////////////////////////////////////////////////////////////
 
 #東方弾幕風[Stage]
-#Title[東方夢終劇 ～ Concealed the Conclusion]
-#Text[THC_TRIAL_A01]
+#Title[東方夢終劇 ～ Concealed the Conclusion ]
+#Text[THC R1.00]
 #ScriptVersion[2]
-#Player[player\THC_MARISA\1.dnh,player\THC_MARISA\3.dnh]
+#Player[player\THC_MARISA\1.dnh, player\THC_MARISA\2.dnh, player\THC_MARISA\3.dnh, player\THC_MARISA\4.dnh]
+#Image[.\IMAGE\SYSTEM\jacket.png]
 #BGM[]
 
 
@@ -39,191 +41,332 @@ script_stage_main{
 
 
 //////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_STAGE_NORMLIST = FLAN_STAGE_NORMLIST[ 0..0 ] ~ [ 100, 250, 450, 700, 1000, 1400, 1999, 9999, -1 ];
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数
+//////////////////////////////////////////////////////////////////////
+
+	/**	各ステージのロード時に連結して読み出すグラフィックのリストです。 */
+	let STAGE_DEFAULT_LOAD_GRAPHIC = [
+		IMAGE_CL_WHITE,
+		imgSystemProgress,
+		IMAGE_CL_FONT_ASCII,
+	] ~ IMAGE_CL_FONT_SJIS16 ~ [
+		IMAGE_CL_SPELL_LINE,
+		IMAGE_CL_CUTIN_MARISA,
+		MAGE_DNH_ITEM,
+		IMAGE_CL_CIRCLE_6S,
+		IMAGE_CL_CIRCLE_6M,
+		IMAGE_CL_CIRCLE_8S,
+		IMAGE_CL_CIRCLE_8M,
+		IMAGE_CL_SHOT_ALL,
+		IMAGE_CL_SHOCKWAVE_ADD,
+		IMAGE_CL_SHOCKWAVE_ALPHA,
+		dotYousei,
+		dotKedama,
+		dotShadow,
+		IMAGE_THC_CIRLE_BORDER
+	] ~ IMAGE_LIST_MARISA;
+	/**	各ステージのロード時に連結して読み出す敵スクリプトのリストです。 */
+	let STAGE_DEFAULT_LOAD_ENEMY = [
+		FLAN_STAGE_ENEMY_EXTEND
+	];
+	/**	各ステージのロード時に連結して読み出す効果音のリストです。 */
+	let STAGE_DEFAULT_LOAD_SE = [
+		seScore,
+		seOk,
+		sePower,
+		seDamage,
+		seDamage2,
+		seBossExplode,
+		seTimeOut,
+		seTimeOut2,
+		seShadow,
+		seShadowHidden,
+		seShadowSudden,
+		seKira1,
+		seKira2,
+		seKira3,
+		seKira4,
+		seLaser1,
+		seLaser2,
+		sePower2,
+		seShot1,
+		seShot2,
+		seShot3,
+		seShot1,
+	];
+
+
+//////////////////////////////////////////////////////////////////////
 //	メンバ変数
 //////////////////////////////////////////////////////////////////////
 
-	let m_bBenchmark = false;
-	let m_nBenchmarkFPS = 0;
-	let m_nBenchmarkTime = 300;
+	/**	レジュームが成功したかどうかを格納します。 */
+	let m_bResume	= false;
+	/**	長距離クリップモードかどうかを格納します。 */
+	let m_bStageBGLongClip = false;
+	/**	書き込み可能テクスチャ生成を現フレームにて試みるかどうかが格納されます。 */
+	let m_bWritableTextureCreate = false;
 
-	let m_nPhaseNow = 0;
-	let m_nStageNow = 0;
-	let m_nScenario = 0;
-	let m_nPrevSlowStat = KEY_FREE;
-	let m_nSlowCount = 9999;
+//--------------------------------------------------------------------
+//	以下、旧ライブラリから柔軟に対応するために用意した非推奨変数です。
+//	最終的には削除されますので対応の程お願いします。
+//--------------------------------------------------------------------
 
-	let m_aszStageDefaultLoadFileListGraphic = [ imgSystemSpellLine, imgSystemFontSmall, imgSystemFont ] ~ imgSystemFontSJIS16;
-	let m_aszStageDefaultLoadFileListSE = [ seDamage, sePower, seShadow, seScore ];
+	/**	シナリオ番号が格納されます。 */
+	let m_nScenario;	//	GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_STAGE_SCENARIO, 0 )
 
 
 //////////////////////////////////////////////////////////////////////
-//	マイクロスレッド
+//	固有処理
 //////////////////////////////////////////////////////////////////////
 
-	//	メイン
-	task TMain(){
-		yield;
-		SetPlayerDefaultPosition();
-		SetPhase( 0 );
-		MainMenu();
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitialize()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nStage ステージ
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nStage, let nLevel ){
+		if( m_bResume ){
+			LoadUserShotData( shotAll );
+			SetCommonDataEx( FLAN_CDNS, FLAN_CD_SE_ENABLE, GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_SE, true ) );
+			let nStage = GetCommonDataDefaultEx( CL_CDNS_RESULT, FLAN_CD_STAGE, 0 );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN_GAUGE_DEFAULT, [ [ 48, 0 ][ nStage >= 10 ], 255 ][ nStage >= 0 && nStage < 10 ] );
+			PopCLCutInQueueLoop();
+			if( nStage < 0 ){ Stage1(); }
+			else if( nStage >= 10 ){
+				alternative( nStage )
+				case( 10 ){ StageEx(); }
+				case( 11 ){ StageEx2(); }
+			}
+			else{
+				SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, [ ( nStage * 80 ) * ( nLevel + 1 ), 2500 ][ nStage == 7 ] );
+				SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 128 );
+				AddBomb( 7 - GetPlayerBomb() );
+				AddPoint( 80 );
+				AddGraze( 100 );
+				alternative( nStage )
+				case( 0 ){ Stage1(); }
+				case( 1 ){ Stage2(); }
+				case( 2 ){ Stage3(); }
+				case( 3 ){ Stage4(); }
+				case( 4 ){ Stage5(); }
+				case( 5 ){ Stage6(); }
+				case( 7 ){ SpellPractice(); }
+			}
+		}
+		else{
+			AddBomb( -GetPlayerBomb() );
+			MainMenu();
+		}
 	}
 
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nStage ステージ
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitialize( let nStage, let nLevel ){
 
-//////////////////////////////////////////////////////////////////////
-//	初期処理
-//////////////////////////////////////////////////////////////////////
-
-	@Initialize{
-//		if( m_bDebug ){ CreateDebugWindow(); }
-//		OutputDebugString( 0, "KEY_PUSH", KEY_PUSH );
-
-		//	ここで読むファイルは必要最低限度で
-		LoadGraphic( imgMapBlack );
-
+		ForbidBomb( true );
+		ForbidShot( true );
 		SetRateScoreSystemEnable( false );
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, false );
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER_ENABLE, true );
 		SetShotAutoDeleteClip( 40, 40, 40, 40 );
-		ClearCommonData();
-		SetCommonData( CD_THC_STAGE, true );
-		SetCommonData( CD_ENABLE_HAKUREI, false );
-		ExpertEx( m_bDebug, 1, 3 );
-		TMain();
+		FontInitialize( IMAGE_CL_FONT_ASCII, IMAGE_CL_FONT_SJIS16 );
+		LoadAllCommonData();
+		m_bResume = GetResume();
+		SetDefaultStatusVisible( m_bResume );
+		LoadGraphicList( [ IMAGE_CL_BLACK, IMAGE_THC_BLACK_FRAME ] );
+		if( m_bResume ){
+			m_bWritableTextureCreate = GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_FONT_PRERENDER, true );
+			let nStage = GetCommonDataDefaultEx( CL_CDNS_RESULT, FLAN_CD_STAGE, 0 );
+			m_bStagePractice = nStage >= 0 && nStage < 10;
+			m_nScenario	= GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_STAGE_SCENARIO, 0 );
+			m_bStageBGLongClip = GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG_CLIP, false );
+			SetClearFrameEffectEnable( nStage != 5 && ( m_bStagePractice || nStage >= 7 ) );
+			let nLife = GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_PLAYER, 3 );
+			if( m_bStagePractice	){ nLife = 8; }
+			else if( nStage >= 7	){ nLife = 3; }
+			ExpertEx(
+				IsDebugMode(),
+				[ GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_CONTINUE, 1 ), 0 ][ m_bStagePractice || nStage >= 7 ],
+				nLife
+			);
+			__CreateStageInfomationLoop();
+			__PopItemQueueLoop();
+		}
+		else{
+			SetStage( -1 );
+			ExpertEx( false, 0, 1 );
+		}
+		PlayMusicLoop();
 	}
 
-
-//////////////////////////////////////////////////////////////////////
-//	毎フレーム呼ばれるメインループ
-//////////////////////////////////////////////////////////////////////
-
-	@MainLoop{
-		yield;
-		alternative( m_nStage )
-		case( 0 ){ MainMenuLoop(); }
-		case( 1 ){ Stage1Loop(); }
-		case( 2 ){ Stage2Loop(); }
-		case( 3 ){ Stage3Loop(); }
-		case( 4 ){ Stage4Loop(); }
-		case( 5 ){ Stage5Loop(); }
-		case( 6 ){ Stage6Loop(); }
-		if( m_nLoadProgressPercentage != -1 ){
-			MovePlayerDefaultPosition();
-			DrawLoadProgress( imgSystemProgress, imgMapBlack );
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nStage 現在のステージ
+	*	@param nStageCount 現在のステージカウンタ値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoop( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		if( m_nFlanLoadResourcePercentage != -1 ){ return; }
+		if( nStage == 7 ){
+			onMainLoop( m_nSpellPracticeBGStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+			return;
 		}
-		if( m_nStage >= 1 ){
-			PopItemQueue();
-			PopCutInQueue( imgSystemSpellLine, imgSystemFont, imgSystemFontSmall, imgSystemFontSJIS16 );
-			let nPower = GetCommonDataDefault( CD_ITEM_POWER, 0 );
-			if( m_nItemPowerPrev != nPower ){
-				if( nPower == 128 ){ DeleteEnemyShotToItem( SHOT ); }
-				m_hTTCachePower = CreateTexText16Cache( "P : " ~ [ ToStringInt( nPower ), "MAX" ][ nPower == 128 ] );
-				m_nItemPowerPrev = nPower;
-			}
-			if( GetCommonDataDefault( CD_ENABLE_HAKUREI, false ) ){
-				let nHakurei = GetCommonDataDefault( CD_ITEM_HAKUREI, 0 );
-				if( m_nItemHakureiPrev != nHakurei ){
-					m_hTTCacheHakurei = CreateTexText16Cache( "H : " ~ ToStringInt( nHakurei ) );
-					m_nItemHakureiPrev = nHakurei;
-				}
-			}
-			let nKey = GetKeyState( VK_SLOWMOVE );
-			if( nKey == KEY_PUSH || nKey == KEY_PULL ){ m_nSlowCount = 0; }
-			SetCommonData( CD_STAGE_KEY_SLOWCOUNT, m_nSlowCount );
-			let nShadowMode;
-			if( m_nPrevSlowStat == nKey ){
-				if( m_nSlowCount > SHADOW_TIMELAG ){ nShadowMode = [ KEY_SHADOW_FREE, KEY_SHADOW_HOLD ][ nKey == KEY_HOLD ]; }
-				else{ nShadowMode = [ KEY_SHADOW_PULL, KEY_SHADOW_PUSH ][ nKey == KEY_HOLD ]; }
-			}
-			else{ nShadowMode = [ KEY_SHADOW_PULL, KEY_SHADOW_PUSH ][ nKey == KEY_PUSH || nKey == KEY_HOLD ]; }
-			SetCommonData( CD_STAGE_KEY_SLOWSTAT, nShadowMode );
-			PopResult();
-			m_nPrevSlowStat = nKey;
-			m_nSlowCount++;
-		}
-
-		//	(デバッグ)ベンチマーク処理
-		if( m_bDebug && m_bBenchmark ){
-			m_nBenchmarkFPS += GetFps();
-			if( m_nCount == m_nBenchmarkTime ){
-				RaiseError( "ベンチ計測結果(50行目のm_bBenchmarkをfalseにすれば解除できます)", "Score:" ~ ToString( Smooth( 0, 100, m_nBenchmarkFPS, m_nBenchmarkTime * 60 ) ) ~ "(100点満点中)" );
-			}
-		}
-
-		m_nCount++;
-		m_nPhaseNow = m_nCount - m_nPhaseCount;
-		m_nStageNow = m_nCount - m_nStageCount;
+		alternative( nStage )
+		case( 0 ){ MainMenuLoop( nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 1 ){ Stage1Loop( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 2 ){ Stage2Loop( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 3 ){ Stage3Loop( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 4 ){ Stage4Loop( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 5 ){ Stage5Loop( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 6 ){ Stage6Loop( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 10 ){ StageExLoop(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 11 ){ StageEx2Loop(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 	}
 
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nStage 現在のステージ
+	*	@param nStageCount 現在のステージカウンタ値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalize( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		if( !( IsReplay() || nStage == 0 || UsedDebugKey() ) ){
+			AddCommonDataEx( CL_CDNS_RESULT, CL_CD_HISTORY_COUNT_TOTAL, m_nFlanCount, 0 );
+			SaveCommonDataEx( CL_CDNS_RESULT, CL_CDFILE_RESULT );
+		}
+	}
 
-//////////////////////////////////////////////////////////////////////
-//	終了処理
-//////////////////////////////////////////////////////////////////////
-
-	@Finalize{}
-
-
-//////////////////////////////////////////////////////////////////////
-//	背景絵画
-//////////////////////////////////////////////////////////////////////
-
-	@BackGround{
-		if( GetPhase == -1 ){ return; }
+	/**
+	*	背景絵画時に呼ばれます。
+	*
+	*	@param nStage 現在のステージ
+	*	@param nStageCount 現在のステージカウンタ値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGround( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		if( nStage == 0 || nPhase == -1 || m_nFlanLoadResourcePercentage != -1 || !GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG, true ) || OnEnemySpell() ){ return; }
+		if( nStage == 7 ){
+			onBackGround( m_nSpellPracticeBGStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+			return;
+		}
+		SetPerspectiveClip( 10, [ 1600, 2400 ][ m_bStageBGLongClip ] );
 		UseZBuffer( true );
 		WriteZBuffer( true );
-
 		//	ステージごとの処理呼び出し
-		alternative( m_nStage )
-		case( 0 ){ MainMenuDrawBackGround(); }
-		case( 1 ){ Stage1DrawBackGround(); }
-		case( 2 ){ Stage2DrawBackGround(); }
-		case( 3 ){ Stage3DrawBackGround(); }
-		case( 4 ){ Stage4DrawBackGround(); }
-		case( 5 ){ Stage5DrawBackGround(); }
-		case( 6 ){ Stage6DrawBackGround(); }
+		alternative( nStage )
+		case( 1 ){ Stage1DrawBackGround( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 2 ){ Stage2DrawBackGround( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 3 ){ Stage3DrawBackGround( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 4 ){ Stage4DrawBackGround( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 5 ){ Stage5DrawBackGround( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 6 ){ Stage6DrawBackGround( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 10 ){ StageExDrawBackGround(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 11 ){ StageEx2DrawBackGround(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 	}
 
-
-//////////////////////////////////////////////////////////////////////
-//	下位レイヤ絵画
-//////////////////////////////////////////////////////////////////////
-
-	@DrawBottomObject{
-		if( GetPhase == -1 ){ return; }
-
+	/**
+	*	下位レイヤ絵画時に呼ばれます。
+	*
+	*	@param nStage 現在のステージ
+	*	@param nStageCount 現在のステージカウンタ値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawBottomObject( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		if( nStage == 0 || nPhase == -1 || m_nFlanLoadResourcePercentage != -1 || OnEnemySpell() ){ return; }
+		if( nStage == 7 ){
+			onDrawBottomObject( m_nSpellPracticeBGStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+			return;
+		}
 		//	ステージごとの処理呼び出し
-		alternative( m_nStage )
-		case( 0 ){ MainMenuDrawBottomObject(); }
-		case( 1 ){ Stage1DrawBottomObject(); }
-		case( 2 ){ Stage2DrawBottomObject(); }
-		case( 3 ){ Stage3DrawBottomObject(); }
-		case( 4 ){ Stage4DrawBottomObject(); }
-		case( 5 ){ Stage5DrawBottomObject(); }
-		case( 6 ){ Stage6DrawBottomObject(); }
+		alternative( nStage )
+//		case( 1 ){ Stage1DrawBottomObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//		case( 2 ){ Stage2DrawBottomObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//		case( 3 ){ Stage3DrawBottomObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//		case( 4 ){ Stage4DrawBottomObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//		case( 5 ){ Stage5DrawBottomObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 6 ){ Stage6DrawBottomObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 7 ){ onDrawBottomObject( m_nSpellPracticeBGStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 10 ){ StageExDrawBottomObject(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//		case( 11 ){ StageEx2DrawBottomObject(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 	}
 
-
-//////////////////////////////////////////////////////////////////////
-//	上位レイヤ絵画
-//////////////////////////////////////////////////////////////////////
-
-	@DrawTopObject{
-		if( GetPhase == -1 ){ return; }
-
-		//	ステージごとの処理呼び出し
-		alternative( m_nStage )
-		case( 0 ){ MainMenuDrawTopObject(); }
-		case( 1 ){ Stage1DrawTopObject(); }
-		case( 2 ){ Stage2DrawTopObject(); }
-		case( 3 ){ Stage3DrawTopObject(); }
-		case( 4 ){ Stage4DrawTopObject(); }
-		case( 5 ){ Stage5DrawTopObject(); }
-		case( 6 ){ Stage6DrawTopObject(); }
-		
-		//	ステージ中の各情報を表示
-		if( m_nStage >= 1 ){ DrawStage(); }
-
-		//	カットインがある場合自動的に絵画する
-		if( m_nCutInStartCount > 0 || m_nSpellNameCacheHandle != -1 ){ DrawCutIn( m_nCount ); }
-
-		DrawStageResult();
+	/**
+	*	上位レイヤ絵画時に呼ばれます。
+	*
+	*	@param nStage 現在のステージ
+	*	@param nStageCount 現在のステージカウンタ値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawTopObject( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		if( m_nFlanLoadResourcePercentage != -1 ){ DrawLoadProgress(); }
+		else{
+			if( m_bWritableTextureCreate ){
+				m_bWritableTextureCreate = false;
+				CreateWritableTexture();
+			}
+			if( nPhase == -1 ){ return; }
+			if( nStage == 7 ){
+				onDrawTopObject( m_nSpellPracticeBGStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+				SpellPracticeDrawTopObject( nCount );
+				return;
+			}
+			//	ステージごとの処理呼び出し
+			alternative( nStage )
+			case( 0 ){ MainMenuDrawTopObject( nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//			case( 1 ){ Stage1DrawTopObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//			case( 2 ){ Stage2DrawTopObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//			case( 3 ){ Stage3DrawTopObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//			case( 4 ){ Stage4DrawTopObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//			case( 5 ){ Stage5DrawTopObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//			case( 6 ){ Stage6DrawTopObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+			case( 9 ){ EDDrawTopObject(); }
+//			case( 10 ){ StageExDrawTopObject(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//			case( 11 ){ StageEx2DrawTopObject(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+			if( nStage >= 1 && ( m_bCLCutInEnable || m_nCLTTHSpellName != CL_TT_INVALID ) ){ CLDrawSpellCardEffect(); }
+			if( m_nStageLogoIndex != -1 ){ DrawStageLogo(); }
+		}
+		if( nStage >= 1 ){ DrawStageInfomation(); }
 	}
 
 

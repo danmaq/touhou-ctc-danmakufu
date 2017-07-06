@@ -1,0 +1,13 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//Å@ñÇñ@êw
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let DIR_CL_IMAGE_CIRCLE = "\lib\THCCL\IMAGE\OTHER\CIRCLE\";
+
+let IMAGE_CL_CIRCLE_6M		= DIR_CL_IMAGE_CIRCLE ~ "6_m.png";
+let IMAGE_CL_CIRCLE_6S		= DIR_CL_IMAGE_CIRCLE ~ "6_s.png";
+let IMAGE_CL_CIRCLE_8M		= DIR_CL_IMAGE_CIRCLE ~ "8_m.png";
+let IMAGE_CL_CIRCLE_8S		= DIR_CL_IMAGE_CIRCLE ~ "8_s.png";
+let IMAGE_CL_CIRCLE_BORDER	= DIR_CL_IMAGE_CIRCLE ~ "Border.png";

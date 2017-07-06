@@ -1,9 +1,9 @@
 //////////////////////////////////////////////////////////////////////
 //====================================================================
 //
-//	使い魔スクリプト専用インクルードライブラリ
+//	THC Extend-Library (extends FLAN)
 //
-//		※使い魔スクリプト以外からは使用出来ません。
+//		※使い魔スクリプト部です。
 //			それ以外からはインクルードしないでください。
 //
 //====================================================================
@@ -11,171 +11,266 @@
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	下位ライブラリをインクルード
-//--------------------------------------------------------------------
+//	インデックスをインクルード
 //////////////////////////////////////////////////////////////////////
+
+#include_function "lib\THCCL\IMAGE\OTHER\index.dnh"
+#include_function "\lib\THCCL\_index_UserShot.dnh"
+#include_function ".\IMAGE\index_zako.dnh"
+#include_function ".\SOUND\SE\index.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	下位ライブラリをインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\ShadowAnimation.dnh"
+#include_function "\lib\FLAN\HEADER\Shadow.dnh"
 #include_function ".\INCLUDE\EnemyShadow.dnh"
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	定数
-//--------------------------------------------------------------------
+//	FLAN設定定義
 //////////////////////////////////////////////////////////////////////
 
-let SHADOW_M_WHITE = 0;		//　魔法陣指定－中/白
-let SHADOW_M_RED = 1;		//　魔法陣指定－中/赤
-let SHADOW_M_GREEN = 2;		//　魔法陣指定－中/緑
-let SHADOW_M_BLUE = 3;		//　魔法陣指定－中/青
-let SHADOW_M_YELLOW = 4;	//　魔法陣指定－中/黄
-let SHADOW_M_PURPLE = 5;	//　魔法陣指定－中/紫
-let SHADOW_M_ORANGE = 6;	//　魔法陣指定－中/橙
-let SHADOW_M_BLACK = 7;		//　魔法陣指定－中/黒
-let SHADOW_S_WHITE = 8;		//　魔法陣指定－小/白
-let SHADOW_S_RED = 9;		//　魔法陣指定－小/赤
-let SHADOW_S_GREEN = 10;	//　魔法陣指定－小/緑
-let SHADOW_S_BLUE = 11;		//　魔法陣指定－小/青
-let SHADOW_S_YELLOW = 12;	//　魔法陣指定－小/黄
-let SHADOW_S_PURPLE = 13;	//　魔法陣指定－小/紫
-let SHADOW_S_ORANGE = 14;	//　魔法陣指定－小/橙
-let SHADOW_S_BLACK = 15;	//　魔法陣指定－小/黒
+/**	自機ショットを被弾した時の効果音 */
+FLAN_ENEMY_SE_DAMAGE_FILE_A = seDamage;
+/**	ライフ低下時に自機ショットを被弾した時の効果音 */
+FLAN_ENEMY_SE_DAMAGE_FILE_B = seDamage2;
+/** 隠蔽時の効果音 */
+FLAN_SHADOW_SE_HIDDEN = seShadowHidden;
+/** 具現時の効果音 */
+FLAN_SHADOW_SE_APPEAR = seShadowSudden;
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/** 魔法陣画像定数 */
+let SHADOW_IMAGE_6S =	0;	//	六芒星 - 小
+let SHADOW_IMAGE_6M =	1;	//	六芒星 - 中
+let SHADOW_IMAGE_8S =	2;	//	八芒星 - 小
+let SHADOW_IMAGE_8M =	3;	//	八芒星 - 中
+
+/** 魔法陣色定数 */
+let SHADOW_COLOR_WHITE =	0;	//　白
+let SHADOW_COLOR_RED =		1;	//　赤
+let SHADOW_COLOR_GREEN =	2;	//　緑
+let SHADOW_COLOR_BLUE =		3;	//　青
+let SHADOW_COLOR_YELLOW =	4;	//　黄
+let SHADOW_COLOR_PURPLE =	5;	//　紫
+let SHADOW_COLOR_ORANGE =	6;	//　橙
+let SHADOW_COLOR_BLACK =	7;	//　黒
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
 //	メンバ変数
-//--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-let m_nChangeTime = 0;		//	最後に切り替わった時間
-let m_bHiddenShot = false;	//　隠蔽中か否か（弾当たり判定）
-let m_bHidden = false;		//	隠蔽中か否か（体当たり判定、画像、光）
-let m_nSlowKey = GetCommonDataDefault( CD_STAGE_KEY_SLOWSTAT, KEY_SHADOW_HOLD );
-let m_nPrevSlowKey = m_nSlowKey;	//　←1フレーム前↑現在のSlowキー状態
+/** ユーザー定義弾 */
+let m_szUserShot = shotAll;
 
-//////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	判定関数
-//--------------------------------------------------------------------
-//////////////////////////////////////////////////////////////////////
-
-//	タイムラグ時間終了したか否かを返す
-function IsElapsedTimeLag(){ return m_nCount - m_nChangeTime > SHADOW_TIMELAG; }
+/** 夢終劇本体からの起動であるか */
+let m_bStage = false;
+/** スペルプラクティスであるか */
+let m_bSpellPractice = false;
+/** ステージプラクティスであるか */
+let m_bStagePractice = false;
+/** レベル */
+let m_nLevel = 0;
 
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	未分類
+//	絵画関連
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	死亡時に特定半径の弾を消す
-function DestructShadow( let fRadius ){
-	if( !BeVanished() ){ DeleteEnemyShotToItemInCircle( SHOT, GetX(), GetY(), fRadius ); }
-	DeleteEnemyShotToItemInCircle( ALL, GetX(), GetY(), 0 );
+/**
+*	魔法陣を指定して使い魔を描画します。（通常はこちら）
+*	対応する魔法陣画像がロードされている必要があります。
+*
+*	@param nShadowImage	魔法陣画像定数
+*	@param nShadowColor	魔法陣色定数
+*	@param nAngle		描画角度
+*	@param nScaleHidden	隠蔽時の描画倍率
+*	@param nScaleSudden	出現時の描画倍率
+*/
+function DrawShadow( let nShadowImage, let nShadowColor, let nAngle, let nScaleHidden, let nScaleSudden ){
+	let szImageFile = IMAGE_CL_CIRCLE_6S;
+	let nRectLength = 64;
+	alternative( nShadowImage )
+	case( SHADOW_IMAGE_6S ){}
+	case( SHADOW_IMAGE_6M ){ szImageFile = IMAGE_CL_CIRCLE_6M; nRectLength = 128; }
+	case( SHADOW_IMAGE_8S ){ szImageFile = IMAGE_CL_CIRCLE_8S; }
+	case( SHADOW_IMAGE_8M ){ szImageFile = IMAGE_CL_CIRCLE_8M; nRectLength = 128; }
+	let nRectX = 0;
+	let nRectY = 0;
+	alternative( nShadowColor )
+	case( SHADOW_COLOR_WHITE )	{}
+	case( SHADOW_COLOR_RED )	{ nRectX = 1; }
+	case( SHADOW_COLOR_GREEN )	{ nRectX = 2; }
+	case( SHADOW_COLOR_BLUE )	{ nRectX = 3; }
+	case( SHADOW_COLOR_YELLOW )	{ nRectY = 1; }
+	case( SHADOW_COLOR_PURPLE )	{ nRectX = 1; nRectY = 1; }
+	case( SHADOW_COLOR_ORANGE )	{ nRectX = 2; nRectY = 1; }
+	case( SHADOW_COLOR_BLACK )	{ nRectX = 3; nRectY = 1; }
+	nRectX *= nRectLength;
+	nRectY *= nRectLength;
+	_DrawShadow( szImageFile, nRectX, nRectY, nRectLength, nAngle, nScaleHidden, nScaleSudden );
 }
 
-//	基本処理（隠蔽設定）
-//	※@MainLoopの最初に毎回呼び出すこと
-function BehaviorShadow( let szSEHiddenFile, let szSESuddenFile ){
-	m_nSlowKey = GetCommonDataDefault( CD_STAGE_KEY_SLOWSTAT, KEY_SHADOW_FREE );
-	alternative( m_nSlowKey )
-	case( KEY_SHADOW_PUSH ){
-		m_bHiddenShot = false;
-		m_bHidden = true;
-		if( m_nPrevSlowKey == KEY_SHADOW_FREE ){ PlaySE( szSEHiddenFile ); }
-	}
-	case( KEY_SHADOW_HOLD ){
-		m_bHiddenShot = true;
-		m_bHidden = true;
-	}
-	case( KEY_SHADOW_PULL ){
-		m_bHiddenShot = false;
-		m_bHidden = true;
-	}
-	case( KEY_SHADOW_FREE ){
-		m_bHiddenShot = false;
-		m_bHidden = false;
-		if( m_nPrevSlowKey == KEY_SHADOW_PULL ){ PlaySE( szSESuddenFile ); }
-	}
-	m_nPrevSlowKey = m_nSlowKey;
-}
-
-//　当たり判定
-function CollisionShadow( let fCollisionA, let fCollisionB ){
-	if( m_bHiddenShot ){ fCollisionA = 0; }
-	if( m_bHidden ){ fCollisionB = 0; }
-	Collision( fCollisionA, fCollisionB );
-}
-
-//　実体化時の光 (※注 task)
-//　※@Initializeで1回呼び出すこと、基本処理を実施していること
-task LightShadow{
-	let call = 3;		//　何フレーム毎に光が出るか（小さい程光が濃くなる）
-	let delay = 15;		//　1つの光が最大何フレーム残るか（大きい程光が大きくなる）
-	loop{
-		if( !m_bHidden ){ _LightShadow; }
-		loop( call ){ yield; }
-	}
-	task _LightShadow{
-		let obj = SetShotObject( GetX, GetY, 500, 0, WHITE05, delay );
-		Obj_SetAlpha( obj, 0 );
-		Obj_SetCollisionToPlayer( obj, false );
-		ObjShot_SetBombResist( obj, true );
-		ObjShot_ToItem( obj, false );
-		loop( delay ){
-			if( m_bHidden ){ break; }
-			yield;
-		}
-		Obj_Delete( obj );
-	}
-}
-
-//////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	絵画関数
-//--------------------------------------------------------------------
-//////////////////////////////////////////////////////////////////////
-//　使い魔を絵画する（基本的には魔法陣指定の方を使う）
-//　※テクスチャ切り出し範囲が正方形であること
-function DrawShadow( let szTexFile, let srcx, let srcy, let sLength, let angle, let scaleH, let scaleS ){
-	if( m_bHidden ){
-		SetAlpha( 150 );
-		SetGraphicScale( scaleH, scaleH );
+/**
+*	任意の画像を使用して使い魔を描画します。
+*	テクスチャ切り出し範囲が正方形である必要があります。
+*
+*	@param szImageFile	使い魔画像ファイル
+*	@param nRectX		切り出し正方形の左上x座標
+*	@param nRectY		切り出し正方形の左上y座標
+*	@param nRectLength	切り出し正方形の一辺の長さ
+*	@param nAngle		描画角度
+*	@param nScaleHidden	隠蔽時の描画倍率
+*	@param nScaleSudden	出現時の描画倍率
+*/
+function _DrawShadow( let szImageFile, let nRectX, let nRectY, let nRectLength, let nAngle, let nScaleHidden, let nScaleSudden ){
+	if( m_bFlanCollisionB ){
+		SetAlpha( 255 );
+		SetGraphicScale( nScaleSudden, nScaleSudden );
 	}
 	else{
-		SetAlpha( 255 );
-		SetGraphicScale( scaleS, scaleS );
+		SetAlpha( 180 );
+		SetGraphicScale( nScaleHidden, nScaleHidden );
 	}
-	SetGraphicAngle( 0, 0, angle );
-	_DrawChrRectSqr( szTexFile, GetX, GetY, srcx, srcy, sLength );
+	SetGraphicAngle( 0, 0, nAngle );
+	__DrawChrRect( szImageFile, GetX(), GetY(), nRectX, nRectY, nRectLength, nRectLength );
 }
 
-//　使い魔を絵画する（魔法陣指定）
-//　※shadowには魔法陣指定定数を設定
-function _DrawShadow( let shadow, let szTexFile, let angle, let scaleH, let scaleS ){
-	let rLength = 128;
-	let rX = 0;
-	let rY = 0;
-	alternative( shadow )
-	case( SHADOW_M_WHITE ){}
-	case( SHADOW_M_RED ){ rX = 1; }
-	case( SHADOW_M_GREEN ){ rX = 2; }
-	case( SHADOW_M_BLUE ){ rX = 3; }
-	case( SHADOW_M_YELLOW ){ rY = 1; }
-	case( SHADOW_M_PURPLE ){ rX = 1; rY = 1; }
-	case( SHADOW_M_ORANGE ){ rX = 2; rY = 1; }
-	case( SHADOW_M_BLACK ){ rX = 3; rY = 1; }
-	case( SHADOW_S_WHITE ){ rLength = 64; }
-	case( SHADOW_S_RED ){ rLength = 64; rX = 1; }
-	case( SHADOW_S_GREEN ){ rLength = 64; rX = 2; }
-	case( SHADOW_S_BLUE ){ rLength = 64; rX = 3; }
-	case( SHADOW_S_YELLOW ){ rLength = 64; rY = 1; }
-	case( SHADOW_S_PURPLE ){ rLength = 64; rX = 1; rY = 1; }
-	case( SHADOW_S_ORANGE ){ rLength = 64; rX = 2; rY = 1; }
-	case( SHADOW_S_BLACK ){ rLength = 64; rX = 3; rY = 1; }
-	let rectX = rLength * rX;
-	let rectY = rLength * rY;
-	DrawShadow( szTexFile, rectX, rectY, rLength, angle, scaleH, scaleS );
+/**
+*	使い魔アニメーションを描画します。（通常はこちら）
+*	使い魔ドット絵がロードされている必要があります。
+*	BehaviorShadowが実施されている必要があります。
+*	魔方陣は別途描画してください。
+*/
+function DrawShadowChar{
+	if( m_bFlanCollisionB ){ __DrawShadowChar( GetX(), GetY(), 0, 1 ); }
+}
+
+/**
+*	使い魔アニメーションを描画します。（描画倍率を指定します）
+*	使い魔ドット絵がロードされている必要があります。
+*	BehaviorShadowが実施されている必要があります。
+*	魔方陣は別途描画してください。
+*
+*	@param nScale	描画倍率
+*/
+function DrawShadowCharEx( let nScale ){
+	if( m_bFlanCollisionB ){ __DrawShadowChar( GetX(), GetY(), 0, nScale ); }
+}
+
+/**
+*	使い魔アニメーションを描画します。（描画倍率及び角度を指定します）
+*	使い魔ドット絵がロードされている必要があります。
+*	BehaviorShadowが実施されている必要があります。
+*	魔方陣は別途描画してください。
+*
+*	@param nAngle	描画角度
+*	@param nScale	描画倍率
+*/
+function DrawShadowCharRollEx( let nAngle, let nScale ){
+	if( m_bFlanCollisionB ){ __DrawShadowChar( GetX(), GetY(), nAngle, nScale ); }
+}
+
+/**
+*	使い魔アニメーションを描画します。（上下に浮遊しているように描画）
+*	使い魔ドット絵がロードされている必要があります。
+*	BehaviorShadowが実施されている必要があります。
+*	魔方陣は別途描画してください。
+*/
+function DrawShadowCharFloat{
+	if( m_bFlanCollisionB ){ __DrawShadowChar( GetX(), GetY() + 4 * sin( 8 * m_nFlanCount ), 0, 1 ); }
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	共通処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	敵固有のタスクです。onInitialize()より1フレーム後に呼ばれます。
+*	ここに固有の動作を記述します。
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*/
+task MainTask( let nArgv, let nLevel ){
+	MainTaskTHC( nArgv, nLevel );
+}
+
+/**
+*	初期化時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*/
+function onInitialize( let nArgv, let nLevel ){
+	m_bStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_ENABLE, false );
+	m_nLevel = nLevel;
+	let nStageNumber = GetCommonDataDefaultEx( CL_CDNS_RESULT, FLAN_CD_STAGE, - 1 );
+	if( nStageNumber >= 0 && nStageNumber <= 5 ){ m_bStagePractice = true; }
+	else if( nStageNumber == 7 ){ m_bSpellPractice = true; }
+	if( !m_bStage ){ LoadUserShotData( shotAll ); }
+	onInitializeTHC( nArgv, nLevel );
+}
+
+/**
+*	毎フレームごとに呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*	@param bIsAppear 具現化中かどうか
+*/
+function onMainLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase, let bIsAppear ){
+	onMainLoopTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase, bIsAppear );
+}
+
+/**
+*	終了時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*	@param bIsAppear 具現化中かどうか
+*/
+function onFinalize( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase, let bIsAppear ){
+	onFinalizeTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase, bIsAppear );
+	__CommonEnemyShadowFinalizeTHC();
+}
+
+/**
+*	絵画時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*	@param bIsAppear 具現化中かどうか
+*/
+function onDrawLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase, let bIsAppear ){
+	onDrawLoopTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase, bIsAppear );
 }

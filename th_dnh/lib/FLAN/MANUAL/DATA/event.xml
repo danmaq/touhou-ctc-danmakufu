@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Event" file="event">
+	<category caption="概要" link="true">
+		<paragraph>
+			弾幕風標準の会話イベントスクリプトでのみ使用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/Event.dnh</path>となります。
+			(関数の数が少ないので1ファイルのみの構成となります)
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+	</category>
+	<category caption="書換可能定数" link="true">
+		<define key="FLAN_EVENT_CUTIN_WIDTH" type="var">
+			<paragraph>
+				<caption>カットインの幅を指定</caption>します。<br />
+				デフォルト値は<value>192</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_EVENT_CUTIN_HEIGHT" type="var">
+			<paragraph>
+				<caption>カットインの高さを指定</caption>します。<br />
+				デフォルト値は<value>256</value>です。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="メンバ変数" link="true">
+	</category>
+	<category caption="イベント関連">
+		<paragraph>
+			主にイベント操作のための関数群です。
+		</paragraph>
+		<define key="InChar">
+			<argument>カットインファイル名</argument>
+			<argument>カットイン登場位置</argument>
+			<paragraph>
+				キャラ<caption>カットインを会話に登場</caption>させます。
+				InCharPosのラッパーです。
+			</paragraph>
+		</define>
+		<define key="InCharPos">
+			<argument>カットインファイル名</argument>
+			<argument>カットイン登場位置</argument>
+			<argument>X方向に何番目の画像かを指定</argument>
+			<argument>Y方向に何番目の画像かを指定</argument>
+			<paragraph>
+				キャラ<caption>カットインを会話に登場</caption>させます。
+				__InCharPosのラッパーです。
+			</paragraph>
+		</define>
+		<define key="__InCharPos">
+			<argument>カットインファイル名</argument>
+			<argument>カットイン登場位置</argument>
+			<argument>元画像の切り出しポイントX座標</argument>
+			<argument>元画像の切り出しポイントY座標</argument>
+			<paragraph>
+				キャラ<caption>カットインを会話に登場</caption>させます。
+			</paragraph>
+		</define>
+		<define key="AllFront">
+			<paragraph>
+				<caption>左右キャラを同時に前面に出します</caption>。
+				MoveCharのラッパーです。
+			</paragraph>
+		</define>
+		<define key="AllBack">
+			<paragraph>
+				<caption>左右キャラを同時に後ろに下げます</caption>。
+				MoveCharのラッパーです。
+			</paragraph>
+		</define>
+		<define key="Player">
+			<paragraph>
+				<caption>プレイヤーを前に出し敵を下げます</caption>。
+				__MoveCharのラッパーです。
+			</paragraph>
+		</define>
+		<define key="Enemy">
+			<paragraph>
+				<caption>敵を前に出しプレイヤーを下げます</caption>。
+				__MoveCharのラッパーです。
+			</paragraph>
+		</define>
+		<define key="__MoveChar">
+			<argument>プレイヤー側かどうか</argument>
+			<paragraph>
+				<caption>左右キャラの前後位置を同時に切り替え</caption>ます。
+				MoveCharのラッパーです。
+			</paragraph>
+		</define>
+	</category>
+</contents>

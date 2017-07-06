@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Shot" file="shot">
+	<category caption="概要" link="true">
+		<paragraph>
+			弾幕風標準のスクリプト弾(オブジェクト弾では使えません)でのみ使用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/Shot.dnh</path>となります。
+			(関数の数が少ないので1ファイルのみの構成となります)
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+	</category>
+	<category caption="書換可能定数" link="true">
+	</category>
+	<category caption="メンバ変数" link="true">
+	</category>
+	<category caption="判定関連">
+		<paragraph>
+			判定関連の関数群です。
+		</paragraph>
+		<define key="__CheckGoneLoop">
+			<paragraph>
+				毎フレーム自分自身の座標を確認し、<caption>画面から一定以上はみ出ていたら自殺</caption>します。<br />
+				<caution>自動的に内部から呼ばれますので直接呼び出すことは通常ありません。</caution>
+			</paragraph>
+		</define>
+	</category>
+</contents>

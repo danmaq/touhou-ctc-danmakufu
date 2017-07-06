@@ -1,0 +1,103 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	オブジェクト弾制御
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	不可視オブジェクト弾を生成します。
+*	__SetObjectのラッパーです。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nSpeed 速度
+*	@param nAngle 角度
+*	@param nDelay 遅延時間
+*	@param bRedist ボム耐性があるかどうか
+*	@param bAutoDelete 画面外に出ると自動的に削除されるかどうか
+*	@return オブジェクトハンドル
+*/
+function SetHiddenObject( let nX, let nY, let nSpeed, let nAngle, let nDelay, let bRedist, let bAutoDelete ){
+	let obj = Obj_Create( OBJ_SHOT );
+	Obj_SetPosition( obj, nX, nY );
+	Obj_SetSpeed( obj, nSpeed );
+	Obj_SetAngle( obj, nAngle );
+	Obj_SetAutoDelete( obj, bAutoDelete );
+	ObjShot_SetDelay( obj, nDelay );
+	Obj_SetCollisionToPlayer( obj, false );
+	ObjShot_SetBombResist( obj, bRedist );
+	return obj;
+}
+
+/**
+*	基本的なオブジェクト弾を生成します。
+*	__SetObjectのラッパーです。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nSpeed 速度
+*	@param nAngle 角度
+*	@param nType 弾種
+*	@param nDelay 遅延時間
+*	@return オブジェクトハンドル
+*/
+function SetShotObject( let nX, let nY, let nSpeed, let nAngle, let nType, let nDelay ){
+	let obj = Obj_Create( OBJ_SHOT );
+	Obj_SetPosition( obj, nX, nY );
+	Obj_SetSpeed( obj, nSpeed );
+	Obj_SetAngle( obj, nAngle );
+	Obj_SetAutoDelete( obj, true );
+	ObjShot_SetDelay( obj, nDelay );
+	ObjShot_SetGraphic( obj, nType );
+	return obj;
+}
+
+/**
+*	基本的なオブジェクト弾を生成します。
+*
+*	@param nX X座標
+*	@param nY Y座標
+*	@param nSpeed 速度
+*	@param nAngle 角度
+*	@param nDelay 遅延時間
+*	@param bAutoDelete 画面外に出ると自動的に削除されるかどうか
+*	@return オブジェクトハンドル
+*/
+function __SetObject( let nType, let nX, let nY, let nSpeed, let nAngle, let nDelay, let bAutoDelete ){
+	let obj = Obj_Create( nType );
+	Obj_SetPosition( obj, nX, nY );
+	Obj_SetSpeed( obj, nSpeed );
+	Obj_SetAngle( obj, nAngle );
+	Obj_SetAutoDelete( obj, bAutoDelete );
+	ObjShot_SetDelay( obj, nDelay );
+	return obj;
+}
+

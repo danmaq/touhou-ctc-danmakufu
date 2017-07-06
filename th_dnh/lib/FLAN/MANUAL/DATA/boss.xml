@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Boss" file="boss">
+	<category caption="概要" link="true">
+		<paragraph>
+			ボススクリプト本体でのみ使用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/Boss.dnh</path>となります。
+			(関数の数が少ないので1ファイルのみの構成となります)
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+	</category>
+	<category caption="書換可能定数" link="true">
+		<define key="FLAN_BOSS_ENABLE_BGG_ON_UNSPELL" type="var">
+			<paragraph>
+				スペルカード非発動中の<code>onBackGround</code>処理が有効かどうかを設定します。
+				デフォルト値は<value>false</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_BOSS_HOME_X" type="var">
+			<paragraph>
+				ボスのホームポジションX座標を設定します。
+				デフォルト値は<code>GetCenterX()</code>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_BOSS_HOME_Y" type="var">
+			<paragraph>
+				ボスのホームポジションY座標を設定します。
+				デフォルト値は<value>96</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_BOSS_MOVE_LENGTH" type="var">
+			<paragraph>
+				ボスの移動量を設定します。
+				デフォルト値は<value>40</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_BOSS_MOVE_SPEED" type="var">
+			<paragraph>
+				ボスの移動速度を設定します。
+				デフォルト値は<value>2</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_BOSS_MOVE_BRAKE" type="var">
+			<paragraph>
+				ボスの移動減速力を設定します。
+				デフォルト値は<value>20</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_BOSS_MOVE_MARGIN_SIDE" type="var">
+			<paragraph>
+				ボスの左右移動マージンを設定します。
+				デフォルト値は<value>64</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_BOSS_MOVE_MARGIN_TOP" type="var">
+			<paragraph>
+				ボスの上部移動マージンを設定します。
+				デフォルト値は<value>16</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_BOSS_MOVE_MARGIN_BOTTOM" type="var">
+			<paragraph>
+				ボスの下部移動マージンを設定します。
+				デフォルト値は<value>288</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_BOSS_TIMEOUT_DANGER" type="var">
+			<paragraph>
+				カウントダウンが何秒を下回ったら効果音が切り替わるかを設定します。
+				10を超える値を代入した場合は無視され、内部的に10と同等と認識されます。
+				デフォルト値は<value>5</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_BOSS_SE_TIMEOUT_FILE_A" type="var">
+			<paragraph>
+				制限時間が10秒切った時のカウントダウン効果音を設定します。
+				デフォルト値は<value>&quot;&quot;</value>(空文字列)です。<br />
+				<caution>効果音ファイルは自動的にロードされません(各自でロードする必要があります)</caution>
+			</paragraph>
+		</define>
+		<define key="FLAN_BOSS_SE_TIMEOUT_FILE_B" type="var">
+			<paragraph>
+				制限時間が<var>FLAN_BOSS_TIMEOUT_DANGER</var>で指定した時間を切った時のカウントダウン効果音を設定します。
+				デフォルト値は<value>&quot;&quot;</value>(空文字列)です。<br />
+				<caution>効果音ファイルは自動的にロードされません(各自でロードする必要があります)</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="メンバ変数" link="true">
+		<define key="m_bFlanPlural" type="var">
+			<paragraph>
+				Pluralスクリプトかどうかが格納されます。<br />
+				<caution>Pluralでも最初の1番目のスクリプトは強制的に<value>false</value>が格納されます。</caution><br />
+				<caution>ステージスクリプトから呼び出された場合強制的に<value>true</value>が格納されます。</caution>
+			</paragraph>
+		</define>
+		<define key="m_nFlanTimer" type="var">
+			<paragraph>
+				現在のカウントダウン値が格納されます。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="BGM/効果音制御関連">
+		<paragraph>
+			主にBGM/効果音制御用の関数群です。
+		</paragraph>
+		<define key="__PlayTimeOutSELoop">
+			<paragraph>
+				制限時間が10秒切った時の<caption>カウントダウン効果音を再生するループ</caption>です。<br />
+				<caution>自動的に内部から呼ばれますので直接呼び出すことは通常ありません。</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="移動制御関連">
+		<paragraph>
+			移動制御関連の関数群です。
+		</paragraph>
+		<define key="MoveDefault">
+			<paragraph>
+				ボスの<caption>位置をランダムに動かします</caption>。
+			</paragraph>
+		</define>
+		<define key="MoveHome02">
+			<argument>動作にかかるフレーム数</argument>
+			<paragraph>
+				ボスを<caption>ホームポジションに等速度で動かします</caption>。
+			</paragraph>
+		</define>
+		<define key="MoveHomeDefault03">
+			<paragraph>
+				ボスを<caption>デフォルトの設定を使いホームポジションに等加速度で動かします</caption>。
+				<code>MoveHome03</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="MoveHome03">
+			<argument>減速力</argument>
+			<argument>速度</argument>
+			<paragraph>
+				ボスを<caption>ホームポジションに等加速度で動かします</caption>。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="アイテム関連">
+		<paragraph>
+			アイテム関連の関数群です。
+		</paragraph>
+		<define key="GetDropItemPosListCirle">
+			<argument>中心X座標</argument>
+			<argument>中心Y座標</argument>
+			<argument>アイテムの数</argument>
+			<return>アイテム座標の配列<value>[ [ X1, Y1 ], [ X2, Y2 ], ... ]</value></return>
+			<paragraph>
+				<caption>アイテムを落とす座標をランダムに生成</caption>します。<br />
+				その際魔法陣の円形にあわせて座標を生成します。
+				(<code>onFinalize</code>で呼ぶ場合プレイヤーを中心座標に設定すると丁度魔法陣に重なります)
+			</paragraph>
+		</define>
+	</category>
+	<category caption="デバッグ用">
+		<paragraph>
+			主にデバッグ用の関数群です。
+		</paragraph>
+		<define key="__SetLevelTemporary">
+			<argument>レベル</argument>
+			<paragraph>
+				ステージに組み込むスクリプトの<caption>Plural単体テスト用にレベルを設定</caption>します。<br />
+				<caution><code>onInitialize</code>にて1度だけ呼び出してください。</caution><br />
+				<caution><var>m_bFlanPlural</var>が<value>true</value>の場合は無効になります。</caution>
+			</paragraph>
+		</define>
+	</category>
+</contents>

@@ -1,0 +1,127 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(変更可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(変更不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(変更不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	ハッシュキーを格納します。 */
+let m_aszFlanHashKeys = [];
+/**	ハッシュ値を格納します。 */
+let m_anFlanHashValues = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	連想配列(ハッシュ)操作
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ハッシュを初期化します。
+*/
+function InitializeHash(){
+	m_aszFlanHashKeys = m_aszFlanHashKeys[ 0..0 ];
+	m_anFlanHashValues = m_anFlanHashValues[ 0..0 ];
+}
+
+/**
+*	キー文字列と値を結び付けます。
+*
+*	@param szKey キー文字列
+*	@param nValue 結び付けられる数値
+*/
+function AddHash( let szKey, let nValue ){
+	m_aszFlanHashKeys = m_aszFlanHashKeys ~ [ szKey ];
+	m_anFlanHashValues = m_anFlanHashValues ~ [ nValue ];
+}
+
+/**
+*	キー文字列リストと値リストをまとめてハッシュに登録します。
+*
+*	@param szKey キー文字列リスト
+*	@param nValue 結び付けられる数値リスト
+*	@return 登録に成功した場合true
+*/
+function AddHashList( let aszKeyList, let anValueList ){
+	let nKeyListSize = length( aszKeyList );
+	if( nKeyListSize != length( anValueList ) ){ return false; }
+	m_aszFlanHashKeys = m_aszFlanHashKeys ~ aszKeyList;
+	m_anFlanHashValues = m_anFlanHashValues ~ anValueList;
+}
+
+/**
+*	キー文字列から対応する値を取り出します。
+*
+*	@param szKey キー文字列
+*	@param nDefaultValue 対象のキー文字列が見つからなかった場合に返る値
+*	@return 結び付けられた数値
+*/
+function GetHashValue( let szKey, let nDefaultValue ){
+	ascent( let i in 0..length( m_aszFlanHashKeys ) ){
+		if( m_aszFlanHashKeys[ i ] == szKey ){ return m_anFlanHashValues[ i ]; }
+	}
+	return nDefaultValue;
+}
+
+/**
+*	ハッシュに登録されている値をCommonDataに登録します。
+*
+*	@param szNameSpace 名前空間
+*	@param aszKeyList キー文字列リスト
+*	@param nDefaultValue 対象のキー文字列が見つからなかった場合に返る値
+*/
+function SetCommonDataFromHashEx( let szNameSpace, let aszKeyList, let nDefaultValue ){
+	ascent( let i in 0..length( aszKeyList ) ){ SetCommonDataEx( szNameSpace, aszKeyList[ i ], GetHashValue( aszKeyList[ i ], nDefaultValue ) ); }
+}
+
+/**
+*	ハッシュに登録されている値をCommonDataに登録します。
+*	SetCommonDataFromHashExのラッパーです。
+*
+*	@param nDefaultValue 対象のキー文字列が見つからなかった場合に返る値
+*/
+function SetCommonDataFromHash( let nDefaultValue ){ SetCommonDataFromHashEx( "", [], nDefaultValue ); }
+
+/**
+*	CommonDataに登録されている値をハッシュに登録します。
+*
+*	@param szNameSpace 名前空間
+*	@param aszKeyList キー文字列リスト
+*	@param nDefaultValue 対象のキー文字列が見つからなかった場合に返る値
+*/
+function GetCommonDataToHashEx( let szNameSpace, let aszKeyList, let nDefaultValue ){
+	ascent( let i in 0..length( aszKeyList ) ){
+		let nValue = GetCommonDataDefaultEx( szNameSpace, aszKeyList[ i ], nDefaultValue );
+		AddHash( aszKeyList[ i ], nValue );
+	}
+}
+
+/**
+*	CommonDataに登録されている値をハッシュに登録します。
+*	GetCommonDataToHashExのラッパーです。
+*
+*	@param aszKeyList キー文字列リスト
+*	@param nDefaultValue 対象のキー文字列が見つからなかった場合に返る値
+*/
+function GetCommonDataToHash( let aszKeyList, let nDefaultValue ){ GetCommonDataToHashEx( "", aszKeyList, nDefaultValue ); }
