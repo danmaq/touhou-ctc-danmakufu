@@ -43,6 +43,11 @@ let m_aszSeFileList = [];
 */
 function DrawSpellBG{
 
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG_Light();
+		return;
+	}
+
 	SetGraphicRect( 0, 0, 512, 512 );
 	DrawCenter( imgSpellReimu3 );
 
@@ -51,6 +56,13 @@ function DrawSpellBG{
 	DrawRotateCenter( imgSpellReimu4, 0.6 );
 	SetGraphicScale( 1, 1 );
 	SetRenderState( ALPHA );
+
+}
+
+function DrawSpellBG_Light{
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellReimu3 );
 
 }
 
@@ -110,3 +122,5 @@ task Barrier{
 	}
 
 }
+
+

@@ -44,6 +44,11 @@ let m_aszSeFileList = [];
 /** çgñ≤ */
 function DrawSpellBG1{
 
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG1_Light();
+		return;
+	}
+
 	SetGraphicAngle( 0, 0, 180 );
 	SetGraphicRect( 0, 0, 512, 512 );
 	SetColor( 200, 80, 60 );
@@ -66,8 +71,30 @@ function DrawSpellBG1{
 
 }
 
+function DrawSpellBG1_Light{
+
+	SetGraphicAngle( 0, 0, 180 );
+	SetGraphicRect( 0, 0, 512, 512 );
+	SetColor( 200, 80, 60 );
+	DrawCenter( imgSpellLittle1 );
+	let i = m_nFlanCount * 47;
+	SetColor( 25, 25, 25 );
+	SetGraphicRect( i, 0, 512 + i, 512  );
+	SetRenderState( ADD );
+	DrawCenter( imgSpellNoize01 );
+	SetRenderState( ALPHA );
+	SetColor( 255, 255, 255 );
+	SetGraphicAngle( 0, 0, 0 );
+
+}
+
 /** óHñ≤ */
 function DrawSpellBG2{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG2_Light();
+		return;
+	}
 
 	SetGraphicRect( 0, 0, 512, 512 );
 	SetColor( 80, 80, 80 );
@@ -98,8 +125,27 @@ function DrawSpellBG2{
 
 }
 
+function DrawSpellBG2_Light{
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	SetColor( 80, 80, 80 );
+	DrawCenter( imgSpellStoneTile );
+
+	SetGraphicScale( 1.8, 1.8 );
+	SetColor( 0, 0, 0 );
+	__DrawChr( imgSpellTree, CL_CEN_X, CL_CEN_Y - 180 );
+	SetGraphicScale( 1, 1 );
+	SetColor( 255, 255, 255 );
+
+}
+
 /** âiñ≤ */
 function DrawSpellBG3{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG3_Light();
+		return;
+	}
 
 	SetGraphicRect( 0, 0, 512, 512 );
 
@@ -119,8 +165,28 @@ function DrawSpellBG3{
 
 }
 
+function DrawSpellBG3_Light{
+
+
+	SetGraphicRect( 0, 0, 512, 512 );
+
+	DrawCenter( imgSpellBamboo3 );
+
+	SetGraphicScale( 0.3, 0.3 );
+	SetColor( 120, 120, 120 );
+	DrawCenter( imgSpellBlueMoon );
+	SetColor( 255, 255, 255 );
+	SetGraphicScale( 1, 1 );
+
+}
+
 /** âfñ≤ */
 function DrawSpellBG4{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG4_Light();
+		return;
+	}
 
 	SetGraphicRect( 0, 0, 512, 512 );
 	DrawCenter( imgSpellEimu );
@@ -132,8 +198,20 @@ function DrawSpellBG4{
 
 }
 
+function DrawSpellBG4_Light{
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellEimu );
+
+}
+
 /** ‰¬ñ≤ */
 function DrawSpellBG5{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG5_Light();
+		return;
+	}
 
 	SetGraphicScale( 0.9, 0.9 );
 	SetGraphicRect( 0, 0, 512, 512 );
@@ -147,6 +225,15 @@ function DrawSpellBG5{
 	DrawRotateCenter( imgSpellRing2, 57.4 );
 	SetRenderState( ALPHA );
 	SetColor( 255, 255, 255 );
+
+}
+
+function DrawSpellBG5_Light{
+
+	SetGraphicScale( 0.9, 0.9 );
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellReimu2 );
+	SetGraphicScale( 1, 1 );
 
 }
 
@@ -174,7 +261,9 @@ task CheckDuelTimer{
 	}
 
 	/** èIóπ */
-	DeleteEnemyShot( ALL );
+	DeleteEnemyShotImmediatelyInCircle( ALL, CL_CEN_X, CL_CEN_Y, 600 );
 	VanishEnemy();
 
 }
+
+

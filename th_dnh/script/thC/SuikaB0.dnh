@@ -390,9 +390,8 @@ script_event Talk{
 		TextOutPlayer( "お前は……？" );
 		SetNameFromTextEnemy( "伊吹 萃香", "萃まる夢、幻、そして百鬼夜行" );
 		InCharEnemy( CUT_ENEMY_DISLIKE );
-		TextOutEnemy( "もう忘れちゃったの？" );
+		TextOutEnemy( "忘れちゃったの？\n私はあんたのことをすべて知ってるわ" );
 		InCharEnemy( CUT_ENEMY_NORMAL );
-		TextOutEnemy( "私はあんたのことをすべて知ってるわ" );
 		TextOutEnemy( "あんたを萃めたのも私\n宴会の幹事をやらせたのも…" );
 		DeleteNameEnemy();
 		InCharPlayer( CUT_PLAYER_SERIOUS );
@@ -418,12 +417,11 @@ script_event Talk{
 		TextOutPlayer( "って、お前そんな芸当出来たんだ？" );
 		TextOutEnemy( "んー？出来るよ？\nこの程度なら…" );
 		SetStep( 2 );
+		InCharEnemy( CUT_ENEMY_NORMAL );
 		TextOutEnemyB( 120, "ほら" );
 		InCharPlayer( CUT_PLAYER_SERIOUS );
 		TextOutPlayer( "へぇ～、じゃあ\nみんなも直るのか？アリスとか" );
-		InCharEnemy( CUT_ENEMY_NORMAL );
-		TextOutEnemy( "まだ無理だね。\n幻想郷が余り萃まりきってないのもあるし" );
-		TextOutEnemy( "それに仮にこうやって生成しても\n肉体と魂は元に戻るかもしれないけど" );
+		TextOutEnemy( "無理だね。仮にこうやって生成しても\n肉体と魂は元に戻るかもしれないけど" );
 		TextOutEnemy( "どうやら精神…つまり\n性格とか記憶までは戻らないみたい" );
 		InCharPlayer( CUT_PLAYER_TEMPER );
 		TextOutPlayer( "それでも肉体はよみがえるんだろ？\nなぜそれをしないんだ？" );

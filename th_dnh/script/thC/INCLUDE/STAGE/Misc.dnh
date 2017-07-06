@@ -14,20 +14,49 @@
 //	定数(書換不可)
 //////////////////////////////////////////////////////////////////////
 
-/**	目標からの距離を示す要素番号です。 */
+/**	3D背景において目標からの距離を示す要素番号です。 */
 let BG_FROM_DISTANCE = 0;
-/**	目標からの方位角を示す要素番号です。 */
+/**	3D背景において目標からの方位角を示す要素番号です。 */
 let BG_FROM_YAW = 1;
-/**	目標からの仰角を示す要素番号です。 */
+/**	3D背景において目標からの仰角を示す要素番号です。 */
 let BG_FROM_PITCH = 2;
-/**	目標のX座標を示す要素番号です。 */
+/**	3D背景において目標のX座標を示す要素番号です。 */
 let BG_TO_X = 3;
-/**	目標のY座標を示す要素番号です。 */
+/**	3D背景において目標のY座標を示す要素番号です。 */
 let BG_TO_Y = 4;
-/**	目標のZ座標を示す要素番号です。 */
+/**	3D背景において目標のZ座標を示す要素番号です。 */
 let BG_TO_Z = 5;
-/**	ステージカットインのフェード時間です。 */
+/**	3D背景においてステージカットインのフェード時間です。 */
 let STAGE_LOGO_FADETIME = 90;
+/**	3Dエフェクトにおいて現在のX座標を示す要素番号です。 */
+let STAGE_EFFECT_3D_X = 0;
+/**	3Dエフェクトにおいて現在のY座標を示す要素番号です。 */
+let STAGE_EFFECT_3D_Y = 1;
+/**	3Dエフェクトにおいて現在のZ座標を示す要素番号です。 */
+let STAGE_EFFECT_3D_Z = 2;
+/**	3DエフェクトにおいてX方向速度を示す要素番号です。 */
+let STAGE_EFFECT_3D_SPEED_X = 3;
+/**	3DエフェクトにおいてY方向速度を示す要素番号です。 */
+let STAGE_EFFECT_3D_SPEED_Y = 4;
+/**	3DエフェクトにおいてZ方向速度を示す要素番号です。 */
+let STAGE_EFFECT_3D_SPEED_Z = 5;
+/**	3Dエフェクトにおいて現在のX角度を示す要素番号です。 */
+let STAGE_EFFECT_3D_ROTATE_X = 6;
+/**	3Dエフェクトにおいて現在のY角度を示す要素番号です。 */
+let STAGE_EFFECT_3D_ROTATE_Y = 7;
+/**	3Dエフェクトにおいて現在のZ角度を示す要素番号です。 */
+let STAGE_EFFECT_3D_ROTATE_Z = 8;
+/**	3DエフェクトにおいてX角度速度を示す要素番号です。 */
+let STAGE_EFFECT_3D_ROTATE_SPEED_X = 9;
+/**	3DエフェクトにおいてY角度速度を示す要素番号です。 */
+let STAGE_EFFECT_3D_ROTATE_SPEED_Y = 10;
+/**	3DエフェクトにおいてZ角度速度を示す要素番号です。 */
+let STAGE_EFFECT_3D_ROTATE_SPEED_Z = 11;
+/**	3Dエフェクトにおいて生存時間を示す要素番号です。 */
+let STAGE_EFFECT_3D_LIFETIME = 12;
+/**	3Dエフェクトにおいて透明度を示す要素番号です。 */
+let STAGE_EFFECT_3D_ALPHA = 13;
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -53,6 +82,21 @@ let m_nStageLogoAlpha = 0;
 let m_nStageLogoGap = 0;
 /**	ステージカットイン副文のフォントハンドルが格納されます。 */
 let m_nTTHStageLogoDescription = CL_TT_INVALID;
+/**	3Dエフェクトが格納されます。 */
+let m_anStage3DEffectX = [];
+let m_anStage3DEffectY = [];
+let m_anStage3DEffectZ = [];
+let m_anStage3DEffectSpeedX = [];
+let m_anStage3DEffectSpeedY = [];
+let m_anStage3DEffectSpeedZ = [];
+let m_anStage3DEffectRotateX = [];
+let m_anStage3DEffectRotateY = [];
+let m_anStage3DEffectRotateZ = [];
+let m_anStage3DEffectRotateSpeedX = [];
+let m_anStage3DEffectRotateSpeedY = [];
+let m_anStage3DEffectRotateSpeedZ = [];
+let m_anStage3DEffectLifeTime = [];
+let m_anStage3DEffectStartTime = [];
 
 
 //////////////////////////////////////////////////////////////////////
@@ -83,6 +127,139 @@ task PlayMusicLoop(){
 			AddCommonDataExArray( CL_CDNS_RESULT, CL_CD_HISTORY_BGM, nIndex, 1, length( bgmList ), 0 );
 		}
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景3D効果を追加します。
+*
+*	@param nStartX 開始X座標
+*	@param nStartY 開始Y座標
+*	@param nStartZ 開始Z座標
+*	@param nSpeedX X方向速度
+*	@param nSpeedY Y方向速度
+*	@param nSpeedZ Z方向速度
+*	@param nRotateStartX 開始X角度
+*	@param nRotateStartY 開始Y角度
+*	@param nRotateStartZ 開始Z角度
+*	@param nRotateSpeedX X角度速度
+*	@param nRotateSpeedY Y角度速度
+*	@param nRotateSpeedZ Z角度速度
+*	@param nLifeTime 生存時間
+*/
+function Add3DEffect(
+	let nStartX,		let nStartY,		let nStartZ,		let nSpeedX,		let nSpeedY,		let nSpeedZ,
+	let nRotateStartX,	let nRotateStartY,	let nRotateStartZ,	let nRotateSpeedX,	let nRotateSpeedY,	let nRotateSpeedZ,
+	let nLifeTime
+){
+	if( !GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG_EFFECT, true ) ){ return; }
+	m_anStage3DEffectX = m_anStage3DEffectX ~ [ nStartX ];
+	m_anStage3DEffectY = m_anStage3DEffectY ~ [ nStartY ];
+	m_anStage3DEffectZ = m_anStage3DEffectZ ~ [ nStartZ ];
+	m_anStage3DEffectSpeedX = m_anStage3DEffectSpeedX ~ [ nSpeedX ];
+	m_anStage3DEffectSpeedY = m_anStage3DEffectSpeedY ~ [ nSpeedY ];
+	m_anStage3DEffectSpeedZ = m_anStage3DEffectSpeedZ ~ [ nSpeedZ ];
+	m_anStage3DEffectRotateX = m_anStage3DEffectRotateX ~ [ nRotateStartX ];
+	m_anStage3DEffectRotateY = m_anStage3DEffectRotateY ~ [ nRotateStartY ];
+	m_anStage3DEffectRotateZ = m_anStage3DEffectRotateZ ~ [ nRotateStartZ ];
+	m_anStage3DEffectRotateSpeedX = m_anStage3DEffectRotateSpeedX ~ [ nRotateSpeedX ];
+	m_anStage3DEffectRotateSpeedY = m_anStage3DEffectRotateSpeedY ~ [ nRotateSpeedY ];
+	m_anStage3DEffectRotateSpeedZ = m_anStage3DEffectRotateSpeedZ ~ [ nRotateSpeedZ ];
+	m_anStage3DEffectLifeTime = m_anStage3DEffectLifeTime ~ [ nLifeTime ];
+	m_anStage3DEffectStartTime = m_anStage3DEffectStartTime ~ [ m_nFlanCount ];
+}
+
+/**
+*	背景3D効果処理を行うループです。
+*/
+task Move3DEffectLoop(){
+	if( !GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG_EFFECT, true ) ){ return; }
+	loop{
+		yield;
+		if( !OnEnemySpell() && m_nFlanLoadResourcePercentage == -1 ){
+			descent( let i in 0..length( m_anStage3DEffectLifeTime ) ){
+				m_anStage3DEffectLifeTime[ i ] = m_anStage3DEffectLifeTime[ i ] - 1;
+				if( m_anStage3DEffectLifeTime[ i ] <= 0 ){
+					m_anStage3DEffectX = erase( m_anStage3DEffectX, i );
+					m_anStage3DEffectY = erase( m_anStage3DEffectY, i );
+					m_anStage3DEffectZ = erase( m_anStage3DEffectZ, i );
+					m_anStage3DEffectSpeedX = erase( m_anStage3DEffectSpeedX, i );
+					m_anStage3DEffectSpeedY = erase( m_anStage3DEffectSpeedY, i );
+					m_anStage3DEffectSpeedZ = erase( m_anStage3DEffectSpeedZ, i );
+					m_anStage3DEffectRotateX = erase( m_anStage3DEffectRotateX, i );
+					m_anStage3DEffectRotateY = erase( m_anStage3DEffectRotateY, i );
+					m_anStage3DEffectRotateZ = erase( m_anStage3DEffectRotateZ, i );
+					m_anStage3DEffectRotateSpeedX = erase( m_anStage3DEffectRotateSpeedX, i );
+					m_anStage3DEffectRotateSpeedY = erase( m_anStage3DEffectRotateSpeedY, i );
+					m_anStage3DEffectRotateSpeedZ = erase( m_anStage3DEffectRotateSpeedZ, i );
+					m_anStage3DEffectLifeTime = erase( m_anStage3DEffectLifeTime, i );
+					m_anStage3DEffectStartTime = erase( m_anStage3DEffectStartTime, i );
+				}
+				else{
+					m_anStage3DEffectX[ i ] = m_anStage3DEffectX[ i ] + m_anStage3DEffectSpeedX[ i ];
+					m_anStage3DEffectY[ i ] = m_anStage3DEffectY[ i ] + m_anStage3DEffectSpeedY[ i ];
+					m_anStage3DEffectZ[ i ] = m_anStage3DEffectZ[ i ] + m_anStage3DEffectSpeedZ[ i ];
+					m_anStage3DEffectRotateX[ i ] = m_anStage3DEffectRotateX[ i ] + m_anStage3DEffectRotateSpeedX[ i ];
+					m_anStage3DEffectRotateY[ i ] = m_anStage3DEffectRotateY[ i ] + m_anStage3DEffectRotateSpeedY[ i ];
+					m_anStage3DEffectRotateZ[ i ] = m_anStage3DEffectRotateZ[ i ] + m_anStage3DEffectRotateSpeedZ[ i ];
+				}
+			}
+		}
+	}
+}
+
+/**
+*	背景3D効果を絵画します。
+*/
+function Draw3DEffect(){
+	ascent( let i in 0..length( m_anStage3DEffectLifeTime ) ){
+		SetAlpha( Min( Min( ( m_nFlanCount - m_anStage3DEffectStartTime[ i ] ) * 2, 128 ), m_anStage3DEffectLifeTime[ i ] * 3 ) );
+		SetGraphicAngle( m_anStage3DEffectRotateX[ i ], m_anStage3DEffectRotateY[ i ], m_anStage3DEffectRotateZ[ i ] );
+		DrawGraphic3D( m_anStage3DEffectX[ i ], m_anStage3DEffectY[ i ], m_anStage3DEffectZ[ i ] );
+	}
+	SetGraphicAngle( 0, 0, 0 );
+	SetAlpha( 255 );
+}
+
+/**
+*	背景3D効果を全削除します。
+*/
+function Clear3DEffect(){
+	m_anStage3DEffectX = m_anStage3DEffectX[ 0..0 ];
+	m_anStage3DEffectY = m_anStage3DEffectY[ 0..0 ];
+	m_anStage3DEffectZ = m_anStage3DEffectZ[ 0..0 ];
+	m_anStage3DEffectSpeedX = m_anStage3DEffectSpeedX[ 0..0 ];
+	m_anStage3DEffectSpeedY = m_anStage3DEffectSpeedY[ 0..0 ];
+	m_anStage3DEffectSpeedZ = m_anStage3DEffectSpeedZ[ 0..0 ];
+	m_anStage3DEffectRotateX = m_anStage3DEffectRotateX[ 0..0 ];
+	m_anStage3DEffectRotateY = m_anStage3DEffectRotateY[ 0..0 ];
+	m_anStage3DEffectRotateZ = m_anStage3DEffectRotateZ[ 0..0 ];
+	m_anStage3DEffectRotateSpeedX = m_anStage3DEffectRotateSpeedX[ 0..0 ];
+	m_anStage3DEffectRotateSpeedY = m_anStage3DEffectRotateSpeedY[ 0..0 ];
+	m_anStage3DEffectRotateSpeedZ = m_anStage3DEffectRotateSpeedZ[ 0..0 ];
+	m_anStage3DEffectLifeTime = m_anStage3DEffectLifeTime[ 0..0 ];
+	m_anStage3DEffectStartTime = m_anStage3DEffectStartTime[ 0..0 ];
+}
+
+/**
+*	背景フォグを設定します。
+*	但しフォグ設定が無効の場合設定しません。
+*	SetFogのラッパーです。
+*
+*	@param nDistStart フォグがかかり始める距離
+*	@param nDistEnd フォグがかかり終わる距離
+*	@param nColorR 赤輝度
+*	@param nColorG 緑輝度
+*	@param nColorB 青輝度
+*/
+function SetFogEx( let nDistStart, let nDistEnd, let nColorR, let nColorG, let nColorB ){
+	if( GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG_FOG, true ) ){ SetFog( nDistStart, nDistEnd, nColorR, nColorG, nColorB ); }
 }
 
 
@@ -173,28 +350,6 @@ task ScreenFade( let bFadeOut, let nInterval ){
 		yield;
 	}
 	ascent( let i in 0..length( anObj ) ){ Obj_Delete( anObj[ i ] ); }
-}
-
-
-//////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	背景処理
-//--------------------------------------------------------------------
-//////////////////////////////////////////////////////////////////////
-
-/**
-*	背景フォグを設定します。
-*	但しフォグ設定が無効の場合設定しません。
-*	SetFogのラッパーです。
-*
-*	@param nDistStart フォグがかかり始める距離
-*	@param nDistEnd フォグがかかり終わる距離
-*	@param nColorR 赤輝度
-*	@param nColorG 緑輝度
-*	@param nColorB 青輝度
-*/
-function SetFogEx( let nDistStart, let nDistEnd, let nColorR, let nColorG, let nColorB ){
-	if( GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG_FOG, true ) ){ SetFog( nDistStart, nDistEnd, nColorR, nColorG, nColorB ); }
 }
 
 

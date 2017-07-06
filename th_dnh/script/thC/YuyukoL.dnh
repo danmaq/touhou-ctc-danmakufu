@@ -537,21 +537,19 @@ script_enemy Ougi{
 		if( nArgv ){
 			/** КgСе */
 			let nFrame = 45;
-			let nScaleX = 0;
-			let nScaleY = 0.2;
-			let nAddScale = ( 1 - nScaleX ) / nFrame;
-			loop( nFrame ){
-				nScaleX += nAddScale;
+			let nMinScaleX = 0;
+			let nMinScaleY = 0.2;
+			ascent( let i in 0 .. nFrame ){
+				let nScale = SlowDown( nMinScaleX, 1, i, nFrame );
 				Obj_SetPosition( obj, GetEnemyX(), GetEnemyY() );
-				ObjEffect_SetScale( obj, nScaleX, nScaleY );
+				ObjEffect_SetScale( obj, nScale, nMinScaleY );
 				yield;
 			}
 			nFrame = 15;
-			nAddScale = ( 1 - nScaleY ) / nFrame;
-			loop( nFrame ){
-				nScaleY += nAddScale;
+			ascent( let i in 0 .. nFrame ){
+				let nScale = SlowDown( nMinScaleY, 1, i, nFrame );
 				Obj_SetPosition( obj, GetEnemyX(), GetEnemyY() );
-				ObjEffect_SetScale( obj, 1, nScaleY );
+				ObjEffect_SetScale( obj, 1, nScale );
 				yield;
 			}
 			PlaySEEx( seShot2 );

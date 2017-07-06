@@ -225,7 +225,6 @@ script_event Talk{
 		TextOutPlayer( "何処の気持ち悪い生き物だよ" );
 		InCharPlayer( CUT_PLAYER_NORMAL );
 		TextOutPlayer( "何にせよこれで文句はないな？\nおとなしくついてきてもらうぜ" );
-		TextOutEnemy( "もう、無視しなくてもいいじゃない" );
 		TextOutEnemy( "じゃあ私はお先に\n霊夢のところまで行ってきますわね？" );
 		SetStep( 1 );
 		DeleteChar( RIGHT );

@@ -119,7 +119,7 @@ script_enemy_main{
 	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
 		/** アイテム放出 */
-		if( m_bStage && !m_bSpellPractice ){ DropItemTHC( 18 ); }
+		if( m_bStage && !m_bSpellPractice && !BeVanished() ){ DropItemTHC( 18 ); }
 
 		/** 共通終了設定 */
 		FinalizeBoss();

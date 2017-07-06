@@ -41,6 +41,12 @@ let m_aszSeFileList = [];
 *	îwåiÇï`âÊÇµÇ‹Ç∑ÅB
 */
 function DrawSpellBG{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG_Light();
+		return;
+	}
+
 	SetAlpha( 30 + absolute( m_nFlanCount % 400 - 200 ) * 0.7 );
 	SetGraphicRect( 0, 0, 512, 512 );
 	DrawCenter( imgSpellLight );
@@ -51,6 +57,19 @@ function DrawSpellBG{
 	__DrawChr( imgSpellBamboo2, CL_CEN_X - 130, CL_CEN_Y );
 	__DrawChr( imgSpellBamboo2, CL_CEN_X + 130, CL_CEN_Y );
 	SetGraphicScale( 1, 1 );
+
+}
+
+function DrawSpellBG_Light{
+
+	let i = m_nFlanCount * 2;
+	SetAlpha( 70 );
+	SetGraphicScale( 0.5, 1 );
+	SetGraphicRect( 0, i, 512, 512 + i );
+	__DrawChr( imgSpellBamboo2, CL_CEN_X - 130, CL_CEN_Y );
+	__DrawChr( imgSpellBamboo2, CL_CEN_X + 130, CL_CEN_Y );
+	SetGraphicScale( 1, 1 );
+
 }
 
 
@@ -71,7 +90,9 @@ function DrawSpellBG{
 *	@param nDelay		íxâÑÉtÉåÅ[ÉÄêî
 */
 function LeveretShot( let nX, let nY, let nSpeed, let nAngle, let nAccelSpeed, let nMaxSpeed, let nDelay ){
+
 	CreateShot02( nX, nY, nSpeed, nAngle, nAccelSpeed, nMaxSpeed, US_BALL_SS_WHITE, nDelay );
 	CreateShot02( nX + 10 * cos( nAngle ), nY + 10 * sin( nAngle ), nSpeed, nAngle, nAccelSpeed, nMaxSpeed, US_BALL_S_WHITE, nDelay );
+
 }
 

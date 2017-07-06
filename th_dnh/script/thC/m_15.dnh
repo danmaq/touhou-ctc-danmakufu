@@ -58,9 +58,15 @@ script_enemy_main{
 	*/
 	task DoMove( let nLevel ){
 		SetMovePositionHermite([GetCenterX()*1.5,GetCenterX()/2][GetArgument()],GetCenterY()/2,800,[0,180][GetArgument()],600,-90,160);
-		__Wait(250);
-		let XX=GetX+rand(-80,80);
-		SetMovePositionHermite(XX,GetClipMinY()-50,300*rand(0.5,1.5),90+rand(-20,20),-90,300,200);
+		__Wait(160);
+		SetAngle(-90);
+		ascent(i in 0..100){
+			SetSpeed(Accelerate(0,1.5,i,100));
+			yield;
+		}
+		
+//		let XX=GetX+rand(-80,80);
+//		SetMovePositionHermite(XX,GetClipMinY()-50,300*rand(0.5,1.5),90+rand(-20,20),-90,300,200);
 	}
 
 

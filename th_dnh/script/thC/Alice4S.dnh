@@ -412,7 +412,7 @@ script_enemy Shadow{
 	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
 		/** ’eÁ‚µ */
-		if( m_nNumber >= 2 && m_nNumber <= 5 ){ DeleteEnemyShotToItem( CHILD ); }
+		if( m_nNumber == 3 || m_nNumber == 4 ){ DeleteEnemyShotToItem( CHILD ); }
 
 		/** ŒÂ•ÊI—¹İ’è */
 		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_DOLL_CLASH, GetCommonDataEx( CL_CDNS_TEMP, CL_CD_DOLL_CLASH ) + 1 );
@@ -594,38 +594,20 @@ script_enemy Shadow{
 	*/
 	task _SearchShot( let nX, let nY, let nAngle ){
 
-		let obj = Obj_Create( OBJ_SHOT );
-		let nGraphic = US_BALL_BS_GREEN;
-		let nDelay = 10;
-		Obj_SetPosition( obj, nX, nY );
-		Obj_SetAngle( obj, nAngle );
-		ObjShot_SetGraphic( obj, nGraphic );
-		ObjShot_SetDelay( obj, nDelay );
-
-		/** ’x‰„ */
-		loop( nDelay ){ yield; }
-
-		/** ‰ŠúˆÚ“® */
 		let nFrame = 30;
 		let nSpeed = 2.5 + 0.5 * m_nLevel;
 		let nAccelSpeed = - nSpeed / nFrame;
-		loop( nFrame ){
-			if( Obj_BeDeleted( obj ) ){ break; }
-			nSpeed += nAccelSpeed;
-			Obj_SetSpeed( obj, nSpeed );
-			yield;
-		}
+		let _nSpeed = 2.4 + 0.4 * m_nLevel;
+		if( m_nLevel == 3 ){ _nSpeed += 0.4; }
+		let nGraphic = US_BALL_BS_GREEN;
+		let nDelay = 10;
 
-		/** ‘_‚¢’e */
-		if( !Obj_BeDeleted( obj ) ){
-			nX = Obj_GetX( obj );
-			nY = Obj_GetY( obj );
-			nSpeed = 2.4 + 0.4 * m_nLevel;
-			if( m_nLevel == 3 ){ nSpeed += 0.4; }
-			nAngle = GetGapAngle( nX, nY, GetPlayerX(), GetPlayerY() );
-			CreateShot01( nX, nY, nSpeed, nAngle, nGraphic, 0 );
-			Obj_Delete( obj );
-		}
+		CreateShotA( 0, nX, nY, nDelay );
+		SetShotDataA( 0, 0, nSpeed, nAngle, 0, nAccelSpeed, 0, nGraphic );
+		SetShotDirectionType( PLAYER );
+		SetShotDataA( 0, nFrame, _nSpeed, 0, 0, 0, 0, nGraphic );
+		SetShotDirectionType( ABSOLUTE );
+		FireShot( 0 );
 
 	}
 

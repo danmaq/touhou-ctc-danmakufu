@@ -410,8 +410,8 @@ script_event Talk{
 		SetStep( 1 );
 		TextOutB( 90, "" );
 		InCharEnemy( CUT_ENEMY_CRY );
-		TextOutEnemy( "もう一つ遣り残したことがあるんだけど" );
-		TextOutEnemy( "最後になると諦めつかないのよねー\nだからその前に" );
+		TextOutEnemy( "もう一つ遣り残したことがあるんだけど\n最後になると諦めつかないのよねー" );
+		TextOutEnemy( "だからその前に、ね" );
 		InCharPlayer( CUT_PLAYER_SERIOUS );
 		TextOutPlayer( "その前に何だよ" );
 		InCharEnemy( CUT_ENEMY_AFFECT );

@@ -44,6 +44,12 @@ let m_bSlow = false;
 *	îwåiÇï`âÊÇµÇ‹Ç∑ÅB
 */
 function DrawSpellBG{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG_Light();
+		return;
+	}
+
 	SetGraphicRect( 0, 0, 512, 512 );
 	DrawCenter( imgSpellYoumu );
 	SetAlpha( [ 10, 255 ][ m_bSlow ] );
@@ -60,5 +66,24 @@ function DrawSpellBG{
 	SetColor( 255, 255, 255 );
 	SetGraphicAngle( 0, 0, 0 );
 	SetRenderState( ALPHA );
+
 }
+
+function DrawSpellBG_Light{
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellYoumu );
+	SetAlpha( [ 10, 255 ][ m_bSlow ] );
+	SetRenderState( [ ALPHA, ADD ][ m_bSlow ] );
+	let j = 40;
+	SetColor( j, j, j );
+	SetGraphicAngle( 0, 0, m_nFlanCount * 0.6 );
+	DrawCenter( imgSpellSakura02 );
+	SetAlpha( 255 );
+	SetColor( 255, 255, 255 );
+	SetGraphicAngle( 0, 0, 0 );
+	SetRenderState( ALPHA );
+
+}
+
 

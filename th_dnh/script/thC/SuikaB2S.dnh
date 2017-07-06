@@ -235,7 +235,7 @@ script_enemy_main{
 
 		let nFrame = 30;
 		let _nFrame = 135;
-		let nWay = 20;
+		let nWay = 18;
 		let nWayX = ( CL_MAX_X - CL_MIN_X ) / ( nWay - 1 );
 		let nSpeedY = - 1.6;
 		let nAccelSpeedY = - nSpeedY / _nFrame;

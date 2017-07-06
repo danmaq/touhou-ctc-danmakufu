@@ -347,7 +347,7 @@ script_enemy_main{
 		/** ’e */
 		nFrame = 4;
 		while( m_nPhase == nPhase && !m_bDead ){
-			let nSpeed = ( GetGapLength( m_nX, m_nY, nX, nY ) + 55 ) / 55;
+			let nSpeed = ( GetGapLength( m_nX, m_nY, nX, nY ) + 65 ) / 75;
 			CreateShot01( nX, nY, nSpeed, nMGapAngle, nGraphic, 0 );
 			loop( nFrame ){ yield; }
 		}
@@ -377,7 +377,7 @@ script_enemy_main{
 	*/
 	task CheckPhase{
 
-		let anNextLife = [ 405, 310, 215, 120 ];
+		let anNextLife = [ 400, 300, 200, 100 ];
 		let anNextTime = [ 89, 69, 49, 29 ];
 
 		/** ‰A—z’e */

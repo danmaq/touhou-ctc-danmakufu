@@ -120,7 +120,8 @@ task __CreateTTHSystemTimerCountSecondLoop(){
 task __CreateTTHBossNameLoop(){
 	let nPrevBossID = CL_TT_INVALID;
 	loop{
-		if( m_nBossNameAlpha <= 0 ){
+		if( m_nBossNameAlpha <= 0 || m_nFlanLoadResourcePercentage != -1 ){
+			m_nBossNameAlpha = 0;
 			m_nTTHBossName = CL_TT_INVALID;
 			__Wait( 100 );
 		}
@@ -139,8 +140,9 @@ task __CreateTTHBossNameLoop(){
 				case( 3 ){ m_nTTHBossName -= CL_TTH_CHARACTER_NAME_LOTUS; }
 				if( nStage >= 4 ){
 					alternative( m_nScenario )
-					case( 0 ){ m_nTTHBossName = m_nTTHBossName - CL_TTH_CHARACTER_NAME_YOUMU + 6; }
-					case( 1, 2 ){ m_nTTHBossName = m_nTTHBossName - CL_TTH_CHARACTER_NAME_YOUMU + 5; }
+					case( 0 ){ m_nTTHBossName -= 14; }
+					case( 1 ){ m_nTTHBossName -= 9; }
+					case( 2 ){ m_nTTHBossName -= 4; }
 				}
 			}
 		}
@@ -246,7 +248,7 @@ function DrawStageInfomation(){
 	if( m_nStageMusicIndex >= 0 && m_nFlanCount - m_nStageStartMusicTime <= 300 ){ DrawStageBGM(); }
 	if( m_nFlanCount - m_nItemPlayerPowerMax < 120 ){ DrawMaxPower(); }
 	if( IsReplay() ){
-		SetAlpha( Min( m_nCenterAlpha, 96 ) );
+		SetAlpha( 96 );
 		DrawTexTextOnCache( CL_TTH_STAGE_DEMO, 0, 0, GetCenterX() - 64, GetCenterY() + 36 );
 		SetAlpha( 255 );
 	}
@@ -431,12 +433,12 @@ function __DrawStageResult(){
 	let anTTHOperand	= [ CL_TTH_RESULT_SYMBOL_EQUAL,	CL_TTH_RESULT_SYMBOL_EQUAL,	CL_TTH_RESULT_SYMBOL_EQUAL,	CL_TTH_RESULT_SYMBOL_EQUAL,		CL_TT_INVALID,	CL_TT_INVALID,	CL_TTH_RESULT_SYMBOL_PERCENTAGE,	CL_TTH_RESULT_SYMBOL_PERCENTAGE,	CL_TTH_RESULT_SYMBOL_EQUAL	];
 	let anTTHValues		= [ m_nTTHStageResultStage,		m_nTTHStageResultPoint,		m_nTTHStageResultGraze,		m_nTTHStageResultHakurei,		CL_TT_INVALID,	CL_TT_INVALID,	m_nTTHStageResultRate,				m_nTTHStageResultPlayerInit,		m_nTTHStageResultTotal		];
 	if( !( m_nTTHStageResultPlayer == CL_TT_INVALID || m_nTTHStageResultBomb == CL_TT_INVALID ) ){
-		anTTHHeading[ 6 ]	= CL_TTH_RESULT_BONUS_PLAYER;
-		anTTHOperand[ 6 ]	= CL_TTH_RESULT_SYMBOL_EQUAL;
-		anTTHValues[ 6 ]	= m_nTTHStageResultPlayer;
-		anTTHHeading[ 7 ]	= CL_TTH_RESULT_BONUS_BOMB;
-		anTTHOperand[ 7 ]	= CL_TTH_RESULT_SYMBOL_EQUAL;
-		anTTHValues[ 7 ]	= m_nTTHStageResultBomb;
+		anTTHHeading[ 4 ]	= CL_TTH_RESULT_BONUS_PLAYER;
+		anTTHOperand[ 4 ]	= CL_TTH_RESULT_SYMBOL_EQUAL;
+		anTTHValues[ 4 ]	= m_nTTHStageResultPlayer;
+		anTTHHeading[ 5 ]	= CL_TTH_RESULT_BONUS_BOMB;
+		anTTHOperand[ 5 ]	= CL_TTH_RESULT_SYMBOL_EQUAL;
+		anTTHValues[ 5 ]	= m_nTTHStageResultBomb;
 	}
 	ascent( let i in 0..length( anTTHHeading ) ){
 		if( i == 6 || i == 7 ){ SetColor( 255, 128, 128 ); }
@@ -448,6 +450,6 @@ function __DrawStageResult(){
 			DrawTexTextOnCache( anTTHValues[ i ], 0, 0, 256, nDstY );
 		}
 	}
-	DrawTexTextOnCache( CL_TTHBASE_RESULT + [ CL_TTH_RESULT_CLEAR_STAGE, CL_TTH_RESULT_CLEAR_ALL ][ m_bStagePractice || GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) >= 5 ], 0, 0, 144, 64 );
+	DrawTexTextOnCache( CL_TTHBASE_RESULT + [ CL_TTH_RESULT_CLEAR_STAGE, CL_TTH_RESULT_CLEAR_ALL ][ m_bStagePractice || GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) >= 6 ], 0, 0, 144, 64 );
 	SetColor( 255, 255, 255 );
 }

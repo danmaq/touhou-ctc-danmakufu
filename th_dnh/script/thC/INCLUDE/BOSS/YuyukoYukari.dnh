@@ -42,6 +42,12 @@ let m_aszSeFileList = [];
 *	îwåiÇï`âÊÇµÇ‹Ç∑ÅB
 */
 function DrawSpellBG{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG_Light();
+		return;
+	}
+
 	let i = m_nFlanCount * 3;
 	SetGraphicRect( 0, 0, 512, 512 );
 	DrawCenter( imgSpellSakura03 );
@@ -51,4 +57,15 @@ function DrawSpellBG{
 	DrawCenter( [ imgSpellNoize01, imgSpellNoize02, imgSpellNoize03 ][ trunc( m_nFlanCount / 3 ) % 3 ] );
 	SetRenderState( ALPHA );
 	SetGraphicScale( 1, 1 );
+
 }
+
+function DrawSpellBG_Light{
+
+	let i = m_nFlanCount * 3;
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellSakura03 );
+
+}
+
+

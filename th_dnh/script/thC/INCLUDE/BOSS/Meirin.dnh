@@ -41,8 +41,16 @@ let m_aszSeFileList = [];
 *	îwåiÇï`âÊÇµÇ‹Ç∑ÅB
 */
 function DrawSpellBG{
+
+	/** åyó î≈îwåiÇ»Çµ */
+	//if( m_bDrawSpellBGLight ){
+	//	DrawSpellBG_Light();
+	//	return;
+	//}
+
 	SetGraphicRect( 0, 0, 1024, 1024 );
 	DrawRotateCenter( imgSpellRotateStone, - 0.5 );
+
 }
 
 

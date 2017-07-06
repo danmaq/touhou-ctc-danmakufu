@@ -423,16 +423,16 @@ script_enemy_main{
 			while( m_nPhase < 3 ){ yield; }
 
 			/** フェイズ3 */
-			nFrame = 32;
-			let nShotNum = trunc( 13 * 60 / nFrame ) - 1;
+			nFrame = 30;
+			let nShotNum = trunc( 12 * 60 / nFrame ) - 1;
 			let nNum = 5;
 			_nGraphic = [ US_BILL_RED, US_BILL_BLUE, US_BILL_GREEN, US_BILL_YELLOW, US_BILL_WHITE ][ nNumber ];
 			let _nDelay = 20;
 			let nAssign = 1;
 			loop( 60 ){ yield; }
 			loop( nShotNum ){
-				let _nLength = 0;//rand( 0, nLength / 2 );
-				let nNumLength = nLength / 4 / ( nNum - 1 );
+				let _nLength = 0;
+				let nNumLength = nLength * 0.22 / ( nNum - 1 );
 				let nNumX = nNumLength * cos( nAngle ) * nAssign;
 				let nNumY = nNumLength * sin( nAngle ) * nAssign;
 				let _nX = nX;

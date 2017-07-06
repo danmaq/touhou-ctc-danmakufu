@@ -286,7 +286,7 @@ script_enemy_main{
 		let nSpeed = 1.5;
 		let nWaySpeed = ( 3.5 + 0.3 * m_nLevel - nSpeed ) / ( nWay - 1 );
 		let nAngle = GetAngleToPlayer();
-		let nWideAngle = 75 - 15 * m_nLevel;
+		let nWideAngle = 74 - 12 * m_nLevel;
 		let nWayAngle = nWideAngle / ( nWay - 1 );
 		let nDelay = 5;
 

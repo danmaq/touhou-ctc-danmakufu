@@ -44,7 +44,7 @@ script_enemy_main{
 //////////////////////////////////////////////////////////////////////
 
 	FLAN_BOSS_HOME_X = CL_CEN_X;
-	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 125;
 	FLAN_BOSS_MOVE_MARGIN_SIDE = 100;
 
 

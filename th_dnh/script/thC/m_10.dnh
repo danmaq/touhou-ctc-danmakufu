@@ -62,6 +62,7 @@ script_enemy_main{
 			SetSpeed(SlowDown( spmax , spmax/2 , i , 100 ));
 			yield;
 		}
+		
 		SetMovePositionHermite(GetCenterX(),GetClipMinY()-50,200,rand(0,360),200,-90,200);
 	}
 
@@ -82,12 +83,8 @@ script_enemy_main{
 		__Wait(30);
 		loop([3,5,6,8][nLevel]){CreateEnemyFromScript("Shadow",GetX(),GetY(),[1.5,2.3,3.3,4.5][nLevel],rand(0,360),0);}
 		PlaySEEx(seShadow);
-		__Wait(80);
-		if(nLevel==0 || nLevel==1){return;}
-		ascent(i in 0..[0,7,12,20][nLevel]){
-			CreateShot01(GetX(),GetY(),1+i/5,GetAngleToPlayer(),US_RICE_M_PURPLE,20);
-			loop(2){yield;}
-		}
+		__Wait(70);
+		_WideLineShot(GetX(),GetY(),1.7,[1.7,2.4,3.2,4.5][nLevel],GetAngleToPlayer(),[0,0,10,20][nLevel],[1,1,4,6][nLevel],[1,4,4,5][nLevel],US_RICE_M_ORANGE,10);
 		PlaySEEx(seShot1);
 	}
 

@@ -494,7 +494,7 @@ task Bit( let nDir ){
 	let nAngle = 90;
 //	ObjEffect_SetTexture( obj, IMAGE_CL_WHITE );
 //	ObjEffect_SetRenderState( obj, ADD );
-	ObjEffect_SetLayer( obj, 4 );
+	ObjEffect_SetLayer( obj, 3 );
 	while( !Obj_BeDeleted( obj ) ){
 		yield;
 //=====================================================================================================================
@@ -629,12 +629,12 @@ function onPlayerMissed( let nCount, let nPhase, let nPhaseCount, let nPrevPhase
 		let nItemGapAngle = Smooth( 30, -30, GetPlayerX(), GetClipMaxX() );
 		let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 );
 		if( m_bPlayerLastLife ){
-			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * 60 / 100 ) );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * 0.8 ) );
 			loop( 3 ){ SetItemQueue( ITEMEX_POWER_FULL, GetPlayerX(), GetPlayerY(), nItemBaseSpeed + RandBlur( 1.5 ) - 0.5, 270 + RandBlur( nItemBlurAngle ) + nItemGapAngle ); }
 			SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
 		}
 		else{
-			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * [ 8, 15 ][ m_nInYanGauge > 254 ] / 100 ) );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * [ 0.09, 0.18 ][ m_nInYanGauge > 254 ] ) );
 			let nPower = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
 			if( nPower > 8 ){
 				SetItemQueue( ITEMEX_POWER_BIG, GetPlayerX(), GetPlayerY(), nItemBaseSpeed + RandBlur( 2 ), 270 + RandBlur( nItemBlurAngle / 3 ) );
@@ -657,7 +657,7 @@ function onPlayerMissed( let nCount, let nPhase, let nPhaseCount, let nPrevPhase
 */
 function onStartSpell( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 );
-	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * 0.02 ) );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * 0.03 ) );
 	m_nInYanGauge -= m_nInYanGauge * 0.2;
 	onStartSpellTHC( nCount, nPhase, nPhaseCount, nPrevPhase );
 	UseSpellCard( [ PLAYER_SPELL_FUNCTION_FASTMOVE, PLAYER_SPELL_FUNCTION_SLOWMOVE ][ m_bFlanKeySlow ], 0 );

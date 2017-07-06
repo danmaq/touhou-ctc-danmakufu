@@ -62,10 +62,7 @@ script_enemy_main{
 			SetSpeed(SlowDown( spmax , 0 , i , 100 ));
 			yield;
 		}
-		__Wait(rand(30,80));
-		let XX=GetX+rand(-100,100);
-		SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,300);
-		__Wait(30);
+		__Wait(rand(50,100));
 		AddLife(-64000);
 	}
 
