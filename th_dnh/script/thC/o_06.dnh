@@ -1,63 +1,158 @@
-script_enemy_main
-{
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 2a(ギミック)
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
-#include_function ".\INCLUDE\Enemy.dnh"
+
+//////////////////////////////////////////////////////////////////////
+//	スクリプトここから
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
 
 
-//変数宣言--------------------------------------
-	let Level = GetCommonDataDefault( "Level", 1 );
+//////////////////////////////////////////////////////////////////////
+//	THCELをインクルード
+//	(FLAN/THCELへのインクルードはTHCELが勝手にやってくれます)
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\Zako.dnh"
+#include_function ".\IMAGE\index_boss.dnh"
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	/**	デフォルトアイテムの落下量を設定します。 */
+	ENEMY_ITEMEX_NUM_DEFAULT = 0;
+	/**	被弾判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_A = 0;
+	/**	接触判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_B = 0;
+	/**	onMainLoopへ処理をまわさないよう設定します。(まわしても何の処理も無い) */
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+	FLAN_ESS_NOGONE = true;
+
+//////////////////////////////////////////////////////////////////////
+//	定数宣言
+//////////////////////////////////////////////////////////////////////
+
 	let x=0;
 	let y=0;
 
-//タスクの作成----------------------------------
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数宣言
+//////////////////////////////////////////////////////////////////////
 
-task MainAction()
-{
-	yield;
-	SetShotDirectionType(ABSOLUTE);
-	_Wait(100);
-	Concentration01(80);
-	PlaySE(sePower2);
-	_Wait(80);
-	ascent(i in 0..10)
-	{
-		CreateShotFromScript("t_ma_01",GetX(),GetY(),0,0,0,i*250);
-		yield;
+
+//////////////////////////////////////////////////////////////////////
+//	固有動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵の移動を管理するタスクです。
+	*
+	*	@param nLevel レベル(0～3)
+	*/
+	task DoMove( let nLevel ){
+		SetX(GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_X, GetCenterX() ));
+		SetY(GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, GetCenterY()/2 ));
+		__Wait(100);
+		SetMovePositionHermite(GetCenterX/2,GetClipMinY-50,200,45,300,-90,80);
+		__Wait(90);
+		SetX(-65535);
+		SetY(-65535);
 	}
-	PlaySE(seShadow);
 
-}
-task SubAction()
-{
-	yield;
-	SetX(GetCommonDataDefault( "Sakuya_X",GetCenterX() ));
-	SetY(GetCommonDataDefault( "Sakuya_Y",GetCenterY()/2 ));
-	_Wait(150);
-	SetMovePositionHermite(GetCenterX/2,GetClipMinY-50,200,45,300,-90,80);
-	_Wait(90);
-	SetX(-65535);
-	SetY(-65535);
-}
 
-//実行部分---------------------------------------
+//////////////////////////////////////////////////////////////////////
+//	共通動作実装部
+//////////////////////////////////////////////////////////////////////
 
-	@Initialize
-	{
+	/**
+	*	敵固有のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nArgv, let nLevel ){
+		DoMove( nLevel );
+		SetShotDirectionType(ABSOLUTE);
+		__Wait(50);
+		Concentration01(80);
+		PlaySEEx(sePower2);
+		__Wait(80);
+		ascent(i in 0..8){
+			CreateShotFromScript("Shadow",GetX(),GetY(),0,0,0,i*250);
+			yield;
+		}
+		PlaySEEx(seShadow);
+		__Wait(2200);
+		VanishEnemy();
+
+	}
+
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( let nArgv, let nLevel ){
+//		CreateDebugWindow();
+		CheckExplosion01Ex;
 		LoadGraphic(dotBossSakuya);
-		SetLife(1);
-		MainAction();
-		SubAction();
+		SetLife( 3 );
 	}
-	@MainLoop
-	{
-		Deletemine();
-		yield;
-		m_nCount++;
 
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	}
-	@DrawLoop
-	{
-		if(m_nCount<150){
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		EndExplosion01Ex;
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_X );
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_Y );
+		DeleteGraphic(dotBossSakuya);
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		if(nCount<150){
 			x=0;y=0;
 		}
 		else{
@@ -66,28 +161,175 @@ task SubAction()
 		let sLength=128;
 		SetAlpha(255);
 		SetColor(255,255,255);
-		_DrawChrRectSqr(dotBossSakuya,GetX,GetY,x,y,sLength);
+		__DrawChrRect(dotBossSakuya,GetX,GetY,x,y,sLength,sLength);
 	}
-	@Finalize{DeleteGraphic(dotBossSakuya);}
+
 }
 
 
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	使い魔
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
 
-script_shot t_ma_01
-{
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
 
-#include_function ".\INCLUDE\Shot.dnh"
-#include_function ".\_index_UserShot.dnh"
+script_shot Shadow{
 
-	let Level=GetCommonData("Level");
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Shot.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
 	let angle=GetAngle();
 	let ShotType=[int(rand(0,100))%3,1][GetArgument()==0];
 
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
 
-task shotobjA (let x, let y, let speed, let angle, let hikisu, let delay)
-{
-	//弾タスク初期化
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		m_bShadow = true;
+		m_bShadowLighting = false;
+		m_bShadowDead = true;
+		
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		SetBombResist();
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		DropItemPowerBigTHC( 1 );
+		DropItemTHC( 3 );
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 魔法陣描画 */
+		let nShadowImage = SHADOW_IMAGE_6S;
+		let nShadowColor = SHADOW_COLOR_WHITE;
+		let nAngle = 2 * m_nFlanCount;
+		let nScale = 0.8;
+		DrawShadowEx( nShadowImage, nShadowColor, nAngle, nScale );
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+		DoMove( nLevel );
+		__Wait(GetArgument()+150);
+		if(ShotType==0){
+			ascent(i in 0..[8,16,32,45][nLevel]){
+				shotobjA(GetX,GetY,[1.5,1.5,2,2.5][nLevel],i*360/[8,16,32,45][nLevel],0,0,nLevel);
+				PlaySEEx(seShot1);
+				loop([20,60,70,80][nLevel]/[8,16,32,45][nLevel]){yield;}
+			}
+		}
+		if(ShotType==1){
+			let angle=GetAngleToPlayer();
+			ascent(i in 0..[15,20,30,30][nLevel]){
+				shotobjB(GetX,GetY,7,angle+200-i*(180/[15,20,30,30][nLevel]),0,15,nLevel);
+				if(nLevel==1 || nLevel==3)
+				{shotobjB(GetX,GetY,7,angle-200+i*(180/[15,20,30,30][nLevel]),0,15,nLevel);}
+				PlaySEEx(seShot1);
+				loop(60/[15,20,35,60][nLevel]){yield;}
+			}
+	
+		}
+		if(ShotType==2){
+			ascent(i in 0..[8,16,32,45][nLevel]){
+				shotobjC(GetX,GetY,[1.5,1.5,2,2.5][nLevel],i*360/[8,16,32,45][nLevel],0,0,nLevel);
+				PlaySEEx(seShot1);
+				loop([20,60,70,80][nLevel]/[8,16,32,45][nLevel]){yield;}
+			}
+		}
+		__Wait(70);
+		End();
+	}
+
+	/**
+	*	敵の移動を管理するタスクです。
+	*
+	*	@param nLevel レベル(0～3)
+	*/
+	task DoMove( let nLevel ){
+		SetMovePositionHermite(rand(GetClipMinX()+50,GetClipMaxX()-50),rand(GetClipMinY()+50,GetCenterY()-30),200,0,300,angle,130);
+	}
+
+
+task shotobjA (let x, let y, let speed, let angle, let hikisu, let delay, let nLevel){
 	let obj = Obj_Create(OBJ_SHOT);//弾オブジェクトを作成
 	Obj_SetX(obj, x);//x座標設定
 	Obj_SetY(obj, y);//y座標設定;
@@ -96,33 +338,23 @@ task shotobjA (let x, let y, let speed, let angle, let hikisu, let delay)
 	ObjShot_SetGraphic(obj, 152 );//画像設定
 	ObjShot_SetDelay(obj, delay);//遅延時間設定
 
-	//変数宣言
-	
-
-	task MainLoop()
-	{
-		yield;
+	task MainLoop(){
 		WaitObject( obj,30 );
 		Obj_SetSpeed(obj,0);
-		ascent(i in 0..40)
-		{
+		ascent(i in 0..40){
 			Obj_SetAngle(obj,Smooth(angle,GetAngleToPlayerObject( obj ),i, 40 ));
 			yield;
 		}
-		CreateLaser01(Obj_GetX(obj),Obj_GetY(obj),[4,4.5,5,6][Level],GetAngleToPlayerObject( obj ),300,6,152,0);
+		CreateLaser01(Obj_GetX(obj),Obj_GetY(obj),[4,4.5,5,6][nLevel],GetAngleToPlayerObject( obj ),300,6,152,0);
+		PlaySEEx(seSaku0);
 		Obj_Delete(obj);
 	}
 
 	MainLoop();
-	
-	while( !Obj_BeDeleted(obj) )
-	{//削除されるまでループを実行
-		yield;
-	}
+	while( !Obj_BeDeleted(obj) ){yield;}
+
 }
-task shotobjB (let x, let y, let speed, let angle, let hikisu, let delay)
-{
-	//弾タスク初期化
+task shotobjB (let x, let y, let speed, let angle, let hikisu, let delay, let nLevel){
 	let obj = Obj_Create(OBJ_SHOT);//弾オブジェクトを作成
 	Obj_SetX(obj, x);//x座標設定
 	Obj_SetY(obj, y);//y座標設定;
@@ -130,30 +362,26 @@ task shotobjB (let x, let y, let speed, let angle, let hikisu, let delay)
 	Obj_SetAngle(obj, angle);//移動角度設定
 	ObjShot_SetGraphic(obj, 152 );//画像設定
 	ObjShot_SetDelay(obj, delay);//遅延時間設定
-
-	//変数宣言
 	
 	while( !Obj_BeDeleted(obj) )
-	{//削除されるまでループを実行
+	{
 		yield;
 		if(
 			Obj_GetX(obj) < GetClipMinX()+7 ||
 			Obj_GetX(obj) > GetClipMaxX()-7
 		)
 		{
-			LineShot(Obj_GetX(obj),Obj_GetY(obj),1,2,180-Obj_GetAngle(obj),[1,1,3,3][Level],152,0);
+			_LineShot(Obj_GetX(obj),Obj_GetY(obj),1,2,180-Obj_GetAngle(obj),[1,1,3,3][nLevel],152,0);
 			Obj_Delete(obj);
 		}
 		if(Obj_GetY(obj) < GetClipMinY()+7)
 		{
-			LineShot(Obj_GetX(obj),Obj_GetY(obj),1,2,-Obj_GetAngle(obj),[1,1,3,3][Level],152,0);
+			_LineShot(Obj_GetX(obj),Obj_GetY(obj),1,2,-Obj_GetAngle(obj),[1,1,3,3][nLevel],152,0);
 			Obj_Delete(obj);
 		}
 	}
 }
-task shotobjC (let x, let y, let speed, let angle, let hikisu, let delay)
-{
-	//弾タスク初期化
+task shotobjC (let x, let y, let speed, let angle, let hikisu, let delay,let nLevel){
 	let obj = Obj_Create(OBJ_SHOT);//弾オブジェクトを作成
 	Obj_SetX(obj, x);//x座標設定
 	Obj_SetY(obj, y);//y座標設定;
@@ -162,99 +390,22 @@ task shotobjC (let x, let y, let speed, let angle, let hikisu, let delay)
 	ObjShot_SetGraphic(obj, 152 );//画像設定
 	ObjShot_SetDelay(obj, delay);//遅延時間設定
 
-	//変数宣言
-	
-
-	task MainLoop()
-	{
-		yield;
+	task MainLoop(){
 		WaitObject( obj,30 );
 		Obj_SetSpeed(obj,0);
-		ascent(i in 0..40)
-		{
+		ascent(i in 0..40){
 			Obj_SetAngle(obj,Smooth(angle,angle+360,i, 40 ));
 			yield;
 		}
-		CreateLaser01(Obj_GetX(obj),Obj_GetY(obj),[4,4.5,5,6][Level],Obj_GetAngle(obj),300,6,152,0);
+		CreateLaser01(Obj_GetX(obj),Obj_GetY(obj),[4,4.5,5,6][nLevel],Obj_GetAngle(obj),300,6,152,0);
+		PlaySEEx(seSaku0);
 		Obj_Delete(obj);
 	}
 
 	MainLoop();
-	
-	while( !Obj_BeDeleted(obj) )
-	{//削除されるまでループを実行
-		yield;
-	}
+	while( !Obj_BeDeleted(obj) ){yield;}
 }
 
-task MainAction()
-{
-	yield;
-	_Wait(GetArgument()+150);
-	if(ShotType==0)
-	{
-		ascent(i in 0..[8,16,32,45][Level])
-		{
-			shotobjA(GetX,GetY,[1.5,1.5,2,2.5][Level],i*360/[8,16,32,45][Level],0,0);
-			PlaySE(seSaku0);
-			loop([20,60,70,80][Level]/[8,16,32,45][Level]){yield;}
-		}
-	}
-	if(ShotType==1)
-	{
-		let angle=GetAngleToPlayer();
-		ascent(i in 0..[15,20,30,30][Level])
-		{
-			shotobjB(GetX,GetY,7,angle+200-i*(180/[15,20,30,30][Level]),0,0);
-			if(Level==1 || Level==3)
-			{shotobjB(GetX,GetY,7,angle-200+i*(180/[15,20,30,30][Level]),0,0);}
-			PlaySE(seShot1);
-			loop(60/[15,20,35,60][Level]){yield;}
-		}
-
-	}
-	if(ShotType==2)
-	{
-		ascent(i in 0..[8,16,32,45][Level])
-		{
-			shotobjC(GetX,GetY,[1.5,1.5,2,2.5][Level],i*360/[8,16,32,45][Level],0,0);
-			PlaySE(seSaku0);
-			loop([20,60,70,80][Level]/[8,16,32,45][Level]){yield;}
-		}
-	}
-	_Wait(70);
-	ascent(i in 0..70){
-		yield;
-		SetAlpha(255-255/70*i);
-	}
-	End();
 }
 
-task SubAction()
-{
-	yield;
-	SetMovePositionHermite(rand(GetClipMinX()+50,GetClipMaxX()-50),rand(GetClipMinY()+50,GetCenterY()-30),200,0,300,angle,130);
-}
 
-	@Initialize
-	{	
-		MainAction();
-		SubAction();
-		LoadUserShotData(shotAll);
-	}
-	@MainLoop
-	{
-		yield;
-		m_nCount++;
-		SetBombResist();
-	}
-	@DrawLoop
-	{
-		SetTexture(dotCircle6s);
-		SetGraphicRect(0,0,64,64);
-		SetGraphicScale(0.8,0.8);
-		SetColor(255,255,255);
-		SetGraphicAngle(0,0,m_nCount*2);
-		DrawGraphic(GetX,GetY);
-	}
-}

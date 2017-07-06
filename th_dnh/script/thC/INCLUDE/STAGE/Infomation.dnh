@@ -1,0 +1,453 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Extend-Library (extends FLAN)
+//
+//		※ステージスクリプト部です。
+//			それ以外からはインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	ステージ各情報の更新フレーム間隔です。 */
+let CL_STAGE_INFOMATION_REFRESH_INTERVAL = 15;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	攻撃力値フォントキャッシュハンドルが格納されます。 */
+let m_nTTHPower					= CL_TT_INVALID;
+/**	博麗小符フォントキャッシュハンドルが格納されます。 */
+let m_nTTHHakurei				= CL_TT_INVALID;
+/**	経過フレーム数から算出した経過秒数のフォントキャッシュハンドルを格納します。 */
+let m_nTTHFrameCountSeconds		= CL_TT_INVALID;
+/**	高精度タイマで取得した経過秒数のフォントキャッシュハンドルを格納します。 */
+let m_nTTHTimerCountSeconds		= CL_TT_INVALID;
+/**	ステージリザルトにおけるステージボーナスのフォントキャッシュハンドルを格納します。 */
+let m_nTTHStageResultStage		= CL_TT_INVALID;
+/**	ステージリザルトにおける点アイテムボーナスのフォントキャッシュハンドルを格納します。 */
+let m_nTTHStageResultPoint		= CL_TT_INVALID;
+/**	ステージリザルトにおけるカスリボーナスのフォントキャッシュハンドルを格納します。 */
+let m_nTTHStageResultGraze		= CL_TT_INVALID;
+/**	ステージリザルトにおける博麗小符ボーナスのフォントキャッシュハンドルを格納します。 */
+let m_nTTHStageResultHakurei	= CL_TT_INVALID;
+/**	ステージリザルトにおけるレートペナルティのフォントキャッシュハンドルを格納します。 */
+let m_nTTHStageResultRate		= CL_TT_INVALID;
+/**	ステージリザルトにおける初期プレイヤー数ペナルティのフォントキャッシュハンドルを格納します。 */
+let m_nTTHStageResultPlayerInit	= CL_TT_INVALID;
+/**	ステージリザルトにおけるプレイヤー残数ボーナスのフォントキャッシュハンドルを格納します。 */
+let m_nTTHStageResultPlayer		= CL_TT_INVALID;
+/**	ステージリザルトにおけるボム残数ボーナスのフォントキャッシュハンドルを格納します。 */
+let m_nTTHStageResultBomb		= CL_TT_INVALID;
+/**	ステージリザルトにおけるボーナス合計のフォントキャッシュハンドルを格納します。 */
+let m_nTTHStageResultTotal		= CL_TT_INVALID;
+
+/**	下段左側情報表示の透明度を格納します。 */
+let m_nBottomLeftAlpha	= 240;
+/**	下段右側情報表示の透明度を格納します。 */
+let m_nBottomRightAlpha	= 240;
+/**	BGM情報表示の透明度を格納します。 */
+let m_nBGMAlpha			= 240;
+/**	中央表示の透明度を格納します。 */
+let m_nCenterAlpha		= 240;
+/**	フェードアウト時の透明度を格納します。 */
+let m_nFadeOutAlpha		= 240;
+/**	リザルトのラスタライズを試みるかどうかが格納されます。 */
+let m_bStageResultRasterize = false;
+/**	リザルトがラスタライズ成功しているかどうかが格納されます。 */
+let m_bStageResultRasterized = false;
+/** ボス名前表示用にフォント定義します。 */
+let m_nTTHBossName = CL_TT_INVALID;
+/** ボス名前表示の透明度を設定します。 */
+let m_nBossNameAlpha = 0;
+/**	書き込み可能テクスチャがアイテム得点表示に使用されているかかどうかが格納されます。 */
+let m_abItemWritableTextureUsed = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	各種情報表示関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ステージごとの経過フレーム数から算出した経過秒数を表示可能な状態に加工し、フォントキャッシュに格納するループです。
+*/
+task __CreateTTHFrameCountSecondLoop(){
+	let nPrevTime = -1;
+	loop{
+		yield;
+		let nTime = truncate( ( m_nFlanCount - m_nFlanStageTime ) / 60 );
+		if( nTime != nPrevTime ){
+			nPrevTime = nTime;
+			DeleteTexTextHandle( m_nTTHFrameCountSeconds );
+			m_nTTHFrameCountSeconds = CreateTexText16Cache( ToStringInt( nTime ) );
+		}
+	}
+}
+
+/**
+*	高精度タイマから取得した経過秒数を表示可能な状態に加工し、フォントキャッシュに格納するループです。
+*/
+task __CreateTTHSystemTimerCountSecondLoop(){
+	let nPrevTime = -1;
+	loop{
+		yield;
+		let nTime = truncate( ( GetTime() - m_nFlanStageSystemTime ) / 1000 );
+		if( nTime != nPrevTime ){
+			nPrevTime = nTime;
+			DeleteTexTextHandle( m_nTTHTimerCountSeconds );
+			m_nTTHTimerCountSeconds = CreateTexText16Cache( ToStringInt( nTime ) );
+		}
+	}
+}
+
+/**
+*	ボス名前表示フォント・透明度を定義するループです。
+*/
+task __CreateTTHBossNameLoop(){
+	let nPrevBossID = CL_TT_INVALID;
+	loop{
+		if( m_nBossNameAlpha <= 0 ){
+			m_nTTHBossName = CL_TT_INVALID;
+			__Wait( 100 );
+		}
+		else if( m_nBossNameAlpha >= 240 ){ __Wait( 100 ); }
+		else{ yield; }
+		let nBossID = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, CL_TT_INVALID );
+		let bEnableBossID = nBossID != CL_TT_INVALID;
+		if( bEnableBossID && nPrevBossID != nBossID ){
+			let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
+			m_nTTHBossName = CL_TTHBASE_BOSS_NAME_ENGLISH + nBossID;
+			if( nStage >= 10 ){ m_nTTHBossName = m_nTTHBossName - CL_TTH_CHARACTER_NAME_EXPH; }
+			else if( nStage != 7 ){
+				alternative( m_nScenario )
+				case( 1 ){ m_nTTHBossName -= CL_TTH_CHARACTER_NAME_EIYA; }
+				case( 2 ){ m_nTTHBossName -= CL_TTH_CHARACTER_NAME_KAEI; }
+				case( 3 ){ m_nTTHBossName -= CL_TTH_CHARACTER_NAME_LOTUS; }
+				if( nStage >= 4 ){
+					alternative( m_nScenario )
+					case( 0 ){ m_nTTHBossName = m_nTTHBossName - CL_TTH_CHARACTER_NAME_YOUMU + 6; }
+					case( 1, 2 ){ m_nTTHBossName = m_nTTHBossName - CL_TTH_CHARACTER_NAME_YOUMU + 5; }
+				}
+			}
+		}
+		m_nBossNameAlpha = MinMax( m_nBossNameAlpha + [ -1, 1 ][ bEnableBossID ], 0, 240 );
+		nPrevBossID = nBossID;
+	}
+}
+
+/**
+*	ステージ中で自機が情報表示エリアに近づいた際情報表示の透明度を設定するループです。
+*/
+task __PlayerPositionInInfomationAreaLoop(){
+	let nAdditional = 10;
+	loop{
+		yield;
+		let nMinimalAlpha = Min( m_nFadeOutAlpha, 48 );
+		let nLengthToBottomLeft = GetGapLength( GetPlayerX(), GetPlayerY(), GetClipMinX(), GetClipMaxY() );
+		let nLengthToBottomRight = GetGapLength( GetPlayerX(), GetPlayerY(), GetClipMaxX(), GetClipMaxY() );
+		m_nBottomLeftAlpha	= MinMax( m_nBottomLeftAlpha	+ nAdditional * [ 1, -1 ][ nLengthToBottomLeft < 128 ], nMinimalAlpha, m_nFadeOutAlpha );
+		m_nBGMAlpha			= MinMax( m_nBGMAlpha			+ nAdditional * [ 1, -1 ][ GetClipMaxY() - GetPlayerY() < 64 ], nMinimalAlpha, m_nFadeOutAlpha );
+		m_nCLSpellNameAlpha	= MinMax( m_nCLSpellNameAlpha	+ nAdditional * [ 1, -1 ][ absolute( m_nCLSpellNameY - GetPlayerY() ) < 64 ], nMinimalAlpha, m_nFadeOutAlpha );
+		m_nCenterAlpha		= MinMax( m_nCenterAlpha		+ nAdditional * [ 1, -1 ][ absolute( GetCenterY() - GetPlayerY() ) < 64 ], nMinimalAlpha, m_nFadeOutAlpha );
+	}
+}
+
+/**
+*	ステージの各情報を表示可能な状態に加工し、フォントキャッシュに格納するループです。
+*/
+task __CreateStageInfomationLoop(){
+	let nPrevPower = 0;
+	let nPrevHakurei = 0;
+	__PlayerPositionInInfomationAreaLoop();
+	__CreateTTHBossNameLoop();
+	loop{
+		__Wait( CL_STAGE_INFOMATION_REFRESH_INTERVAL );
+		let nPower = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
+		let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 );
+		if( m_nTTHPower == CL_TT_INVALID || nPrevPower != nPower ){
+			nPrevPower = nPower;
+			DeleteTexTextHandle( m_nTTHPower );
+			m_nTTHPower = CreateTexText16Cache( "P : " ~ [ ToStringInt( nPower ), "MAX" ][ nPower == 128 ] );
+		}
+		if( m_nTTHHakurei == CL_TT_INVALID || nPrevHakurei != nHakurei || m_nFlanCount - m_nFlanStageTime < 100 ){
+			let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
+			let nHakureiNorm = GetHakureiNorm();
+			nPrevHakurei = nHakurei;
+			DeleteTexTextHandle( m_nTTHHakurei );
+			m_nTTHHakurei = CreateTexText16Cache( "H : " ~ ToStringInt( nHakurei ) ~ "/" ~ ToStringInt( nHakureiNorm ) );
+		}
+		if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_RESULT, false ) ){ __CreateResult(); }
+	}
+}
+
+/**
+*	リザルトを表示可能な状態に加工し、フォントキャッシュに格納します。
+*/
+task __CreateResult(){
+	let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
+	DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT );
+	m_nTTHStageResultStage		= CreateTexText24Cache( ToStringInt( PopCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_CLEAR,			0 ) ) );
+	m_nTTHStageResultPoint		= CreateTexText24Cache( ToStringInt( PopCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_POINT,			0 ) ) );
+	m_nTTHStageResultGraze		= CreateTexText24Cache( ToStringInt( PopCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_GRAZE,			0 ) ) );
+	m_nTTHStageResultHakurei	= CreateTexText24Cache( ToStringInt( PopCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_HAKUREI,		0 ) ) );
+	m_nTTHStageResultRate		= CreateTexText24Cache( ToStringInt( PopCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_RATE,			0 ) ) );
+	m_nTTHStageResultPlayerInit	= CreateTexText24Cache( ToStringInt( PopCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_PLAYER_INIT,	0 ) ) );
+	m_nTTHStageResultTotal		= CreateTexText24Cache( ToStringInt( PopCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_TOTAL,			0 ) ) );
+	let nPlayerBonus	= PopCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_PLAYER,	-1 );
+	let nBombBonus		= PopCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_BOMB,		-1 );
+	if( nPlayerBonus	!= -1 ){ m_nTTHStageResultPlayer	= CreateTexText24Cache( ToStringInt( nPlayerBonus	) ); }
+	if( nBombBonus		!= -1 ){ m_nTTHStageResultBomb		= CreateTexText24Cache( ToStringInt( nBombBonus		) ); }
+	m_bStageResultRasterize = IsWritableTextureCreated( 1 );
+	while( nStage == GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) ){ yield; }
+	ClearRenderTarget( IMAGE_CL_WRITABLE_NAME_LIST[ 1 ] );
+	m_bStageResultRasterized = false;
+	DeleteTexTextHandle( m_nTTHStageResultStage			);
+	DeleteTexTextHandle( m_nTTHStageResultPoint			);
+	DeleteTexTextHandle( m_nTTHStageResultGraze			);
+	DeleteTexTextHandle( m_nTTHStageResultHakurei		);
+	DeleteTexTextHandle( m_nTTHStageResultRate			);
+	DeleteTexTextHandle( m_nTTHStageResultPlayerInit	);
+	DeleteTexTextHandle( m_nTTHStageResultPlayer		);
+	DeleteTexTextHandle( m_nTTHStageResultBomb			);
+	DeleteTexTextHandle( m_nTTHStageResultTotal			);
+	m_nTTHStageResultStage		= CL_TT_INVALID;
+	m_nTTHStageResultPoint		= CL_TT_INVALID;
+	m_nTTHStageResultGraze		= CL_TT_INVALID;
+	m_nTTHStageResultHakurei	= CL_TT_INVALID;
+	m_nTTHStageResultRate		= CL_TT_INVALID;
+	m_nTTHStageResultPlayerInit	= CL_TT_INVALID;
+	m_nTTHStageResultPlayer		= CL_TT_INVALID;
+	m_nTTHStageResultBomb		= CL_TT_INVALID;
+	m_nTTHStageResultTotal		= CL_TT_INVALID;
+}
+
+/**
+*	ステージの各情報を絵画します。
+*/
+function DrawStageInfomation(){
+	if( m_nTTHStageResultStage != CL_TT_INVALID ){ DrawStageResult(); }
+	if( m_nFlanLoadResourcePercentage != -1 ){ return; }
+	DrawStageInfomationTop();
+	DrawStageInfomationBottomLeft();
+	if( m_nStageMusicIndex >= 0 && m_nFlanCount - m_nStageStartMusicTime <= 300 ){ DrawStageBGM(); }
+	if( m_nFlanCount - m_nItemPlayerPowerMax < 120 ){ DrawMaxPower(); }
+	if( IsReplay() ){
+		SetAlpha( Min( m_nCenterAlpha, 96 ) );
+		DrawTexTextOnCache( CL_TTH_STAGE_DEMO, 0, 0, GetCenterX() - 64, GetCenterY() + 36 );
+		SetAlpha( 255 );
+	}
+	if( length( m_aItemGetPoint ) > 0 ){ DrawStageGetPoint(); }
+}
+
+/**
+*	MAX POWER MODE!を絵画します。
+*/
+function DrawMaxPower(){
+	let nCount = m_nFlanCount - m_nItemPlayerPowerMax;
+	let nX = SlowDown( 224, -80, nCount, 20 );
+	if( nCount > 110 ){
+		let nScaleX = SlowDown( 1, 3, nCount - 110, 10 );
+		let nScaleY = SlowDown( 1, 0, nCount - 110, 10 );
+		SetAlpha( SlowDown( 240, 0, nCount - 110, 10 ) );
+		SetGraphicScale( nScaleX, nScaleY );
+	}
+	SetColor( 255, 255, 192 );
+	SetAlpha( m_nCenterAlpha );
+	DrawTexTextOnCache( CL_TTH_STAGE_MAXPOWER, -1, 0, GetCenterX() + nX, GetCenterY() );
+	SetColor( 255, 255, 255 );
+	SetAlpha( 255 );
+	SetGraphicScale( 1, 1 );
+}
+
+/**
+*	ステージの各情報(上)を絵画します。
+*/
+function DrawStageInfomationTop(){
+	let nFSDTime = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, -1 );
+	if( nFSDTime >= 0 ){
+		let nBrightGB = Accelerate( 0, 255, nFSDTime, 3600 );
+		SetColor( 255, nBrightGB, nBrightGB / 2 );
+		SetAlpha( m_nCLSpellNameAlpha );
+		DrawTexTextOnCache( CL_TTHBASE_NUMBER + truncate( nFSDTime / 3600 ), 0, 0, GetClipMaxX() - 112, GetClipMinY() + 24 );
+		DrawTexTextOnCache( CL_TTH_MUSIC_SECOND, 0, 0, GetClipMaxX() - 88, GetClipMinY() + 24 );
+		DrawTexTextOnCache( CL_TTHBASE_NUMBER + truncate( nFSDTime / 60 ) % 60, 0, 0, GetClipMaxX() - 76, GetClipMinY() + 24 );
+		SetColor( 255, 255, 255 );
+		SetAlpha( 255 );
+	}
+	if( m_nBossNameAlpha > 0 && m_nTTHBossName != CL_TT_INVALID ){
+		SetAlpha( Min( m_nCLSpellNameAlpha, m_nBossNameAlpha ) );
+		DrawTexTextOnCache( m_nTTHBossName, 0, 0, GetClipMinX() + 88, GetClipMinY() + 20 );
+		SetAlpha( 255 );
+	}
+}
+
+/**
+*	ステージの各情報(右下)を絵画します。
+*/
+function DrawStageInfomationBottomRight(){
+	let nBaseX = GetClipMaxX() - 24;
+	SetAlpha( m_nBottomRightAlpha );
+	DrawCount( nBaseX );
+	SetAlpha( 255 );
+}
+
+/**
+*	ステージの各情報(左下)を絵画します。
+*/
+function DrawStageInfomationBottomLeft(){
+	let nBaseX = GetClipMinX() + 16;
+	let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 1 );
+	let nTTHLevel =	CL_TTHBASE_LEVEL_MINI + GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 ) +
+					[ 0, CL_TTH_LEVELMINI_EXTRA ][ nStage >= 10 || ( nStage == 7 && m_nSpellPracticeBGStage >= 10 ) ];
+	SetAlpha( m_nBottomLeftAlpha );
+	SetColor( 255, 192, 192 );
+	DrawTexTextOnCache( nTTHLevel, -2, 0, nBaseX, GetClipMaxY() - 12 );
+	if( m_bStagePractice ){
+		SetColor( 192, 255, 255 );
+		DrawTexTextOnCache( CL_TTHBASE_LEVEL_MINI + [ CL_TTH_LEVELMINI_PRACTICE, CL_TTH_LEVELMINI_PRACTICE_SPELL ][ nStage == 7 ], -2, 0, nBaseX, GetClipMaxY() - 24 );
+	}
+	SetColor( 255, 255, 255 );
+	DrawTexTextOnCache( m_nTTHPower, -2, 0, nBaseX, GetClipMaxY() - 36 );
+	let nBrightR = [ 255, 128 ][ GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN_GAUGE, 255 ) > 254 ];
+	let nBrightB = [ 255, 96 ][ GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 ) >= GetHakureiNorm() ];
+	SetColor( nBrightR, 255, nBrightB );
+	DrawTexTextOnCache( m_nTTHHakurei, -2, 0, nBaseX, GetClipMaxY() - 50 );
+	SetColor( 255, 255, 255 );
+	SetAlpha( 255 );
+}
+
+/**
+*	経過秒数を絵画します。
+*
+*	@param nBaseX 基本X座標
+*/
+function DrawCount( let nBaseX ){
+	SetColor( 255, 192, 255 );
+	DrawTexTextOnCache( m_nTTHFrameCountSeconds, 0, 0, nBaseX, GetClipMaxY() - 24 );
+	SetColor( 255, 255, 192 );
+	DrawTexTextOnCache( m_nTTHTimerCountSeconds, 0, 0, nBaseX, GetClipMaxY() - 12 );
+	SetColor( 255, 255, 255 );
+}
+
+/**
+*	アイテム取得時の点数を絵画します。
+*/
+function DrawStageGetPoint(){
+	ascent( let i in 0..length( m_aItemGetPoint ) ){
+		let anPointInfo = m_aItemGetPoint[ i ];
+		if( anPointInfo[ ITEM_GET_POINT_TEXTURE ] == -1 ){
+			if( !GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_BOSS_EVENT_ENABLE, false ) ){
+				ascent( let j in 0..length( m_abItemWritableTextureUsed ) ){
+					if( !m_abItemWritableTextureUsed[ j ] ){
+						m_abItemWritableTextureUsed[ j ] = true;
+						anPointInfo[ ITEM_GET_POINT_TEXTURE ] = j;
+						break;
+					}
+				}
+			}
+			if( anPointInfo[ ITEM_GET_POINT_TEXTURE ] == -1 ){ anPointInfo[ ITEM_GET_POINT_TEXTURE ] = -2; }
+			else{
+				SetAlpha( 255 );
+				SetColor( 255, 255, [ 255, 128 ][ anPointInfo[ ITEM_GET_POINT_STRONG ] == 1 ] );
+				m_szCLDefaultRenderSurface = SetRenderTarget( IMAGE_CL_WRITABLE_MINI_NAME_LIST[ anPointInfo[ ITEM_GET_POINT_TEXTURE ] ] );
+				DrawTexTextOnCache( anPointInfo[ ITEM_GET_POINT_TTH ], 0, 0, 8, 8 );
+				SetRenderTarget( m_szCLDefaultRenderSurface );
+				DeleteTexTextHandle( anPointInfo[ ITEM_GET_POINT_TTH ] );
+			}
+			m_aItemGetPoint[ i ] = anPointInfo;
+		}
+		else{
+			SetAlpha( Accelerate( 255, 16, m_nFlanCount - anPointInfo[ ITEM_GET_POINT_TIME ], ITEM_DRAW_POINT_TIMEOUT ) );
+			if( anPointInfo[ ITEM_GET_POINT_TEXTURE ] == -2 ){
+				SetColor( 255, 255, [ 255, 128 ][ anPointInfo[ ITEM_GET_POINT_STRONG ] == 1 ] );
+				DrawTexTextOnCache( anPointInfo[ ITEM_GET_POINT_TTH ], 0, 0, anPointInfo[ ITEM_GET_POINT_X ], anPointInfo[ ITEM_GET_POINT_Y ] );
+			}
+			if( anPointInfo[ ITEM_GET_POINT_TEXTURE ] >= 0 ){
+				__DrawChrRect( IMAGE_CL_WRITABLE_MINI_NAME_LIST[ anPointInfo[ ITEM_GET_POINT_TEXTURE ] ], anPointInfo[ ITEM_GET_POINT_X ] + 8, anPointInfo[ ITEM_GET_POINT_Y ], 0, 0, 64, 16 );
+			}
+		}
+	}
+	SetColor( 255, 255, 255 );
+	SetAlpha( 255 );
+}
+
+/**
+*	BGM曲名を絵画します。
+*/
+function DrawStageBGM(){
+	let nCount = m_nFlanCount - m_nStageStartMusicTime;
+	if( nCount > 300 ){ return; }
+	if( nCount <= 10 ){
+		let nScaleX = SlowDown( 3, 1, nCount, 10 );
+		let nScaleY = SlowDown( 0, 1, nCount, 10 );
+		SetAlpha( SlowDown( 0, 240, nCount, 10 ) );
+		SetGraphicScale( nScaleX, nScaleY );
+	}
+	if( nCount > 200 ){ SetAlpha( Min( SlowDown( 240, 0, nCount - 200, 100 ), m_nBGMAlpha ) ); }
+	else{ SetAlpha( m_nBGMAlpha ); }
+	DrawTexTextOnCache( CL_TTH_MUSIC_MARKER, 0, 0, GetCenterX() - 112, GetClipMaxY() - 16 );
+	DrawTexTextOnCache( CL_TTHBASE_BGM_TITLE + m_nStageMusicIndex, -2, 0, GetCenterX() - 96, GetClipMaxY() - 16 );
+	SetAlpha( 255 );
+	SetGraphicScale( 1, 1 );
+}
+
+/**
+*	ステージリザルトを絵画します。
+*/
+function DrawStageResult(){
+	if( m_bStageResultRasterize && IsRenderFrame() ){
+		m_bStageResultRasterize = false;
+		m_szCLDefaultRenderSurface = SetRenderTarget( IMAGE_CL_WRITABLE_NAME_LIST[ 1 ] );
+		__DrawStageResult();
+		SetRenderTarget( m_szCLDefaultRenderSurface );
+		m_bStageResultRasterized = true;
+	}
+	SetAlpha( m_nFadeOutAlpha );
+	if( !m_bStageResultRasterized ){ __DrawStageResult(); }
+	else{ __DrawChrRect( IMAGE_CL_WRITABLE_NAME_LIST[ 1 ], GetCenterX(), GetCenterY() - 64, 116, 56, 256, 288 ); }
+	SetAlpha( 255 );
+}
+
+/**
+*	ステージリザルトを絵画します。
+*/
+function __DrawStageResult(){
+	let nTTHLevel = [ CL_TTH_RESULT_PENALTY_EASY, CL_TTH_RESULT_PENALTY_NORMAL, CL_TTH_RESULT_PENALTY_HARD, CL_TTH_RESULT_PENALTY_LUNATIC ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 ) ];
+	let anTTHHeading	= [ CL_TTH_RESULT_BONUS_STAGE,	CL_TTH_RESULT_BONUS_POINT,	CL_TTH_RESULT_BONUS_GRAZE,	CL_TTH_RESULT_BONUS_HAKUREI,	CL_TT_INVALID,	CL_TT_INVALID,	nTTHLevel,							CL_TTH_RESULT_BONUS_PLAYER,			CL_TTH_RESULT_BONUS_TOTAL	];
+	let anTTHOperand	= [ CL_TTH_RESULT_SYMBOL_EQUAL,	CL_TTH_RESULT_SYMBOL_EQUAL,	CL_TTH_RESULT_SYMBOL_EQUAL,	CL_TTH_RESULT_SYMBOL_EQUAL,		CL_TT_INVALID,	CL_TT_INVALID,	CL_TTH_RESULT_SYMBOL_PERCENTAGE,	CL_TTH_RESULT_SYMBOL_PERCENTAGE,	CL_TTH_RESULT_SYMBOL_EQUAL	];
+	let anTTHValues		= [ m_nTTHStageResultStage,		m_nTTHStageResultPoint,		m_nTTHStageResultGraze,		m_nTTHStageResultHakurei,		CL_TT_INVALID,	CL_TT_INVALID,	m_nTTHStageResultRate,				m_nTTHStageResultPlayerInit,		m_nTTHStageResultTotal		];
+	if( !( m_nTTHStageResultPlayer == CL_TT_INVALID || m_nTTHStageResultBomb == CL_TT_INVALID ) ){
+		anTTHHeading[ 6 ]	= CL_TTH_RESULT_BONUS_PLAYER;
+		anTTHOperand[ 6 ]	= CL_TTH_RESULT_SYMBOL_EQUAL;
+		anTTHValues[ 6 ]	= m_nTTHStageResultPlayer;
+		anTTHHeading[ 7 ]	= CL_TTH_RESULT_BONUS_BOMB;
+		anTTHOperand[ 7 ]	= CL_TTH_RESULT_SYMBOL_EQUAL;
+		anTTHValues[ 7 ]	= m_nTTHStageResultBomb;
+	}
+	ascent( let i in 0..length( anTTHHeading ) ){
+		if( i == 6 || i == 7 ){ SetColor( 255, 128, 128 ); }
+		else if( i >= 4 ){ SetColor( 255, 255, 128 ); }
+		let nDstY = i * 24 + 96;
+		if( anTTHHeading[ i ] != CL_TT_INVALID && anTTHValues[ i ] != CL_TT_INVALID ){
+			DrawTexTextOnCache( CL_TTHBASE_RESULT + anTTHHeading[ i ], 0, 0, 128, nDstY );
+			DrawTexTextOnCache( CL_TTHBASE_RESULT + anTTHOperand[ i ], 0, 0, 224, nDstY );
+			DrawTexTextOnCache( anTTHValues[ i ], 0, 0, 256, nDstY );
+		}
+	}
+	DrawTexTextOnCache( CL_TTHBASE_RESULT + [ CL_TTH_RESULT_CLEAR_STAGE, CL_TTH_RESULT_CLEAR_ALL ][ m_bStagePractice || GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) >= 5 ], 0, 0, 144, 64 );
+	SetColor( 255, 255, 255 );
+}

@@ -1,0 +1,263 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ2B　ボス　八意 永琳　通常攻撃2
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Eirin - 通常攻撃2]
+#Text[ステージ2B ボス
+八意 永琳]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Eirin.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 100;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		SetTimer( 44 );
+		SetLife( 2500 );
+		SetDamageRate( 75, 75 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_EIYA + CL_TTH_CHARACTER_NAME_EIYA_EIRIN;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 150;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 180 );
+
+		Concentration01( 30 );
+		SetAction( ACT_SHOT_B5, 90 );
+		__Wait( 30 );
+
+		let nAssign = 1;
+		PlaySELoop( seShot3, 6000, 8 );
+
+		loop{
+
+			/** 回転全方向カーブ弾 */
+			RollRoundCurveShot( nAssign );
+			__Wait( 60 );
+
+			/** 移動 */
+			Move( 60 );
+			__Wait( 120 );
+
+			nAssign = - nAssign;
+
+		}
+
+	}
+
+	/**
+	*	回転全方向カーブ弾
+	*	@param nAssign	割り振り係数
+	*/
+	task RollRoundCurveShot( let nAssign ){
+
+		let nNum = 52 + 6 * m_nLevel;
+		let nFrame = 4;
+		let nWay = 3 + m_nLevel;
+		let nAngle = rand( 0, 360 );
+		let nWayAngle = 360 / nWay;
+		let nNumAngle = nWayAngle * 0.13 * nAssign;
+
+		loop( nNum ){
+			let nX = GetX();
+			let nY = GetY();
+			let _nAngle = nAngle;
+			loop( nWay ){
+				CurveShot( nX, nY, _nAngle, nAssign );
+				_nAngle += nWayAngle;
+			}
+			__Wait( nFrame );
+			nAngle += nNumAngle;
+		}
+
+	}
+
+	/**
+	*	カーブ弾
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nAngle	角度
+	*	@param nAssign	割り振り係数
+	*/
+	function CurveShot( let nX, let nY, let nAngle, let nAssign ){
+
+		let nFrame = 60;
+		let nSpeed = 4;
+		let nMaxSpeed = 1.6 + 0.2 * m_nLevel;
+		let nAccelSpeed = ( nMaxSpeed - nSpeed ) / nFrame;
+		let nAddAngle = 3 * nAssign;
+		let anGraphic = [ US_RICE_M_R_PURPLE, US_RICE_M_PURPLE ];
+		if( nAssign == - 1 ){ anGraphic = [ US_RICE_M_R_BLUE, US_RICE_M_BLUE ]; }
+		let nDelay = 15;
+
+		CreateShotA( 0, nX, nY, nDelay );
+		SetShotDataA( 0, 0, nSpeed, nAngle, nAddAngle, nAccelSpeed, nMaxSpeed, anGraphic[ 0 ] );
+		SetShotDataA( 0, nFrame, NULL, NULL, 0, 0, 0, anGraphic[ 1 ] );
+		FireShot( 0 );
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 10;
+		let nMaxMoveX = 20;
+		let nMinMoveY = 10;
+		let nMaxMoveY = 20;
+
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

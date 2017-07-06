@@ -1,0 +1,330 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ6　ボス　博麗 霊夢（白）　戦闘前
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#BackGround[User]
+#ScriptVersion[2]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\ReimuW.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 100;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDemo = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage ){ LoadGraphic( IMAGE_CL_CUTIN_MARISA ); }
+		SetLife( 1 );
+		SetDamageRate( 0, 0 );
+		BehaviorBoss( ACT_STAND3 );
+		SetPosition( CL_MIN_X, CL_MIN_Y - 140 );
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 残像描画 */
+		DrawBlur( m_szImageBoss );
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 会話開始 */
+		CreateEventFromScript( "Talk" );
+		while( GetEventStep() != 1 ){ yield; }
+
+		/** 移動＋ボスID設定 */
+		SetEnemyMarker( true );
+		let nFrame = 150;
+		SetAction( ACT_MOVE, nFrame );
+		SetBlur( nFrame );
+		SlowMove( FLAN_BOSS_HOME_X + RandBlur( 0.1 ), CL_CEN_Y - 32, nFrame );
+		let nBossID = CL_TTH_CHARACTER_NAME_YOUMU + CL_TTH_CHARACTER_NAME_YOUMU_REIMU;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		__Wait( nFrame );
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE_NEXTPHASE, true );
+		while( GetEventStep() != 2 ){ yield; }
+
+		/** BGM */
+		PlayMusicEx( 31 );
+		nFrame = 120;
+		SetBlur( nFrame );
+		_SlowMove( GetX(), FLAN_BOSS_HOME_Y, nFrame );
+		__Wait( nFrame );
+		while( OnEvent() ){ yield; }
+
+		/** 決闘タイマー設定 */
+		if( m_bStage && !m_bSpellPractice ){
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, 0 ); 
+			yield;
+		}
+
+		/** 戦闘開始 */
+		AddLife( -1 );
+
+	}
+
+	/**
+	*	初速大きめの減速移動
+	*	@param nX		移動先x座標
+	*	@param nY		移動先y座標
+	*	@param nFrame	移動完了までのフレーム数
+	*/
+	task _SlowMove( let nX, let nY, let nFrame ){
+		let _nX = GetX();
+		let _nY = GetY();
+		let nForce = GetGapLength( _nX, _nY, nX, nY ) * 5;
+		let nAngle = GetGapAngle( _nX, _nY, nX, nY );
+		SetMovePositionHermite( nX, nY, nForce, nAngle, 0, 0, nFrame - 1 );
+		loop( nFrame - 1 ){ yield; }
+		SetMovePosition02( nX, nY, 1 );
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	会話
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_event Talk{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Event.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 敵カットイン画像 */
+	m_aszImageCutInEnemy = [
+		cutReimuW,
+		cutReimuW3,
+		cutReimuW,
+		cutReimuW2,
+		cutReimuW5,
+		cutReimuW4,
+		cutReimuW,
+		cutReimuW,
+		cutReimuW,
+		cutReimuW
+	];
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	@MainLoop{
+
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayerC( m_nWaitFrame, "いい加減にしろ\nいつまで逃げ回ってるんだ霊夢" );
+		SetStep( 1 );
+		TextOutEnemyB( 150, "私はここにいるわ" );
+		SetNameFromTextEnemy( "博麗 霊夢", "楽園の素敵な巫女" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "紫や幽々子から話は聞いたでしょう？" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "あぁ、おかげでお前に聞きたいことが\nありすぎて迷うくらいだ" );
+		InCharEnemy( CUT_ENEMY_BAD );
+		TextOutEnemy( "もう時間は殆ど残ってないわ" );
+		DeleteNameEnemy();
+		TextOutPlayer( "それも分かってるぜ…でも\n本当はもう少し時間あれば" );
+		TextOutPlayer( "一緒に茶でも飲んで最後の最後まで\nゆっくり語っていたかったんだがな" );
+		InCharPlayer( CUT_PLAYER_UNEASY );
+		TextOutPlayer( "ズルいぜ\n私に何も言わないで消えちまうなんて" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "あなただけ贔屓になんて出来ない" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "あなたたちは全て私の前に平等な存在" );
+		TextOutEnemy( "残酷だけど、最初から知ってて\nそして誰にも打ち明けなかったわ" );
+		InCharPlayer( CUT_PLAYER_CRY );
+		TextOutPlayer( "私とそこいらの魑魅魍魎と同じ扱いかよ\n…ひどいぜ" );
+		TextOutEnemy( "それでいいの。私は博麗の巫女よ" );
+		InCharPlayer( CUT_PLAYER_UNEASY );
+		TextOutPlayer( "なぁ霊夢、本当に\n私も霊夢も皆消えちまうのか？" );
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "今から動けばどうなるとか\nそういうことはないのか？" );
+		InCharEnemy( CUT_ENEMY_BAD );
+		TextOutEnemy( "昔から言っていたはずよ\n努力ほど無駄なものはないって" );
+		TextOutEnemy( "そして残念だけど、あなたもこのまま\n幻想郷と共に消えるでしょうね" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "今まで\n私の我侭に付き合ってくれてありがとう" );
+		TextOutEnemy( "そして、ゴメンね。" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "せめて、苦しまないように…って\n思ったけど、もう無理みたい" );
+		TextOutPlayer( "……" );
+		InCharEnemy( CUT_ENEMY_BAD );
+		TextOutEnemy( "もう、これで最期になるけど\n何か言いたいことない？" );
+		TextOutPlayer( "…もういいぜ、分かったよ" );
+		TextOutPlayer( "どうしてもこれが\n避けられぬ運命だと言うなら" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "最期の決闘相手が霊夢だというのも\nまた運命だ" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "あんたは私に勝ちたいの？\nそれとも私に勝って欲しいの？" );
+		TextOutPlayer( "勿論勝ちたい…いや\n１００％本気のお前に勝ちたい！" );
+		InCharPlayer( CUT_PLAYER_TEMPER );
+		TextOutPlayer( "お前に幻想郷永遠の勝敗を賭けて\n最終弾幕決闘を申し込む！" );
+		TextOutEnemy( "このままでいれば日没くらいまでは\n私ここにいられるけど" );
+		InCharEnemy( CUT_ENEMY_ANGRY );
+		TextOutEnemy( "弾幕勝負始めたら最後、私の体なんて\nもう最悪数分しか持たないわ" );
+		TextOutPlayer( "……" );
+		TextOutEnemy( "……" );
+		InCharEnemy( CUT_ENEMY_SMILE );
+		TextOutEnemy( "…分かったわ\nあんたがそれを望むなら…" );
+		SetStep( 2 );
+		InCharEnemy( CUT_ENEMY_ANGRY );
+		TextOutEnemyC( 120, "永遠の勝敗を決める最期の勝負\n…受けて立つ！" );
+		InCharPlayer( CUT_PLAYER_SMILE );
+		TextOutPlayer( "それでこそ霊夢だ\n手加減は絶対に許さないぜ" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "望むところよ" );
+		InCharPos( IMAGE_CL_CUTIN_MARISA, LEFT, 0, 0 );
+		InCharEnemy( CUT_ENEMY_ANGRY2 );
+		AllFront();
+		TextOut( "\c[RED]幻想郷は私の物、あんたに渡さないわ！\n\c[BLUE]幻想郷はお前だけのものじゃないぜ！" );
+		End();
+
+	}
+
+}

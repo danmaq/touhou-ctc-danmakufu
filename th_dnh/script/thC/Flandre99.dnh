@@ -1,66 +1,210 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ1A　中ボス　フランドール・スカーレット　戦闘後
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#BackGround[User]
+#ScriptVersion[2]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_enemy_main{
 
-	// 共通関数読み込み
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
 	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Flandre.dnh"
 
-	// 画像及び効果音ファイル
-	let imgList=[];
-	let seList=[];
 
-	// 各種設定値
-	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
 
-	// -------------------------------------------------------------------------
-	@Initialize{
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y - 1000;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+	FLAN_ENEMY_COLLISION_A = 0;
+	FLAN_ENEMY_COLLISION_B = 0;
 
-		// ボス初期設定（ファイルのロード他）
-		if(!THC){
-			seList=seList~seListEnemy;
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 前のスペルで倒されたか */
+	let _m_bDead;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDemo = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		_m_bDead = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_DEAD, true ); 
+		SetLife( 1 );
+		SetDamageRate( 0, 0 );
+		let nX = [ GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_X, CL_CEN_X ), CL_CEN_X ][ _m_bDead ];
+		let nY = [ GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, CL_MIN_Y + 120 ), CL_MIN_Y - 1000 ][ _m_bDead ];
+		SetPosition( nX, nY );
+		FLAN_BOSS_HOME_X = CL_MAX_X + 140;
+		FLAN_BOSS_HOME_Y = nY;
+		SetEnemyMarker( false );
+		BehaviorBoss( ACT_STAND4 );
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+		/** 個別終了設定 */
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_DEAD ); 
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_X ); 
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_Y ); 
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 撃破音or逃亡 */
+		if( _m_bDead ){ PlaySEEx( seBossExplode ); }
+		else{
+			__Wait( 60 );
+			SetAction( ACT_MOVE_R, 120 );
+			let nX = GetX();
+			let nY = GetY();
+			move( nX + ( FLAN_BOSS_HOME_X - nX ) * 0.4, nY + ( FLAN_BOSS_HOME_Y - nY ) * 0.4, 60, 1 );
+			__Wait( 60 );
+			move( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y, 60, - 1 );
+			__Wait( 60 );
 		}
-		InitializeBoss(imgList,seList);
 
-		// スペルカード設定
-		SetLife(1);
-		SetDamageRate(0,0);
-		SetEnemyMarker(false);
-		SetX(minX-128);
-		SetY(minY-128);
-
-		// メイン処理
-		Main;
+		/** 戦闘終了 */
+		VanishEnemy();
 
 	}
 
-	// -------------------------------------------------------------------------
-	@MainLoop{
+	/**
+	*	ふらつき移動
+	*	@param nX		移動先x座標
+	*	@param nY		移動先y座標
+	*	@param nFrame	移動完了フレーム数
+	*	@param nAssign	割り振り係数
+	*/
+	task move( let nX, let nY, let nFrame, let nAssign ){
 
-		// カウンタ加算
-		m_nCount++;
+		let _nX = GetX();
+		let _nY = GetY();
+		let nForceStart = 200;
+		let nAngleStart = GetGapAngle( _nX, _nY, nX, nY ) - 60 * nAssign;
+		let nForceEnd = 0;
+		if( nAssign == 1 ){ nForceEnd = nForceStart; }
+		let nAngleEnd = GetGapAngle( _nX, _nY, nX, nY ) + 60 * nAssign;
 
-		yield;
-
-	}
-
-	// メイン処理 --------------------------------------------------------------
-	task Main{
-
-		yield;
-
-		PlaySE(seBossExplode);
-		VanishEnemy;
-
-	}
-
-	// -------------------------------------------------------------------------
-	@Finalize{
-
-		// ロードしたファイルを削除
-		DeleteGraphicList(imgList,seList);
-
-	}
-
-	// -------------------------------------------------------------------------
-	@DrawLoop{
+		SetMovePositionHermite( nX, nY, nForceStart, nAngleStart, nForceEnd, nAngleEnd, nFrame - 1 );
+		__Wait( nFrame - 1 );
+		SetMovePosition02( nX, nY, 1 );
 
 	}
 

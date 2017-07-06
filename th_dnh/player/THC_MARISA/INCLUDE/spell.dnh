@@ -1,8 +1,10 @@
 //////////////////////////////////////////////////////////////////////
 //====================================================================
 //
-//	東方夢終劇専用 プレイヤースクリプト共通ライブラリ
-//		魔理沙専用 スペルカード部
+//	THC Extend-Library (extends FLAN)
+//
+//		※プレイヤースペルスクリプト部です。
+//			それ以外からはインクルードしないでください。
 //
 //====================================================================
 //////////////////////////////////////////////////////////////////////
@@ -10,24 +12,67 @@
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	上位ライブラリをインクルード
+//	下位ライブラリをインクルード
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
-#include_function "player\THC_MARISA\INCLUDE\common.dnh"
+
+#include_function "\lib\FLAN\HEADER\Spell.dnh"
+#include_function "\lib\THCCL\Common.dnh"
 
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	定数
+//	インデックスをインクルード
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-let PLAYER_SHOTPULL_FRAMELAG		= 30;	// キーを離してからショット発射が残るフレーム
+#include_function ".\IMAGE\index.dnh"
+#include_function ".\SE\index.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定数(書換不可)
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**	星のα値です。 */
 let SPELL_STAR_ALPHA				= 192;
+/**	星の赤輝度テーブルです。 */
 let SPELL_STAR_COLORTABLE_RED		= [ 255,	255,	127,	0,		0,		0,		0,		0,		127,	255,	255 ];
+/**	星の緑輝度テーブルです。 */
 let SPELL_STAR_COLORTABLE_GREEN		= [ 0,		127,	255,	255,	255,	255,	127,	0,		0,		0,		0 ];
+/**	星の青輝度テーブルです。 */
 let SPELL_STAR_COLORTABLE_BLUE		= [ 0,		0,		0,		0,		127,	255,	255,	255,	255,	255,	127 ];
+/**	星の輝度テーブルのサイズです。 */
 let SPELL_STAR_COLORTABLE_LENGTH	= Min( Min( length( SPELL_STAR_COLORTABLE_RED ), length( SPELL_STAR_COLORTABLE_GREEN ) ), length( SPELL_STAR_COLORTABLE_BLUE ) );
+/**	レーザー用加算弾(赤)のX座標です。 */
+let SPELL_LASER_SRC_X_RED		= 256;
+/**	レーザー用加算弾(橙)のX座標です。 */
+let SPELL_LASER_SRC_X_ORANGE	= 286;
+/**	レーザー用加算弾(黄)のX座標です。 */
+let SPELL_LASER_SRC_X_YELLOW	= 316;
+/**	レーザー用加算弾(緑)のX座標です。 */
+let SPELL_LASER_SRC_X_GREEN		= 346;
+/**	レーザー用加算弾(水)のX座標です。 */
+let SPELL_LASER_SRC_X_AQUA		= 376;
+/**	レーザー用加算弾(青)のX座標です。 */
+let SPELL_LASER_SRC_X_BLUE		= 406;
+/**	レーザー用加算弾(紫)のX座標です。 */
+let SPELL_LASER_SRC_X_PURPLE	= 436;
+/**	レーザー用加算弾(白)のX座標です。 */
+let SPELL_LASER_SRC_X_WHITE		= 466;
+/**	レーザー用加算弾のY座標です。 */
+let SPELL_LASER_SRC_Y			= 302;
+/**	レーザー用加算弾の大きさです。 */
+let SPELL_LASER_SRC_SIZE		= 30;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定数(書換可能)
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////
@@ -39,44 +84,62 @@ let SPELL_STAR_COLORTABLE_LENGTH	= Min( Min( length( SPELL_STAR_COLORTABLE_RED )
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	共通動作
-//--------------------------------------------------------------------
-//////////////////////////////////////////////////////////////////////
-
-//	共通メインタスク
-task CommonTask(){
-//	CreateDebugWindow();
-	yield;
-}
-
-//	共通初期化部
-function OnInitialize( let nInvincibilityTime ){
-	SetPlayerInvincibility( nInvincibilityTime );
-	CommonTask();
-}
-
-//	共通メインループ
-function OnMainLoop(){
-	OnMainLoopCommon();
-}
-
-//	共通終了部
-function OnFinalize(){
-}
-
-
-//////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
 //	キャラ固有の共通動作
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	星を作る
-function CreateStar( let szImageFile, let nSize, let nColorR, let nColorG, let nColorB ){
+/**
+*	レーザー用の加算弾スペルエフェクトオブジェクトを生成します。
+*	ショットテクスチャを使用するので拡大するほどジャギーが目立ちます。
+*	(FLAN)CreateSquareSpellEffectObjectのラッパーです。
+*
+*	@param nSrcX 規定の元画像X座標
+*	@param nDstX 生成オブジェクトの幅
+*	@param nDstY 生成オブジェクトの高さ
+*	@return スペルエフェクトオブジェクトハンドル
+*/
+function CreateLaserObject( let nSrcX, let nDstX, let nDstY ){
+	let obj = CreateSquareSpellEffectObject( IMAGE_CL_SHOT_ALL, nSrcX, SPELL_LASER_SRC_Y, SPELL_LASER_SRC_SIZE, SPELL_LASER_SRC_SIZE, nDstX, nDstY );
+	ObjEffect_SetRenderState( obj, ADD );
+	Obj_SetAutoDelete( obj, false );
+	return obj;
+}
+
+/**
+*	星型のスペルエフェクトオブジェクトを生成します。
+*	星ショットテクスチャを使用するので拡大するほどジャギーが目立ちます。
+*
+*	@param nSize サイズ
+*	@param nColorR 赤輝度
+*	@param nColorG 緑輝度
+*	@param nColorB 青輝度
+*	@return スペルエフェクトオブジェクトハンドル
+*/
+function CreateStar( let nSize, let nColorR, let nColorG, let nColorB ){
+	let obj = CreateSquareSpellEffectObject( IMAGE_CL_SHOT_ALL, 224, 338, 32, 32, nSize, nSize );
+	ObjEffect_SetRenderState( obj, ADD );
+	nColorR /= 1.5;
+	nColorG /= 1.5;
+	nColorB /= 1.5;
+	ascent( let i in 0..4 ){ ObjEffect_SetVertexColor( obj, i, SPELL_STAR_ALPHA, nColorR, nColorG, nColorB ); }
+	return obj;
+}
+
+/**
+*	星型のスペルエフェクトオブジェクトを生成します。
+*	15頂点使用しプリミティブの集合で星型を表現するので画像は滑らかですが重いです。
+*
+*	@param nSize サイズ
+*	@param nColorR 赤輝度
+*	@param nColorG 緑輝度
+*	@param nColorB 青輝度
+*	@return スペルエフェクトオブジェクトハンドル
+*/
+function __CreateStar( let nSize, let nColorR, let nColorG, let nColorB ){
 	let obj = Obj_Create( OBJ_SPELL );
 	Obj_SetAutoDelete( obj, true );
 	ObjEffect_SetLayer( obj, 2 );
-	ObjEffect_SetTexture( obj, szImageFile );
+	ObjEffect_SetTexture( obj, IMAGE_STAR_EDGE );
 	ObjEffect_SetRenderState( obj, ADD );
 	ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLEFAN );
 	ObjEffect_CreateVertex( obj, 30 );
@@ -90,16 +153,24 @@ function CreateStar( let szImageFile, let nSize, let nColorR, let nColorG, let n
 	return obj;
 }
 
-//	スターダストレヴァリエ風の星
+/**
+*	直線等加速運動をするスターダストレヴァリエ風の星型スペルエフェクトオブジェクトです。
+*
+*	@param nAngle 発射角度
+*	@param nSize サイズ
+*	@param nStartSpeed 初速度
+*	@param nColorR 赤輝度
+*	@param nColorG 緑輝度
+*	@param nColorB 青輝度
+*/
 task ReverieStar( let nAngle, let nSize, let nStartSpeed, let nColorR, let nColorG, let nColorB ){
 	let nObjCount = 0;
-	let obj = CreateStar( imgEdge, nSize, nColorR, nColorG, nColorB );
+	let obj = CreateStar( nSize, nColorR, nColorG, nColorB );
 	Obj_SetAngle( obj, nAngle );
 	Obj_SetPosition( obj, GetPlayerX(), GetPlayerY() );
+	AnimationScaleEffectObject( obj, 0, 1, 30, [ FLAN_ANIMATION_SLOWDOWN ] );
 	while( !Obj_BeDeleted( obj ) && !IsOutPos( Obj_GetX( obj ), Obj_GetY( obj ), 128 ) ){
-		let fScale = SlowDown( 0, 1, nObjCount, 20 );
-		ObjEffect_SetScale( obj, fScale, fScale );
-		StarLoop( obj, nObjCount, 2, nSize, 1.4 );
+		__StarLoop( obj, nObjCount, 2, nSize, 1.4 );
 		Obj_SetSpeed( obj, Accelerate( nStartSpeed, 20, nObjCount, 192 ) );
 		yield;
 		nObjCount++;
@@ -107,8 +178,57 @@ task ReverieStar( let nAngle, let nSize, let nStartSpeed, let nColorR, let nColo
 	Obj_Delete( obj );
 }
 
-//	星ループ中の処理
-function StarLoop( let obj, let nObjCount, let nRotateSpeed, let nCollisionSize, let nDamage ){
+/**
+*	星型スペルエフェクトオブジェクトのループ中の共通処理です。
+*	各オブジェクトタスク内部から呼び出してください。
+*
+*	@param obj スペルエフェクトオブジェクトハンドル
+*	@param nCount カウンタ
+*	@param nRotateSpeed 回転速度
+*	@param nCollisionSize 当たり判定の直径
+*	@param nDamage ダメージ量
+*/
+function __StarLoop( let obj, let nCount, let nRotateSpeed, let nCollisionSize, let nDamage ){
 	SetIntersectionCircle( Obj_GetX( obj ), Obj_GetY( obj ), nCollisionSize / 2, nDamage, true );
-	ObjEffect_SetAngle( obj, 0, 0, nObjCount * nRotateSpeed );
+	ObjEffect_SetAngle( obj, 0, 0, nCount * nRotateSpeed );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+// 共通処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	初期化時に呼ばれます。
+*	@param nArgv 任意の値
+*/
+function onInitialize( let nArgv ){
+	LoadGraphic( IMAGE_CL_SHOT_ALL );
+	onInitializeTHC( nArgv );
+}
+
+/**
+*	毎フレームごとに呼ばれます。
+*	@param nArgv 任意の値
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onMainLoop( let nArgv, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	onMainLoopTHC( nArgv, nCount, nPhase, nPhaseCount, nPrevPhase );
+}
+
+/**
+*	終了時に呼ばれます。
+*	@param nArgv 任意の値
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onFinalize( let nArgv, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	onFinalizeTHC( nArgv, nCount, nPhase, nPhaseCount, nPrevPhase );
 }

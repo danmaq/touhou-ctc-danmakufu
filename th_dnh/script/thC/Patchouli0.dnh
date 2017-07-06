@@ -1,185 +1,278 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ3A　ボス　パチュリー・ノーレッジ　戦闘前
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#BackGround[User]
+#ScriptVersion[2]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_enemy_main{
 
-	// 共通関数読み込み
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
 	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Patchouli.dnh"
 
-	// 画像及び効果音ファイル
-	let imgBoss=dotBossPatchouli;
-	let imgCutInEnemy=cutPatchouli;
-	let imgCutInPlayer=cutMarisa;
-	let imgList=[imgBoss,imgCutInEnemy,imgCutInPlayer];
-	let seList=[];
 
-	// 各種設定値
-	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
-	Debug_SetLevel;
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
 
-	// -------------------------------------------------------------------------
-	@Initialize{
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
 
-		// ボス初期設定（ファイルのロード他）
-		if(!THC){seList=seList~seListEnemy;}
-		InitializeBoss(imgList,seList);
-		DeleteEnemyShotToItem(ALL);
 
-		// スペルカード設定
-		SetLife(1);
-		SetDamageRate(0,0);
-		SetEnemyMarker(false);
-		SetX(minX-64);
-		SetY(minY-128);
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
 
-		// ボス基本処理、メイン処理
-		BehaviorBoss(ACT_STAND3);
-		Main;
 
-	}
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
 
-	// -------------------------------------------------------------------------
-	@MainLoop{
 
-		// 当たり判定（自弾,体当たり）
-		Collision(32,24);
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
 
-		// ダメージ音
-		PlayDamageSE(seDamage);
 
-		// カウンタ加算
-		m_nCount++;
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
 
-		yield;
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
 
-	}
+		/** 共通初期設定 */
+		m_bDemo = true;
+		InitializeBoss();
 
-	// メイン処理 --------------------------------------------------------------
-	task Main{
-
-		yield;
-
-		// 会話開始
-		CreateEventFromScript("Talk");
-		SetCommonData(CD_STAGE_EVENT,true);
-		while(GetEventStep!=1){yield;}
-
-		SetEnemyMarker(true);
-		move(cenX,minY+120+RandBlur(0.1),90);
-		while(GetEventStep!=2){yield;}
-
-		// BGM
-		DeleteMusic( bgmList[ 6 ] );
-		_PlayMusicEx( bgmList[ 7 ], "" );
-		let bgmCount=m_nCount;
-		while(OnEvent||m_nCount-bgmCount<=30){yield;}
-		DeleteCommonData(CD_STAGE_EVENT);
-
-		AddLife(-1);
+		/** 個別初期設定 */
+		SetLife( 1 );
+		SetDamageRate( 0, 0 );
+		BehaviorBoss( ACT_STAND3 );
+		SetPosition( CL_MIN_X - 60, CL_MIN_Y - 140 );
+		SetEnemyMarker( false );
 
 	}
 
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-	// 移動 --------------------------------------------------------------------
-	function move(let x, let y, let fr){
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		let power=GetGapLength(GetX,GetY,x,y)*2;
-		let angle=GetGapAngle(GetX,GetY,x,y);
-		SetMovePositionHermite(x,y,power,angle,0,0,fr);
-		SetAction(ACT_MOVE,fr);
+		/** 共通終了設定 */
+		FinalizeBoss();
 
 	}
 
-	// -------------------------------------------------------------------------
-	@Finalize{
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		// ロードしたファイルを削除
-		DeleteGraphicList(imgList,seList);
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
 
 	}
 
-	// -------------------------------------------------------------------------
-	@DrawLoop{
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-		// ボス描画
-		DrawBoss(imgBoss);
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 会話開始 */
+		CreateEventFromScript( "Talk" );
+		while( GetEventStep() != 1 ){ yield; }
+
+		/** 移動＋ボスID設定 */
+		SetEnemyMarker( true );
+		let nFrame = 90;
+		let nEventCount = m_nFlanCount;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		let nBossID = CL_TTH_CHARACTER_NAME_KOUMA + CL_TTH_CHARACTER_NAME_KOUMA_PACHOULI;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		while( GetEventStep() != 2 || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** BGM */
+		PlayMusicEx( 7 );
+		nFrame = 30;
+		nEventCount = m_nFlanCount;
+		while( OnEvent() || m_nFlanCount - nEventCount <= nFrame ){ yield; }
+
+		/** 戦闘開始 */
+		AddLife( -1 );
 
 	}
 
 }
 
-// 会話 ------------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	会話
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_event Talk{
 
-	// 共通関数読み込み
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
 	#include_function ".\INCLUDE\Event.dnh"
 
-	// 画像及び効果音ファイル
-	let imgCutInEnemy=cutPatchouli;
-	let imgCutInPlayer=cutMarisa;
 
-	// -------------------------------------------------------------------------
-	@Initialize{
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
 
-		// メイン処理
-		Main;
+	/** 敵カットイン画像 */
+	m_aszImageCutInEnemy = [
+		cutPatchouli,
+		cutPatchouli,
+		cutPatchouli2,
+		cutPatchouli,
+		cutPatchouli,
+		cutPatchouli,
+		cutPatchouli,
+		cutPatchouli,
+		cutPatchouli,
+		cutPatchouli3
+	];
 
-	}
 
-	// -------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
 	@MainLoop{
 
-		yield;
-
-	}
-
-	// メイン処理 --------------------------------------------------------------
-	task Main{
-
-		ChrIn(imgCutInPlayer,LEFT,CUT_NORMAL);
-		Player;
-		TextOut("\c[BLUE]そこの引きこもり知識人");
-		Enemy;
-		TextOut("\c[RED]なによまた来たの？そこの初代Ｇ");
-		Player;
-		TextOut("\c[BLUE]グレートウィッチ・マリサの略か？");
-		SetStep(1);
-		ChrIn(imgCutInEnemy,RIGHT,CUT_NORMAL);
-		SetNameFromText(RIGHT,TEXT_RED,"パチュリー・ノーレッジ","知識と日陰の少女");
-		Enemy;
-		TextOutB(90,"\c[RED]９７％不正解");
-		Player;
-		TextOut("\c[BLUE]それはおいといて、だ");
-		Enemy;
-		TextOut("\c[RED]持ってかないでー");
-		Player;
-		TextOut("\c[BLUE]話が飛躍しすぎだぜ");
-		Enemy;
-		TextOut("\c[RED]いいのよ、どうせあんたがここに来て本を万引きしていかなかったためしがないし");
-		TextOut("\c[RED]…で、マジレスするとおおよそ用件は分かるわ");
-		Player;
-		TextOut("\c[BLUE]あぁ、霊夢がいなくなってしまったんだが、お前はなんか心当たりないか？");
-		Enemy;
-		TextOut("\c[RED]紅白は…");
-		Player;
-		TextOut("\c[BLUE]…？　どうしたんだ？");
-		Enemy;
-		TextOut("\c[RED]死んだわ");
-		Player;
-		TextOut("\c[BLUE]は…？なんだよ、彼岸のサボり魔に名前でも書かれたのか？");
-		Enemy;
-		TextOut("\c[RED]親しい人が死んだってのにあなたは平気なの？私はそういう感情知らないけど");
-		Player;
-		TextOut("\c[BLUE]あぁ、お前のおかげで霊夢が何処へ逝ったかもどうすれば解決できるかも全て分かったぜ");
-		TextOut("\c[BLUE]しかしあいつもそこまで賽銭なくて貧乏なら私にでも相談すればよかったのに");
-		Enemy;
-		TextOut("\c[RED]それは私の知ったことじゃないわ、それとさりげなくウチの書物懐に仕舞わない！");
-		SetStep(2);
-		TextOut("\c[RED]丁度いいわ");
-		TextOut("\c[RED]そろそろ今までの本のツケを弾幕で払ってもらおうかしらと思ってた頃なのよね");
-		Player;
-		TextOut("\c[BLUE]悪いがお前の負けだ、お前のおかげで私の不安は全て晴れたからな");
-		TextOut("\c[BLUE]魔理沙１２０％の実力、とくと目に焼き付けるがいい！");
-		Enemy;
-		TextOut("\c[RED]えっと、目の前の黒いのを消極的にバラバラにする方法は…と");
-		End;
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayerC( m_nWaitFrame, "そこの引きこもり知識人" );
+		TextOutEnemy( "なによまた来たの？そこの初代Ｇ" );
+		SetStep( 1 );
+		InCharPlayer( CUT_PLAYER_SMILE );
+		TextOutPlayerB( 90, "グレートウィッチ・マリサの略か？" );
+		SetNameFromTextEnemy( "パチュリー・ノーレッジ", "知識と日陰の少女" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "９７％不正解" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "それはおいといて、だ" );
+		TextOutEnemy( "持ってかないでー" );
+		DeleteNameEnemy();
+		InCharPlayer( CUT_PLAYER_BAD );
+		TextOutPlayer( "話が飛躍しすぎだぜ" );
+		TextOutEnemy( "いいのよ、どうせあんたが\nここで万引きしていかなかった例がないし" );
+		TextOutEnemy( "それはそうとして\nおおよそ用件は分かっているわ" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "あぁ、霊夢がいなくなってしまったんだが\nお前は何か心当たりないか？" );
+		TextOutEnemy( "紅白は…" );
+		InCharPlayer( CUT_PLAYER_SERIOUS );
+		TextOutPlayer( "…？　どうしたんだ？" );
+		InCharEnemy( CUT_ENEMY_AFFECT );
+		TextOutEnemy( "死んだわ" );
+		InCharPlayer( CUT_PLAYER_SURPRISE );
+		TextOutPlayer( "は…？　なんだよ\n彼岸のサボり魔に名前でも書かれたのか？" );
+		TextOutEnemy( "で？あなたはそれでいいの？" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "あぁ\nお前のおかげで霊夢が何処へ逝ったのかも" );
+		TextOutPlayer( "どうすればこの一件を解決出来るかも\n全て分かったぜ" );
+		InCharPlayer( CUT_PLAYER_UNEASY );
+		TextOutPlayer( "あいつもそこまで賽銭なくて貧乏なら\n私にでも相談すればよかったのに" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "それは私の知ったことじゃないわ\nそれと…" );
+		InCharEnemy( CUT_ENEMY_AFFECT );
+		TextOutEnemy( "さりげなくウチの書物懐に仕舞わない！" );
+		SetStep( 2 );
+		TextOutEnemy( "丁度いいわ" );
+		InCharEnemy( CUT_ENEMY_NORMAL );
+		TextOutEnemy( "そろそろ今までの本のツケを弾幕で払って\nもらおうかしらと思ってた頃なのよね" );
+		InCharPlayer( CUT_PLAYER_NORMAL );
+		TextOutPlayer( "悪いがお前の負けだ、お前のおかげで\n私の不安は全て晴れたからな" );
+		TextOutPlayer( "魔理沙１２０％の実力、とくと\n目に焼き付けるがいい！" );
+		TextOutEnemy( "えっと、目の前の黒いのを\n消極的にバラバラにする方法は…と" );
+		End();
 
 	}
 

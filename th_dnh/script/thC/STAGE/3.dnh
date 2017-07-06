@@ -11,39 +11,55 @@
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
+//	定数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
 //	メンバ変数
-//--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	内部処理
+//	固有処理部
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	各シナリオ共通の初期化(個別初期化前の動作)
+/**
+*	各シナリオ共通の初期化処理です。
+*	(個別初期化前の動作)
+*/
 function Stage3CommonInitializeBefore(){
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, false );
 	ForbidBomb( true );
 	ForbidShot( true );
+	ClearByteCodeCache();
 }
 
-//	各シナリオ共通の初期化(個別初期化後の動作)
+/**
+*	各シナリオ共通の初期化処理です。
+*	(個別初期化後の動作)
+*/
 function Stage3CommonInitializeAfter(){
+	DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_BG_PARAMETER );
+	SetTryHistory( 3 );
 	SetStage( 3 );
 	ForbidBomb( false );
 	ForbidShot( false );
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, true );
 }
 
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	メイン部
+//	共通処理部
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	メインタスク
+/**
+*	ステージごとのメインタスクです。
+*/
 task Stage3(){
 	Stage3CommonInitializeBefore();
 	alternative( m_nScenario )
@@ -59,38 +75,82 @@ task Stage3(){
 	case( 3 ){ Stage3D(); }
 }
 
-//	@MainLoop()にて毎フレーム呼ばれる部分
-function Stage3Loop(){
-	alternative( m_nScenario )
-	case( 0 ){ Stage3AMainLoop(); }
-	case( 1 ){ Stage3BMainLoop(); }
-	case( 2 ){ Stage3CMainLoop(); }
-	case( 3 ){ Stage3DMainLoop(); }
+/**
+*	毎フレームごとに呼ばれます。
+*
+*	@param nScenario シナリオ番号
+*	@param nStage 現在のステージ
+*	@param nStageCount 現在のステージカウンタ値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function Stage3Loop( let nScenario, let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	alternative( nScenario )
+	case( 0 ){ Stage3AMainLoop( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+	case( 1 ){ Stage3BMainLoop( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+	case( 2 ){ Stage3CMainLoop( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+	case( 3 ){ Stage3DMainLoop( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 }
 
-//	@BackGround()にて毎回呼ばれる部分
-function Stage3DrawBackGround(){
-	alternative( m_nScenario )
-	case( 0 ){ Stage3ADrawBackGround(); }
-	case( 1 ){ Stage3BDrawBackGround(); }
-	case( 2 ){ Stage3CDrawBackGround(); }
-	case( 3 ){ Stage3DDrawBackGround(); }
+/**
+*	背景絵画時に呼ばれます。
+*
+*	@param nScenario シナリオ番号
+*	@param nStage 現在のステージ
+*	@param nStageCount 現在のステージカウンタ値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function Stage3DrawBackGround( let nScenario, let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	alternative( nScenario )
+	case( 0 ){ Stage3ADrawBackGround( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+	case( 1 ){ Stage3BDrawBackGround( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+	case( 2 ){ Stage3CDrawBackGround( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+	case( 3 ){ Stage3DDrawBackGround( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 }
 
-//	@DrawBottomObject()にて毎回呼ばれる部分
-function Stage3DrawBottomObject(){
-	alternative( m_nScenario )
-	case( 0 ){ Stage3ADrawBottomObject(); }
-	case( 1 ){ Stage3BDrawBottomObject(); }
-	case( 2 ){ Stage3CDrawBottomObject(); }
-	case( 3 ){ Stage3DDrawBottomObject(); }
+/**
+*	下位レイヤ絵画時に呼ばれます。
+*
+*	@param nScenario シナリオ番号
+*	@param nStage 現在のステージ
+*	@param nStageCount 現在のステージカウンタ値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function Stage3DrawBottomObject( let nScenario, let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	alternative( nScenario )
+	case( 0 ){ Stage3ADrawBottomObject( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+	case( 1 ){ Stage3BDrawBottomObject( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+	case( 2 ){ Stage3CDrawBottomObject( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+	case( 3 ){ Stage3DDrawBottomObject( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 }
 
-//	@DrawTopObject()にて毎回呼ばれる部分
-function Stage3DrawTopObject(){
-	alternative( m_nScenario )
-	case( 0 ){ Stage3ADrawTopObject(); }
-	case( 1 ){ Stage3BDrawTopObject(); }
-	case( 2 ){ Stage3CDrawTopObject(); }
-	case( 3 ){ Stage3DDrawTopObject(); }
+/**
+*	上位レイヤ絵画時に呼ばれます。
+*
+*	@param nScenario シナリオ番号
+*	@param nStage 現在のステージ
+*	@param nStageCount 現在のステージカウンタ値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function Stage3DrawTopObject( let nScenario, let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	alternative( nScenario )
+	case( 0 ){ Stage3ADrawTopObject( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+	case( 1 ){ Stage3BDrawTopObject( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+	case( 2 ){ Stage3CDrawTopObject( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+	case( 3 ){ Stage3DDrawTopObject( nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 }

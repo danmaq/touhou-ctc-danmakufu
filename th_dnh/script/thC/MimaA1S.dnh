@@ -1,0 +1,348 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ1D　中ボス　魅魔　スペル1
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[MimaA - スペル1]
+#Text[ステージ1D 中ボス
+魅魔]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Mima.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 100;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** ダメージ率（スペルプラクティス及び単体テスト時に固くする） */
+	let m_nDamageRate = 1;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( m_nLevel == 3 ){ m_nLevel = 1; }
+		else{ m_nLevel = 0; }
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+			m_nDamageRate = 0.3;
+		}
+		else{
+			CheckTimer();
+			if( m_bStagePractice ){ m_nDamageRate = 0.3; }
+		}
+		SetTimer( 43 );
+		SetLife( 150 );
+		SetDamageRate( 5 * m_nDamageRate, 5 * m_nDamageRate );
+		SetShotAutoDeleteClip( 96, 96, 96, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_LOTUS + CL_TTH_CHARACTER_NAME_LOTUS_MIMA;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出＋個別終了設定 */
+		if( m_bStage && !m_bSpellPractice ){
+			DropItemTHC( 6 );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_X, GetX() ); 
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, GetY() ); 
+		}
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_LOTUS + CL_TTH_SPELL_STAGE1_HALFWAY_1 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		let nTurn = 0;
+		let nAssign = 1;
+
+		loop{
+
+			/** 扇状流星弾 */
+			SetAction( ACT_SHOT_B5, 120 );
+			PlaySEEx( sePower );
+			Concentration01( 120 );
+			__Wait( 120 );
+			WideCometShot( nTurn );
+
+			/** 移動 */
+			Move( 30 );
+			__Wait( 30 );
+
+			/** カーブ流星弾 */
+			CurveCometShot( nAssign );
+			__Wait( 150 );
+
+			SetDamageRate( 18.5 * m_nDamageRate, 18.5 * m_nDamageRate );
+			if( nTurn < 4 ){ nTurn ++; }
+			nAssign = - nAssign;
+
+		}
+
+	}
+
+	/**
+	*	扇状流星弾
+	*	@param nTurn	ターン数
+	*/
+	function WideCometShot( let nTurn ){
+
+		let nWay = 9 + 2 * m_nLevel + trunc( nTurn / 2 );
+		let nX = GetX();
+		let nY = GetY();
+		let nWayAngle = 150 / ( nWay - 1 );
+		let nAngle = GetAngleToPlayer() - nWayAngle * ( nWay - 1 ) / 2;
+
+		PlaySEEx( seKira1 );
+		PlaySELoop( seShot3, 120, 6 );
+		loop( nWay ){
+			CometShotA( nX, nY, nAngle );
+			nAngle += nWayAngle;
+		}
+
+	}
+
+	/**
+	*	流星弾A
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nAngle	角度
+	*/
+	function CometShotA( let nX, let nY, let nAngle ){
+
+		/** 親弾 */
+		let nSpeed = 1;
+		let nMaxSpeed = 5;
+		let nAccelSpeed = ( nMaxSpeed - nSpeed ) / 90;
+		let nGraphic = US_STAR_M_PURPLE;
+
+		/** 子弾 */
+		let _nSpeed = 3;
+		let _anGraphic = [ US_STAR_S_RED, US_STAR_S_SKY, US_STAR_S_GREEN, US_STAR_S_PURPLE ];
+		let _nDelay = 30;
+		let _nFrame = 3;
+		let _nNum = 40;
+
+		CreateShotA( 0, nX, nY, 0 );
+		SetShotDataA( 0, 0, nSpeed, nAngle, 0, nAccelSpeed, nMaxSpeed, nGraphic );
+		ascent( let i in 0 .. _nNum ){
+			let _nAngle = nAngle + 180 + RandBlur( 5 );
+			CreateShotA( 1, 0, 0, _nDelay );
+			SetShotDataA( 1, 0, _nSpeed, _nAngle, 0, - 0.04, - 99, _anGraphic[ i % 4 ] );
+			AddShot( _nFrame * i, 0, 1, 0 );
+		}
+		FireShot( 0 );
+
+	}
+
+	/**
+	*	カーブ流星弾
+	*	@param nAssign	割り振り係数
+	*/
+	function CurveCometShot( let nAssign ){
+
+		let nNum = 2 + m_nLevel;
+		let nWay = 18;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 2;
+		let nNumSpeed = 1;
+		let nAngle = GetAngleToPlayer();
+		let nWayAngle = 360 / nWay;
+
+		SetAction( ACT_SHOT_A4, 45 );
+		PlaySEEx( seShot1 );
+		ascent( let i in 0 .. nNum ){
+			let _nAngle = nAngle;
+			loop( nWay ){
+				CometShotB( nX, nY, nSpeed, _nAngle, i, nAssign );
+				_nAngle += nWayAngle;
+			}
+			nSpeed += nNumSpeed;
+		}
+
+	}
+
+	/**
+	*	流星弾B
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nSpeed	速度
+	*	@param nAngle	角度
+	*	@param nNumber	弾セット番号
+	*	@param nAssign	割り振り係数
+	*/
+	function CometShotB( let nX, let nY, let nSpeed, let nAngle, let nNumber, let nAssign ){
+
+		let nAddAngle = [ 1, - 1, 1 ][ nNumber ];
+		let nGraphic = [ US_STAR_M_BLUE, US_STAR_M_RED, US_STAR_M_YELLOW ][ nNumber ];
+		let nDelay = 10;
+		let nCurveFrame = 120;
+
+		CreateShotA( 0, nX, nY, nDelay );
+		SetShotDataA( 0, 0, nSpeed, nAngle, nAddAngle * nAssign, 0, 0, nGraphic );
+		SetShotDataA( 0, nCurveFrame, NULL, NULL, 0, 0, 0, nGraphic );
+		FireShot( 0 );
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 40;
+		let nMaxMoveX = 80;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 10;
+
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

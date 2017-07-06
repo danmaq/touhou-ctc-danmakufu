@@ -1,0 +1,303 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ3B　ボス　因幡 てゐ　スペル1
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[TewiB - スペル1]
+#Text[ステージ3B ボス
+因幡 てゐ]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Tewi.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 100;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 100;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		SetTimer( 63 );
+		SetLife( 500 );
+		SetDamageRate( 14, 14 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_EIYA + CL_TTH_CHARACTER_NAME_EIYA_TEWI;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){ DropItemTHC( 12 ); }
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_EIYA + CL_TTH_SPELL_STAGE3_BOSS_1 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		let nAssign = 1;
+
+		loop{
+
+			/** 時間差全方向弾 */
+			SetAction( ACT_SHOT_B5, 45 + 8 * ( 8 + 2 * m_nLevel ) );
+			Concentration01( 30 );
+			__Wait( 30 );
+			DelayRoundShot( nAssign );
+			__Wait( 120 );
+
+			/** 移動 */
+			Move( 90 );
+
+			/** ランダム子兎弾 */
+			if( m_nLevel < 3 ){
+				__Wait( 8 );
+				RandomLeveretShot();
+				__Wait( 82 );
+			}
+			else{
+				RandomLeveretShot();
+				__Wait( 90 );
+			}
+
+			nAssign = - nAssign;
+
+		}
+
+	}
+
+	/**
+	*	時間差全方向弾
+	*	@param nAssign	割り振り係数
+	*/
+	task DelayRoundShot( let nAssign ){
+
+		let nNum = 8 + 2 * m_nLevel;
+		let nFrame = 8;
+		let nWay = 48 + 4 * m_nLevel;
+		let nX = GetX();
+		let nY = GetY();
+		let nAngle = rand( 0, 360 );
+		let nNumAngle = 360 / nWay / 10 * nAssign;
+		let nGraphic = US_RICE_M_YELLOW;
+		let nLength = 140;
+		if( m_nLevel == 3 ){
+			nNum --;
+			nLength = 150;
+		}
+
+		ascent( let i in 0 .. nNum ){
+			let nSpeed = nLength / ( 120 - nFrame * i );
+			_RoundShot01( nX, nY, nSpeed, nAngle, nWay, nGraphic, 0 );
+			PlaySEEx( seShot1 );
+			__Wait( nFrame );
+			nAngle += nNumAngle;
+		}
+
+	}
+
+	/**
+	*	ランダム子兎弾
+	*/
+	task RandomLeveretShot{
+
+		let nNum = 74;
+		if( m_nLevel == 3 ){ nNum = 90; }
+		let nRandXY = 30;
+		let nBaseSpeed = 4;
+		let nAccelSpeed = - nBaseSpeed / 30;
+		let nRandAngle = 360 / 5;
+		let nBaseAngle = nRandAngle * rand_int( 0, 4 );
+		let nDelay = 12;
+		let nMaxCount = m_nLevel;
+		let nCount = nMaxCount;
+
+		PlaySELoop( seShot3, nNum, 6 );
+		while( nNum > 0 ){
+
+			/** ランダム弾 */
+			let nX = GetX() + RandBlur( nRandXY );
+			let nY = GetY() + RandBlur( nRandXY );
+			let nMaxSpeed = rand( 0.8, 2.4 );
+			let nSpeed = nBaseSpeed + nMaxSpeed;
+			let nAngle = nBaseAngle + RandBlur( nRandAngle / 2 );
+			LeveretShot( nX, nY, nSpeed, nAngle, nAccelSpeed, nMaxSpeed, nDelay );
+			nBaseAngle += nRandAngle;
+
+			/** 同フレーム内連射 */
+			if( nCount > 0 ){ nCount --; }
+			else{
+				nCount = nMaxCount;
+				nNum --;
+				yield;
+			}
+
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 40;
+		let nMaxMoveX = 80;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 10;
+
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

@@ -1,0 +1,556 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Extend-Library (extends FLAN)
+//		敵・弾・使い魔共通ライブラリ（ボスアニメーション）
+//
+//		※Boss.dnhからインクルードしてください。
+//			それ以外の敵・弾・使い魔で使用したい場合は、
+//			必要に応じてインクルードしてください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	インデックスをインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\IMAGE\index_boss.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	下位ライブラリをインクルード
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	アクション定数
+*	ボスドット絵の各カットの配置番号を以下とする
+*		1  5  9 13 17 21   25 29
+*		2  6 10 14 18 22   26 30
+*		3  7 11 15 19 23   27 31
+*		4  8 12 16 20 24   28 32
+*	各定数でどのようにアニメーションするかはコメントを参照（*は状況に応じて長く表示）
+*/
+let ACT_STAND1 =	-1;	//　立ち（アニメなし）		 1
+let ACT_STAND3 =	0;	//　立ち＋まばたき（3コマ）	 1-  2-  3-… 1-  5-  6-…
+let ACT_STAND4 =	1;	//　立ち＋まばたき（4コマ）	 1-  2-  3-  4-… 1-  5-  6-  4-…
+let ACT_MOVE =		2;	//　移動（自動で左右判定）	
+let ACT_MOVE_L =	3;	//　左移動					 9-*10-  9
+let ACT_MOVE_R =	4;	//　右移動					11-*12- 11
+let ACT_SHOT_A3 =	5;	//　弾幕A（3コマ）			17-*18- 17
+let ACT_SHOT_A3_B =	6;	//　弾幕A（3コマ-B）		17- 18-*19
+let ACT_SHOT_A3_C =	7;	//　弾幕A（3コマ-C）		20- 18- 17
+let ACT_SHOT_A4 =	8;	//　弾幕A（4コマ）			17- 18-*19- 18
+let ACT_SHOT_A5 =	9;	//　弾幕A（5コマ）			17- 18-*19- 18- 17
+let ACT_SHOT_B2 =	10;	//　弾幕B（2コマ）			21-*22
+let ACT_SHOT_B2_B =	11;	//　弾幕B（2コマ-B）		23-*24
+let ACT_SHOT_B3 =	12;	//　弾幕B（3コマ）			21-*22- 21
+let ACT_SHOT_B3_B =	13;	//　弾幕B（3コマ-B）		21- 23-*24
+let ACT_SHOT_B3_C =	14;	//　弾幕B（3コマ-C）		23-*24- 23
+let ACT_SHOT_B4 =	15;	//　弾幕B（4コマ）			21- 22-*23- 22
+let ACT_SHOT_B5 =	16;	//　弾幕B（5コマ）			21- 22-*23- 22- 21
+let ACT_SHOT_B5_B =	17;	//　弾幕B（5コマ-B）		21- 22-*24- 22- 21
+let ACT_SHOT_C =	18;	//　弾幕C					25-*(26- 27- 28- 29- 30- 31-…)- 32
+let ACT_SPELL3 =	19;	//　スペルカード（3コマ）	13-*14- 13
+let ACT_SPELL4 =	20;	//　スペルカード（4コマ）	13- 14-*15- 14
+let ACT_SPELL5 =	21;	//　スペルカード（5コマ）	13- 14-*15- 14- 13
+let ACT_SPELL5_B =	22;	//　スペルカード（5コマ-B）	13- 14- 15-*16- 15
+let ACT_ROLL =		23;	//　幽香回転				25- 29- 30- 31- 32- 25
+
+/**
+*	カット別描画矩形定数
+*	ボスドット絵の各カットの座標を表すための定数
+*	各定数がどこを示すのかはコメントとアクション定数のカット配置番号を参照
+*/
+let RECT_BOSS_LENGTH =	128;		//	カット正方形の一辺の長さ
+let RECT_BOSS_STAND0 =	[ 0, 0 ];	//	 1
+let RECT_BOSS_STAND1 =	[ 0, 1 ];	//	 2
+let RECT_BOSS_STAND2 =	[ 0, 2 ];	//	 3
+let RECT_BOSS_STAND3 =	[ 0, 3 ];	//	 4
+let RECT_BOSS_BLINK0 =	[ 1, 0 ];	//	 5
+let RECT_BOSS_BLINK1 =	[ 1, 1 ];	//	 6
+let RECT_BOSS_MOVE_L0 =	[ 2, 0 ];	//	 9
+let RECT_BOSS_MOVE_L1 =	[ 2, 1 ];	//	10
+let RECT_BOSS_MOVE_R0 =	[ 2, 2 ];	//	11
+let RECT_BOSS_MOVE_R1 =	[ 2, 3 ];	//	12
+let RECT_BOSS_SPELL0 =	[ 3, 0 ];	//	13
+let RECT_BOSS_SPELL1 =	[ 3, 1 ];	//	14
+let RECT_BOSS_SPELL2 =	[ 3, 2 ];	//	15
+let RECT_BOSS_SPELL3 =	[ 3, 3 ];	//	16
+let RECT_BOSS_SHOT_A0 =	[ 4, 0 ];	//	17
+let RECT_BOSS_SHOT_A1 =	[ 4, 1 ];	//	18
+let RECT_BOSS_SHOT_A2 =	[ 4, 2 ];	//	19
+let RECT_BOSS_SHOT_A3 =	[ 4, 3 ];	//	20
+let RECT_BOSS_SHOT_B0 =	[ 5, 0 ];	//	21
+let RECT_BOSS_SHOT_B1 =	[ 5, 1 ];	//	22
+let RECT_BOSS_SHOT_B2 =	[ 5, 2 ];	//	23
+let RECT_BOSS_SHOT_B3 =	[ 5, 3 ];	//	24
+let RECT_BOSS_ETC_A0 =	[ 6, 0 ];	//	25
+let RECT_BOSS_ETC_A1 =	[ 6, 1 ];	//	26
+let RECT_BOSS_ETC_A2 =	[ 6, 2 ];	//	27
+let RECT_BOSS_ETC_A3 =	[ 6, 3 ];	//	28
+let RECT_BOSS_ETC_B0 =	[ 7, 0 ];	//	29
+let RECT_BOSS_ETC_B1 =	[ 7, 1 ];	//	30
+let RECT_BOSS_ETC_B2 =	[ 7, 2 ];	//	31
+let RECT_BOSS_ETC_B3 =	[ 7, 3 ];	//	32
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** ライフが0になったか（trueになるとアニメが止まる） */
+let m_bDead = false;
+/** 描画α値（ラストスペル等で使用） */
+let m_nEnemyAlpha = 255;
+/** 特に指示しない場合のアクション */
+let m_nActionDefault = ACT_STAND3;
+/** 現在のアクション */
+let m_nAction = m_nActionDefault;
+/** アクションフレームカウンタ */
+let m_nActionCount = 0;
+/** アクション終了までのフレーム数 */
+let m_nActionCountMax = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+// アクション関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ボスの基本アクションを設定します。
+*	Initialize時に1度だけ必ず設定してください。
+*
+*	@param nAction	基本とするアクション定数（通常は立ちアクションのいずれか）
+*/
+task BehaviorBoss( let nAction ){
+	m_nActionDefault = nAction;
+	loop{
+		if( m_bDead ){ break; }
+		SetAction( m_nActionDefault, 0 );
+		while( m_nActionCount < m_nActionCountMax && !m_bDead ){
+			m_nActionCount++;
+			yield;
+		}
+	}
+}
+
+/**
+*	ボスのアクションを設定します。
+*	指定のフレーム数が経過すると基本アクションに移行します。
+*	なお、「立ち」「スペルカード」「回転」及び一部「弾幕」のフレーム数は固定されています。
+*
+*	@param nAction	アクション定数
+*	@param nFrame	アクションを行うフレーム数
+*/
+function SetAction( let nAction, let nFrame ){
+	alternative( nAction )
+	case( ACT_STAND1, ACT_STAND3, ACT_STAND4 ){ nFrame = 36000; }
+	case( ACT_SPELL3, ACT_SPELL4, ACT_SPELL5, ACT_SPELL5_B ){ nFrame = 100; }
+	case( ACT_ROLL ){ nFrame = 42; }
+	case( ACT_SHOT_A3_C ){ nFrame = 18; }
+	m_nAction = nAction;
+	m_nActionCount = 0;
+	m_nActionCountMax = nFrame;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ボスを描画します。アクション設定に伴いアニメーションします。
+*	通常はこちらを使用します。
+*
+*	@param szImageFile	ボス画像ファイル
+*/
+function DrawBoss( let szImageFile ){
+	_DrawBoss( szImageFile, GetX(), GetY() );
+}
+
+/**
+*	ボスを描画します。アクション設定に伴いアニメーションします。
+*	上下に浮遊しているように描画します。
+*
+*	@param szImageFile	ボス画像ファイル
+*/
+function DrawBossFloat( let szImageFile ){
+	_DrawBoss( szImageFile, GetX(), GetY() + 6 * sin( 3 * m_nFlanCount ) );
+}
+
+/**
+*	ボスを描画します。アクション設定に伴いアニメーションします。
+*	描画する中心の座標が指定できます。
+*
+*	@param szImageFile	ボス画像ファイル
+*	@param nX			描画x座標
+*	@param nY			描画y座標
+*/
+function _DrawBoss( let szImageFile, let nX, let nY ){
+	let anRect = [];
+	alternative( m_nAction )
+	/** 立ち＋まばたき */
+	case( ACT_STAND3 ){
+		let _nCount = 12;
+		let nCount = m_nActionCount % ( _nCount * 12 );
+		let nAnime = 2;
+		let anAnimeNum = [ 0, 1, 2, 0, 1, 2, 0, 3, 4, 0, 1, 2 ];
+		let anAnimeCount = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
+		ascent( let i in 0 .. 12 ){
+			if( nCount < _nCount * anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){ anRect = RECT_BOSS_STAND0; }
+		case( 1 ){ anRect = RECT_BOSS_STAND1; }
+		case( 2 ){ anRect = RECT_BOSS_STAND2; }
+		case( 3 ){ anRect = RECT_BOSS_BLINK0; }
+		case( 4 ){ anRect = RECT_BOSS_BLINK1; }
+	}
+	case( ACT_STAND4 ){
+		let _nCount = 12;
+		let nCount = m_nActionCount % ( _nCount * 12 );
+		let nAnime = 3;
+		let anAnimeNum = [ 0, 1, 2, 3, 0, 1, 2, 3, 0, 4, 5, 3 ];
+		let anAnimeCount = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
+		ascent( let i in 0 .. 12 ){
+			if( nCount < _nCount * anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){ anRect = RECT_BOSS_STAND0; }
+		case( 1 ){ anRect = RECT_BOSS_STAND1; }
+		case( 2 ){ anRect = RECT_BOSS_STAND2; }
+		case( 3 ){ anRect = RECT_BOSS_STAND3; }
+		case( 4 ){ anRect = RECT_BOSS_BLINK0; }
+		case( 5 ){ anRect = RECT_BOSS_BLINK1; }
+	}
+	/** 移動 */
+	case( ACT_MOVE, ACT_MOVE_L, ACT_MOVE_R ){
+		if( m_nAction == ACT_MOVE && GetSpeed() < 0.1 ){ anRect = RECT_BOSS_STAND0; }
+		else{
+			let nCount0 = 10;
+			if( m_nActionCountMax < 40 ){ nCount0 = trunc( m_nActionCountMax / 4 ); }
+			let nCount1 = m_nActionCountMax - nCount0;
+			let nAnime = 0;
+			let anAnimeNum = [ 0, 1, 0 ];
+			let anAnimeCount = [ nCount0, nCount1, m_nActionCountMax ];
+			ascent( let i in 0 .. 3 ){
+				if( m_nActionCount < anAnimeCount[ i ] ){
+					nAnime = anAnimeNum[ i ];
+					break;
+				}
+			}
+			let bMoveL = true;
+			alternative( m_nAction )
+			case( ACT_MOVE_R ){ bMoveL = false; }
+			case( ACT_MOVE ){
+				if( cos( GetAngle() ) > 0 ){ bMoveL = false; }
+			}
+			alternative( nAnime )
+			case( 0 ){
+				if( bMoveL ){ anRect = RECT_BOSS_MOVE_L0; }
+				else{ anRect = RECT_BOSS_MOVE_R0; }
+			}
+			case( 1 ){
+				if( bMoveL ){ anRect = RECT_BOSS_MOVE_L1; }
+				else{ anRect = RECT_BOSS_MOVE_R1; }
+			}
+		}
+	}
+	/** 弾幕（2コマ） */
+	case( ACT_SHOT_B2, ACT_SHOT_B2_B ){
+		let nCount0 = 6;
+		if( m_nActionCountMax < 18 ){ nCount0 = trunc( m_nActionCountMax / 3 ); }
+		let nAnime = 1;
+		let anAnimeNum = [ 0, 1 ];
+		let anAnimeCount = [ nCount0, m_nActionCountMax ];
+		ascent( let i in 0 .. 2 ){
+			if( m_nActionCount < anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){
+			alternative( m_nAction )
+			case( ACT_SHOT_B2 ){ anRect = RECT_BOSS_SHOT_B0; }
+			case( ACT_SHOT_B2_B ){ anRect = RECT_BOSS_SHOT_B2; }
+		}
+		case( 1 ){
+			alternative( m_nAction )
+			case( ACT_SHOT_B2 ){ anRect = RECT_BOSS_SHOT_B1; }
+			case( ACT_SHOT_B2_B ){ anRect = RECT_BOSS_SHOT_B3; }
+		}
+	}
+	/** 弾幕（3コマ） */
+	case( ACT_SHOT_A3, ACT_SHOT_B3, ACT_SHOT_B3_C ){
+		let nCount0 = 6;
+		if( m_nActionCountMax < 24 ){ nCount0 = trunc( m_nActionCountMax / 4 ); }
+		let nCount1 = m_nActionCountMax - nCount0;
+		let nAnime = 0;
+		let anAnimeNum = [ 0, 1, 0 ];
+		let anAnimeCount = [ nCount0, nCount1, m_nActionCountMax ];
+		ascent( let i in 0 .. 3 ){
+			if( m_nActionCount < anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){
+			alternative( m_nAction )
+			case( ACT_SHOT_A3 ){ anRect = RECT_BOSS_SHOT_A0; }
+			case( ACT_SHOT_B3 ){ anRect = RECT_BOSS_SHOT_B0; }
+			case( ACT_SHOT_B3_C ){ anRect = RECT_BOSS_SHOT_B2; }
+		}
+		case( 1 ){
+			alternative( m_nAction )
+			case( ACT_SHOT_A3 ){ anRect = RECT_BOSS_SHOT_A1; }
+			case( ACT_SHOT_B3 ){ anRect = RECT_BOSS_SHOT_B1; }
+			case( ACT_SHOT_B3_C ){ anRect = RECT_BOSS_SHOT_B3; }
+		}
+	}
+	case( ACT_SHOT_A3_B ){
+		let nCount0 = 6;
+		if( m_nActionCountMax < 24 ){ nCount0 = trunc( m_nActionCountMax / 4 ); }
+		let nAnime = 2;
+		let anAnimeNum = [ 0, 1, 2 ];
+		let anAnimeCount = [ nCount0, nCount0 * 2, m_nActionCountMax ];
+		ascent( let i in 0 .. 3 ){
+			if( m_nActionCount < anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){ anRect = RECT_BOSS_SHOT_A0; }
+		case( 1 ){ anRect = RECT_BOSS_SHOT_A1; }
+		case( 2 ){ anRect = RECT_BOSS_SHOT_A2; }
+	}
+	case( ACT_SHOT_A3_C ){
+		let nCount0 = 6;
+		let nAnime = 2;
+		let anAnimeNum = [ 0, 1, 2 ];
+		let anAnimeCount = [ 1, 2, 3 ];
+		ascent( let i in 0 .. 3 ){
+			if( m_nActionCount < nCount0 * anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){ anRect = RECT_BOSS_SHOT_A3; }
+		case( 1 ){ anRect = RECT_BOSS_SHOT_A1; }
+		case( 2 ){ anRect = RECT_BOSS_SHOT_A0; }
+	}
+	case( ACT_SHOT_B3_B ){
+		let nCount0 = 6;
+		if( m_nActionCountMax < 24 ){ nCount0 = trunc( m_nActionCountMax / 4 ); }
+		let nAnime = 2;
+		let anAnimeNum = [ 0, 1, 2 ];
+		let anAnimeCount = [ nCount0, nCount0 * 2, m_nActionCountMax ];
+		ascent( let i in 0 .. 3 ){
+			if( m_nActionCount < anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){ anRect = RECT_BOSS_SHOT_B0; }
+		case( 1 ){ anRect = RECT_BOSS_SHOT_B2; }
+		case( 2 ){ anRect = RECT_BOSS_SHOT_B3; }
+	}
+	/** 弾幕（4コマ） */
+	case( ACT_SHOT_A4, ACT_SHOT_B4 ){
+		let nCount0 = 6;
+		if( m_nActionCountMax < 30 ){ nCount0 = trunc( m_nActionCountMax / 5 ); }
+		let nCount1 = m_nActionCountMax - nCount0;
+		let nAnime = 1;
+		let anAnimeNum = [ 0, 1, 2, 1 ];
+		let anAnimeCount = [ nCount0, nCount0 * 2, nCount1, m_nActionCountMax ];
+		ascent( let i in 0 .. 4 ){
+			if( m_nActionCount < anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){
+			alternative( m_nAction )
+			case( ACT_SHOT_A4 ){ anRect = RECT_BOSS_SHOT_A0; }
+			case( ACT_SHOT_B4 ){ anRect = RECT_BOSS_SHOT_B0; }
+		}
+		case( 1 ){
+			alternative( m_nAction )
+			case( ACT_SHOT_A4 ){ anRect = RECT_BOSS_SHOT_A1; }
+			case( ACT_SHOT_B4 ){ anRect = RECT_BOSS_SHOT_B1; }
+		}
+		case( 2 ){
+			alternative( m_nAction )
+			case( ACT_SHOT_A4 ){ anRect = RECT_BOSS_SHOT_A2; }
+			case( ACT_SHOT_B4 ){ anRect = RECT_BOSS_SHOT_B2; }
+		}
+	}
+	/** 弾幕（5コマ） */
+	case( ACT_SHOT_A5, ACT_SHOT_B5, ACT_SHOT_B5_B ){
+		let nCount0 = 6;
+		if( m_nActionCountMax < 36 ){ nCount0 = trunc( m_nActionCountMax / 6 ); }
+		let nCount1 = m_nActionCountMax - nCount0;
+		let nAnime = 0;
+		let anAnimeNum = [ 0, 1, 2, 1, 0 ];
+		let anAnimeCount = [ nCount0, nCount0 * 2, nCount1 - nCount0, nCount1, m_nActionCountMax ];
+		ascent( let i in 0 .. 5 ){
+			if( m_nActionCount < anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){
+			alternative( m_nAction )
+			case( ACT_SHOT_A5 ){ anRect = RECT_BOSS_SHOT_A0; }
+			others{ anRect = RECT_BOSS_SHOT_B0; }
+		}
+		case( 1 ){
+			alternative( m_nAction )
+			case( ACT_SHOT_A5 ){ anRect = RECT_BOSS_SHOT_A1; }
+			others{ anRect = RECT_BOSS_SHOT_B1; }
+		}
+		case( 2 ){
+			alternative( m_nAction )
+			case( ACT_SHOT_A5 ){ anRect = RECT_BOSS_SHOT_A2; }
+			case( ACT_SHOT_B5 ){ anRect = RECT_BOSS_SHOT_B2; }
+			case( ACT_SHOT_B5_B ){ anRect = RECT_BOSS_SHOT_B3; }
+		}
+	}
+	/** 弾幕（特殊） */
+	case( ACT_SHOT_C ){
+		let nCount = 6;
+		let nAnime = 7;
+		if( m_nActionCountMax < 12 ){ nCount = trunc( ( m_nActionCountMax + 1 ) / 2 ); }
+		if( m_nActionCount < nCount ){ nAnime = 0; }
+		else if( m_nActionCount < m_nActionCountMax - nCount ){ nAnime = trunc( ( m_nActionCount - nCount ) / nCount ) % 6 + 1; }
+		alternative( nAnime )
+		case( 0 ){ anRect = RECT_BOSS_ETC_A0; }
+		case( 1 ){ anRect = RECT_BOSS_ETC_A1; }
+		case( 2 ){ anRect = RECT_BOSS_ETC_A2; }
+		case( 3 ){ anRect = RECT_BOSS_ETC_A3; }
+		case( 4 ){ anRect = RECT_BOSS_ETC_B0; }
+		case( 5 ){ anRect = RECT_BOSS_ETC_B1; }
+		case( 6 ){ anRect = RECT_BOSS_ETC_B2; }
+		case( 7 ){ anRect = RECT_BOSS_ETC_B3; }
+	}
+	/** スペルカード */
+	case( ACT_SPELL3 ){
+		let nAnime = 0;
+		let anAnimeNum = [ 0, 1, 0 ];
+		let anAnimeCount = [ 6, 94, 100 ];
+		ascent( let i in 0 .. 3 ){
+			if( m_nActionCount < anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){ anRect = RECT_BOSS_SPELL0; }
+		case( 1 ){ anRect = RECT_BOSS_SPELL1; }
+	}
+	case( ACT_SPELL4 ){
+		let nAnime = 1;
+		let anAnimeNum = [ 0, 1, 2, 1 ];
+		let anAnimeCount = [ 6, 12, 94, 100 ];
+		ascent( let i in 0 .. 4 ){
+			if( m_nActionCount < anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){ anRect = RECT_BOSS_SPELL0; }
+		case( 1 ){ anRect = RECT_BOSS_SPELL1; }
+		case( 2 ){ anRect = RECT_BOSS_SPELL2; }
+	}
+	case( ACT_SPELL5 ){
+		let nAnime = 0;
+		let anAnimeNum = [ 0, 1, 2, 1, 0 ];
+		let anAnimeCount = [ 6, 12, 88, 94, 100 ];
+		ascent( let i in 0 .. 5 ){
+			if( m_nActionCount < anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){ anRect = RECT_BOSS_SPELL0; }
+		case( 1 ){ anRect = RECT_BOSS_SPELL1; }
+		case( 2 ){ anRect = RECT_BOSS_SPELL2; }
+	}
+	case( ACT_SPELL5_B ){
+		let nAnime = 2;
+		let anAnimeNum = [ 0, 1, 2, 3, 2 ];
+		let anAnimeCount = [ 6, 12, 18, 94, 100 ];
+		ascent( let i in 0 .. 5 ){
+			if( m_nActionCount < anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){ anRect = RECT_BOSS_SPELL0; }
+		case( 1 ){ anRect = RECT_BOSS_SPELL1; }
+		case( 2 ){ anRect = RECT_BOSS_SPELL2; }
+		case( 3 ){ anRect = RECT_BOSS_SPELL3; }
+	}
+	/** 幽香回転 */
+	case( ACT_ROLL ){
+		let _nCount = 7;
+		let nAnime = 0;
+		let anAnimeNum = [ 0, 1, 2, 3, 4, 0 ];
+		let anAnimeCount = [ 1, 2, 3, 4, 5, 6 ];
+		ascent( let i in 0 .. 6 ){
+			if( m_nActionCount < _nCount * anAnimeCount[ i ] ){
+				nAnime = anAnimeNum[ i ];
+				break;
+			}
+		}
+		alternative( nAnime )
+		case( 0 ){ anRect = RECT_BOSS_ETC_A0; }
+		case( 1 ){ anRect = RECT_BOSS_ETC_B0; }
+		case( 2 ){ anRect = RECT_BOSS_ETC_B1; }
+		case( 3 ){ anRect = RECT_BOSS_ETC_B2; }
+		case( 4 ){ anRect = RECT_BOSS_ETC_B3; }
+	}
+	/** 立ち（アニメなし） */
+	others{ anRect = RECT_BOSS_STAND0; }
+	let nRectX = RECT_BOSS_LENGTH * anRect[ 0 ];
+	let nRectY = RECT_BOSS_LENGTH * anRect[ 1 ];
+	SetAlpha( m_nEnemyAlpha );
+	__DrawChrRect( szImageFile, nX, nY, nRectX, nRectY, RECT_BOSS_LENGTH, RECT_BOSS_LENGTH );
+}
+

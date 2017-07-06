@@ -1,0 +1,472 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ6　ボス　博麗 霊夢（真）　スペル5
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[ReimuX - スペル5]
+#Text[ステージ6 ボス
+博麗 霊夢（真）]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\ReimuX.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 140;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 120;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDeadEffect = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetTimer( 65 );
+		SetLife( 500 );
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		else{ LastSpell(); }
+		SetDamageRate( 10, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 301 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_YOUMU + CL_TTH_CHARACTER_NAME_YOUMU_REIMU;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+		/** 前スペルでミスした場合は終了 */
+		if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_DEAD, false ) ){ VanishEnemy(); }
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 残像描画 */
+		DrawBlur( m_szImageBoss );
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		SetBlur( nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 55 );
+		if( m_bDead ){ break; }
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_YOUMU + CL_TTH_SPELL_STAGE6_BOSS_LAST_5 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE_NEXTPHASE, true );
+		if( m_bDead ){ break; }
+
+		/** 封魔陣 */
+		SetAction( ACT_SHOT_B5, 180 );
+		PlaySEEx( sePower );
+		Concentration01( 120 );
+		Fuuma();
+		__Wait( 120 );
+		while( GetRatio() > 0.8 ){ yield; }
+		if( m_bDead ){ break; }
+
+		/** 回転全方向弾 */
+		RollRoundShot();
+		while( GetRatio() > 0.5 ){ yield; }
+		if( m_bDead ){ break; }
+
+		/** 夢想封印 */
+		Musou();
+
+	}
+
+	/**
+	*	回転全方向弾
+	*/
+	task RollRoundShot{
+
+		let nFrame = 45;
+		let nWay = 14 + 2 * m_nLevel;
+		let nX = GetX();
+		let nY = GetY();
+		let _nFrame = 20;
+		let nSpeed = 5;
+		let _nSpeed = 1;
+		let nAngle = 90;
+		let nWayAngle = 360 / nWay;
+		let nRollAngle = - nWayAngle * 0.45;
+		let nGraphic = US_BILL_WHITE;
+		let nDelay = 6;
+
+		loop{
+			let _nAngle = nAngle;
+			loop( nWay ){
+				CreateShotA( 0, nX, nY, nDelay );
+				SetShotDataA( 0, 0, nSpeed, _nAngle, 0, 0, 0, nGraphic );
+				SetShotDataA( 0, _nFrame, _nSpeed, NULL, 0, 0, 0, nGraphic );
+				FireShot( 0 );
+				_nAngle += nWayAngle;
+			}
+			PlaySEEx( seShot3 );
+			__Wait( nFrame );
+			if( m_bDead ){ break; }
+			nAngle += nRollAngle;
+		}
+
+	}
+
+	/**
+	*	封魔陣
+	*/
+	task Fuuma{
+
+		let nX = GetX();
+		let nY = GetY();
+		let nAngle = 45;
+
+		loop( 4 ){
+			FuumaLaser( nX, nY, nAngle );
+			nAngle += 90;
+		}
+
+	}
+
+	/**
+	*	封魔レーザー
+	*	@param _nX			中心x座標
+	*	@param _nY			中心y座標
+	*	@param nGapAngle	中心からの間隔角度
+	*/
+	task FuumaLaser( let _nX, let _nY, let nGapAngle ){
+
+		let obj = Obj_Create( OBJ_LASER );
+		let nGapLength = 500;
+		let nX = GetGapX( _nX, nGapLength, nGapAngle );
+		let nY = GetGapY( _nY, nGapLength, nGapAngle );
+		let nGraphic = US_BEAM_BLUE;
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetAngle( obj, nGapAngle - 180 );
+		ObjShot_SetGraphic( obj, nGraphic );
+		ObjLaser_SetWidth( obj, 12 );
+		Obj_SetAlpha( obj, 127 );
+		Obj_SetAutoDelete( obj, false );
+		Obj_SetCollisionToPlayer( obj, false );
+		ObjLaser_SetSource( obj, false );
+
+		/** 初期収束 */
+		let nFrame = 120;
+		let nLength = 0;
+		let nAddLength = nGapLength / nFrame;
+		loop( nFrame ){
+			nLength += nAddLength;
+			ObjLaser_SetLength( obj, nLength );
+			yield;
+		}
+		Concentration01( 30 );
+
+		nFrame = 30;
+		let nWidth = 48;
+		let nMaxMoveLength = 32 + 8 * m_nLevel;
+		let nAddMoveLength = nMaxMoveLength / nFrame;
+
+		loop{
+
+			/** レーザー発射 */
+			nLength = 0;
+			ObjLaser_SetLength( obj, 0 );
+			let nMoveAngle = nGapAngle + 90;
+			CreateLaserA( 0, nX, nY, nGapLength * 2, nWidth, nGraphic, 0 );
+			SetLaserDataA( 0, 0, nGapAngle - 180, 0, 0, nAddMoveLength, nMoveAngle );
+			SetLaserDataA( 0, nFrame, NULL, 0, 0, nAddMoveLength * 0.1, nMoveAngle );
+			FireShot( 0 );
+			PlaySEEx( seLaser2 );
+			PlaySEEx( seShot1 );
+			loop( nFrame ){ yield; }
+			let nDeleteX = GetGapX( nX, nMaxMoveLength, nMoveAngle );
+			let nDeleteY = GetGapY( nY, nMaxMoveLength, nMoveAngle );
+			DeleteEnemyShotInCircle( ALL, nDeleteX, nDeleteY, 20 );
+			if( m_bDead ){ break; }
+
+			/** 収束 */
+			let _nFrame = 30 + 90 * GetRatio();
+			nAddLength = nGapLength / _nFrame;
+			nGapAngle += 45;
+			nX = GetGapX( _nX, nGapLength, nGapAngle );
+			nY = GetGapY( _nY, nGapLength, nGapAngle );
+			Obj_SetPosition( obj, nX, nY );
+			Obj_SetAngle( obj, nGapAngle - 180 );
+			loop( _nFrame ){
+				nLength += nAddLength;
+				ObjLaser_SetLength( obj, nLength );
+				yield;
+			}
+			SetAction( ACT_SHOT_B5, nFrame + 30 );
+			Concentration01( 30 );
+
+		}
+
+	}
+
+	/**
+	*	夢想封印
+	*/
+	task Musou{
+
+		let nFrame = 140 - 20 * m_nLevel;
+		let nX = GetX();
+		let nY = GetY();
+		let nAngle = 180;
+		let anGraphic = [ US_BALL_L_RED, US_BALL_L_GREEN, US_BALL_L_BLUE ];
+		let nGra = 0;
+
+		loop{
+
+			SetAction( ACT_SHOT_A5, 45 );
+			PlaySEEx( seShot2 );
+			MusouShot( nX, nY, nAngle, anGraphic[ nGra % 3 ] );
+			__Wait( nFrame );
+			if( m_bDead ){ break; }
+			nAngle = 180 - nAngle;
+			nGra ++;
+
+		}
+
+	}
+
+	/**
+	*	夢想弾
+	*	@param nX			弾源x座標
+	*	@param nY			弾源y座標
+	*	@param nAngle		角度
+	*	@param nGraphic		弾画像
+	*/
+	task MusouShot( let nX, let nY, let nAngle, let nGraphic ){
+
+		let obj = Obj_Create( OBJ_SHOT );
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetAngle( obj, nAngle );
+		ObjShot_SetGraphic( obj, nGraphic );
+		Obj_SetAutoDelete( obj, false );
+		ObjShot_SetBombResist( obj, true );
+
+		/** 尾 */
+		MusouTail();
+
+		/** 減速 */
+		let nFrame = 45;
+		let nSpeed = 5;
+		let nAccelSpeed = - nSpeed / nFrame;
+		loop( nFrame ){
+			nX = Obj_GetX( obj );
+			nY = Obj_GetY( obj );
+			nSpeed += nAccelSpeed;
+			Obj_SetSpeed( obj, nSpeed );
+			yield;
+		}
+
+		/** 加速＋誘導 */
+		nAccelSpeed = 0.075;
+		nAngle = GetGapAngle( nX, nY, GetPlayerX(), GetPlayerY() );
+		let nAddAngle = 0.6;
+
+		loop{
+
+			if( IsOutPos( nX, nY, 0 ) ){ break; }
+
+			nSpeed += nAccelSpeed;
+			Obj_SetSpeed( obj, nSpeed );
+
+			nX = Obj_GetX( obj );
+			nY = Obj_GetY( obj );
+			if( nAngle >= 360 ){ nAngle %= 360; }
+			while( nAngle < 0 ){ nAngle += 360; }
+			let nPlayerAngle = GetGapAngle( nX, nY, GetPlayerX(), GetPlayerY() );
+			if( nPlayerAngle >= 360 ){ nPlayerAngle %= 360; }
+			while( nPlayerAngle < 0 ){ nPlayerAngle += 360; }
+			let nDiffAngle = nPlayerAngle - nAngle;
+			if( ( nDiffAngle > 0 && nDiffAngle <= 180 ) || nDiffAngle <= - 180 ){ nAngle += nAddAngle; }
+			else if( nDiffAngle > 180 || ( nDiffAngle < 0 && nDiffAngle > - 180 ) ){ nAngle -= nAddAngle; }
+			Obj_SetAngle( obj, nAngle );
+
+			yield;
+
+		}
+
+		/** 消滅 */
+		nFrame = 30;
+		let nDecelAlpha = 255 / nFrame;
+		let nAccelScale = 0.15;
+		Explosion01( nX, nY, nDecelAlpha, nAccelScale, nFrame );
+		Obj_Delete( obj );
+
+		/** 尾 */
+		task MusouTail{
+
+			let _nFrame = 2;
+			while( !Obj_BeDeleted( obj ) ){
+				_MusouTail();
+				loop( _nFrame ){ yield; }
+			}
+
+			/** 尾（1発） */
+			task _MusouTail{
+				let nDelay = 20;
+				let _obj = SetShotObject( nX, nY, 500, 0, nGraphic, nDelay );
+				Obj_SetAlpha( _obj, 0 );
+				Obj_SetCollisionToPlayer( _obj, false );
+				ObjShot_SetBombResist( _obj, true );
+				ObjShot_ToItem( _obj, false );
+				loop( nDelay ){ yield; }
+				Obj_Delete( _obj );
+			}
+
+		}
+
+	}
+
+	/**
+	*	ライフor時間比率取得
+	*/
+	function GetRatio{
+
+		let nMaxLife = 500;
+		let nMaxCount = 3600;
+		let nLifeRatio = GetLife() / nMaxLife;
+		let nTimeRatio = ( nMaxCount - ( m_nFlanCount - 300 ) ) / nMaxCount;
+
+		return Min( nLifeRatio, nTimeRatio );
+
+	}
+
+}

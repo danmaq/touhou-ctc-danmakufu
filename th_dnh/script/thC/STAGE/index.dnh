@@ -17,3 +17,7 @@
 #include_function ".\STAGE\4.dnh"
 #include_function ".\STAGE\5.dnh"
 #include_function ".\STAGE\6.dnh"
+#include_function ".\STAGE\ex.dnh"
+#include_function ".\STAGE\ex__.dnh"
+#include_function ".\STAGE\SpellPractice.dnh"
+#include_function ".\STAGE\ED.dnh"

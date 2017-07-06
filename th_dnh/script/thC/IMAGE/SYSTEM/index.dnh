@@ -3,15 +3,24 @@
 //　システム
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
-#include_function ".\IMAGE\SYSTEM\FONT\index.dnh"
 
-let dirImageSystem = GetCurrentScriptDirectory ~ "IMAGE\SYSTEM\";
+let szDirImageSystem = GetCurrentScriptDirectory() ~ "IMAGE\SYSTEM\";
+
+let IMAGE_THC_LOGO_BG_MARISA = szDirImageSystem ~ "LogoBG_Marisa.png";
+let IMAGE_THC_LOGO_BG_FRAME = szDirImageSystem ~ "LogoBG_Frame.png";
+let IMAGE_THC_LOGO_BG_FIELD = szDirImageSystem ~ "LogoBG_Field.png";
+let IMAGE_THC_BLACK_FRAME = szDirImageSystem ~ "Black_Frame.png";
+let IMAGE_THC_WHITE_FRAME = szDirImageSystem ~ "White_Frame.png";
+let IMAGE_THC_ED_BG_FRAME = szDirImageSystem ~ "EDBG_Frame.png";
+let IMAGE_THC_ED_BG_FIELD = szDirImageSystem ~ "EDBG_Field.png";
+let IMAGE_THC_CIRLE_BORDER = szDirImageSystem ~ "Border.png";
 
 //　タイトル
-let imgSystemLogo = dirImageSystem ~ "Logo2.png";
-let imgSystemLogoBG = dirImageSystem ~ "LogoBG.png";
-let imgSystemLogoMarisa = dirImageSystem ~ "logo_marisa.png";
+let imgSystemLogo = szDirImageSystem ~ "Logo2.png";
+let imgSystemLogoBG = szDirImageSystem ~ "LogoBG.png";
 
 //　その他
-let imgSystemProgress = dirImageSystem ~ "Progress.png";
-let imgSystemSpellLine = dirImageSystem ~ "spell_line.png";
+let imgSystemProgress = szDirImageSystem ~ "Progress.png";
+let imgSystemFlash = szDirImageSystem ~ "flash.png";
+
+

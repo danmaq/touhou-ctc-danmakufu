@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Zako" file="zako">
+	<category caption="概要" link="true">
+		<paragraph>
+			弾幕風標準の雑魚敵スクリプトでのみ使用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/Zako.dnh</path>となります。
+			(関数の数が少ないので1ファイルのみの構成となります)
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+		<define key="FLAN_ZAKO_EXISTBOSS_NONEACTION" type="var">
+			<paragraph>
+				この値を設定するとボスが登場しても何もしません。
+			</paragraph>
+		</define>
+		<define key="FLAN_ZAKO_EXISTBOSS_OWNKILL" type="var">
+			<paragraph>
+				この値を設定するとボスが登場した瞬間自殺します。
+			</paragraph>
+		</define>
+		<define key="FLAN_ZAKO_EXISTBOSS_VANISH" type="var">
+			<paragraph>
+				この値を設定するとボスが登場した瞬間消滅します。
+				(なかったことになります)
+			</paragraph>
+		</define>
+	</category>
+	<category caption="書換可能定数" link="true">
+		<define key="FLAN_ZAKO_ACTION_EXISTBOSS" type="var">
+			<paragraph>
+				ボスが登場した瞬間のアクションを設定します。
+				デフォルト値は<var>FLAN_ZAKO_EXISTBOSS_OWNKILL</var>です。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="メンバ変数" link="true">
+	</category>
+</contents>

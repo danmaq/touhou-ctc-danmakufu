@@ -1,0 +1,188 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+/**	スペルカード非発動中のonBackGround処理が有効かどうかを設定します。 */
+let FLAN_BOSS_ENABLE_BGG_ON_UNSPELL	= false;
+/**	ボスのホームポジションX座標を設定します。 */
+let FLAN_BOSS_HOME_X				= GetCenterX();
+/**	ボスのホームポジションY座標を設定します。 */
+let FLAN_BOSS_HOME_Y				= 96;
+/**	ボスの移動量を設定します。 */
+let FLAN_BOSS_MOVE_LENGTH			= 40;
+/**	ボスの移動速度を設定します。 */
+let FLAN_BOSS_MOVE_SPEED			= 2;
+/**	ボスの減速力を設定します。 */
+let FLAN_BOSS_MOVE_BRAKE			= 20;
+/**	ボスの左右移動マージンを設定します。 */
+let FLAN_BOSS_MOVE_MARGIN_SIDE		= 64;
+/**	ボスの上部移動マージンを設定します。 */
+let FLAN_BOSS_MOVE_MARGIN_TOP		= 16;
+/**	ボスの下部移動マージンを設定します。 */
+let FLAN_BOSS_MOVE_MARGIN_BOTTOM	= 288;
+/**	カウントダウンが何秒を下回ったら効果音が切り替わるかを設定します。
+*	10を超える値を代入した場合は無視され、内部的に10と同等と認識されます。
+*/
+let FLAN_BOSS_TIMEOUT_DANGER		= 5;
+/**	制限時間が10秒切った時のカウントダウン効果音を設定します。
+*	注意 : 効果音ファイルは自動的にロードされません(各自でロードする必要があります)
+*/
+let FLAN_BOSS_SE_TIMEOUT_FILE_A		= "";
+/**	制限時間がFLAN_BOSS_TIMEOUT_DANGERで指定した時間を切った時のカウントダウン効果音を設定します。
+*	注意 : 効果音ファイルは自動的にロードされません(各自でロードする必要があります)
+*/
+let FLAN_BOSS_SE_TIMEOUT_FILE_B		= "";
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	Pluralスクリプトかどうかが格納されます。
+*	注意 : Pluralでも最初の1番目のスクリプトは強制的にfalseが格納されます。
+*	注意 : ステージスクリプトから呼び出された場合強制的にtrueが格納されます。
+*/
+let m_bFlanPlural = false;
+/**	現在のカウントダウン値が格納されます。 */
+let m_nFlanTimer = GetTimer();
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	BGM/効果音制御関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	制限時間が10秒切った時のカウントダウン効果音を再生するループです。
+*	注意 : 自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+task __PlayTimeOutSELoop(){
+	let nPrevTimer = GetTimer();
+	loop{
+		m_nFlanTimer = GetTimer();
+		loop( [ 5, 100 ][ m_nFlanTimer > 12 ] ){ yield; }
+		if( FLAN_BOSS_SE_TIMEOUT_FILE_A != "" && m_nFlanTimer < 10 && nPrevTimer != m_nFlanTimer ){
+			PlaySEEx( [ FLAN_BOSS_SE_TIMEOUT_FILE_A, FLAN_BOSS_SE_TIMEOUT_FILE_B ][ m_nFlanTimer < FLAN_BOSS_TIMEOUT_DANGER ] );
+			nPrevTimer = m_nFlanTimer;
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	移動制御関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ボスの位置をランダムに動かします。
+*/
+function MoveDefault(){
+	let nDstX = GetX();
+	let nDstY = GetY();
+	nDstX += FLAN_BOSS_MOVE_LENGTH * [ -1, 1 ][ GetPlayerX() - nDstX > 0 ];
+	if( GetPlayerY() > GetCenterY() ){ nDstY += FLAN_BOSS_MOVE_LENGTH / 2 * [ -1, 1 ][ rand_int( 0, 1 ) ]; }
+	else{ nDstY += FLAN_BOSS_MOVE_LENGTH * [ -1, 1 ][ GetPlayerY() - nDstY > 0 ]; }
+	let nBackLength = FLAN_BOSS_MOVE_LENGTH * 1.3;
+	if( nDstX < GetClipMinX() + FLAN_BOSS_MOVE_MARGIN_SIDE ){ nDstX += nBackLength; }
+	else if( nDstX > GetClipMaxX() - FLAN_BOSS_MOVE_MARGIN_SIDE ){ nDstX -= nBackLength; }
+	if( nDstY < GetClipMinY() + FLAN_BOSS_MOVE_MARGIN_TOP ){ nDstY += nBackLength; }
+	else if( nDstY > GetClipMaxY() - FLAN_BOSS_MOVE_MARGIN_BOTTOM ){ nDstY -= nBackLength; }
+	SetMovePosition03( nDstX, nDstY, FLAN_BOSS_MOVE_BRAKE, FLAN_BOSS_MOVE_SPEED );
+}
+
+/**
+*	ボスをホームポジションに動かします。
+*
+*	@param nDelay 動作にかかるフレーム数
+*/
+function MoveHome02( let nDelay ){ SetMovePosition02( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y, nDelay ); }
+
+/**
+*	ボスをデフォルトの設定を使いホームポジションに動かします。
+*	MoveHome03のラッパーです。
+*/
+function MoveHomeDefault03(){ MoveHome03( FLAN_BOSS_MOVE_BRAKE, FLAN_BOSS_MOVE_SPEED ); }
+
+/**
+*	ボスをホームポジションに動かします。
+*
+*	@param nBlake 減速力
+*	@param nBlake 速度
+*/
+function MoveHome03( let nBrake, let nSpeed ){ SetMovePosition03( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y, nBrake, nSpeed ); }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	アイテム関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	アイテムを落とす座標を生成します。
+*	その際魔法陣の円形にあわせて座標を生成します。
+*	(onFinalizeで呼ぶ場合プレイヤーを中心座標に設定すると丁度魔法陣に重なります)
+*
+*	@param nX 中心X座標
+*	@param nY 中心Y座標
+*	@param nNum アイテムの数
+*	@return アイテム座標の配列[ [ X1, Y1 ], [ X2, Y2 ], ... ]
+*/
+function GetDropItemPosListCircle( let nX, let nY, let nNum ){
+	let aanPosList = [];
+	let nRadiusBase = [ m_nFlanTimer * 5, 300 ][ nX == GetPlayerX() && nY == GetPlayerY() ];
+	ascent( let i in 0..nNum ){
+		let anPos = [ -65536, -65536 ];
+		let nRandCount = 0;
+		let nRadius = nRadiusBase + RandBlur( 8 );
+		while( nRandCount <= FLAN_ITEM_OUT_COMPENSATION && IsOutPos( anPos[ FLAN_ITEM_X ], anPos[ FLAN_ITEM_Y ], 0 ) ){
+			let nAngle = rand( 0, 360 );
+			anPos[ FLAN_ITEM_X ] = nX - cos( nAngle ) * nRadius;
+			anPos[ FLAN_ITEM_Y ] = nY + sin( nAngle ) * nRadius;
+			nRandCount++;
+		}
+		aanPosList = aanPosList ~ [ anPos ];
+	}
+	return aanPosList;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	デバッグ用
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ステージに組み込むスクリプトのPlural単体テスト用にレベルを設定します。
+*	注意 : onInitializeにて1度だけ呼び出してください。
+*	注意 : m_bFlanPluralがtrueの場合は無効になります。
+*
+*	@param nLevel レベル
+*/
+function __SetLevelTemporary( let nLevel ){
+	if( m_bFlanPlural ){ return; }
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, nLevel );
+	m_nFlanLevel = nLevel;
+}

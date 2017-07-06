@@ -1,0 +1,215 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	エクステンドスクリプトを吐き出す敵スクリプトへのパスです。 */
+let FLAN_STAGE_ENEMY_EXTEND = "lib\FLAN\HEADER\__extend.dnh";
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+/**	ステージにおけるポイントエクステンドのリストを設定します。 */
+let FLAN_STAGE_NORMLIST = [ 200, 450, 800, 1200, 1700, 2300, 9999 ];
+/**	ポイントエクステンドの検出精度を設定します。
+*	数値が高いほど処理が軽くなりますが、ノルマ達成→検出のタイムラグが発生しやすくなります。
+*/
+let FLAN_STAGE_POINTEXTEND_DETECT = 10;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	プレイヤー初期X座標が格納されます。 */
+let m_nFlanPlayerDefaultX = -1;
+/**	プレイヤー初期Y座標が格納されます。 */
+let m_nFlanPlayerDefaultY = -1;
+/**	時間差読み込み用の進捗百分率が格納されます。 */
+let m_nFlanLoadResourcePercentage = -1;
+/**	各ステージが開始された時のカウント値。 */
+let m_nFlanStageTime = 0;
+/**	各ステージが開始された時の高精度タイマ値。 */
+let m_nFlanStageSystemTime = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ロード関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	配列にある敵スクリプトファイルを一気に読み出し、コンパイルします。
+*
+*	@param aszFileList 敵スクリプトファイルのリスト
+*/
+function LoadEnemyList( let aszFileList ){ ascent( let i in 0..length( aszFileList ) ){ CompileEnemyFromFile( aszFileList[ i ] ); } }
+
+/**
+*	ディスクリソースを時間差で読み込みます。
+*	(1フレームにつき1ファイル)
+*	(何か並列処理させたい場合はマイクロスレッドタスクを生成し、その中で呼び出してください)
+*
+*	@param aszGraphicFileList 画像ファイルのリスト
+*	@param aszEnemyFileList 敵スクリプトファイルのリスト
+*	@param aszSEFileList 効果音ファイルのリスト
+*/
+task LoadResourceProgress( let aszGraphicFileList, let aszEnemyFileList, let aszSEFileList ){
+	let anLength = [ length( aszGraphicFileList ), length( aszEnemyFileList ), length( aszSEFileList ) ];
+	let nTotalElems = anLength[ 0 ] + anLength[ 1 ] + anLength[ 2 ];
+	ascent( let i in 0..3 ){
+		let nNowProgress = 0;
+		ascent( let j in 0..i ){ nNowProgress += anLength[ j ]; }
+		ascent( let j in 0..anLength[ i ] ){
+			m_nFlanLoadResourcePercentage = Smooth( 0, 100, nNowProgress + j, nTotalElems );
+			alternative( i )
+			case( 0 ){ LoadGraphic( aszGraphicFileList[ j ] ); }
+			case( 1 ){ CompileEnemyFromFile( aszEnemyFileList[ j ] ); }
+			case( 2 ){ LoadSE( aszSEFileList[ j ] ); }
+			yield;
+		}
+	}
+	m_nFlanLoadResourcePercentage = -1;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	プレイヤー初期位置関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	プレイヤー初期位置を保存します。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+task __SetPlayerDefaultPosition(){
+	yield;
+	if( m_nFlanPlayerDefaultX >= 0 || m_nFlanPlayerDefaultY >= 0 ){ return; }
+	m_nFlanPlayerDefaultX = GetPlayerX();
+	m_nFlanPlayerDefaultY = GetPlayerY();
+}
+
+/**
+*	プレイヤー初期位置に強制移動させます。
+*	SetPlayerPositionのラッパーです。
+*/
+function MovePlayerDefaultPosition(){
+	if( m_nFlanPlayerDefaultX <= 0 || m_nFlanPlayerDefaultY <= 0 ){ return; }
+	SetPlayerPosition( m_nFlanPlayerDefaultX, m_nFlanPlayerDefaultY );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ステージ制御
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	次のステージに移行します。
+*/
+function SetNextStage(){ SetStage( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) + 1 ); }
+
+/**
+*	指定したのステージに移行します。
+*
+*	@param nStage 移行するステージ
+*/
+function SetStage( let nStage ){
+	InitializePhase();
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE, nStage );
+	m_nFlanStageTime = m_nFlanCount;
+	m_nFlanStageSystemTime = GetTime();
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	画面内キャラ制御
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	画面内の全ての雑魚敵を自殺させます。
+*
+*	@param bDeleteShot 弾も同時に削除するかどうか
+*/
+task AllZakoEnemyKill( bDeleteShot ){
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_ENEMY_OWNKILL, true );
+	if( bDeleteShot ){ DeleteEnemyShotToItem( ALL ); }
+	yield;
+	DeleteCommonDataEx( FLAN_CDNS, FLAN_CD_ENEMY_OWNKILL );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ポイントエクステンド
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ポイント数を監視し、値に応じてエクステンドします。
+*	注意 : 自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+task __PointExtendLoop(){
+	let nNormIndex = -1;
+	loop{
+		loop( FLAN_STAGE_POINTEXTEND_DETECT ){ yield; }
+		let nPoint = GetPoint();
+		let nNormLength = length( FLAN_STAGE_NORMLIST );
+		if( nNormIndex < 0 || ( nNormLength > nNormIndex && nPoint >= FLAN_STAGE_NORMLIST[ nNormIndex ] ) ){
+			if( nNormIndex >= 0 ){ ExtendPlayerEx( 1 ); }
+			nNormIndex++;
+			if( nNormLength > nNormIndex ){ SetNormPoint( FLAN_STAGE_NORMLIST[ nNormIndex ] ); }
+			else{ SetNormPoint( -1 ); }
+		}
+	}
+}
+
+/**
+*	プレイヤーの残機を増やします。
+*	その際、弾幕風標準のエクステンド効果音を鳴らします。
+*	但し、負数は無効となります(何もしません)
+*	注意 : 内部的に敵スクリプトを使用しております。敵スクリプトを検出して何らかのアクションを起こすスクリプトが動いている場合、誤作動の可能性があります。
+*
+*	@param nExtend 増加させる残機数
+*/
+function ExtendPlayerEx( let nExtend ){
+	nExtend = truncate( Max( nExtend, 0 ) );
+	if( nExtend <= 0 ){ return; }
+	if( !GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_SE_ENABLE, true ) ){ ExtendPlayer( nExtend ); }
+	else{ CreateEnemyFromFile( FLAN_STAGE_ENEMY_EXTEND, GetPlayerX(), GetPlayerY(), 0, 0, nExtend ); }
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	共通処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	該当スクリプトのメインタスク呼び出し処理です。
+*	注意 : 自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+task __MainTask(){
+	yield;
+	MainTask( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ), m_nFlanLevel );
+}

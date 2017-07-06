@@ -1,0 +1,180 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　博麗 霊夢（白）
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossReimuW;
+let m_szImageCutIn = cutReimuW;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_REIMU_W;
+let m_aszImageBGList = LOADBGLIST_REIMU_W;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+
+/** 紅夢 */
+function DrawSpellBG1{
+
+	SetGraphicAngle( 0, 0, 180 );
+	SetGraphicRect( 0, 0, 512, 512 );
+	SetColor( 200, 80, 60 );
+	DrawCenter( imgSpellLittle1 );
+
+	SetColor( 255, 255, 255 );
+	SetGraphicScale( 0.5, 0.5 );
+	SetGraphicAngle( 0, 0, 0 );
+	SetRenderState( ADD );
+	__DrawChr( imgSpellRedMoon, CL_CEN_X, CL_CEN_Y - 80 );
+
+	let i = m_nFlanCount * 34;
+	SetGraphicScale( 1, 1 );
+	SetColor( 25, 25, 25 );
+	SetGraphicRect( i, 0, 512 + i, 512  );
+	DrawCenter( [ imgSpellNoize01, imgSpellNoize02, imgSpellNoize03 ][ trunc( m_nFlanCount / 3 ) % 3 ] );
+	SetRenderState( ALPHA );
+	SetGraphicScale( 1, 1 );
+	SetColor( 255, 255, 255 );
+
+}
+
+/** 幽夢 */
+function DrawSpellBG2{
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	SetColor( 80, 80, 80 );
+	DrawCenter( imgSpellStoneTile );
+
+	SetGraphicScale( 1.8, 1.8 );
+	SetColor( 0, 0, 0 );
+	__DrawChr( imgSpellTree, CL_CEN_X, CL_CEN_Y - 180 );
+
+	let i = m_nFlanCount * 1.32;
+	let j = m_nFlanCount * 0.6;
+	SetGraphicScale( 1, 1 );
+	SetRenderState( ADD );
+	SetColor( 25, 25, 25 );
+	SetGraphicAngle( 0, 0, m_nFlanCount * 0.12 );
+	SetGraphicRect( - i, j, 512 - i, 512 + j );
+	DrawCenter( imgSpellSakura02 );
+
+	i = m_nFlanCount * 1.12;
+	j = m_nFlanCount * 0.43;
+	SetGraphicAngle( 0, 0, - m_nFlanCount * 0.07 );
+	SetGraphicRect(  i,  j, 512 + i, 512 + j );
+	DrawCenter( imgSpellSakura02 );
+	SetRenderState( ALPHA );
+	SetGraphicScale( 1, 1 );
+	SetColor( 255, 255, 255 );
+	SetGraphicAngle( 0, 0, 0 );
+
+}
+
+/** 永夢 */
+function DrawSpellBG3{
+
+	SetGraphicRect( 0, 0, 512, 512 );
+
+	SetGraphicScale( 1.15, 1.15 );
+	DrawRotateCenter( imgSpellNightSky, 0.2 );
+	SetGraphicScale( 1, 1 );
+
+	DrawCenter( imgSpellBamboo3 );
+
+	SetRenderState( ADD );
+	SetGraphicScale( 0.3, 0.3 );
+	SetColor( 120, 120, 120 );
+	DrawCenter( imgSpellBlueMoon );
+	SetColor( 255, 255, 255 );
+	SetGraphicScale( 1, 1 );
+	SetRenderState( ALPHA );
+
+}
+
+/** 映夢 */
+function DrawSpellBG4{
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellEimu );
+
+	SetAlpha( 40 );
+	SetGraphicRect( 0, - m_nFlanCount, 512, 512 - m_nFlanCount );
+	DrawCenter( imgSpellYamada01 );
+	SetAlpha( 255 );
+
+}
+
+/** 萃夢 */
+function DrawSpellBG5{
+
+	SetGraphicScale( 0.9, 0.9 );
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellReimu2 );
+	SetGraphicScale( 1, 1 );
+
+	SetRenderState( ADD );
+	let nLight = 20 ;
+	SetColor( nLight, nLight, nLight );
+	DrawRotateCenter( imgSpellRing2, - 67.4 );
+	DrawRotateCenter( imgSpellRing2, 57.4 );
+	SetRenderState( ALPHA );
+	SetColor( 255, 255, 255 );
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	その他
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	決闘タイマーチェック
+*	本編の通常弾幕、スペルから呼び出してください。
+*/
+task CheckDuelTimer{
+
+	/** タイマーチェック */
+	while( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, 99 ) > 0 ){ yield; }
+
+	/** タイムオーバー */
+	SetInvincibility( 6000 );
+	while( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) != 9 ){
+		SetTimer( GetTimer() + 1 );
+		yield;
+	}
+
+	/** 終了 */
+	DeleteEnemyShot( ALL );
+	VanishEnemy();
+
+}

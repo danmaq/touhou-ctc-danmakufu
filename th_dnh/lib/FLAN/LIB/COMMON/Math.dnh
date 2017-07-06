@@ -1,0 +1,176 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(原則書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	算術関数(補正系)
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	奇数かどうかを判定します。
+*
+*	@param nExpr 対象値
+*	@return 奇数の場合true
+*/
+function IsOdd( let nExpr ){ return nExpr % 2 != 0; }
+
+/**
+*	数値符号を返します。
+*
+*	@param nExpr 対象値
+*	@return 負数の場合-1、正の整数の場合1、0の場合0
+*/
+function GetSign( let nExpr ){ return [ [ 0, -1 ][ nExpr < 0 ], 1 ][ nExpr > 0 ]; }
+
+/**
+*	対象値の符号を他方に付けて返します。
+*
+*	@param nExpr1 対象値1(変更される値)
+*	@param nExpr2 対象値2
+*	@return 対象値2の符号が付けられた対象値1
+*/
+function CopySign( let nExpr1, let nExpr2 ){
+	let nSign1 = [ [ 0, -1 ][ nExpr1 < 0 ], 1 ][ nExpr1 > 0 ];
+	return nExpr1 * [ -1, 1 ][ [ nSign1 >= 0, nSign1 < 0 ][ [ [ 0, -1 ][ nExpr2 < 0 ], 1 ][ nExpr2 > 0 ] < 0 ] ];
+}
+
+/**
+*	二値の誤差が一定以内かどうかを判定します。
+*
+*	@param nExpr1 対象値1
+*	@param nExpr2 対象値2
+*	@param nLength 誤差
+*	@return 二つの対象値が誤差の範囲内ならtrue
+*/
+function Near( let nExpr1, let nExpr2, let nLength ){ return absolute( nExpr1 - nExpr2 ) < nLength; }
+
+/**
+*	指定桁以下を切り捨てます。
+*
+*	@param nExpr 対象値
+*	@param nGrade 切り捨てる桁(負数で小数位も指定出来ます)
+*	@return 指定桁以下を切り捨てられた対象値
+*/
+function truncCutout( let nExpr, let nGrade ){
+	let nUnit = 10 ^ truncate( nGrade );
+	return truncate( nExpr / nUnit ) * nUnit;
+}
+
+/**
+*	指定桁以上を切り捨てます。
+*
+*	@param nExpr 対象値
+*	@param nGrade 切り捨てる桁(負数で小数位も指定出来ます)
+*	@return 指定桁以上を切り捨てられた対象値
+*/
+function truncOverhead( let nExpr, let nGrade ){
+	let nUnit = 10 ^ truncate( nGrade - 1 );
+	return nExpr - truncate( nExpr / nUnit ) * nUnit;
+}
+
+/**
+*	値を特定単位で切り捨てます。
+*	truncateのラッパーです。
+*
+*	@param nExpr 対象値
+*	@param nUnit 切り捨てる単位数値
+*	@return 指定単位で切り捨てられた対象値
+*/
+function truncEx( let nExpr, let nUnit ){ return truncate( nExpr / nUnit ) * nUnit; }
+
+/**
+*	値をビットシフトします。
+*
+*	@param nExpr 対象値
+*	@param nBit シフトするビット量
+*	@return ビットシフトされた値
+*/
+function Shift( let nExpr, let nBit ){ return nExpr * 2 ^ nBit; }
+
+/**
+*	2つの値を比較し、大きい値を返します。
+*
+*	@param nExpr1 対象値1
+*	@param nExpr2 対象値2
+*	@return 大きいほうの値
+*/
+function Max( let nExpr1, let nExpr2 ){ return [ nExpr2, nExpr1 ][ nExpr1 > nExpr2 ]; }
+
+/**
+*	2つの値を比較し、小さい値を返します。
+*
+*	@param nExpr1 対象値1
+*	@param nExpr2 対象値2
+*	@return 大きいほうの値
+*/
+function Min( let nExpr1, let nExpr2 ){ return [ nExpr1, nExpr2 ][ nExpr1 > nExpr2 ]; }
+
+/**
+*	値を限界値の範囲内に補正します。
+*	最小値と最大値が逆でも自動で認識して入れ替えられますが負荷の原因になるだけなのでなるべく避けてください。
+*
+*	@param nExpr 対象値
+*	@param nMin 最小限界値
+*	@param nMax 最大限界値
+*	@return 限界値の範囲に補正された値
+*/
+function MinMax( let nExpr, let nMin, let nMax ){
+	if( nMin == nMax ){ return nMin; }
+	if( nMin > nMax ){
+		let nMin__ = nMin;
+		let nMin = nMax;
+		let nMax = nMin__;
+	}
+	nExpr	=	[ nMin, nExpr ][ nExpr > nMin ];
+	return		[ nExpr, nMax ][ nExpr > nMax ];
+}
+
+/**
+*	値をリミットの範囲内に補正します。
+*	ただし、限界値を超えている場合、超えた分だけループします。<br />
+*	<em>注意:nLimit1 <= nExpr < nLimit2となります。</em>
+*
+*	@param nExpr 対象値
+*	@param nLimit1 限界値1
+*	@param nLimit1 限界値2
+*	@return 限界値の範囲に補正された値
+*/
+function MinMaxLoop( let nExpr, let nLimit1, let nLimit2 ){
+	if( nLimit1 == nLimit2 ){ return nLimit1; }
+	if( nLimit1 > nLimit2 ){
+		let nLimitTemp = nLimit1;
+		nLimit1 = nLimit2;
+		nLimit2 = nLimitTemp;
+	}
+	while( nExpr >= nLimit2 || nExpr < nLimit1 ){
+		if( nExpr >= nLimit2 ){ nExpr = nLimit1 + nExpr - nLimit2; }
+		if( nExpr < nLimit1 ){ nExpr = nLimit2 - absolute( nExpr - nLimit1 ); }
+	}
+	return nExpr;
+}

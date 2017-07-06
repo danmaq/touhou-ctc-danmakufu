@@ -1,0 +1,216 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Extend-Library (extends FLAN)
+//		敵・弾・使い魔共通ライブラリ（使い魔アニメーション）
+//
+//		※Shadow.dnhからインクルードしてください。
+//			それ以外の敵・弾で使用したい場合は、
+//			必要に応じてインクルードしてください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	インデックスをインクルード
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	Shadow.dnh以外からインクルードした場合
+*	下記を含むインデックスがインクルードされている必要があります
+*	include_function ".\IMAGE\CHAR\DOT\index_mini.dnh"
+*/
+
+
+//////////////////////////////////////////////////////////////////////
+//	下位ライブラリをインクルード
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	キャラ定数
+*	使い魔ドット絵の各カットの配置番号を以下とする
+*		 1  2  3  4
+*		 5  6  7  8
+*		 9 10 11 12
+*		13 14 15 16
+*		17 18 19 20
+*	各定数でどのようにアニメーションするかはコメントを参照
+*	（アクション定数がACT_SHADOW_NORMALの場合）
+*/
+
+let CHAR_SHADOW_BOOK	=	0;		//　本	 	 1
+let CHAR_SHADOW_BAT 	=	1;		//　蝙蝠	 5- 6- 7- 8- …
+let CHAR_SHADOW_CROW	=	2;		//　鴉	 	 9-10-11-12- …
+let CHAR_SHADOW_RABBIT	=	3;		//　兎		13-14-15- …
+let CHAR_SHADOW_MAID	=	4;		//　メイド	17-18-19- …
+
+/**
+*	カット別描画矩形定数
+*	使い魔ドット絵の各カットの座標を表すための定数
+*/
+let RECT_SHADOW_LENGTH	=	32;			//	カット正方形の一辺の長さ
+let RECT_SHADOW_X = [ 0, 1, 2, 3 ];		//　x座標定数
+let RECT_SHADOW_Y = [ 0, 1, 2, 3, 4 ];	//	y座標定数
+
+/**
+*	アクション定数
+*	各定数でどのようにアニメーションするかはコメントを参照（*は状況に応じて長く表示）
+*/
+let ACT_SHADOW_STAND1	=	- 1;	//	アニメなし	例：  1
+let ACT_SHADOW_STAND3	=	0;		//	基本 3コマ	例： 13- 14- 15- …
+let ACT_SHADOW_STAND4	=	1;		//	基本 4コマ	例：  5-  6-  7-  8- …
+let ACT_SHADOW_SHOT5	=	2;		//	弾幕 5コマ	例：  2-  3- *4-  3- 2
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 使い魔画像ファイル */
+let m_szImageShadowChar = dotShadow;
+/** 表示する使い魔 */
+let m_nShadowChar = CHAR_SHADOW_BOOK;
+/** 特に指示しない場合のアクション */
+let m_nShadowActionDefault = ACT_SHADOW_STAND1;
+/** 現在のアクション */
+let m_nShadowAction = m_nShadowActionDefault;
+/** アクションフレームカウンタ */
+let m_nShadowActionCount = 0;
+/** アクション終了までのフレーム数 */
+let m_nShadowActionCountMax = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+// アクション関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	表示する使い魔を設定します。
+*	Initialize時に1度だけ必ず設定してください。
+*
+*	@param nChar	キャラ定数
+*/
+task BehaviorShadow( let nChar ){
+	m_nShadowChar = nChar;
+	alternative( nChar )
+	case( CHAR_SHADOW_BOOK ){ m_nShadowActionDefault = ACT_SHADOW_STAND1; }
+	case( CHAR_SHADOW_RABBIT, CHAR_SHADOW_MAID ){ m_nShadowActionDefault = ACT_SHADOW_STAND3; }
+	case( CHAR_SHADOW_BAT, CHAR_SHADOW_CROW ){ m_nShadowActionDefault = ACT_SHADOW_STAND4; }
+	loop{
+		SetShadowAction( m_nShadowActionDefault, 0 );
+		while( m_nShadowActionCount < m_nShadowActionCountMax ){
+			m_nShadowActionCount++;
+			yield;
+		}
+	}
+}
+
+/**
+*	使い魔のアクションを設定します。
+*	指定のフレーム数が経過すると基本アクションに移行します。
+*	なお、基本アクションのフレーム数は固定されています。
+*
+*	@param nAction	アクション定数
+*	@param nFrame	アクションを行うフレーム数
+*/
+function SetShadowAction( let nAction, let nFrame ){
+	alternative( nAction )
+	case( ACT_SHADOW_STAND1, ACT_SHADOW_STAND3, ACT_SHADOW_STAND4 ){ nFrame = 36000; }
+	m_nShadowAction = nAction;
+	m_nShadowActionCount = 0;
+	m_nShadowActionCountMax = nFrame;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	使い魔アニメーションを描画します。（通常はこちら）
+*/
+function _DrawShadowChar{
+	__DrawShadowChar( GetX(), GetY(), 0, 1 );
+}
+
+/**
+*	使い魔アニメーションを描画します。（上下に浮遊しているように描画）
+*/
+function _DrawShadowCharFloat{
+	__DrawShadowChar( GetX(), GetY() + 4 * sin( 8 * m_nFlanCount ), 0, 1 );
+}
+
+/**
+*	使い魔アニメーションを描画します。（回転描画）
+*/
+function _DrawShadowCharRoll( let nAngle ){
+	__DrawShadowChar( GetX(), GetY(), nAngle, 1 );
+}
+
+/**
+*	使い魔アニメーションを描画します。
+*	描画する中心の座標と描画倍率が指定できます。
+*
+*	@param nX		描画x座標
+*	@param nY		描画y座標
+*	@param nAngle	描画角度
+*	@param nScale	描画倍率
+*/
+function __DrawShadowChar( let nX, let nY, let nAngle, let nScale ){
+	let nRectX = 0;
+	let nRectY = RECT_SHADOW_Y[ m_nShadowChar ];
+	alternative( m_nShadowAction )
+	/** 基本アクション */
+	case( ACT_SHADOW_STAND3 ){
+		let _nCount = 12;
+		let nCount = m_nShadowActionCount % ( _nCount * 3 );
+		nRectX = trunc( nCount / _nCount );
+	}
+	case( ACT_SHADOW_STAND4 ){
+		let _nCount = 4;
+		let nCount = m_nShadowActionCount % ( _nCount * 4 );
+		nRectX = trunc( nCount / _nCount );
+	}
+	/** 弾幕（5コマ） */
+	case( ACT_SHADOW_SHOT5 ){
+		let nCount0 = 6;
+		if( m_nShadowActionCountMax < 36 ){ nCount0 = trunc( m_nShadowActionCountMax / 6 ); }
+		let nCount1 = m_nShadowActionCountMax - nCount0;
+		nRectX = 1;
+		let anAnimeNum = [ 1, 2, 3, 2, 1 ];
+		let anAnimeCount = [ nCount0, nCount0 * 2, nCount1 - nCount0, nCount1, m_nShadowActionCountMax ];
+		ascent( let i in 0 .. 5 ){
+			if( m_nShadowActionCount < anAnimeCount[ i ] ){
+				nRectX = anAnimeNum[ i ];
+				break;
+			}
+		}
+	}
+	nRectX *= RECT_SHADOW_LENGTH;
+	nRectY *= RECT_SHADOW_LENGTH;
+	SetAlpha( 191 );
+	SetGraphicAngle( 0, 0, nAngle );
+	SetGraphicScale( nScale, nScale );
+	__DrawChrRect( m_szImageShadowChar, nX, nY, nRectX, nRectY, RECT_SHADOW_LENGTH, RECT_SHADOW_LENGTH );
+}
+

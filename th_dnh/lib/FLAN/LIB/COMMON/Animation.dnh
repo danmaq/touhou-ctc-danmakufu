@@ -1,0 +1,160 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(原則書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	内分カウンタ
+//	0～nNowの時間の間nStart～nEndの中間値を返します
+//	例)	let r = Smooth( -5, 10, n, 50 );	//	等速変化
+//		n == 0 … r == -5
+//		n == 10 … r == -2
+//		n == 20 … r == 1
+//		n == 30 … r == 4
+//		n == 40 … r == 7
+//		n == 50 … r == 10
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	等速変化する内分カウンタです。
+*
+*	@param nStart 現在時間==0の時の初期値
+*	@param nEnd 最終値
+*	@param nNow 現在時間
+*	@param nLimit 最終値に到達する時間
+*	@return 初期値～最終値に対し0～到達時間の現在時間に相当する値
+*/
+function Smooth( let nStart, let nEnd, let nNow, let nLimit ){
+	if( nNow >= nLimit || nStart == nEnd || nLimit <= 0 ){ return nEnd; }
+	if( nNow <= 0 ){ return nStart; }
+	return nStart + ( nEnd - nStart ) * nNow / nLimit;
+}
+
+/**
+*	加速変化する内分カウンタです。
+*
+*	@param nStart 現在時間==0の時の初期値
+*	@param nEnd 最終値
+*	@param nNow 現在時間
+*	@param nLimit 最終値に到達する時間
+*	@return 初期値～最終値に対し0～到達時間の現在時間に相当する値
+*/
+function Accelerate( let nStart, let nEnd, let nNow, let nLimit ){
+	if( nNow >= nLimit || nStart == nEnd || nLimit <= 0 ){ return nEnd; }
+	if( nNow <= 0 ){ return nStart; }
+	return nStart + ( ( nNow / nLimit ) ^ 2 * ( nEnd - nStart ) );
+}
+
+/**
+*	減速変化する内分カウンタです。
+*
+*	@param nStart 現在時間==0の時の初期値
+*	@param nEnd 最終値
+*	@param nNow 現在時間
+*	@param nLimit 最終値に到達する時間
+*	@return 初期値～最終値に対し0～到達時間の現在時間に相当する値
+*/
+function SlowDown( let nStart, let nEnd, let nNow, let nLimit ){
+	if( nNow >= nLimit || nStart == nEnd || nLimit <= 0 ){ return nEnd; }
+	if( nNow <= 0 ){ return nStart; }
+	return nStart + ( ( 1 - ( 1 - nNow / nLimit ) ^ 2 ) * ( nEnd - nStart ) );
+}
+
+/**
+*	減速変化→加速変化を組み合わせスプラインのような動きを模する内分カウンタです。
+*	高速→低速→高速と変化します。
+*
+*	@param nStart 現在時間==0の時の初期値
+*	@param nEnd 最終値
+*	@param nNow 現在時間
+*	@param nLimit 最終値に到達する時間
+*	@return 初期値～最終値に対し0～到達時間の現在時間に相当する値
+*/
+function SplineFakeFSF( let nStart, let nEnd, let nNow, let nLimit ){
+	if( nNow >= nLimit || nStart == nEnd || nLimit <= 0 ){ return nEnd; }
+	if( nNow <= 0 ){ return nStart; }
+	let nCenter = nStart + ( nEnd - nStart ) / 2;
+	let nLimitHalf = nLimit / 2;
+	if( nNow < nLimitHalf ){ return nStart + ( ( 1 - ( 1 - nNow / nLimitHalf ) ^ 2 ) * ( nCenter - nStart ) ); }
+	else{ return nCenter + ( ( ( nNow - nLimitHalf ) / nLimitHalf ) ^ 2 * ( nEnd - nCenter ) ); }
+}
+
+/**
+*	加速変化→減速変化を組み合わせスプラインのような動きを模する内分カウンタです。
+*	低速→高速→低速と変化します。
+*
+*	@param nStart 現在時間==0の時の初期値
+*	@param nEnd 最終値
+*	@param nNow 現在時間
+*	@param nLimit 最終値に到達する時間
+*	@return 初期値～最終値に対し0～到達時間の現在時間に相当する値
+*/
+function SplineFakeSFS( let nStart, let nEnd, let nNow, let nLimit ){
+	if( nNow >= nLimit || nStart == nEnd || nLimit <= 0 ){ return nEnd; }
+	if( nNow <= 0 ){ return nStart; }
+	let nCenter = nStart + ( nEnd - nStart ) / 2;
+	let nLimitHalf = nLimit / 2;
+	if( nNow < nLimitHalf ){ return nStart + ( ( nNow / nLimitHalf ) ^ 2 * ( nCenter - nStart ) ); }
+	else{ return nCenter + ( ( 1 - ( 1 - ( nNow - nLimitHalf ) / nLimitHalf ) ^ 2 ) * ( nEnd - nCenter ) ); }
+}
+
+/**
+*	ネヴィル・スプラインのシミュレータです。
+*
+*	@param nStart 現在時間==0の時の初期値
+*	@param nMiddle 制御点(中間値)
+*	@param nEnd 最終値
+*	@param nNow 現在時間
+*	@param nLimit 最終値に到達する時間
+*	@return 初期値～(中間値)～最終値に対し0～到達時間の現在時間に相当する値
+*/
+function Neville( let nStart, let nMiddle, let nEnd, let nNow, let nLimit ){
+	if( nNow >= nLimit || nStart == nEnd || nLimit <= 0 ){ return nEnd; }
+	if( nNow <= 0 ){ return nStart; }
+	let nTimePoint = nNow / nLimit * 2;
+	nMiddle = nEnd + ( nEnd - nMiddle ) * ( nTimePoint - 2 );
+	return nMiddle + ( nMiddle - ( nMiddle + ( nMiddle - nStart ) * ( nTimePoint - 1 ) ) ) * ( nTimePoint - 2 ) * 0.5;
+}
+
+/**
+*	ベジェ・スプラインのシミュレータです。
+*
+*	@param nStart 現在時間==0の時の初期値
+*	@param nMiddle 制御点(中間値)
+*	@param nEnd 最終値
+*	@param nNow 現在時間
+*	@param nLimit 最終値に到達する時間
+*	@return 初期値～(中間値)～最終値に対し0～到達時間の現在時間に相当する値
+*/
+function Bezier( let nStart, let nMiddle, let nEnd, let nNow, let nLimit ){
+	if( nNow >= nLimit || nStart == nEnd || nLimit <= 0 ){ return nEnd; }
+	if( nNow <= 0 ){ return nStart; }
+	let nTimePoint = nNow / nLimit * 2;
+	let nResidual = ( 1 - nTimePoint );
+	return ( nResidual ^ 2 * nStart ) + ( 2 * nResidual * nTimePoint * nMiddle ) + ( nTimePoint ^ 2 * nEnd );
+}

@@ -1,0 +1,249 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ1A　中ボス　フランドール・スカーレット　スペル1
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[妖夢どこかで使えるかも案]
+#Text[ベースのボスとか音とか演出はめちゃくちゃ適当、採用時にでも実装]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Flandre.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 160;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+	FLAN_ENEMY_COLLISION_A = 32;
+	FLAN_ENEMY_COLLISION_B = 16;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** ダメージ率（スペルプラクティス及び単体テスト時に固くする） */
+	let m_nDamageRate = 1;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( m_nLevel == 3 ){ m_nLevel = 1; }
+		else{ m_nLevel = 0; }
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+			m_nDamageRate = 0.25;
+		}
+		SetTimer( 44 );
+		SetLife( 125 );
+		SetDamageRate( 5 * m_nDamageRate, 5 * m_nDamageRate );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND4 );
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){
+			if( GotSpellCardBonus() ){ DropItemHakureiTHC( 50 ); }
+			DropItemTHC( 6 );
+		}
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScore( 500000 );
+		let szSpellName = "てすと";
+		PushCLCutInQueue( false, m_szImageCutIn, szSpellName );
+		__Wait( 125 );
+
+
+		ascent(i in 0..10){
+
+			_RoundLineShot(GetX(),GetY(),1,5,GetAngleToPlayer(),24,7,US_SCALE_WHITE,3);
+	
+			__Wait(10);
+			SetMovePosition02([GetClipMaxX()-30,GetClipMinX()+30][i%2],GetClipMinY()+30,60);
+			__Wait(100);
+			
+			let angle_b=[135,45][i%2];
+			loop(20){
+				_WideShot01(GetX(),GetY(),rand(1,3),angle_b+rand(-2,2),90,5,US_BALL_S_ORANGE,10);
+			}
+			let angle=angle_b+rand(-10,10);
+			loop(15){
+				_WideShot01(GetX(),GetY(),6,angle,90,8,US_SCALE_WHITE,20);
+				loop(3){yield;}
+			}
+			Concentration01(90);
+			Concentration02(90);
+			__Wait(30);
+			MotionBlur(SHOT,30,180);
+			let XX=GetPlayerX();
+			Slow(1);
+			__Wait(60);
+			Slow(0);
+			
+			let X1=GetX();
+			SetX(XX);
+			SetY(GetClipMaxY-30);
+			let X2=GetX();
+			
+			__Wait(30);
+			SetMovePosition02(GetX(),GetCenterY()/2,150);
+			
+			loop(15){
+				let Z=0;
+				let angle=atan2(GetClipMaxY-30-GetClipMinY+30,X2-X1);
+				while(Z < ((X2-X1)^2+(GetClipMaxY-30-GetClipMinY()+30)^2)^0.5){
+					CreateShot02(X1+Z*cos(angle),GetClipMinY()+30+Z*sin(angle),0,rand(0,360),0.02,1.2,[US_BALL_SS_PURPLE,US_BALL_SS_PURPLE,US_BALL_S_PURPLE,US_BALL_S_PURPLE,US_BALL_M_PURPLE][int(rand(0,5))],30);
+					Z+=20;
+				}
+				loop(10){yield;}
+			}
+			__Wait(60);
+
+		}
+
+	}
+
+
+
+
+
+
+
+}

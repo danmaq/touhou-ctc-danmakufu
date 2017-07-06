@@ -1,372 +1,697 @@
 //////////////////////////////////////////////////////////////////////
 //====================================================================
 //
-//	東方夢終劇専用 プレイヤースクリプト共通ライブラリ
-//		魔理沙専用 プレイヤーメイン部
+//	THC Extend-Library (extends FLAN)
+//
+//		※プレイヤースクリプト部です。
+//			それ以外からはインクルードしないでください。
 //
 //====================================================================
 //////////////////////////////////////////////////////////////////////
 
+
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
 //	下位ライブラリをインクルード
-//--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-#include_function "player\THC_MARISA\INCLUDE\common.dnh"
-#include_function "script\thC\INCLUDE\CutIn.dnh"
+#include_function "\lib\FLAN\HEADER\Player.dnh"
+#include_function "\lib\THCCL\Common.dnh"
+#include_function "\lib\THCCL\CutIn.dnh"
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
 //	インデックスをインクルード
-//--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-#include_function ".\_index_UserShot.dnh"
-
-
-//////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	定数
-//--------------------------------------------------------------------
-//////////////////////////////////////////////////////////////////////
-
-let PLAYER_SHOTPULL_FRAMELAG		= 30;	// キーを離してからショット発射が残るフレーム
-let PLAYER_CHARGE_INTERVAL			= 300;	// 陰陽弾発射から次回チャージまでのキャスト時間
-let PLAYER_OVERCHARGE_INTERVAL		= 150;	// 満タンからオーバーチャージまでの猶予時間
+#include_function ".\IMAGE\index.dnh"
+#include_function ".\SE\index.dnh"
+#include_function ".\__index_UserShot.dnh"
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	攻撃力ランクアップの条件値です。 */
+let PLAYER_LIST_POWERUP_COUNT = FLAN_PLAYER_POWER_UPPOINT ~ [ 65535 ];
+/**	透過度変化速度です。 */
+let PLAYER_ALPHA_SPEED = 4;
+/**	自機とビット間の距離です。 */
+let PLAYER_BIT_DIST = 32;
+/**	ビットの低高速切り替わり時に動作する速度です。 */
+let PLAYER_BIT_MOVESPEED = 8;
+/**	自機ドットのアニメーション速度です。 */
+let PLAYER_DOT_ANIMATION = 5;
+/**	山型アニメーションをするパラメータリストです。 */
+let PLAYER_ANIMATION_MOUNTAIN = [ FLAN_ANIMATION_SLOWDOWN, FLAN_ANIMATION_ACCELERATE * FLAN_SPLIT_REVERSE ];
+/**	博麗ゲージMAX時に付加される喰らいボム受付時間です。 */
+let PLAYER_INYAN_ADDIRIONAL_BORDER_LIMIT = 60;
+/**	博麗ゲージを失った時のペナルティ時間です。 */
+let PLAYER_INYAN_GAUGELOST_PENALTY_INTERVAL = 360;
+/**	陰陽弾残像のフェードアウト時間です。 */
+let PLAYER_INYAN_FADE_LIMIT = 8;
+/**	陰陽弾の弾消し間隔です。 */
+let PLAYER_INYAN_SHOT2HAKUREI_INTERVAL = 2;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+/**	初期化時に読み込む画像リストを設定します。
+*	もし追加で読み込みたい場合はonInitialTHC内でこのメンバ変数に追加してください。
+*/
+let PLAYER_LOADLIST_GRAPHIC = [
+	IMAGE_DOT_MARISA,
+	IMAGE_SHOCK,
+	IMAGE_FLASH,
+	IMAGE_STAR_EDGE,
+	IMAGE_INYAN_GAUGE,
+	IMAGE_CL_WHITE,
+	IMAGE_CL_SHOT_ALL,
+	IMAGE_CL_CIRCLE_8S,
+	IMAGE_CL_CIRCLE_BORDER,
+	IMAGE_CL_SPELL_LINE,
+	IMAGE_CL_CUTIN_MARISA,
+	IMAGE_CL_SHOCKWAVE_ADD,
+	IMAGE_CL_SHOCKWAVE_ALPHA,
+	IMAGE_CL_FONT_ASCII
+] ~ IMAGE_CL_FONT_SJIS16;
+/**	初期化時に読み込む効果音リストを設定します。
+*	もし追加で読み込みたい場合はonInitialTHC内でこのメンバ変数に追加してください。
+*/
+let PLAYER_LOADLIST_SE = [
+	SE_POWER_UP,
+	SE_SHOT,
+	seShot3
+];
+/**	基本ショットの高速移動時射程幅を設定します。 */
+let PLAYER_SHOT_BASIC_WIDTH_FASTMOVE = 1;
+/**	基本ショットの低速移動時射程幅を設定します。 */
+let PLAYER_SHOT_BASIC_WIDTH_SLOWMOVE = 1;
+/**	博麗ゲージ増加補正率です。 */
+let PLAYER_INYAN_GAUGE_RATE = 1;
+/**	高速移動時のボム名称を設定します。 */
+let PLAYER_SPELL_NAME_FASTMOVE = "";
+/**	高速移動時のボム名称を設定します。 */
+let PLAYER_SPELL_NAME_SLOWMOVE = "";
+/**	高速移動時のボム名称を設定します。 */
+let PLAYER_SPELL_FUNCTION_FASTMOVE = "";
+/**	高速移動時のボム名称を設定します。 */
+let PLAYER_SPELL_FUNCTION_SLOWMOVE = "";
+
+
+//////////////////////////////////////////////////////////////////////
 //	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	喰らいボム初期時間が格納されます。 */
+let m_nPlayerBorderOfLifeDefault;
+/**	低速移動時の結界表示不透明度が格納されます。 */
+let m_nAlphaBorder = 0;
+/**	自機の攻撃力値が格納されます。 */
+let m_nPower = 0;
+/**	左右キーの状態が変わってからのカウントを格納します。
+*	正数が連続して押されている時間、負数が連続して話されている時間です。
+*/
+let m_nKeyLRHoldCount = 0;
+/**	左右キーのうち、最後に押された方を格納します。 */
+let m_nKeyLRTypeLastHold = NULL;
+/**	ミス時にミス処理をしたかどうかが格納します。 */
+let m_bPlayerMissed = false;
+/**	最終残機かどうかが格納します。 */
+let m_bPlayerLastLife = false;
+/**	最後に使用したスペル発動時の移動速度モードを格納します。 */
+let m_nPlayerSpellType = MOVE_NORMAL;
+/**	博麗システムチャージゲージの量が格納されます。 */
+let m_nInYanGaugeCharge = 0;
+/**	博麗システムベースゲージの量が格納されます。 */
+let m_nInYanGauge = 0;
+/**	博麗結界の透過度が格納されます。 */
+let m_nInYanBorderAlpha = 0;
+/**	博麗ゲージが最後にゼロになる直前のゲージ最大値が格納されます。 */
+let m_nInYanGaugeLast = 0;
+/**	博麗ゲージの残りペナルティ時間が格納されます。 */
+let m_nInYanGaugePenalty = 0;
+/**	陰陽弾衝撃波クラスタにおける弾消しの半径が格納されます。 */
+let m_nInYanShockRadius = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+// 博麗システム
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	弾幕風の仕様でアクセサを用意するだけで物凄い負荷になるので
-//	メンバ変数は直接呼び出すこと
-
-let m_szLoadGraphicList = [ imgWhite, imgBlack, imgDot, imgFlash, imgBorder, imgCutIn, imgCircle, imgSpellLine, imgEdge, imgFontSmall, imgGaugeBase, imgGaugeGreen, imgGaugeRed ] ~ imgFontSJIS16;
-let m_nLastShotStartCount = 0;
-let m_nLastShotEndCount = -65536;
-let m_nSlowBorderAlpha = 0;
-let m_bMiss = false;
-let m_bLastLife = false;
-
-let m_fInYanGauge = 0;
-let m_fInYanGaugeSpeed;
-let m_nInYanGaugeOverCount = 0;
-let m_nInYanShotCount = 0;
-
-let m_nItemCollectUnderBorder;
-let m_nCollisionCircle;
-let m_nBorderLifeLimit;
-let m_nBorderLifeUseCount = 0;;
-let m_nGrazeCircle;
-let m_nShotWidth;
-let m_nShotWidthSlow;
-
-let m_szSpellFuncSlow;
-let m_szSpellFuncFast;
-let m_szSpellNameSlow;
-let m_szSpellNameFast;
-
-
-//////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	共通動作
-//--------------------------------------------------------------------
-//////////////////////////////////////////////////////////////////////
-
-//	共通メインタスク
-task CommonTask(){
-//	CreateDebugWindow();
-	yield;
-	ascent( let i in 0..2 ){ Bit( i ); }
-	KeyCheck();
+/**
+*	博麗システムを開始します。
+*	onInitializeで一度だけ呼び出してください。
+*/
+function InYanSystemStart(){
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN, true );
+	__InYanLoop();
 }
 
-//	ビット共通
-task Bit( let bLeft ){
-	let nObjCount = 0;
-	let nVertex = 12;
-	let nDiam = 6;
-	let nDist = 32;
-	let nAngle = 90;
-	let obj = Obj_Create( OBJ_EFFECT );
-	ObjEffect_SetTexture( obj, imgWhite );
-	ObjEffect_SetRenderState( obj, ADD );
-	ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLEFAN );
-	ObjEffect_CreateVertex( obj, nVertex );
-	ascent( let i in 0..nVertex ){
-		let nVangle = i * ( 360 / nVertex );
-		ObjEffect_SetVertexXY( obj, i, nDiam * cos( nVangle ), nDiam * sin( nVangle ) );
-		ObjEffect_SetVertexColor( obj, i, Min( 288 - nObjCount, 255 ), 255, 255, 255 );
-	}
-	while( !Obj_BeDeleted( obj ) ){
-		nAngle = MinMax( nAngle + [ 8, -8 ][ m_bSlow ], 20, 90 );
-		let nAngle2 = nAngle * [ 1, -1 ][ bLeft ] - 90;
-		Obj_SetX( obj, GetPlayerX() + nDist * cos( nAngle2 ) );
-		Obj_SetY( obj, GetPlayerY() + nDist * sin( nAngle2 ) );
-		ObjEffect_SetAngle( obj, 0, 0, nObjCount * 2 );
-		if( !m_bUserKey ){ SubShot( obj, bLeft ); }
-		yield;
-		nObjCount++;
-	}
-}
-
-//	共通初期化部
-function OnInitialize(
-		let nDefaultItemCollectUnderBorder,	//	アイテム蒐集ライン
-		let nSpeedFast,						//	高速時移動速度
-		let nSpeedSlow,						//	低速時移動速度
-		let nCollisionCircle,				//	被弾半径
-		let nGrazeCircle,					//	カスり半径
-		let nBorderLifeTime,				//	喰らいボム最大猶予時間
-		let nShotWidth,						//	高速時基本ショット幅
-		let nShotWidthSlow,					//	低速時基本ショット幅
-		let fInYanGaugeSpeed,				//	陰陽弾ゲージ増量
-		let szSpellFuncFast,				//	高速時ボム呼び出し関数
-		let szSpellFuncSlow,				//	低速時ボム呼び出し関数
-		let szSpellNameFast,				//	高速時ボム呼び出し名
-		let szSpellNameSlow					//	低速時ボム呼び出し名
-	){
-//	CreateDebugWindow();
-	m_nItemCollectUnderBorder = nDefaultItemCollectUnderBorder;
-	m_nCollisionCircle = nCollisionCircle;
-	m_nGrazeCircle = nGrazeCircle;
-	m_nBorderLifeLimit = nBorderLifeTime;
-	m_nShotWidth = nShotWidth;
-	m_nShotWidthSlow = nShotWidthSlow;
-	m_fInYanGaugeSpeed = fInYanGaugeSpeed;
-	m_szSpellFuncSlow = szSpellFuncSlow;
-	m_szSpellFuncFast = szSpellFuncFast;
-	m_szSpellNameSlow = szSpellNameSlow;
-	m_szSpellNameFast = szSpellNameFast;
-	LoadGraphicList( m_szLoadGraphicList );
-	LoadPlayerShotData( fileUserShot );
-	SetPlayerLifeImage( imgDot, 192, 0, 240, 48 );
-	SetInitialBombCount( 3 );
-	SetRebirthFrameReduction( 0 );
-	SetSpeed( nSpeedFast, nSpeedSlow );
-	FontInitialize( imgFontSmall, imgFont, imgFontSJIS16 );
-	SetCommonData( CD_ENABLE_HAKUREI, false );
-	CommonTask();
-}
-
-//	共通メインループ
-function OnMainLoop(){
-	if( BeCanFire( 5 ) ){
-		let nWidth = [ m_nShotWidth, m_nShotWidthSlow ][ m_bSlow ];
-		BasicShot( nWidth );
-	}
-	if( GetCommonDataDefault( CD_ENABLE_HAKUREI, false ) ){
-		if( m_bUserKey && !OnBomb() ){
-			if( m_nInYanShotCount >= 0 ){
-				m_fInYanGauge = Min( m_fInYanGauge + m_fInYanGaugeSpeed / [ 1, 2 ][ m_bSlow ], [ 100, 200 ][ GetCommonDataDefault( CD_ITEM_HAKUREI, 0 ) > 0 && m_nInYanGaugeOverCount != 0 && m_nCount - m_nInYanGaugeOverCount > PLAYER_OVERCHARGE_INTERVAL ] );
-				if( m_fInYanGauge == 100 && m_nInYanGaugeOverCount == 0 ){ m_nInYanGaugeOverCount = m_nCount; }
-				m_nInYanShotCount = m_nCount;
+/**
+*	博麗システム用ループです。
+*	注意 : 内部から自動的に呼ばれます。通常直接呼び出すことはありません。
+*/
+task __InYanLoop(){
+	let nHakureiPrev = 0;
+	let nGrazePrev = 0;
+	loop{
+		let nLevelRate = [ 1, 1.6 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 0 ) == 0 ];
+		let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 );
+		if( nHakurei != nHakureiPrev ){
+			let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
+			m_nInYanGauge += ( nHakurei - nHakureiPrev ) * [ 1, nStage / 6 ][ nStage <= 6 ] * nLevelRate;
+			nHakureiPrev = nHakurei;
+		}
+		let nDefaultGauge = PopCommonDataEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN_GAUGE_DEFAULT, -1 );
+		if( nDefaultGauge >= 0 ){ m_nInYanGauge = nDefaultGauge; }
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN_GAUGE, m_nInYanGauge );
+		loop( 8 ){
+			yield;
+			let bEnableInYanWork = 	GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, false ) &&
+									!( OnBorderOfLife() || OnEnemyLastSpell() || OnBomb() || GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_BOSS_EVENT_ENABLE, false ) );
+			let bInYanMax = m_nInYanGauge > 254;
+			let nGraze = GetGraze();
+			if( nGraze != nGrazePrev ){
+				if( m_nInYanGauge > 16 && ( !m_bFlanKeySlow || bInYanMax ) ){
+					loop( ( nGraze - nGrazePrev ) * [ 1, 3 ][ bInYanMax ] ){ SetItemQueue( ITEMEX_HAKUREI, GetPlayerX(), GetPlayerY(), rand( 3, 5 ), 270 + RandBlur( 16 ) ); }
+				}
+				nGrazePrev = nGraze;
 			}
+			if( bEnableInYanWork ){
+				m_nInYanGauge += 0.04 * PLAYER_INYAN_GAUGE_RATE * nLevelRate;
+				if( m_bFlanKeyUser && nHakurei > 0 && bInYanMax ){
+					m_nInYanGauge = 0;
+					m_nInYanGaugePenalty = PLAYER_INYAN_GAUGELOST_PENALTY_INTERVAL / 8;
+					SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * 0.01 ) );
+					PlaySEEx( seShot3 );
+					InYanShot();
+				}
+			}
+			m_nInYanGauge = MinMax( m_nInYanGauge, 0, 255 );
+			if( m_nInYanGauge > 0 ){ m_nInYanGaugeLast = m_nInYanGauge; }
+			if( m_nInYanGaugePenalty > 0 ){
+				m_nInYanGauge = 0;
+				if( bEnableInYanWork ){ m_nInYanGaugePenalty--; }
+			}
+			m_nInYanBorderAlpha = MinMax( m_nInYanBorderAlpha + 0.8 * [ -1, 1 ][ bInYanMax ], 0, 128 );
 		}
-		else if( m_fInYanGauge > 0 ){
-			if( m_nCount - m_nInYanShotCount == 1 ){ CreateInYanShot(); }
-			m_nInYanGaugeOverCount = 0;
-			m_fInYanGauge = Max( m_fInYanGauge - [ 5, 20 ][ m_fInYanGauge > 100 ], 0 );
-		}
-		if( m_nInYanShotCount < 0 ){ m_nInYanShotCount++; }
 	}
-	m_nSlowBorderAlpha = MinMax( m_nSlowBorderAlpha + [ -5, 5 ][ m_bSlow ], 0, 96 );
-	SetRebirthFrame( Max( m_nBorderLifeLimit - m_nBorderLifeUseCount, 0 ) );
-	SetItemCollectLine( [ m_nItemCollectUnderBorder, GetClipMaxY() ][ OnBomb() ] );
-	SetIntersectionCircle( GetPlayerX(), GetPlayerY(), m_nCollisionCircle );
-	SetGrazeCircle( m_nGrazeCircle + [ 0, 16 ][ m_fInYanGauge > 0 ] );
-	m_bMiss = false;
-	m_bLastLife = ( GetPlayerLife() == 1 );
-	SetCommonData( CD_PLAYER_ONMISSED, false );
-	OnMainLoopCommon();
 }
 
-//	ミス時のループ
-function OnMissedLoop(){
-	if( OnBorderOfLife() ){ m_nBorderLifeUseCount++; }
+/**
+*	博麗システム用絵画処理です。
+*	注意 : 内部から自動的に呼ばれます。通常直接呼び出すことはありません。
+*/
+function DrawInYanSystem(){
+	SetAlpha( 96 );
+	let nGaugeY = GetPlayerY() + 22 * [ -1, 1 ][ GetClipMaxY() - GetPlayerY() > 32 ];
+	SetGraphicRect( 0, 0, 32, 4 );
+	__DrawChr( IMAGE_INYAN_GAUGE, GetPlayerX(), nGaugeY );
+	if( m_nInYanGauge > 0 ){
+		let nDstX = Smooth( 16, 0, m_nInYanGauge, 255 );
+		SetGraphicRect( 0, 4, 32, 8 );
+		SetGraphicScale( 1 - nDstX / 16, 1 );
+		__DrawChr( IMAGE_INYAN_GAUGE, GetPlayerX() - nDstX, nGaugeY );
+		if( m_nInYanGauge > 254 ){
+			SetColor( 255, 192, 224 );
+			SetGraphicRect( 0, 0, 64, 64 );
+			SetGraphicAngle( 0, 0, m_nFlanCount * 10 );
+			SetAlpha( m_nInYanBorderAlpha );
+			DrawPlayer( IMAGE_CL_CIRCLE_8S );
+		}
+	}
 	else{
-		m_nBorderLifeUseCount = 0;
-		SetCommonData( CD_PLAYER_ONMISSED, true );
-		if( !m_bMiss && !GetCommonDataDefault( CD_SPELL_LASTSPELL, false ) ){
-			m_bMiss = true;
-			let nNowPower = GetCommonDataDefault( CD_ITEM_POWER, 0 );
-			if( m_bLastLife ){ loop( 3 ){ SetItemQueue( ITEMEX_POWER_FULL, GetPlayerX(), GetPlayerY(), rand( 4, 8 ), 270 + RandBlur( 45 ) ); } }
-			else{
-				if( nNowPower > 5 ){ SetItemQueue( ITEMEX_POWER_BIG, GetPlayerX(), GetPlayerY(), rand( 4, 8 ), 270 ); }
-				loop( Min( nNowPower, 5 ) ){ SetItemQueue( ITEMEX_POWER, GetPlayerX(), GetPlayerY(), rand( 3, 6 ), 270 + RandBlur( 45 ) ); }
-			}
-			SetCommonData( CD_ITEM_POWER, Max( nNowPower - 20, 0 ) );
-		}
+		let nDstX = SlowDown( Smooth( 16, 0, m_nInYanGaugeLast, 255 ), 0, m_nInYanGaugePenalty, PLAYER_INYAN_GAUGELOST_PENALTY_INTERVAL );
+		SetGraphicRect( 0, 8, 32, 12 );
+		SetGraphicScale( 1 - nDstX / 16, 1 );
+		__DrawChr( IMAGE_INYAN_GAUGE, GetPlayerX() - nDstX, nGaugeY );
 	}
-	if( GetCommonDataDefault( CD_ENABLE_HAKUREI, false ) ){ CreateInYanShot(); }
-	m_nSlowBorderAlpha = MinMax( m_nSlowBorderAlpha + -5, 0, 96 );
-	OnMainLoopCommon();
-}
-
-//	スペルカード部
-function OnSpellCard{
-	UseSpellCard( [ m_szSpellFuncFast, m_szSpellFuncSlow ][ m_bSlow ], 0 );
-	THC_CutIn( m_nCount, true, imgCutIn, 192, 320, [ m_szSpellNameFast, m_szSpellNameSlow ][ m_bSlow ], imgSpellLine, imgFont, imgFontSmall, imgFontSJIS16 );
-}
-
-//	共通終了部
-function OnFinalize(){
-	DeleteGraphicList( m_szLoadGraphicList, [] );
-}
-
-//	共通絵画部
-function OnDrawLoop(){
-	let y = 64;
-	let x = 0;
-	if( m_bLeft ){
-		x = 64;
-		if( m_nCount < m_nLastMoveCount + 8 ){ y = 0; }
-	}
-	else if( m_bRight ){
-		x = 128;
-		if( m_nCount < m_nLastMoveCount + 8 ){ y = 0; }
-	}
-	else{ y = trunc( m_nCount / 8 ) % 3 * 64; }
-	SetGraphicRect( x, y, x + 64, y + 64 );
-	if( m_fInYanGauge >= 100 ){
-		let c = Smooth( 255, 96, m_fInYanGauge - 100, 30 );
-		SetColor( 255, c, c );
-	}
-	else if( m_nInYanShotCount < 0 ){ SetColor( 192, 160, 255 ); }
-	DrawPlayer( imgDot );
-	if( m_nSlowBorderAlpha > 0 ){
-		SetAlpha( m_nSlowBorderAlpha );
-		SetGraphicAngle( 0, 0, m_nCount * 2 );
-		SetGraphicRect( 0, 0, 64, 64 );
-		DrawPlayer( imgBorder );
-		SetGraphicAngle( 0, 0, 0 );
-	}
-	if( GetCommonDataDefault( CD_ENABLE_HAKUREI, false ) ){
-		SetAlpha( [ Smooth( 64, 160, m_fInYanGauge, 100 ), 160 ][ m_fInYanGauge > 0 ] );
-		let nGaugeY = GetPlayerY() + 22 * [ -1, 1 ][ GetClipMaxY() - GetPlayerY() > 32 ];
-		SetGraphicRect( 0, 0, 32, 4 );
-		_DrawChr( imgGaugeBase, GetPlayerX(), nGaugeY );
-		if( m_fInYanGauge > 0 ){
-			SetGraphicScale( Smooth( 0, 1, m_fInYanGauge, 100 ), 1 );
-			_DrawChr( imgGaugeGreen, GetPlayerX() - Smooth( 16, 0, m_fInYanGauge, 100 ), nGaugeY );
-			SetGraphicScale( Smooth( 0, 1, m_fInYanGauge - 100, 100 ), 1 );
-			_DrawChr( imgGaugeRed, GetPlayerX() - Smooth( 16, 0, m_fInYanGauge - 100, 100 ), nGaugeY );
-			SetGraphicScale( 1, 1 );
-		}
-	}
-	SetAlpha( 255 );
 	SetColor( 255, 255, 255 );
-	if( IsCutIn() && !GetCommonDataDefault( "thC", false ) ){ DrawCutIn( m_nCount ); }
+	SetGraphicAngle( 0, 0, 0 );
+	SetGraphicScale( 1, 1 );
+	SetAlpha( 255 );
 }
 
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	定型弾発射関数
+// 博麗システム(陰陽弾)
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	撃っていいの？
-//		内部実装がスマートでないので少し考えること
-function BeCanFire( let nInterval ){
-	if( GetCommonDataDefault( CD_STAGE_EVENT, false ) || OnMissed() ){ return; }
-	if( m_bShot ){
-		if( m_nLastShotStartCount <= 0 ){ m_nLastShotStartCount = m_nCount; }
-		if( ( m_nLastShotStartCount - m_nCount ) % nInterval == 0 ){ return true; }
+/**
+*	陰陽弾本体タスクです。
+*/
+task InYanShot(){
+	InvincibleTemporary( false );
+	let nCount = 0;
+	let obj = Obj_Create( OBJ_SHOT );
+	let nAngle = GetAngleFromInput();
+	let nX = GetPlayerX();
+	let nY = GetPlayerY();
+	let nSpeed = [ [ 10, 8 ][ m_bFlanKeySlow ], 6 ][ nAngle < 0 ];
+	Obj_SetPosition( obj, nX, nY );
+	Obj_SetAngle( obj, [ nAngle, 270 ][ nAngle < 0 ] );
+	Obj_SetAlpha( obj, 0 );
+	ObjShot_SetGraphic( obj, US_BLANK64 );
+	ObjShot_SetDamage( obj, 0.1 );
+	ObjShot_SetPenetration( obj, 10 );
+	while( !Obj_BeDeleted( obj ) ){
+		Obj_SetSpeed( obj, Smooth( nSpeed, nSpeed / 3, nCount, 100 ) );
+		nX = Obj_GetX( obj );
+		nY = Obj_GetY( obj );
+		InYanBlur( nX, nY, nCount );
+		nCount++;
+		yield;
 	}
-	else{
-		if( m_nLastShotStartCount > 0 ){
-			m_nLastShotStartCount = -m_nLastShotStartCount;
-			m_nLastShotEndCount = m_nCount;
-		}
-		if( ( m_nCount - m_nLastShotEndCount < PLAYER_SHOTPULL_FRAMELAG ) && ( ( m_nLastShotStartCount - m_nCount ) % nInterval == 0 ) ){ return true; }
-	}
-	return false;
+	InYanShockWave( nX, nY, nCount );
 }
 
-//	基本ショット
-function BasicShot( let width ){
-	if( m_nPowerPhase == 0 ){ CreatePlayerShot01( GetPlayerX(), GetPlayerY(), 15, 270, 1.3, 1, US_MAINSHOT ); }
-	else{
-		let space = width / 3;
-		alternative( m_nPowerPhase )
-		case( 1 ){
-			width /= 4;
-			space = width * 2;
-		}
-		case( 2 ){
-			width /= 3;
-			space = width;
-		}
-		case( 3 ){
-			width /= 2;
-			space = width / 2;
-		}
-		case( 4 ){
-			width /= 1.5;
-			space = width / 2.5;
-		}
-		let angle = -width;
-		while( angle <= width ){
-			CreatePlayerShot01( GetPlayerX(), GetPlayerY(), 15, angle + 270, 1.3, 1, US_MAINSHOT );
-			angle += space;
-		}
+/**
+*	陰陽弾弾道表示タスクです。
+*	注意 : 陰陽弾本体内部から呼び出されます。通常直接呼び出すことはありません。
+*
+*	@param nX 爆心X座標
+*	@param nY 爆心Y座標
+*	@param nCount 呼び出し時のカウンタ状態
+*/
+task InYanBlur( let nX, let nY, let nCount ){
+	let obj = CreateSquareEffectObject( IMAGE_CL_SHOT_ALL, 414, 352, 64, 64, 64, 64 );
+	Obj_SetPosition( obj, nX, nY );
+	Obj_SetAutoDelete( obj, false );
+	ObjEffect_SetAngle( obj, 0, 0, nCount * 16 );
+	ascent( let i in 0..PLAYER_INYAN_FADE_LIMIT ){
+		let nAlpha = Accelerate( 160, 0, i, PLAYER_INYAN_FADE_LIMIT );
+		ascent( let j in 0..4 ){ ObjEffect_SetVertexColor( obj, j, nAlpha, 255, 192, 255 ); }
+		yield;
+	}
+	Obj_Delete( obj );
+}
+
+/**
+*	陰陽弾衝撃波タスクです。
+*	注意 : 陰陽弾本体内部から呼び出されます。通常直接呼び出すことはありません。
+*
+*	@param nX 爆心X座標
+*	@param nY 爆心Y座標
+*	@param nCount 呼び出し時のカウンタ状態
+*/
+task InYanShockWave( let nX, let nY, let nCount ){
+	let nLifeTime = SlowDown( 80, 30, nCount, 100 );
+	let nNum = 64;
+	let nDiam = SlowDown( 768, 128, nCount, 100 );
+	let nRadius = nDiam / 2;
+	let nSpeed = nRadius / nLifeTime;
+	ExplosionEx01( nX, nY, nLifeTime, 0, nDiam, [], 255, 0, [] );
+	loop( 5 ){ yield; }
+	m_nInYanShockRadius = 0;
+	ascent( let i in 0..nNum ){
+		InYanShotShockCluster( nX, nY, Smooth( 0, 360, i, nNum ), nSpeed, nLifeTime );
+	}
+	ascent( let i in 0..120 ){
+		m_nInYanShockRadius = ceil( Smooth( 0, nDiam * pi / nNum / 2, i, nLifeTime ) );
+		yield;
 	}
 }
 
-//	陰陽弾を発射する
-function CreateInYanShot(){
-	if( m_fInYanGauge < 16 ){
-		m_nInYanShotCount = 0;
+/**
+*	陰陽弾衝撃波クラスタのタスクです。
+*	注意 : 陰陽弾本体内部から呼び出されます。通常直接呼び出すことはありません。
+*
+*	@param nX 爆心X座標
+*	@param nY 爆心Y座標
+*	@param nAngle 角度
+*	@param nSpeed 速度
+*	@param nLifeTime 衝撃波の寿命
+*/
+task InYanShotShockCluster( let nX, let nY, let nAngle, let nSpeed, let nLifeTime ){
+	let obj = Obj_Create( OBJ_SHOT );
+	ObjShot_SetGraphic( obj, US_BLANK16 );
+	Obj_SetPosition( obj, nX, nY );
+	Obj_SetSpeed( obj, nSpeed );
+	Obj_SetAngle( obj, nAngle );
+	Obj_SetAlpha( obj, 0 );
+	Obj_SetAutoDelete( obj, false );
+	ObjShot_SetDamage( obj, 0.2 );
+	ObjShot_SetPenetration( obj, 16777216 );
+	ascent( let i in 0..( nLifeTime / PLAYER_INYAN_SHOT2HAKUREI_INTERVAL ) ){
+		let nNowX = Obj_GetX( obj );
+		let nNowY = Obj_GetY( obj );
+		DeleteEnemyShotImmediatelyInCircle( SHOT, nNowX, nNowY, m_nInYanShockRadius + 1 );
+		if( GetEnemyShotCountEx( nNowX, nNowY, m_nInYanShockRadius, ALL ) > 0 ){
+			let nRadiusHalf = m_nInYanShockRadius / 2;
+			SetItemQueue( ITEMEX_HAKUREI, nNowX + RandBlur( nRadiusHalf ), nNowY + RandBlur( nRadiusHalf ), 3, 270 );
+		}
+		loop( PLAYER_INYAN_SHOT2HAKUREI_INTERVAL ){ yield; }
+	}
+	if( !Obj_BeDeleted( obj ) ){ Obj_Delete( obj ); }
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	魔理沙ドットを絵画します。
+*/
+function DrawDotMarisa(){
+	let nY = 64;
+	let nX = 0;
+	if( m_bFlanKeyLeft ){
+		nX = 64;
+		if( m_nKeyLRHoldCount <= PLAYER_DOT_ANIMATION ){ nY = 0; }
+	}
+	else if( m_bFlanKeyRight ){
+		nX = 128;
+		if( m_nKeyLRHoldCount <= PLAYER_DOT_ANIMATION ){ nY = 0; }
+	}
+	else if( m_nKeyLRHoldCount > -PLAYER_DOT_ANIMATION && m_nKeyLRTypeLastHold != NULL ){
+		nX = [ 128, 64 ][ m_nKeyLRTypeLastHold == VK_LEFT ];
+		nY = 0;
+	}
+	else{ nY = trunc( m_nFlanCount / PLAYER_DOT_ANIMATION ) % 3 * 64; }
+	SetGraphicRect( nX, nY, nX + 64, nY + 64 );
+	if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN, false ) && m_nInYanGaugePenalty > 0 ){ SetColor( 255, 128, 192 ); }
+	DrawPlayer( IMAGE_DOT_MARISA );
+	SetColor( 255, 255, 255 );
+}
+
+/**
+*	低速移動エフェクトを絵画します。
+*/
+function DrawPlayerBorder(){
+	SetAlpha( m_nAlphaBorder );
+	SetGraphicAngle( 0, 0, m_nFlanCount * 2 );
+	SetGraphicRect( 0, 0, 64, 64 );
+	DrawPlayer( IMAGE_CL_CIRCLE_BORDER );
+	SetGraphicAngle( 0, 0, 0 );
+	SetAlpha( 255 );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+// 未分類
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	左右キー状態を監視し、押され続けている間カウンタを回します。
+*/
+task CheckHoldKeyLRLoop(){
+	loop{
+		yield;
+		if( m_bFlanKeyLeft || m_bFlanKeyRight ){
+			if( m_nKeyLRHoldCount < 0 ){ m_nKeyLRHoldCount = 0; }
+			else{ m_nKeyLRHoldCount++; }
+			m_nKeyLRTypeLastHold = [ VK_RIGHT, VK_LEFT ][ m_bFlanKeyLeft ];
+		}
+		else if( m_nKeyLRHoldCount > 0 ){ m_nKeyLRHoldCount = 0; }
+		else{ m_nKeyLRHoldCount--; }
+	}
+}
+
+/**
+*	一時的に無敵状態にします。
+*	FIXME : 現状カスリ判定もなくなってしまうので何か対策考える
+*
+*	@param bClearShot 画面全体の弾を抹消するかどうか
+*/
+task InvincibleTemporary( let bClearShot ){
+	let nCollisionHit = FLAN_PLAYER_COLLISION_HIT;
+	FLAN_PLAYER_COLLISION_HIT = 0;
+	loop( 10 ){
+		if( bClearShot ){ DeleteEnemyShotToItem( SHOT ); }
+		DeleteEnemyShotImmediatelyInCircle( SHOT, GetPlayerX(), GetPlayerY(), 6 );
+		yield;
+	}
+	FLAN_PLAYER_COLLISION_HIT = nCollisionHit;
+}
+
+/**
+*	攻撃力値を監視し毎フレーム格納し続けるループです。
+*/
+task LookPowerLoop(){
+	let nPrevPower;
+	loop{
+		nPrevPower = m_nPower;
+		if( !GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER_ENABLE, false ) ){ m_nPower = FLAN_PLAYER_POWER_MAX; }
+		else{ m_nPower = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 ); }
+		if( m_nPower != nPrevPower ){
+			let nPhase = GetPhase();
+			let nPowerUpCountListSize = length( FLAN_PLAYER_POWER_UPPOINT );
+			descent( let i in 0..nPowerUpCountListSize ){
+				if( m_nPower >= FLAN_PLAYER_POWER_UPPOINT[ i ] ){
+					let nNewPhase = i + 1;
+					if( nNewPhase > nPhase && m_nFlanCount > 10 ){
+						let bMax = nNewPhase == nPowerUpCountListSize;
+						PlaySEEx( SE_POWER_UP );
+						SetCommonDataEx( CL_CDNS_TEMP, CL_CD_PLAYER_POWER_UP, [ true, bMax ] );
+						if( bMax ){ InvincibleTemporary( true ); }
+					}
+					SetPhase( nNewPhase );
+					break;
+				}
+				else{ SetPhase( 0 ); }
+			}
+		}
+		loop( 5 ){ yield; }
+	}
+}
+
+/**
+*	共通メインループです。
+*	onMainLoop、onPlayerMissed双方の時に呼び出したい処理を記述します。
+*/
+task __CommonPlayerMainLoopTHC(){
+	loop{
+		if( m_nAlphaBorder == 0 || m_nAlphaBorder == 64 ){ loop( 10 ){ yield; } }
+		else{ yield; }
+		m_nAlphaBorder = MinMax( m_nAlphaBorder + PLAYER_ALPHA_SPEED * [ -1, 1 ][ m_bFlanKeySlow ], 0, 64 );
+	}
+}
+
+/**
+*	ビットタスクです。
+*/
+task Bit( let nDir ){
+	if( absolute( nDir ) != 1 ){ ErrorIllegalNumberList( nDir, [ -1, 1 ], "自機ビットタスク" ); }
+	let obj = CreateSquareEffectObject( IMAGE_DOT_MARISA, 194, 98, 16, 16, 16, 16 );
+//	let obj = CreateCircleEffectObject( 12, 6, 240, 240, 240, 240 );
+	let nAngle = 90;
+//	ObjEffect_SetTexture( obj, IMAGE_CL_WHITE );
+//	ObjEffect_SetRenderState( obj, ADD );
+	ObjEffect_SetLayer( obj, 4 );
+	while( !Obj_BeDeleted( obj ) ){
+		yield;
+//=====================================================================================================================
+//	TODO : 旧ライブラリからの移行互換用、完了次第削除・置換する
+		if( m_bFranPlayerShot && !m_bFlanKeyUser && m_bFlanPlayerShotEnable && !GetCommonDataDefault( FLAN_CD_BOSS_EVENT_ENABLE, false ) ){
+//=====================================================================================================================
+//	置換先
+//		if( m_bFranPlayerShot && !m_bFlanKeyUser && m_bFlanPlayerShotEnable ){
+//=====================================================================================================================
+			onSubShotTHC( obj, nDir, m_nFlanCount, GetPhase(), m_nFlanPhaseCount, m_nFlanPrevPhase );
+		}
+		nAngle = MinMax( nAngle + PLAYER_BIT_MOVESPEED * [ 1, -1 ][ m_bFlanKeySlow ], 20, 90 );
+		let nAngle2 = nAngle * nDir - 90;
+		Obj_SetPosition( obj, GetPlayerX() + PLAYER_BIT_DIST * cos( nAngle2 ), GetPlayerY() + PLAYER_BIT_DIST * sin( nAngle2 ) );
+		ObjEffect_SetAngle( obj, 0, 0, m_nFlanCount * 2 );
+	}
+}
+
+/**
+*	メインショットを発射します。
+*
+*	@param nWidth 発射幅
+*	@param nPowerPhase 攻撃力フェーズ
+*/
+function BasicShot( let nWidth, let nPowerPhase ){
+	if( OnBorderOfLife() ){ return; }
+	if( nPowerPhase == 0 ){ CreatePlayerShot01( GetPlayerX(), GetPlayerY(), 15, 270, 1.3, 1, US_MAINSHOT ); }
+	else{
+		WayPlayerShotAnimationSpeed01(
+			GetPlayerX(), GetPlayerY(),
+			12, 18, PLAYER_ANIMATION_MOUNTAIN,
+			1.5, 1,
+			truncate( nPowerPhase * 1.5 + 1 ), nWidth / [ 4, 2, 1.5, 1, 0.7, 0.5 ][ nPowerPhase ],
+			270, US_MAINSHOT
+		);
+	}
+	PlaySEEx( SE_SHOT );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+// 共通処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	固有動作のタスクです。onInitialize()より1フレーム後に呼ばれます。
+*	ここに固有の動作を記述します。
+*/
+task MainTask(){
+	MainTaskTHC();
+	ascent( let i in 0..2 ){ Bit( [ -1, 1 ][ i ] ); }
+}
+
+/**
+*	初期化時に呼ばれます。
+*/
+function onInitialize(){
+//	CreateDebugWindow();
+
+	m_nPlayerBorderOfLifeDefault = FLAN_PLAYER_BORDERLIFE_DEFAULT;
+	if( !GetCommonDataDefault( CL_CD_CDNS_INITIALIZED, false ) ){ CLCommonNameSpaceInitialize(); }
+	LoadPlayerShotData( PATH_USER_SHOT );
+	onInitializeTHC();
+	LoadResource( PLAYER_LOADLIST_GRAPHIC, PLAYER_LOADLIST_SE );
+	SetPlayerLifeImage( IMAGE_DOT_MARISA, 192, 0, 240, 48 );
+	LookPowerLoop();
+	CheckHoldKeyLRLoop();
+	__CommonPlayerMainLoopTHC();
+	if( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_ENABLE, false ) ){ InYanSystemStart(); }	// 博麗システムを停止したい場合はここをコメントアウトする
+}
+
+/**
+*	ショット発射時に呼ばれます。
+*
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onShot( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+//=====================================================================================================================
+//	TODO : 旧ライブラリからの移行互換用、完了次第削除する
+	if( GetCommonDataDefault( FLAN_CD_BOSS_EVENT_ENABLE, false ) ){ return; }
+//=====================================================================================================================
+	BasicShot( [ PLAYER_SHOT_BASIC_WIDTH_FASTMOVE, PLAYER_SHOT_BASIC_WIDTH_SLOWMOVE ][ m_bFlanKeySlow ], nPhase );
+	onShotTHC( nCount, nPhase, nPhaseCount, nPrevPhase );
+}
+
+/**
+*	毎フレームごとに呼ばれます。
+*
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onMainLoop( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+//	OutputDebugString( 0, "Phase", GetPhase() );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_PLAYER_ONMISSED, false );
+	if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, -1 ) == 0 ){
+		FLAN_PLAYER_COLLISION_HIT = 0;
+		DeleteEnemyShotImmediatelyInCircle( SHOT, GetPlayerX(), GetPlayerY(), 6 );
+	}
+	m_bPlayerLastLife = GetPlayerLife() == 1;
+	onMainLoopTHC( nCount, nPhase, nPhaseCount, nPrevPhase );
+	FLAN_PLAYER_BORDERLIFE_DEFAULT = [ m_nPlayerBorderOfLifeDefault, PLAYER_INYAN_ADDIRIONAL_BORDER_LIMIT ][ m_nInYanGauge > 254 ];
+}
+
+/**
+*	ミス時に呼ばれます。
+*
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onPlayerMissed( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	m_nInYanGauge = 0;
+	m_nInYanGaugePenalty = PLAYER_INYAN_GAUGELOST_PENALTY_INTERVAL;
+	if( OnBorderOfLife() || OnEnemyLastSpell() || GetCommonDataDefaultEx( CL_CDNS_RESULT, FLAN_CD_STAGE, - 1 ) == 7 ){
+		m_bPlayerMissed = false;
 		return;
 	}
-	let nInterval = PLAYER_CHARGE_INTERVAL;
-	if( m_fInYanGauge < 50 ){ nInterval *= 0.5; }
-	else if( m_fInYanGauge > 100 ){ nInterval *= Accelerate( 1, 2, m_fInYanGauge - 100, 100 ); }
-	m_nInYanShotCount = -nInterval;
-	InYanShot( m_fInYanGauge );
+	if( !m_bPlayerMissed ){
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_PLAYER_ONMISSED, true );
+		let bBigPower = false;
+		m_bPlayerMissed = true;
+		let nItemBaseSpeed = Smooth( 2, 13, GetPlayerY(), GetClipMaxY() );
+		let nItemBlurAngle = Smooth( 60, 20, GetPlayerY(), GetClipMaxY() );
+		let nItemGapAngle = Smooth( 30, -30, GetPlayerX(), GetClipMaxX() );
+		let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 );
+		if( m_bPlayerLastLife ){
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * 60 / 100 ) );
+			loop( 3 ){ SetItemQueue( ITEMEX_POWER_FULL, GetPlayerX(), GetPlayerY(), nItemBaseSpeed + RandBlur( 1.5 ) - 0.5, 270 + RandBlur( nItemBlurAngle ) + nItemGapAngle ); }
+			SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
+		}
+		else{
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * [ 8, 15 ][ m_nInYanGauge > 254 ] / 100 ) );
+			let nPower = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
+			if( nPower > 8 ){
+				SetItemQueue( ITEMEX_POWER_BIG, GetPlayerX(), GetPlayerY(), nItemBaseSpeed + RandBlur( 2 ), 270 + RandBlur( nItemBlurAngle / 3 ) );
+				bBigPower = true;
+			}
+			loop( Min( nPower - [ 0, 8 ][ bBigPower ], 5 ) ){ SetItemQueue( ITEMEX_POWER, GetPlayerX(), GetPlayerY(), nItemBaseSpeed + RandBlur( 1.5 ) - 0.5, 270 + RandBlur( nItemBlurAngle ) + nItemGapAngle ); }
+			SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, Max( nPower - 16, 0 ) );
+		}
+	}
+	onPlayerMissedTHC( nCount, nPhase, nPhaseCount, nPrevPhase );
 }
 
-//	陰陽弾(仮実装)
-task InYanShot( let nPower ){
-	let nX = GetPlayerX();
-	let nY = GetPlayerY();
-	let nVertex = 16;
-	let nObjCount = 0;
-	let bLeft = m_bLeft;
-	let bRight = m_bRight;
-	let bSlow = m_bSlow;
-	let obj = Obj_Create( OBJ_LASER );
-	let nX = GetPlayerX();
-	let nY = GetPlayerY();
-	let nScale;
-	Obj_SetAutoDelete( obj, true );
-	Obj_SetPosition( obj, nX, nY );
-	Obj_SetSpeed( obj, 10 );
-	Obj_SetAngle( obj, 270 );
-	ObjShot_SetGraphic( obj, RED03 );
-	ObjShot_SetPenetration( obj, 2 );
-	ObjLaser_SetSource( obj, false );
-	while( !Obj_BeDeleted( obj ) ){
-		let nNowPower = nPower - nObjCount;
-		nScale = Accelerate( 16, 160, nNowPower, 200 );
-		Obj_SetY( obj, Obj_GetY( obj ) - Smooth( 3, 6, nNowPower, 200 ) );
-		Obj_SetX( obj, Obj_GetX( obj ) + [ 0, [ 2.5, 1 ][ bSlow ] * [ 1, -1 ][ bLeft ] ][ bLeft || bRight ] );
-		if( nNowPower < 0 ){ ObjShot_FadeDelete( obj ); }
-		if( Obj_IsIntersected( obj ) ){
-			SetItemQueue( ITEMEX_HAKUREI, Obj_GetX( obj ) + RandBlur( 8 ), Obj_GetY( obj ) + RandBlur( 8 ), 2, 270 );
-			DeleteEnemyShotToItemInCircle( SHOT, nX, nY, nScale * 3 + 32 );
-			Obj_Delete( obj );
-		}
-		ObjShot_SetDamage( obj, Accelerate( 200, 2000, nNowPower, 200 ) );
-		ObjLaser_SetLength( obj, nScale * 2 );
-		ObjLaser_SetWidth( obj, nScale * 2 );
-		yield;
-		nObjCount++;
-	}
+/**
+*	スペル発動時に呼ばれます。
+*
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onStartSpell( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * 0.02 ) );
+	m_nInYanGauge -= m_nInYanGauge * 0.2;
+	onStartSpellTHC( nCount, nPhase, nPhaseCount, nPrevPhase );
+	UseSpellCard( [ PLAYER_SPELL_FUNCTION_FASTMOVE, PLAYER_SPELL_FUNCTION_SLOWMOVE ][ m_bFlanKeySlow ], 0 );
+	PushCLCutInQueue( true, IMAGE_CL_CUTIN_MARISA, [ PLAYER_SPELL_NAME_FASTMOVE, PLAYER_SPELL_NAME_SLOWMOVE ][ m_bFlanKeySlow ] );
+	m_nPlayerSpellType = [ MOVE_NORMAL, MOVE_SLOW ][ m_bFlanKeySlow ];
+	ExplosionEx01( GetPlayerX(), GetPlayerY(), 12, 0, 512, [ FLAN_ANIMATION_SLOWDOWN ], 255, 0, [ FLAN_ANIMATION_SLOWDOWN ] );
 }
+
+/**
+*	終了時に呼ばれます。
+*
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onFinalize( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	onFinalizeTHC( nCount, nPhase, nPhaseCount, nPrevPhase );
+	DeleteResource( PLAYER_LOADLIST_GRAPHIC, PLAYER_LOADLIST_SE );
+}
+
+/**
+*	絵画時に呼ばれます。
+*
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onDrawLoop( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN, false ) ){ DrawInYanSystem(); }
+	DrawDotMarisa();
+	if( m_nAlphaBorder > 0 ){ DrawPlayerBorder(); }
+	onDrawLoopTHC( nCount, nPhase, nPhaseCount, nPrevPhase );
+	if( IsCLCutIn() ){ CLDrawSpellCardEffect(); }
+}
+

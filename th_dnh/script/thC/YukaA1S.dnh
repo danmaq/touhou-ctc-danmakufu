@@ -1,0 +1,361 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ2D　中ボス　風見 幽香　スペル1
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[YukaA - スペル1]
+#Text[ステージ2D 中ボス
+風見 幽香]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Yuka.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** ダメージ率（スペルプラクティス及び単体テスト時に固くする） */
+	let m_nDamageRate = 1;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+			m_nDamageRate = 0.9;
+		}
+		else{
+			CheckTimer();
+			if( m_bStagePractice ){ m_nDamageRate = 0.9; }
+		}
+		SetTimer( 63 );
+		SetLife( 450 );
+		SetDamageRate( 5 * m_nDamageRate, 5 * m_nDamageRate );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_LOTUS + CL_TTH_CHARACTER_NAME_LOTUS_YUKA;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){
+			DropItemTHC( 8 );
+			DropItemBombTHC();
+		}
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+		/** 個別終了設定 */
+		if( m_bStage && !m_bSpellPractice ){
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_X, GetX() ); 
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, GetY() ); 
+		}
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_LOTUS + CL_TTH_SPELL_STAGE2_HALFWAY_1 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		let nAssign = 0;
+
+		loop{
+
+			/** 全方向機雷弾＋壁弾 */
+			SetAction( ACT_SHOT_B5, 150 );
+			RoundMineShot( nAssign );
+			WallShot();
+			__Wait( 150 );
+			SetAction( ACT_SHOT_A5, 135 );
+			Concentration01( 120 );
+			PlaySEEx( sePower );
+			SetDamageRate( 15.5 * m_nDamageRate, 15.5 * m_nDamageRate );
+			__Wait( 120 );
+			PlaySEEx( seKira1 );
+			__Wait( 30 );
+
+			/** 移動 */
+			Move( 60 );
+			__Wait( 60 );
+
+			nAssign ++;
+			if( nAssign == 2 ){ nAssign = - 1; }
+
+		}
+
+	}
+
+	/**
+	*	全方向機雷弾
+	*	@param nAssign	割り振り係数
+	*/
+	task RoundMineShot( let nAssign ){
+
+		let bCross = false;
+		if( nAssign == 0 ){
+			bCross = true;
+			nAssign = 1;
+		}
+		let nWay = 4 + 2 * m_nLevel;
+		let nAngle = rand( 0, 360 );
+		let nWayAngle = 360 / nWay * nAssign;
+
+		PlaySEEx( seShot2 );
+		PlaySELoop( seShot3, 90, 10 );
+		loop( nWay ){
+			MineShot( nAngle, nAssign );
+			if( bCross ){ nAssign = - nAssign; }
+			nAngle += nWayAngle;
+		}
+
+	}
+
+	/**
+	*	機雷弾
+	*	@param nGapAngle	間隔角度
+	*	@param nAssign		割り振り係数
+	*/
+	task MineShot( let nGapAngle, let nAssign ){
+
+		let nFrame = 90;
+		let nBaseX = GetX();
+		let nBaseY = GetY();
+		let nX = 0;
+		let nY = 0;
+		_SetLocation();
+		_MineShot();
+
+		/** 機雷弾 */
+		task _MineShot{
+
+			let nChargeFrame = 120;
+			let nDelay = 40 - 5 * m_nLevel;
+			let nStayFrame = 150 - nDelay;
+			let nMaxSpeed0 = 0.2 + 0.05 * m_nLevel;
+			let nAccelSpeed0 = nMaxSpeed0 / 60;
+			let nMaxSpeed1 = 2.2 + 0.1 * m_nLevel;
+			let nAccelSpeed1 = ( nMaxSpeed1 - nMaxSpeed0 ) / 45;
+			let nGraphic = US_BALL_BS_RED;
+			let _nGraphic = US_BALL_BS_YELLOW;
+
+			ascent( let i in 0 .. nFrame ){
+				let nAngle1 = GetGapAngle( nBaseX, nBaseY, nX, nY );
+				let nAngle0 = nAngle1 + RandBlur( 90 );
+				CreateShotA( 0, nX, nY, nDelay );
+				SetShotDataA( 0, 0, 0, nAngle0, 0, 0, 0, nGraphic );
+				if( i % 2 == 1 ){
+					SetShotDataA( 0, nStayFrame, 0, nAngle0, 0, nAccelSpeed0, nMaxSpeed0, _nGraphic );
+				}
+				SetShotDataA( 0, nStayFrame + nChargeFrame, NULL, nAngle1, 0, nAccelSpeed1, nMaxSpeed1, nGraphic );
+				FireShot( 0 );
+				yield;
+				nStayFrame --;
+			}
+
+		}
+
+		/** 位置設定 */
+		task _SetLocation{
+
+			let nGapLength = 24;
+			let nAddGapLength = 450 / nFrame;
+			let nAddGapAngle = 420 / nFrame * nAssign;
+
+			loop( nFrame ){
+				nGapLength += nAddGapLength;
+				nGapAngle += nAddGapAngle;
+				nX = GetGapX( nBaseX, nGapLength, nGapAngle );
+				nY = GetGapY( nBaseY, nGapLength, nGapAngle );
+				yield;
+			}
+
+		}
+
+	}
+
+	/**
+	*	壁弾
+	*/
+	function WallShot{
+
+		let nWay = 72;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 1;
+		let nMaxSpeed =  - nSpeed;
+		let nAccelSpeed = - nSpeed / 135;
+		let nAngle = rand( 0, 360 );
+		let nWayAngle = 360 / nWay;
+		let nGraphic = US_BALL_S_A_GREEN;
+		let nKill = 270;
+
+		loop( nWay ){
+			CreateShotA( 0, nX, nY, 0 );
+			SetShotDataA( 0, 0, nSpeed, nAngle, 0, nAccelSpeed, nMaxSpeed, nGraphic );
+			SetShotKillTime( 0, nKill );
+			FireShot( 0 );
+			nAngle += nWayAngle;
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 20;
+		let nMaxMoveX = 40;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 20;
+
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

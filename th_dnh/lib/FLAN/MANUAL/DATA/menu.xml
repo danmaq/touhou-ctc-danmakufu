@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<!DOCTYPE index [
+	<!ENTITY main SYSTEM "main.xml">
+	<!ENTITY history SYSTEM "__history.xml">
+	<!ENTITY tutorial SYSTEM "tutorial.xml">
+	<!ENTITY commondata SYSTEM "common_data.xml">
+	<!ENTITY player SYSTEM "player.xml">
+	<!ENTITY spell SYSTEM "spell.xml">
+	<!ENTITY stage SYSTEM "stage.xml">
+	<!ENTITY sps SYSTEM "stage_player_spell.xml">
+	<!ENTITY event SYSTEM "event.xml">
+	<!ENTITY boss SYSTEM "boss.xml">
+	<!ENTITY zako SYSTEM "zako.xml">
+	<!ENTITY shadow SYSTEM "shadow.xml">
+	<!ENTITY shot SYSTEM "shot.xml">
+	<!ENTITY enemy SYSTEM "enemy.xml">
+	<!ENTITY eshot SYSTEM "enemy_shot.xml">
+	<!ENTITY eshadow SYSTEM "enemy_shadow.xml">
+	<!ENTITY ess SYSTEM "enemy_shot_shadow.xml">
+	<!ENTITY esss SYSTEM "spell_enemy_shot_shadow.xml">
+	<!ENTITY esss2 SYSTEM "stage_enemy_shot_shadow.xml">
+	<!ENTITY psess SYSTEM "player_spell_enemy_shot_shadow.xml">
+	<!ENTITY esssp SYSTEM "enemy_shot_shadow_stage_player.xml">
+	<!ENTITY withoutevent SYSTEM "without_event.xml">
+	<!ENTITY common SYSTEM "common.xml">
+]>
+<index>
+	&main;
+	&history;
+	&tutorial;
+	&commondata;
+	&player;
+	&spell;
+	&stage;
+	&sps;
+	&event;
+	&boss;
+	&zako;
+	&shadow;
+	&shot;
+	&enemy;
+	&eshot;
+	&eshadow;
+	&ess;
+	&esss;
+	&esss2;
+	&psess;
+	&esssp;
+	&withoutevent;
+	&common;
+</index>

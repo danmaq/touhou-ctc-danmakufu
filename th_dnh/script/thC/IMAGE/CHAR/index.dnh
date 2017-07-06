@@ -3,5 +3,224 @@
 //　キャラ画像
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//　下位インデックスをインクルード
+//////////////////////////////////////////////////////////////////////
+
 #include_function ".\IMAGE\CHAR\DOT\index.dnh"
 #include_function ".\IMAGE\CHAR\CUTIN\index.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//　各ボスのロードリスト
+//////////////////////////////////////////////////////////////////////
+
+/**	魔理沙カットインリスト */
+let IMAGE_LIST_MARISA = [
+	cutMarisa,
+	cutMarisa2,
+	cutMarisa3,
+	cutMarisa4,
+	cutMarisa5,
+	cutMarisa6,
+	cutMarisa7,
+	cutMarisa8,
+	cutMarisa9,
+];
+
+
+//--------------------------------------------------------------------
+//　紅魔郷ルート
+//--------------------------------------------------------------------
+
+let IMAGE_LIST_FLANDRE = [
+	dotBossFlandre,
+	cutFlandre
+];
+let IMAGE_LIST_MEILING = [
+	dotBossMeirin,
+	cutMeirin,
+	cutMeirin2
+];
+let IMAGE_LIST_SAKUYA = [
+	dotBossSakuya,
+	cutSakuya
+];
+let IMAGE_LIST_REMILIA = [
+	dotBossRemilia,
+	cutRemilia,
+	cutRemilia2
+];
+let IMAGE_LIST_DEVIL = [
+	dotBossDevil,
+	cutDevil
+];
+let IMAGE_LIST_PACHOULI = [
+	dotBossPatchouli,
+	cutPatchouli,
+	cutPatchouli2,
+	cutPatchouli3
+];
+
+
+//--------------------------------------------------------------------
+//　永夜抄ルート
+//--------------------------------------------------------------------
+
+let IMAGE_LIST_MOKOU = [
+	dotBossMokou,
+	cutMokou
+];
+let IMAGE_LIST_KAGUYA = [
+	dotBossKaguya,
+	cutKaguya,
+	cutKaguya2
+];
+let IMAGE_LIST_REISEN = [
+	dotBossReisen,
+	cutReisen
+];
+let IMAGE_LIST_EIRIN = [
+	dotBossEirin,
+	cutEirin,
+	cutEirin2
+];
+let IMAGE_LIST_TEWI = [
+	dotBossTewi,
+	cutTewi,
+	cutTewi2,
+	cutTewi3
+];
+
+
+//--------------------------------------------------------------------
+//　花映塚ルート
+//--------------------------------------------------------------------
+
+let IMAGE_LIST_LILY = [
+	dotBossLily,
+	cutLily
+];
+let IMAGE_LIST_MEDICINE = [
+	dotBossMedicine,
+	dotShotPoison,
+	cutMedicine,
+	cutMedicine2
+];
+let IMAGE_LIST_AYA = [
+	dotBossAya,
+	dotShotTengu,
+	cutAya,
+	cutAya2
+];
+let IMAGE_LIST_KOMACHI = [
+	dotBossKomachi,
+	cutKomachi
+];
+let IMAGE_LIST_EIKI = [
+	dotBossEiki,
+	cutEiki,
+	cutEiki2,
+	cutEiki3
+];
+
+
+//--------------------------------------------------------------------
+//　旧作ルート
+//--------------------------------------------------------------------
+
+let IMAGE_LIST_MIMA = [
+	dotBossMima,
+	cutMima,
+	cutMima2
+];
+let IMAGE_LIST_YUKA = [
+	dotBossYuka,
+	cutYuka,
+	cutYuka2
+];
+let IMAGE_LIST_SHINKI = [
+	dotBossShinki,
+	cutShinki
+];
+let IMAGE_LIST_ALICE = [
+	dotBossAlice,
+	cutAlice,
+	cutAlice2,
+	cutAlice3
+];
+
+
+//--------------------------------------------------------------------
+//　妖々夢ルート
+//--------------------------------------------------------------------
+
+let IMAGE_LIST_CHEN = [
+	dotBossChen,
+	cutChen
+];
+let IMAGE_LIST_RAN = [
+	dotBossRan,
+	cutRan
+];
+let IMAGE_LIST_YUKARI = [
+	dotBossYukari,
+	cutYukari,
+	cutYukari2,
+	cutYukari3
+];
+let IMAGE_LIST_YOUMU = [
+	dotBossYoumu,
+	cutYoumu
+];
+let IMAGE_LIST_YUYUKO = [
+	dotBossYuyuko,
+	dotOugi,
+	cutYuyuko,
+	cutYuyuko2,
+	cutYuyuko3,
+	cutYuyuko4
+];
+let IMAGE_LIST_YUYUKOYUKARI = [
+	dotBossYukari,
+	cutYukari,
+	cutYukari2,
+	dotBossYuyuko,
+	cutYuyuko,
+	cutYukariYuyuko
+];
+let IMAGE_LIST_REIMU_W = [
+	dotBossReimuW,
+	dotBossRemilia,
+	dotBossYuyuko,
+	dotBossKaguya,
+	dotBossEiki,
+	cutReimuW,
+	cutReimuW2,
+	cutReimuW3,
+	cutReimuW4,
+	cutReimuW5,
+	cutReimuWS
+];
+
+
+//--------------------------------------------------------------------
+//　EX/PHルート
+//--------------------------------------------------------------------
+
+let IMAGE_LIST_SUIKA = [
+	dotBossSuika,
+	cutSuika,
+	cutSuika2,
+	cutSuika3,
+	cutSuika4
+];
+let IMAGE_LIST_REIMU = [
+	dotBossReimu,
+	cutReimu,
+	cutReimu2,
+	cutReimu3,
+	cutReimu4
+];

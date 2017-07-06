@@ -1,57 +1,140 @@
-script_enemy_main
-{
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 1c(妖精雑魚)
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
-#include_function ".\INCLUDE\Enemy.dnh"
-#include_function ".\_index_UserShot.dnh"
 
-//変数宣言--------------------------------------
-	let Level=GetCommonData("Level");
-//タスクの作成----------------------------------
-task MainAction()
-{
-	yield;
-	_Wait(90);
-	RoundLineShot( GetX(),GetY(),0.8,[1,1,2.5,4][Level],GetAngleToPlayer(),[45,30,30,36][Level],[1,1,4,7][Level],US_RICE_S_ORANGE,30);
-	PlaySE(seShot2);
+//////////////////////////////////////////////////////////////////////
+//	スクリプトここから
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	THCELをインクルード
+//	(FLAN/THCELへのインクルードはTHCELが勝手にやってくれます)
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\Zako.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	/**	デフォルトアイテムの落下量を設定します。 */
+	ENEMY_ITEMEX_NUM_DEFAULT = 3;
+	/**	被弾判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_A = 13;
+	/**	接触判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_B = 8;
+	/**	onMainLoopへ処理をまわさないよう設定します。(まわしても何の処理も無い) */
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵の移動を管理するタスクです。
+	*
+	*	@param nLevel レベル(0～3)
+	*/
+	task DoMove( let nLevel ){
+		let spmax=GetSpeed();
+		ascent(i in 0..50){
+			SetSpeed(SlowDown( spmax , 0 , i , 50 ));
+			yield;
+		}
+		__Wait(40);
+		SetAngle([0,0,180,-90][GetArgument()]);
+		SetSpeed(0.5);
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵固有のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nArgv, let nLevel ){
+		DoMove( nLevel );
+		__Wait(40);
+		_RoundLineShot( GetX(),GetY(),0.9,[1,1,2.5,4][nLevel],GetAngleToPlayer(),[15,30,24,30][nLevel],[3,4,5,6][nLevel],US_RICE_S_ORANGE,30);
+		PlaySEEx(seShot2);
+	}
+
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( let nArgv, let nLevel ){
+//		CreateDebugWindow();
+		SetLife( 30 );
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		DrawYousei( RECT_YOUSEI_GREEN );
+	}
+
 }
-task SubAction01()
-{
-	yield;
-	let spmax=GetSpeed();
-	ascent(i in 0..50)
-	{
-		SetSpeed(SlowDown( spmax , 0 , i , 50 ));
-		yield;
-	}
-	_Wait(40);
-	SetAngle([0,0,180,-90][GetArgument()]);
-	SetSpeed(0.5);
-}
-
-//実行部分---------------------------------------
-
-	@Initialize
-	{
-		SetLife(20);
-		SetInvincibility( 160 );
-		MainAction();
-		SubAction01();
-		LoadUserShotData(shotAll);
-	}
-	@MainLoop
-	{
-		Gone();
-		Deletemine();
-		PlayDamageSE(seDamage);
-		yield;
-		Collision(16 , 12);
-		m_nCount++;
-	}
-	@DrawLoop
-	{
-		DrawYousei(32,m_nCount);
-		DarwZakoBack(m_nCount);
-	}
-	@Finalize{DropItem( 5 , 40 );}
-}
-

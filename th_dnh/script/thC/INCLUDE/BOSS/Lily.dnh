@@ -1,0 +1,182 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　リリー・ホワイト
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossLily;
+let m_szImageCutIn = cutLily;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_LILY;
+let m_aszImageBGList = LOADBGLIST_LILY;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+/** ワープステータス 0:通常 1:消滅中 2:消滅 3:出現中 */
+let m_nWarpStatus = 0;
+/** 消滅・出現開始からのカウント数 */
+let m_nWarpCount = 0;
+/** 消滅・出現開始から完了までのカウント数 */
+let m_nMaxWarpCount = 14;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+	SetGraphicRect( 0, 0, 1024, 1024 );
+	DrawRotateCenter( imgSpellBamboo, 0.3 );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	描画関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	描画データを設定します。
+*	ボス描画前に呼び出してください。
+*/
+function SetDrawDataLily{
+
+	let nScaleX = 1;
+	let nScaleY = 1;
+	let nHalfWarpCount = m_nMaxWarpCount / 2;
+	alternative( m_nWarpStatus )
+	/** 消滅中 */
+	case( 1 ){
+		if( m_nWarpCount < nHalfWarpCount ){
+			nScaleX = 1 + 0.5 * m_nWarpCount / nHalfWarpCount;
+			nScaleY = 1 - 0.9 * m_nWarpCount / nHalfWarpCount;
+		}
+		else{
+			nScaleX = 1.5 - 1.5 * ( m_nWarpCount - nHalfWarpCount ) / nHalfWarpCount;
+			nScaleY = 0.1 + 2.4 * ( m_nWarpCount - nHalfWarpCount ) / nHalfWarpCount;
+		}
+		SetGraphicScale( nScaleX, nScaleY );
+		m_nEnemyAlpha = 255;
+	}
+	/** 消滅 */
+	case( 2 ){
+		SetGraphicScale( 1, 1 );
+		m_nEnemyAlpha = 0;
+	}
+	/** 出現中 */
+	case( 3 ){
+		if( m_nWarpCount < nHalfWarpCount ){
+			nScaleX = 1.5 * m_nWarpCount / nHalfWarpCount;
+			nScaleY = 2.5 - 2.4 * m_nWarpCount / nHalfWarpCount;
+		}
+		else{
+			nScaleX = 1.5 - 0.5 * ( m_nWarpCount - nHalfWarpCount ) / nHalfWarpCount;
+			nScaleY = 0.1 + 0.9 * ( m_nWarpCount - nHalfWarpCount ) / nHalfWarpCount;
+		}
+		SetGraphicScale( nScaleX, nScaleY );
+		m_nEnemyAlpha = 255;
+	}
+	/** 通常 */
+	others{
+		SetGraphicScale( 1, 1 );
+		m_nEnemyAlpha = 255;
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	未分類
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ワープ移動します。
+*	nFrameはm_nMaxWarpCount*2以上である必要があります。
+*	@param nFrame	ワープ完了フレーム数
+*	@param nArea	出現エリア 0:花弾中央 1:花弾左 2:花弾右 3:対称弾 4:スペル 5:画面外
+*/
+task Warp( let nFrame, let nArea ){
+
+	/** 消滅中 */
+	m_nWarpStatus = 1;
+	m_nWarpCount = 0;
+	loop( m_nMaxWarpCount ){
+		yield;
+		m_nWarpCount ++;
+	}
+
+	/** 消滅 */
+	SetEnemyMarker( false );
+	m_nWarpStatus = 2;
+	SetX( CL_CEN_X );
+	SetY( CL_MIN_Y - 1000 );
+	__Wait( nFrame - m_nMaxWarpCount * 2 );
+
+	/** 出現中 */
+	SetEnemyMarker( true );
+	alternative( nArea )
+	/** 花弾中央 */
+	case( 0 ){
+		SetX( CL_CEN_X );
+		SetY( CL_MIN_Y + 100 );
+	}
+	/** 花弾左 */
+	case( 1 ){
+		SetX( rand( CL_MIN_X + 90, CL_CEN_X - 60 ) );
+		SetY( CL_MIN_Y + 100 + RandBlur( 20 ) );
+	}
+	/** 花弾右 */
+	case( 2 ){
+		SetX( rand( CL_CEN_X + 60, CL_MAX_X - 90 ) );
+		SetY( CL_MIN_Y + 100 + RandBlur( 20 ) );
+	}
+	/** 対称弾 */
+	case( 3 ){
+		SetX( CL_CEN_X );
+		SetY( CL_CEN_Y - 60 );
+	}
+	/** スペル */
+	case( 4 ){
+		SetX( CL_CEN_X );
+		SetY( CL_MIN_Y + 120 );
+	}
+	/** 画面外 */
+	others{
+		SetX( CL_CEN_X );
+		SetY( CL_MIN_Y - 1000 );
+	}
+	m_nWarpStatus = 3;
+	m_nWarpCount = 0;
+	loop( m_nMaxWarpCount ){
+		yield;
+		m_nWarpCount ++;
+	}
+	m_nWarpStatus = 0;
+
+}

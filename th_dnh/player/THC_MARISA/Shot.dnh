@@ -1,39 +1,79 @@
 #PlayerShotData
 
-ShotImage = "script\thC\IMAGE\CHAR\DOT\shot_all.png"
+ShotImage = "lib\THCCL\IMAGE\OTHER\shot_all.png"
 
+// メインショット ----------------------
 ShotData{
 	id = 1
 	rect = ( 257, 478, 275, 512 )
 	render = ALPHA
 	alpha = 128
+	delay_color = ( 128, 192, 255 )
 }
 
+// マジックミサイル --------------------
 ShotData{
 	id = 2
 	rect = ( 275, 472, 311, 512 )
 	render = ALPHA
 	alpha = 192
+	delay_color = ( 128, 255, 128 )
 }
+
+// マジックナパーム --------------------
 ShotData{
 	id = 3
 	rect = ( 311, 412, 347, 512 )
 	render = ALPHA
 	alpha = 192
+	delay_color = ( 192, 255, 255 )
 }
 
+// イリュージョンレーザー --------------
 ShotData{
-	id = 172
-	rect = ( 257, 1, 319, 63 )
-	render = ADD
+	id = 4
+	rect = ( 208, 431, 234, 459 )
+	render = ALPHA
+	alpha = 192
 	delay_color = ( 255, 255, 255 )
+}
+
+// 陰陽弾 ------------------------------
+ShotData{
+	id = 5
+	rect = ( 414, 352, 478, 416 )
+	render = ALPHA
+	alpha = 160
+	delay_color = ( 255, 192, 255 )
+	angular_velocity = 16
 }
 
 // 非表示弾(自機用) --------------------
 ShotData{
+	id = 251
+	alpha = 0
+	rect = ( 0, 0, 16, 16 )
+	render = ALPHA
+	delay_color = ( 0, 0, 0 )
+}
+ShotData{
+	id = 252
+	alpha = 0
+	rect = ( 0, 0, 32, 32 )
+	render = ALPHA
+	delay_color = ( 0, 0, 0 )
+}
+ShotData{
 	id = 253
 	alpha = 0
 	rect = ( 0, 0, 64, 64 )
+	render = ALPHA
+	delay_color = ( 0, 0, 0 )
+}
+ShotData{
+	id = 254
+	alpha = 0
+	rect = ( 0, 0, 256, 256 )
 	render = ALPHA
 	delay_color = ( 0, 0, 0 )
 }

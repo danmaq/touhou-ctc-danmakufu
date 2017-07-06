@@ -1,1 +1,14 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	Œø‰Ê‰¹
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
 
+#include_function "se\index.dnh"
+#include_function "lib\THCCL\SE\index.dnh"
+
+let DIR_SE = GetCurrentScriptDirectory() ~ "SE\";
+
+let SE_POWER_UP	= DIR_SE ~ "powerup.wav";
+let SE_SHOT		= DIR_SE ~ "PlayerShot.wav";
+let SE_SPARK	= DIR_SE ~ "Spark.wav";

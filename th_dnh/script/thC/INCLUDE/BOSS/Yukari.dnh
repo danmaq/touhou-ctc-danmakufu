@@ -1,0 +1,212 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　紫
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossYukari;
+let m_szImageCutIn = cutYukari;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_YUKARI;
+let m_aszImageBGList = LOADBGLIST_YUKARI;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+/** ワープステータス 0:通常 1:消滅中 2:消滅 3:出現中 4:出現直後 */
+let m_nWarpStatus = 0;
+/** 消滅・出現開始からのカウント数 */
+let m_nWarpCount = 0;
+/** 消滅・出現開始から完了までのカウント数 */
+let m_nMaxWarpCount = 20;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+	SetGraphicScale( 1.2, 1.2 );
+	SetGraphicRect( 0, 0, 512, 512 );
+	let nLightMax = 255;
+	let nLightMin = 180;
+	let i = m_nFlanCount % 180;
+	let j = [ Accelerate( nLightMin, nLightMax, i, 180 ), SlowDown( nLightMax, nLightMin, i, 180 ) ][ m_nFlanCount % 360 >= 180 ];
+	SetColor( j, j, j );
+	DrawRotateCenter( imgSpellYukari01, 0.5 );
+	SetGraphicScale( 1, 1 );
+	SetRenderState( ADD );
+	SetColor( 80, 80, 80 );
+	DrawCenter( imgSpellYukari02 );
+	SetRenderState( ALPHA );
+	SetColor( 255, 255, 255 );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	描画関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	描画データを設定します。
+*	ボス描画前に呼び出してください。
+*/
+function SetDrawDataYukari{
+
+	let nScaleY = 1;
+	let nHalfWarpCount = m_nMaxWarpCount / 2;
+	alternative( m_nWarpStatus )
+	/** 消滅中 */
+	case( 1 ){
+		if( m_nWarpCount < nHalfWarpCount ){
+			nScaleY = 1 - m_nWarpCount / nHalfWarpCount;
+		}
+		else{ nScaleY = 0; }
+		SetGraphicScale( 1, nScaleY );
+		m_nEnemyAlpha = 255;
+	}
+	/** 消滅 */
+	case( 2 ){
+		SetGraphicScale( 1, 1 );
+		m_nEnemyAlpha = 0;
+	}
+	/** 出現中 */
+	case( 3 ){
+		if( m_nWarpCount >= nHalfWarpCount ){
+			nScaleY = ( m_nWarpCount - nHalfWarpCount ) / nHalfWarpCount;
+		}
+		else{ nScaleY = 0; }
+		SetGraphicScale( 1, nScaleY );
+		m_nEnemyAlpha = 255;
+	}
+	/** 通常 */
+	others{
+		SetGraphicScale( 1, 1 );
+		m_nEnemyAlpha = 255;
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	未分類
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ワープ移動します。
+*	nFrameはm_nMaxWarpCount*2以上である必要があります。
+*	@param nFrame	ワープ完了フレーム数
+*/
+task Warp( let nX, let nY, let nFrame ){
+
+	/** 消滅中 */
+	m_nWarpStatus = 1;
+	m_nWarpCount = 0;
+	BorderLine( 1 );
+	BorderLine( - 1 );
+	loop( m_nMaxWarpCount ){
+		yield;
+		m_nWarpCount ++;
+	}
+
+	/** 消滅 */
+	m_nWarpStatus = 2;
+	SetEnemyMarker( false );
+	SetX( CL_CEN_X );
+	SetY( CL_MIN_Y - 400 );
+	__Wait( nFrame - m_nMaxWarpCount * 2 );
+
+	/** 出現中 */
+	m_nWarpStatus = 3;
+	m_nWarpCount = 0;
+	SetEnemyMarker( true );
+	SetX( nX );
+	SetY( nY );
+	SetColor( 160, 160, 160 );
+	Concentration01( 30 );
+	SetColor( 255, 255, 255 );
+	BorderLine( 1 );
+	BorderLine( - 1 );
+	loop( m_nMaxWarpCount ){
+		yield;
+		m_nWarpCount ++;
+	}
+
+	/** 出現直後 */
+	m_nWarpStatus = 4;
+	loop( 30 ){ yield; }
+	m_nWarpStatus = 0;
+
+}
+
+/**
+*	ワープ境界
+*	Warpから呼ばれるもので、直接呼ぶことはありません。
+*	@param nAssign	割り振り係数
+*/
+task BorderLine( let nAssign ){
+
+	let nHalfWarpCount = m_nMaxWarpCount / 2;
+	let nQuarterWarpCount = m_nMaxWarpCount / 4;
+	if( m_nWarpStatus == 1 ){ __Wait( nHalfWarpCount ); }
+
+	let obj = Obj_Create( OBJ_LASER );
+	Obj_SetY( obj, GetY() );
+	Obj_SetAngle( obj, 90 - 90 * nAssign );
+	ObjShot_SetGraphic( obj, US_BEAM_PURPLE );
+	ObjShot_SetDelay( obj, nHalfWarpCount );
+	ObjLaser_SetWidth( obj, 36 );
+	Obj_SetAlpha( obj, 160 );
+	Obj_SetCollisionToPlayer( obj, false );
+	ObjShot_ToItem( obj, false );
+	ObjLaser_SetSource( obj, false );
+
+	let nMaxLength = 200;
+	let nLength = 0;
+	let nAddLength = nMaxLength / nQuarterWarpCount;
+	let nAddX = nAddLength * nAssign;
+	let nX = GetX();
+	if( m_nWarpStatus == 3 ){ nX -= nMaxLength * nAssign; }
+	Obj_SetX( obj, nX );
+
+	loop( nQuarterWarpCount ){
+		nLength += nAddLength;
+		ObjLaser_SetLength( obj, nLength );
+		yield;
+	}
+	loop( nQuarterWarpCount ){
+		nX += nAddX;
+		nLength -= nAddLength;
+		Obj_SetX( obj, nX );
+		ObjLaser_SetLength( obj, nLength );
+		yield;
+	}
+	ObjShot_FadeDelete( obj );
+
+}

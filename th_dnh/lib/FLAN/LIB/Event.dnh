@@ -1,0 +1,103 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(変更可能)
+//////////////////////////////////////////////////////////////////////
+
+/**	カットインの幅を指定します。 */
+let FLAN_EVENT_CUTIN_WIDTH = 192;
+/**	カットインの高さを指定します。 */
+let FLAN_EVENT_CUTIN_HEIGHT = 256;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(変更不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(変更不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	イベント関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	キャラカットインを会話に登場させます。
+*	InCharPosのラッパーです。
+*
+*	@param szFileImageCutin カットインファイル名
+*	@param nDir カットイン登場位置
+*/
+function InChar( let szFileImageCutin, let nDir ){ InCharPos( szFileImageCutin, nDir, 0, 0 ); }
+
+/**
+*	キャラカットインを会話に登場させます。
+*	__InCharPosのラッパーです。
+*
+*	@param szFileImageCutin カットインファイル名
+*	@param nDir カットイン登場位置
+*	@param nIndexX X方向に何番目の画像かを指定
+*	@param nIndexY Y方向に何番目の画像かを指定
+*/
+function InCharPos( let szFileImageCutin, let nDir, let nIndexX, let nIndexY ){ __InCharPos( szFileImageCutin, nDir, nIndexX * FLAN_EVENT_CUTIN_WIDTH, nIndexY * FLAN_EVENT_CUTIN_HEIGHT ); }
+
+/**
+*	キャラカットインを会話に登場させます。
+*
+*	@param szFileImageCutin カットインファイル名
+*	@param nDir カットイン登場位置
+*	@param nSrcX 元画像の切り出しポイントX座標
+*	@param nSrcY 元画像の切り出しポイントY座標
+*/
+function __InCharPos( let szFileImageCutin, let nDir, let nSrcX, let nSrcY ){
+	SetChar( nDir, szFileImageCutin );
+	SetGraphicRect( nDir, nSrcX, nSrcY, nSrcX + FLAN_EVENT_CUTIN_WIDTH, nSrcY + FLAN_EVENT_CUTIN_HEIGHT );
+}
+
+/**
+*	左右キャラを同時に前面に出します。
+*	MoveCharのラッパーです。
+*/
+function AllFront(){ ascent( let i in 0..2 ){ MoveChar( [ RIGHT, LEFT ][ i ], FRONT ); } }
+
+/**
+*	左右キャラを同時に後ろに下げます。
+*	MoveCharのラッパーです。
+*/
+function AllBack(){ ascent( let i in 0..2 ){ MoveChar( [ RIGHT, LEFT ][ i ], BACK ); } }
+
+/**
+*	プレイヤーを前に出し敵を下げます。
+*	__MoveCharのラッパーです。
+*/
+function Player(){ __MoveChar( true ); }
+
+/**
+*	敵を前に出しプレイヤーを下げます。
+*	__MoveCharのラッパーです。
+*/
+function Enemy(){ __MoveChar( false ); }
+
+/**
+*	左右キャラの前後位置を同時に切り替えます。
+*	MoveCharのラッパーです。
+*
+*	@param bPlayer プレイヤー側かどうか
+*/
+function __MoveChar( let bPlayer ){ ascent( let i in 0..2 ){ MoveChar( [ RIGHT, LEFT ][ i ], [ FRONT, BACK ][ [ bPlayer, !bPlayer ][ i ] ] ); } }

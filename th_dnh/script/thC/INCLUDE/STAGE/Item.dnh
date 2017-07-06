@@ -1,0 +1,269 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Extend-Library (extends FLAN)
+//
+//		※ステージスクリプト部です。
+//			それ以外からはインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	アイテム出現テーブルです。
+*/
+let ITEM_DEFAULT_TABLE = [
+	ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER,
+	ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER_BIG, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER,
+	ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER,
+];
+/**	取得点数絵画時間のタイムアウト時間です。 */
+let ITEM_DRAW_POINT_TIMEOUT = 50;
+
+/**	ポイントが発生した時間を示す要素番号です。 */
+let ITEM_GET_POINT_TIME		= 0;
+/**	ポイントの点数フォントキャッシュハンドルを示す要素番号です。 */
+let ITEM_GET_POINT_TTH		= 1;
+/**	ポイントが発生したX座標を示す要素番号です。 */
+let ITEM_GET_POINT_X		= 2;
+/**	ポイントが発生したY座標を示す要素番号です。 */
+let ITEM_GET_POINT_Y		= 3;
+/**	ポイントを強調するかどうかを示す要素番号です。 */
+let ITEM_GET_POINT_STRONG	= 4;
+/**	ポイントの書き込み先テクスチャ番号を示す要素番号です。 */
+let ITEM_GET_POINT_TEXTURE	= 5;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	小点の所持数が格納されます。 */
+let m_nItemPointSmall = 0;
+/**	前フレームのPower値が格納されます。 */
+let m_nItemPowerPrev = -1;
+/**	前フレームの博麗小符値が格納されます。 */
+let m_nItemHakureiPrev = -1;
+/**	デフォルトアイテム出現テーブルのインデックスが格納されます。 */
+let m_nItemDefaultIndex = 0;
+/**	プレイヤーの攻撃力がMAXになった時のカウンタ値が格納されます。 */
+let m_nItemPlayerPowerMax = -32767;
+/**	アイテム取得時のスコア表示情報などが格納されます。 */
+let m_aItemGetPoint = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	アイテム実体生成関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	キューにたまったアイテムを吸い出し画面内に吐き出すループです。
+*/
+task __PopItemQueueLoop(){
+	loop{
+		let aItem = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_QUEUE_CREATE, [] );
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_QUEUE_CREATE );
+		ascent( let i in 0..length( aItem ) ){
+			let aItemInfo = aItem[ i ];
+			let nPower = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
+			if( aItemInfo[ 0 ] == ITEMEX_DEFAULT ){
+				aItemInfo[ 0 ] = ITEM_DEFAULT_TABLE[ m_nItemDefaultIndex ];
+				m_nItemDefaultIndex = ( m_nItemDefaultIndex + 1 ) % length( ITEM_DEFAULT_TABLE );
+			}
+			if( nPower == FLAN_PLAYER_POWER_MAX ){
+				alternative( aItemInfo[ 0 ] )
+				case( ITEMEX_POWER ){ aItemInfo[ 0 ] = ITEMEX_SCORE_SMALL; }
+				case( ITEMEX_POWER_BIG, ITEMEX_POWER_FULL ){ aItemInfo[ 0 ] = ITEMEX_SCORE; }
+			}
+			ObjItem( aItemInfo[ 0 ], aItemInfo[ 1 ], aItemInfo[ 2 ], aItemInfo[ 3 ], aItemInfo[ 4 ] );
+		}
+		loop( 6 ){
+			yield;
+			descent( let i in 0..length( m_aItemGetPoint ) ){
+				let aItemGetPointInfo = m_aItemGetPoint[ i ];
+				aItemGetPointInfo[ ITEM_GET_POINT_Y ] = aItemGetPointInfo[ ITEM_GET_POINT_Y ] - 1;
+				m_aItemGetPoint[ i ] = aItemGetPointInfo;
+				if( m_nFlanCount - aItemGetPointInfo[ ITEM_GET_POINT_TIME ] > ITEM_DRAW_POINT_TIMEOUT ){
+					if( aItemGetPointInfo[ ITEM_GET_POINT_TEXTURE ] < 0 ){ DeleteTexTextHandle( aItemGetPointInfo[ ITEM_GET_POINT_TTH ] ); }
+					else{
+						ClearRenderTarget( IMAGE_CL_WRITABLE_MINI_NAME_LIST[ aItemGetPointInfo[ ITEM_GET_POINT_TEXTURE ] ] );
+						m_abItemWritableTextureUsed[ aItemGetPointInfo[ ITEM_GET_POINT_TEXTURE ] ] = false;
+					}
+					m_aItemGetPoint = erase( m_aItemGetPoint, i );
+				}
+			}
+		}
+		let abPowerUp = PopCommonDataEx( CL_CDNS_TEMP, CL_CD_PLAYER_POWER_UP, [ false, false ] );
+		if( abPowerUp[ 0 ] ){
+			let aItemGetPointInfo = [ m_nFlanCount, CL_TTH_STAGE_POWER, GetPlayerX() - 16, GetPlayerY() - 16, 1, -1 ];
+			m_aItemGetPoint = m_aItemGetPoint ~ [ aItemGetPointInfo ];
+		}
+		if( abPowerUp[ 1 ] ){ m_nItemPlayerPowerMax = m_nFlanCount; }
+	}
+}
+
+/**
+*	画面外アイテムマーカーのオブジェクト本体です。
+*
+*	@param nItemObj 対象アイテムのオブジェクトハンドル
+*	@param nKind 対象アイテムの種類
+*/
+task ItemMarker( let nItemObj, let nKind ){
+	let obj = Obj_Create( OBJ_EFFECT );
+	ObjEffect_SetLayer( obj, 4 );
+	ObjEffect_SetTexture( obj, IMAGE_CL_WHITE );
+	ObjEffect_SetRenderState( obj, ALPHA );
+	ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLELIST );
+	ObjEffect_CreateVertex( obj, 3 );
+	ascent( let i in 0..3 ){
+		ObjEffect_SetVertexXY( obj, i, [ 0, -6, 6 ][ i ], [ -4, 2, 2 ][ i ] );
+		ObjEffect_SetVertexColor( obj, i, 255,
+			[ 0,	32,		68,	128,	223,	223,	191,	0,		191	][ nKind ],
+			[ 0,	0,		68,	128,	0,		0,		191,	223,	0	][ nKind ],
+			[ 224,	159,	68,	128,	0,		0,		0,		0,		191	][ nKind ]
+		);
+	}
+	while( !Obj_BeDeleted( obj ) ){
+		if( Obj_BeDeleted( nItemObj ) || Obj_GetY( nItemObj ) > GetClipMinY() ){ Obj_Delete( obj ); }
+		else{ Obj_SetPosition( obj, Obj_GetX( nItemObj ), GetClipMinY() + 12 ); }
+		__Wait( 15 );
+	}
+}
+
+/**
+*	アイテムオブジェクト本体です。
+*
+*	@param nKind 種類
+*	@param nX 出現X座標
+*	@param nY 出現Y座標
+*	@param nY 初期速度
+*	@param nY 初期角度
+*/
+task ObjItem( let nKind, let nX, let nY, let nFirstSpeed, let nAngle ){
+	let nObjCount = 0;
+	let bMarker = false;
+	let bHoming = false;
+	let bHomingSetted = false;
+	let nItemWidth = [ 12, 16 ][ nKind >= ITEMEX_POWER_BIG ];
+	let obj = CreateSquareEffectObject(
+		MAGE_DNH_ITEM,
+		[ 2,	40,	21,	2,	59,	57,	38,	19,	0 ][ nKind ],
+		[ 21,	21,	21,	40,	21,	0,	0,	0,	0 ][ nKind ],
+		nItemWidth, nItemWidth, nItemWidth, nItemWidth
+	);
+	Obj_SetAngle( obj, nAngle );
+	Obj_SetAutoDelete( obj, false );
+	Obj_SetPosition( obj, nX, nY );
+	ObjEffect_SetLayer( obj, 2 );
+	ObjEffect_SetRenderState( obj, ALPHA );
+	while( !Obj_BeDeleted( obj ) ){
+		let bMissed = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_PLAYER_ONMISSED, false );
+		let nPower = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
+		loop( 10 ){
+			nX = Obj_GetX( obj );
+			nY = Obj_GetY( obj );
+			let nSpeed = -2.5;
+			if( !bHoming && nObjCount <= 120 ){ nSpeed = SlowDown( nFirstSpeed, -2.5, nObjCount, 120 ); }
+			if( nSpeed < 0 ){
+				Obj_SetAngle( obj, 270 );
+				alternative( nKind )
+				case( ITEMEX_SCORE_STAR, ITEMEX_HAKUREI ){ bHoming = true; }
+			}
+			if( nObjCount > 20 && bHoming ){
+				Obj_SetSpeed( obj, 10 );
+				Obj_SetAngle( obj, atan2( GetPlayerY() - nY, GetPlayerX() - nX ) );
+			}
+			else{ Obj_SetSpeed( obj, nSpeed ); }
+			if(
+				( [ !bMissed || bHoming, bHoming ][ nKind == ITEMEX_HAKUREI ] ) &&
+				( ( ( GetPlayerX() - nX ) ^ 2 ) + ( ( GetPlayerY() - nY ) ^ 2 ) ) ^ 0.5 < 22
+			){
+				ItemGet( nKind, nX, nY );
+				Obj_Delete( obj );
+			}
+			yield;
+			nObjCount++;
+		}
+		if(
+			( nPower == FLAN_PLAYER_POWER_MAX || GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) >= 10 )
+			&& !OnPlayerMissed() && GetPlayerY() < 128
+		){ bHoming = true; }
+		if( nPower == FLAN_PLAYER_POWER_MAX ){
+			alternative( nKind )
+			case( ITEMEX_POWER ){
+				ObjItem( ITEMEX_SCORE_SMALL, nX, nY, 1, 270 );
+				Obj_Delete( obj );
+			}
+			case( ITEMEX_POWER_BIG, ITEMEX_POWER_FULL ){
+				ObjItem( ITEMEX_SCORE, nX, nY, 1, 270 );
+				Obj_Delete( obj );
+			}
+		}
+		if( nKind != ITEMEX_HAKUREI && !bMarker && nY < GetClipMinY() ){
+			bMarker = true;
+			ItemMarker( obj, nKind );
+		}
+		if( OnBomb() ){ bHoming = true; }
+		if( nY > GetClipMaxY() + [ 10, 500 ][ nKind == ITEMEX_HAKUREI ] ){ Obj_Delete( obj ); }
+	}
+}
+
+/**
+*	アイテムオブジェクト取得時の動作です。
+*
+*	@param nKind 種類
+*	@param nX 取得したX座標
+*	@param nY 取得したY座標
+*/
+function ItemGet( let nKind, let nX, let nY ){
+	let nScore = 10;
+	let bStrong = false;
+	PlaySE( seScore );
+	alternative( nKind )
+	case( ITEMEX_SCORE ){
+		AddPoint( 1 );
+		nScore = SlowDown( 100000, 10000, nY - 128, GetClipMaxY() - 128 );
+		bStrong = nScore == 100000;
+	}
+	case( ITEMEX_SCORE_SMALL ){
+		m_nItemPointSmall++;
+		if( m_nItemPointSmall > 10 ){
+			m_nItemPointSmall = 0;
+			AddPoint( 1 );
+		}
+		nScore = SlowDown( 10000, 1000, nY - 128, GetClipMaxY() - 128 );
+		bStrong = nScore == 10000;
+	}
+	case( ITEMEX_SCORE_STAR ){ nScore = 100; }
+	case( ITEMEX_POWER, ITEMEX_POWER_BIG, ITEMEX_POWER_FULL ){
+		let nPower = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
+		alternative( nKind )
+		case( ITEMEX_POWER ){ nPower++; }
+		case( ITEMEX_POWER_BIG ){ nPower += 8; }
+		case( ITEMEX_POWER_FULL ){ nPower += FLAN_PLAYER_POWER_MAX; }
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, Min( nPower, FLAN_PLAYER_POWER_MAX ) );
+	}
+	case( ITEMEX_BOMB ){ AddBomb( 1 ); }
+	case( ITEMEX_EXTEND ){ ExtendPlayerEx( 1 ); }
+	case( ITEMEX_HAKUREI ){
+		nScore = 0;
+		AddCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 1, 0 );
+	}
+	if( nScore > 0 ){
+		AddScore( nScore );
+		let aItemGetPointInfo = [ m_nFlanCount, CreateTexText16Cache( ToStringInt( nScore ) ), nX, nY, [ 0, 1 ][ bStrong ], -1 ];
+		m_aItemGetPoint = m_aItemGetPoint ~ [ aItemGetPointInfo ];
+	}
+}
+

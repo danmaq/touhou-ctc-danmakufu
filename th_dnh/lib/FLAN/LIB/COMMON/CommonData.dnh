@@ -1,0 +1,233 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(原則書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	CommonData操作関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	デバッグモードを設定します。
+*	SetCommonDataExのラッパーです。
+*	注意:初期化時に1回のみ設定してください。
+*/
+function SetDebugMode(){ SetCommonDataEx( FLAN_CDNS, FLAN_CD_DEBUG, true ); }
+
+/**
+*	デバッグモードかどうかを取得します。
+*	GetCommonDataDefaultExのラッパーです。
+*
+*	@return デバッグモードならtrue
+*/
+function IsDebugMode(){ return GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_DEBUG, false ); }
+
+/**
+*	共通データに格納されている値に指定値を加算します。
+*	AddCommonDataExのラッパーです。
+*
+*	@param szKey 共通データのキー
+*	@param nValue 加算する数値
+*	@param nDefault キーに対応する値が存在しなかった場合のデフォルト値
+*/
+function AddCommonData( let szKey, let nValue, let nDefault ){ AddCommonDataEx( "", szKey, nValue, nDefault ); }
+
+/**
+*	共通データに格納されている値に指定値を加算します。
+*
+*	@param szNameSpace 共通データの名前空間
+*	@param szKey 共通データのキー
+*	@param nValue 加算する数値
+*	@param nDefault キーに対応する値が存在しなかった場合のデフォルト値
+*/
+function AddCommonDataEx( let szNameSpace, let szKey, let nValue, let nDefault ){
+	SetCommonDataEx( szNameSpace, szKey, GetCommonDataDefaultEx( szNameSpace, szKey, nDefault ) + nValue );
+}
+
+/**
+*	共通データに格納されている値に指定値を乗算します。
+*	MultiplyCommonDataExのラッパーです。
+*
+*	@param szKey 共通データのキー
+*	@param nValue 乗算する数値
+*	@param vDefault キーに対応する値が存在しなかった場合のデフォルト値
+*/
+function MultiplyCommonData( let szKey, let nValue, let nDefault ){ MultiplyCommonDataEx( "", szKey, nValue, nDefault ); }
+
+/**
+*	共通データに格納されている値に指定値を乗算します。
+*
+*	@param szNameSpace 共通データの名前空間
+*	@param szKey 共通データのキー
+*	@param nValue 乗算する数値
+*	@param vDefault キーに対応する値が存在しなかった場合のデフォルト値
+*/
+function MultiplyCommonDataEx( let szNameSpace, let szKey, let nValue, let nDefault ){
+	SetCommonDataEx( szNameSpace, szKey, GetCommonDataDefaultEx( szNameSpace, szKey, nDefault ) * nValue );
+}
+
+/**
+*	指定した共通データを別の名前空間へ移動/コピーします。
+*
+*	@param aszKeyList キーのリスト
+*	@param szSrcNameSpace 転送元名前空間
+*	@param szDstNameSpace 転送先名前空間
+*	@param bMove 転送後、転送元のデータを削除するかどうか
+*	@param vDefaultValue 転送元にデータが存在しなかった場合のデフォルト値
+*/
+function CopyCommonData( let aszKeyList, let szSrcNameSpace, let szDstNameSpace, let bMove, let vDefaultValue ){
+	ascent( let i in 0..length( aszKeyList ) ){
+		let vValue = GetCommonDataDefaultEx( szSrcNameSpace, aszKeyList[ i ], vDefaultValue );
+		SetCommonDataEx( szDstNameSpace, aszKeyList[ i ], vValue );
+		if( bMove ){ DeleteCommonDataEx( szSrcNameSpace, aszKeyList[ i ] ); }
+	}
+}
+
+/**
+*	共通データに格納されている値を取り除き、その値を返します。
+*	PopCommonDataExのラッパーです。
+*
+*	@param szKey 共通データのキー
+*	@param vDefault キーに対応する値が存在しなかった場合のデフォルト値
+*	@return キーに対応する値、存在しない場合指定したデフォルト値
+*/
+function PopCommonData( let szKey, let vDefault ){ return PopCommonDataEx( "", szKey, vDefault ); }
+
+/**
+*	共通データに格納されている値を取り除き、その値を返します。
+*
+*	@param szNameSpace 共通データの名前空間
+*	@param szKey 共通データのキー
+*	@param vDefault キーに対応する値が存在しなかった場合のデフォルト値
+*	@return キーに対応する値、存在しない場合指定したデフォルト値
+*/
+function PopCommonDataEx( let szNameSpace, let szKey, let vDefault ){
+	let vValue = GetCommonDataDefaultEx( szNameSpace, szKey, vDefault );
+	DeleteCommonDataEx( szNameSpace, szKey );
+	return vValue;
+}
+
+/**
+*	配列共通データの指定した要素に指定値を代入します。
+*
+*	@param szNameSpace 共通データの名前空間
+*	@param szKey 共通データのキー
+*	@param nIndex 配列の要素番号
+*	@param vValue 代入する値
+*	@param nDefaultLength キーに対応する内容が存在しなかった場合のデフォルト配列長
+*	@param vDefaultValue キーに対応する内容が存在しなかった場合のデフォルト要素値
+*/
+function SetCommonDataExArray( let szNameSpace, let szKey, let nIndex, let vValue, let nDefaultLength, let vDefaultValue ){
+	let avValue = GetCommonDataDefaultEx( szNameSpace, szKey, CreateArray( nDefaultLength, vDefaultValue ) );
+	avValue[ nIndex ] = vValue;
+	SetCommonDataEx( szNameSpace, szKey, avValue );
+}
+
+/**
+*	配列共通データの指定した要素の値が指定値より小さかったらに指定値を代入します。
+*
+*	@param szNameSpace 共通データの名前空間
+*	@param szKey 共通データのキー
+*	@param nIndex 配列の要素番号
+*	@param vValue 代入する値
+*	@param nDefaultLength キーに対応する内容が存在しなかった場合のデフォルト配列長
+*	@param vDefaultValue キーに対応する内容が存在しなかった場合のデフォルト要素値
+*/
+function SetCommonDataExArrayMax( let szNameSpace, let szKey, let nIndex, let vValue, let nDefaultLength, let vDefaultValue ){
+	let avValue = GetCommonDataDefaultEx( szNameSpace, szKey, CreateArray( nDefaultLength, vDefaultValue ) );
+	if( vValue <= avValue[ nIndex ] ){ return; }
+	avValue[ nIndex ] = vValue;
+	SetCommonDataEx( szNameSpace, szKey, avValue );
+}
+
+/**
+*	配列共通データの指定した要素の値に指定値を加算します。
+*
+*	@param szNameSpace 共通データの名前空間
+*	@param szKey 共通データのキー
+*	@param nIndex 配列の要素番号
+*	@param nValue 加算する値
+*	@param nDefaultLength キーに対応する内容が存在しなかった場合のデフォルト配列長
+*	@param vDefaultValue キーに対応する内容が存在しなかった場合のデフォルト要素値
+*/
+function AddCommonDataExArray( let szNameSpace, let szKey, let nIndex, let nValue, let nDefaultLength, let vDefaultValue ){
+	let anValue = GetCommonDataDefaultEx( szNameSpace, szKey, CreateArray( nDefaultLength, vDefaultValue ) );
+	anValue[ nIndex ] = anValue[ nIndex ] + nValue;
+	SetCommonDataEx( szNameSpace, szKey, anValue );
+}
+
+/**
+*	多重配列共通データの末尾に配列を追加登録します。
+*
+*	@param szNameSpace 共通データの名前空間
+*	@param szKey 共通データのキー
+*	@param anArray 追加する配列
+*/
+function PushCommonDataExArray( let szNameSpace, let szKey, let anArray ){
+	let aanArrayList = GetCommonDataDefaultEx( szNameSpace, szKey, [] );
+	aanArrayList = aanArrayList ~ [ anArray ];
+	SetCommonDataEx( szNameSpace, szKey, aanArrayList );
+}
+
+/**
+*	二重配列共通データの指定した要素の値に指定値を加算します。
+*
+*	@param szNameSpace 共通データの名前空間
+*	@param szKey 共通データのキー
+*	@param anIndex 配列の要素番号が格納された配列[階層レベル1,2]
+*	@param nValue 加算する値
+*	@param anDefaultLength キーに対応する内容が存在しなかった場合のデフォルト配列長が格納された配列[階層レベル1,2]
+*	@param vDefaultValue キーに対応する内容が存在しなかった場合のデフォルト要素値
+*/
+function AddCommonDataExArray2D( let szNameSpace, let szKey, let anIndex, let nValue, let anDefaultLength, let vDefaultValue ){
+	let aanValueList = GetCommonDataDefaultEx( szNameSpace, szKey, CreateArray( anDefaultLength[ 0 ], CreateArray( anDefaultLength[ 1 ], vDefaultValue ) ) );
+	let anValue = aanValueList[ anIndex[ 0 ] ];
+	anValue[ anIndex[ 1 ] ] = anValue[ anIndex[ 1 ] ] + nValue;
+	aanValueList[ anIndex[ 0 ] ] = anValue;
+	SetCommonDataEx( szNameSpace, szKey, aanValueList );
+}
+
+/**
+*	三重配列共通データの指定した要素の値に指定値を加算します。
+*
+*	@param szNameSpace 共通データの名前空間
+*	@param szKey 共通データのキー
+*	@param anIndex 配列の要素番号が格納された配列[階層レベル1,2,3]
+*	@param nValue 加算する値
+*	@param anDefaultLength キーに対応する内容が存在しなかった場合のデフォルト配列長が格納された配列[階層レベル1,2,3]
+*	@param vDefaultValue キーに対応する内容が存在しなかった場合のデフォルト要素値
+*/
+function AddCommonDataExArray3D( let szNameSpace, let szKey, let anIndex, let nValue, let anDefaultLength, let vDefaultValue ){
+	let aaanValueList = GetCommonDataDefaultEx( szNameSpace, szKey, CreateArray( anDefaultLength[ 0 ], CreateArray( anDefaultLength[ 1 ], CreateArray( anDefaultLength[ 2 ], vDefaultValue ) ) ) );
+	let aanValue = aaanValueList[ anIndex[ 0 ] ];
+	let anValue = aanValue[ anIndex[ 1 ] ];
+	anValue[ anIndex[ 2 ] ] = anValue[ anIndex[ 2 ] ] + nValue;
+	aanValue[ anIndex[ 1 ] ] = anValue;
+	aaanValueList[ anIndex[ 0 ] ] = aanValue;
+	SetCommonDataEx( szNameSpace, szKey, aaanValueList );
+}

@@ -1,0 +1,61 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージEx　ボス　伊吹 萃香　連続再生
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[SuikaB - 連続再生]
+#Text[ステージEx ボス
+伊吹 萃香]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	連続再生
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#ScriptPathData
+#ScriptPath[.\SuikaB0.dnh]
+#ScriptPath[.\SuikaB1.dnh]
+#ScriptPath[.\SuikaB1S.dnh]
+#ScriptNextStep
+#ScriptPath[.\SuikaB2.dnh]
+#ScriptPath[.\SuikaB2S.dnh]
+#ScriptNextStep
+#ScriptPath[.\SuikaB3.dnh]
+#ScriptPath[.\SuikaB3S.dnh]
+#ScriptNextStep
+#ScriptPath[.\SuikaB4.dnh]
+#ScriptPath[.\SuikaB4S.dnh]
+#ScriptNextStep
+#ScriptPath[.\SuikaB5.dnh]
+#ScriptPath[.\SuikaB5S.dnh]
+#ScriptNextStep
+#ScriptPath[.\SuikaB6.dnh]
+#ScriptPath[.\SuikaB6S.dnh]
+#ScriptNextStep
+#ScriptPath[.\SuikaB7.dnh]
+#ScriptPath[.\SuikaB7S.dnh]
+#ScriptNextStep
+#ScriptPath[.\SuikaB8.dnh]
+#ScriptPath[.\SuikaB8S.dnh]
+#ScriptNextStep
+#ScriptPath[.\SuikaB9S.dnh]
+#ScriptNextStep
+#ScriptPath[.\SuikaB10S.dnh]
+#ScriptNextStep
+#EndScriptPathData

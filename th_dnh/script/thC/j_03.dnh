@@ -1,58 +1,139 @@
-script_enemy_main
-{
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 3d(魔方陣)
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
-#include_function ".\INCLUDE\Enemy.dnh"
 
-//変数宣言--------------------------------------
-	let count=0;
+//////////////////////////////////////////////////////////////////////
+//	スクリプトここから
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	THCELをインクルード
+//	(FLAN/THCELへのインクルードはTHCELが勝手にやってくれます)
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\Zako.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	/**	デフォルトアイテムの落下量を設定します。 */
+	ENEMY_ITEMEX_NUM_DEFAULT = 0;
+	/**	被弾判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_A = 0;
+	/**	接触判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_B = 0;
+	/**	onMainLoopへ処理をまわさないよう設定します。(まわしても何の処理も無い) */
+	FLAN_ESS_NOCALL_MAINLOOP = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数宣言
+//////////////////////////////////////////////////////////////////////
+
 	let alpha=0;
-	let Level=GetCommonData("Level");
-	let angle_b=GetAngleToPlayer();
-//タスクの作成----------------------------------
-task MainAction()
-{
-	yield;
-	_Wait(40);
-	//集中エフェクト----------------
-	let angle=-180;
-	while(angle<180)
-	{
-		CreateShotA(0,GetX(),GetY(),0);
-		SetShotDataA(0,0,1.3,angle,6,0,0,[RED05,GREEN05,BLUE05,YELLOW05,PURPLE05,AQUA05,ORANGE05][int(rand(0,6))]);
-		SetShotKillTime(0,60);
-		FireShot(0);
-		angle+=30;
-	}
-	_Wait(60);
-	//------------------------------
-	
-	RoundShot01( GetX(),GetY(), [1,1.5,2,3][Level],GetAngleToPlayer(),[8,12,30,60][Level],WHITE05,0);
-	
-}
-//実行部分---------------------------------------
 
-	@Initialize
-	{
-		LoadGraphic(dotCircle6s);
-		SetLife(20);
-		SetAngle( GetAngle() );
-		MainAction();
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有動作実装部
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵固有のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nArgv, let nLevel ){
+		__Wait(40);
+		//集中エフェクト----------------
+		let angle=-180;
+		while(angle<180){
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,1.3,angle,6,0,0,[US_BALL_SS_RED,US_BALL_SS_GREEN,US_BALL_SS_BLUE,US_BALL_SS_YELLOW,US_BALL_SS_PURPLE,US_BALL_SS_SKY,US_BALL_SS_ORANGE][int(rand(0,6))]);
+			SetShotKillTime(0,60);
+			FireShot(0);
+			angle+=30;
+		}
+		PlaySEEx(seShadow);
+		__Wait(60);
+		//------------------------------
+		
+		_RoundShot01( GetX(),GetY(), [1,1.5,2,3][nLevel],rand(0,360),[8,12,25,30][nLevel],US_BALL_SS_WHITE,0);
 	}
-	
-	@MainLoop
-	{
-		Gone();
-		Deletemine();
-		yield;
-		count++;
-		if(count==130)
-		{VanishEnemy();}
-		if(count<50){alpha=Smooth( 10,255,count,30 );}
-		if(count>100){alpha=Smooth( 255,0,count-100,30 );}
+
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( let nArgv, let nLevel ){
+//		CreateDebugWindow();
+		SetLife( 3 );
 	}
-	@DrawLoop
-	{
-		SetTexture(dotCircle6s);
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		if(nCount<50){alpha=Smooth( 10,255,nCount,30 );}
+		if(nCount>100){alpha=Smooth( 255,0,nCount-100,30 );}
+		if(nCount==130){VanishEnemy();}
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		SetTexture(IMAGE_CL_CIRCLE_6S);
 		SetGraphicRect(0,0,64,64);
 		SetGraphicScale(0.8,0.8);
 		SetColor(255,255,255);
@@ -60,7 +141,5 @@ task MainAction()
 		SetGraphicAngle(0,0,GetAngle());
 		DrawGraphic(GetX,GetY);
 	}
-	@Finalize
-	{}
-}
 
+}

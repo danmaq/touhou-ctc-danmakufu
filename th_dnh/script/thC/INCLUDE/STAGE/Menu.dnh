@@ -1,0 +1,204 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Extend-Library (extends FLAN)
+//
+//		※ステージスクリプト部です。
+//			それ以外からはインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	制御処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	メニューカーソルをキー入力に応じて移動します。
+*	その際、効果音を発します。
+*	(FLAN)MoveMenuCursorのラッパーです。
+*
+*	@param nCursorPos 今までのカーソル位置
+*	@param nMenuSize メニューの選択項目総数
+*	@param anLock 選択不可項目のカーソル位置を列挙した配列
+*	@return キー入力を反映したカーソル位置
+*/
+function MoveMenuCursorTHC( let nCursorPos, let nMenuSize, let anLock ){
+	let nNewCursorPos = MoveMenuCursor( nCursorPos, nMenuSize, anLock );
+	if( nNewCursorPos != nCursorPos ){ PlaySEEx( seSelect ); }
+	return nNewCursorPos;
+}
+
+/**
+*	メニューの決定/キャンセルを判定検出します。
+*	その際、効果音を発します。
+*	(FLAN)IsSubmitMenuのラッパーです。
+*
+*	@return 決定ならtrue、そうでなければfalse
+*/
+function IsSubmitMenuTHC(){
+	let bSubmit = IsSubmitMenu();
+	PlaySEEx( [ seCancel, seOk ][ bSubmit ] );
+	return bSubmit;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	メニューに対応した二値選択式設定値を絵画します。
+*
+*	@param aszKeyList 設定用キーのリスト
+*	@param abDefaultValueList 設定用キーに対応するデフォルト値リスト
+*	@param nStepY メニュー項目ごとのY座標ギャップ
+*	@param nBaseX メニュー表示の基本X座標
+*	@param nBaseY メニュー表示の基本Y座標
+*	@param nCursorPos 現在のカーソル位置
+*	@param anLock 選択不可項目のカーソル位置を列挙した配列
+*/
+function __DrawMenuConfigBoolean( let aszKeyList, let abDefaultValueList, let nStepY, let nBaseX, let nBaseY, let nCursorPos, let anLock ){
+	ascent( let i in 0..length( aszKeyList ) ){
+		SetAlpha( Accelerate( 0, [ 80, 255 ][ i == nCursorPos ], m_nFlanPhaseCount, MENU_FADE_INTERVAL ) );
+		let bValue = GetCommonDataDefaultEx( CL_CDNS_CONFIG, aszKeyList[ i ], abDefaultValueList[ i ] );
+		DrawTexTextOnCache( CL_TTHBASE_BOOLEAN + [ CL_TTH_BOOLEAN_TRUE, CL_TTH_BOOLEAN_FALSE ][ bValue ], 0, 0, nBaseX, nBaseY + nStepY * i );
+	}
+	SetAlpha( 255 );
+}
+
+/**
+*	メニューに対応した数値選択式設定値を絵画します。
+*
+*	@param aszKeyList 設定用キーのリスト
+*	@param anDefaultValueList 設定用キーに対応するデフォルト値リスト
+*	@param nStepY メニュー項目ごとのY座標ギャップ
+*	@param nBaseX メニュー表示の基本X座標
+*	@param nBaseY メニュー表示の基本Y座標
+*	@param nCursorPos 現在のカーソル位置
+*	@param anLock 選択不可項目のカーソル位置を列挙した配列
+*/
+function __DrawMenuConfigReal( let aszKeyList, let anDefaultValueList, let nStepY, let nBaseX, let nBaseY, let nCursorPos, let anLock ){
+	ascent( let i in 0..length( aszKeyList ) ){
+		SetAlpha( Accelerate( 0, [ 80, 255 ][ i == nCursorPos ], m_nFlanPhaseCount, MENU_FADE_INTERVAL ) );
+		let nValue = GetCommonDataDefaultEx( CL_CDNS_CONFIG, aszKeyList[ i ], anDefaultValueList[ i ] );
+		DrawTexTextOnCache( CL_TTHBASE_NUMBER + nValue, 0, 0, nBaseX, nBaseY + nStepY * i );
+	}
+	SetAlpha( 255 );
+}
+
+/**
+*	メニューを絵画します。
+*
+*	@param nTargetPhase 
+*	@param nX メニュー表示のずらすX座標量
+*	@param nY メニュー表示のずらすY座標量
+*	@param nBaseDstX メニュー表示の基本X座標
+*	@param nBaseDstY メニュー表示の基本Y座標
+*	@param nDescriptionX 解説のX座標
+*	@param nDescriptionY 解説のY座標
+*	@param nDescriptionKerning 解説のカーニング
+*	@param nKerningLimit 展開時の最大相対カーニング
+*	@param nTexTextHandleStart メニュータイトル要素番号の開始ポインタ
+*	@param nTexTextDescriptionHandleStart メニュー解説要素番号の開始ポインタ
+*	@param nMenuSize メニューの選択項目総数
+*	@param nCursorPos 現在のカーソル位置
+*	@param anLock 選択不可項目のカーソル位置を列挙した配列
+*/
+function __DrawMenu(
+	let nTargetPhase,
+	let nX,						let nY,
+	let nBaseDstX,				let nBaseDstY,
+	let nDescriptionX,			let nDescriptionY,
+	let nDescriptionKerning,	let nKerningLimit,	let nTexTextHandleStart,	let nTexTextDescriptionHandleStart,
+	let nMenuSize,				let nCursorPos,		let anLock
+){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	let bInPhase = anStackData[ 0 ] == nTargetPhase;
+	if( !( bInPhase || m_nFlanPrevPhase == nTargetPhase ) ){ return; }
+	let nKerning = nKerningLimit;
+	let bScroll = nMenuSize > FLAN_MENU_MAXVISIBLE;
+	if( m_nFlanPhaseCount < MENU_FADE_INTERVAL ){ SetGraphicAngle( 0, 0, SlowDown( [ 0, -120 ][ bInPhase ], [ -60, 0 ][ bInPhase ], m_nFlanPhaseCount, MENU_FADE_INTERVAL ) ); }
+	ascent( let i in 0..[ nMenuSize, FLAN_MENU_MAXVISIBLE ][ bScroll ] ){
+		let nMoveX = 0;
+		let nAlpha = 0;
+		if( bInPhase ){
+			if( m_nFlanPhaseCount <= MENU_FADE_INTERVAL ){
+				nKerning = SlowDown( -32, nKerningLimit, m_nFlanPhaseCount, MENU_FADE_INTERVAL );
+				nX = SlowDown( 0, nX, m_nFlanPhaseCount, MENU_FADE_INTERVAL );
+			}
+			if( !bScroll ){
+				if( i != m_nFlanMenuPrevCursor ){
+					if( i == nCursorPos ){ nMoveX = Smooth( 0, 4, m_nFlanPhaseCount, MENU_FADE_INTERVAL / 10 ); }
+					nAlpha = Accelerate( [ 0, 8 ][ i == nCursorPos ], [ 80, 255 ][ i == nCursorPos ], m_nFlanPhaseCount, MENU_FADE_INTERVAL );
+				}
+				else{
+					nMoveX = Smooth( 4, 0, m_nFlanPhaseCount, MENU_FADE_INTERVAL / 10 );
+					nAlpha = SlowDown( Accelerate( 0, 255, m_nFlanPhaseCount, MENU_FADE_INTERVAL ), 80, m_nFlanCount - m_nFlanMenuCursorMoveTime, MENU_FADE_INTERVAL / 10 );
+				}
+			}
+			else{
+				if( i == MENU_SCROLL_TARGET ){ nMoveX = Smooth( 0, 4, m_nFlanPhaseCount, MENU_FADE_INTERVAL / 10 ); }
+				nAlpha = Accelerate( 0, [ Min( SlowDown( 16, 80, i, 3 ), SlowDown( 80, 0, i - MENU_SCROLL_TARGET, FLAN_MENU_MAXVISIBLE - MENU_SCROLL_TARGET ) ), 255 ][ i == MENU_SCROLL_TARGET ], m_nFlanPhaseCount, MENU_FADE_INTERVAL );
+			}
+		}
+		else if( m_nFlanPhaseCount <= MENU_FADE_INTERVAL ){
+			let nMark = [ nCursorPos, MENU_SCROLL_TARGET ][ bScroll ];
+			nAlpha = SlowDown( [ 80, 255 ][ i == nMark ], 0, m_nFlanPhaseCount, MENU_FADE_INTERVAL / [ 5, 1 ][ i == nMark && !m_bFlanMenuBack ] );
+			if( i == nMark ){ nMoveX = 4; }
+		}
+		if( nAlpha > 0 ){
+			let nIndex = [ i, MinMaxLoop( nCursorPos - 4 + i, 0, nMenuSize ) ][ bScroll ];
+			let nMark = [ nCursorPos, MENU_SCROLL_TARGET ][ bScroll ];
+			SetAlpha( nAlpha );
+			SetGraphicScale( [ Smooth( 1, 3, m_nFlanPhaseCount, MENU_FADE_INTERVAL ), 1 ][ bInPhase ], 1 );
+			SetColor( 255, 255, 223 + 32 * [ 1, sin( m_nFlanCount * 2 ) ][ i == nMark ] );
+			let nTTH = nTexTextHandleStart + nIndex;
+			ascent( let j in 0..length( anLock ) ){
+				if( anLock[ j ] == nIndex ){
+					SetColor( 128, 0, 128 );
+					if( bScroll ){ nTTH = CL_TTH_SECRET; }
+					break;
+				}
+			}
+			let nDstX = nX * i + nBaseDstX - nMoveX;
+			let nDstY = nY * i + nBaseDstY;
+			if( !bScroll ){ DrawTexTextOnCache( nTTH, nKerning, 0, nDstX, nDstY ); }
+			else{
+				DrawTexTextOnCache( nTTH, nKerning, 0, nDstX - [ 0, 9 ][ nIndex < 99 ], nDstY );
+				DrawTexTextOnCache( CL_TTHBASE_NUMBER + nIndex + 1, -1, 0, nDstX - 34, nDstY );
+			}
+		}
+	}
+	if( bInPhase && nTexTextDescriptionHandleStart >= 0 ){
+		SetAlpha( 255 );
+		if( m_nFlanPhaseCount < MENU_FADE_INTERVAL ){ SetAlpha( Accelerate( 48, 255, m_nFlanPhaseCount, MENU_FADE_INTERVAL ) ); }
+		let bDanger = ( nTargetPhase == MENU_PHASE_RESET_ALL ) || ( nTargetPhase == MENU_PHASE_CONFIG && m_nMenuCursorConfig >= CL_TTH_MENU_CONFIG_RESET_CONFIGURE );
+		SetColor( 255, [ 255, 16 ][ bDanger ], [ 192, 16 ][ bDanger ] );
+		DrawTexTextOnCache( nTexTextDescriptionHandleStart + nCursorPos, nDescriptionKerning, -8, nDescriptionX, nDescriptionY );
+	}
+	SetGraphicScale( 1, 1 );
+	SetColor( 255, 255, 255 );
+	SetGraphicAngle( 0, 0, 0 );
+	SetAlpha( 255 );
+}

@@ -1,0 +1,127 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　伊吹 萃香
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossSuika;
+let m_szImageCutIn = cutSuika;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_SUIKA;
+let m_aszImageBGList = LOADBGLIST_SUIKA;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellSuika01 );
+
+	let i = m_nFlanCount;
+	let j = m_nFlanCount * 3;
+	SetGraphicScale( 1, 1 );
+	SetRenderState( ADD );
+	SetColor( 170, 150, 255 );
+	SetGraphicRect( - i,  j, 512 - i, 512 + j );
+	DrawCenter( imgSpellRemi02 );
+	SetGraphicRect( i,  j, 512 + i, 512 + j );
+	DrawCenter( imgSpellRemi02 );
+	SetColor( 255, 255, 255 );
+	SetRenderState( ALPHA );
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	その他
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ボム中に透明になります。
+*	onInitializeTHC内で一度呼び出してください。
+*/
+task Vanish{
+
+	loop{
+
+		/** ボム待ち */
+		while( !OnBomb() ){ yield; }
+
+		/** ボム中 */
+		let nCollisionA = FLAN_ENEMY_COLLISION_A;
+		let nCollisionB = FLAN_ENEMY_COLLISION_B;
+		FLAN_ENEMY_COLLISION_A = 0;
+		FLAN_ENEMY_COLLISION_B = 0;
+		m_nEnemyAlpha = 0;
+
+		while( OnBomb() ){
+			if( m_nFlanCount % 2 == 0 ){ Smoke(); }
+			yield;
+		}
+
+		/** ボム終了 */
+		Concentration01( 30 );
+		FLAN_ENEMY_COLLISION_A = nCollisionA;
+		FLAN_ENEMY_COLLISION_B = nCollisionB;
+		m_nEnemyAlpha = 255;
+
+	}
+
+	/** 煙 */
+	task Smoke{
+
+		let obj = Obj_Create( OBJ_SHOT );
+		let nX = GetX() + RandBlur( 16 );
+		let nY = GetY() + 8 + RandBlur( 16 );
+		let nDelay = 18;
+		ObjShot_SetGraphic( obj, US_BALL_SS_BLUE );
+		ObjShot_SetDelay( obj, nDelay );
+		Obj_SetAlpha( obj, 0 );
+		Obj_SetCollisionToPlayer( obj, false );
+		ObjShot_SetBombResist( obj, true );
+		ObjShot_ToItem( obj, false );
+
+		let nAddY = - rand( 48, 72 ) / nDelay;
+		let nAngle = rand( 0, 360 );
+		let nAddAngle = 720 / nDelay;
+		loop( nDelay ){
+			let _nX = nX + 16 * cos( nAngle );
+			nY += nAddY;
+			Obj_SetPosition( obj, _nX, nY );
+			yield;
+		}
+		Obj_Delete( obj );
+
+	}
+
+}

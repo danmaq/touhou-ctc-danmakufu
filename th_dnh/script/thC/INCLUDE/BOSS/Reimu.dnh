@@ -1,0 +1,112 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ボス固有ライブラリ　博麗 霊夢
+//
+//		※ボススクリプトからインクルードしてください。
+//			それ以外からはインクルードしないでください。
+//		※別のボス固有ライブラリを同時にインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** 画像及び効果音ファイル */
+let m_szImageBoss = dotBossReimu;
+let m_szImageCutIn = cutReimu;
+let m_szImageBarrier = IMAGE_CL_CIRCLE_8M;
+let m_szImageShadow = IMAGE_CL_CIRCLE_6S;
+let m_szImageShadowChar = dotShadow;
+let m_aszImageList = IMAGE_LIST_REIMU;
+let m_aszImageBGList = LOADBGLIST_REIMU;
+/** 夢終劇本体からの起動でない場合にロードする画像及び効果音のリスト */
+let m_aszImageFileListNotStage = [ m_szImageShadow, m_szImageShadowChar, m_szImageBarrier ] ~ m_aszImageList ~ m_aszImageBGList;
+let m_aszSeFileListNotStage = seListEnemy ~ seListShadow;
+/** ロードする画像及び効果音のリスト */
+let m_aszImageFileList = [];
+let m_aszSeFileList = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景描画
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景を描画します。
+*/
+function DrawSpellBG{
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellReimu3 );
+
+	SetRenderState( ADD );
+	SetGraphicScale( 1.15, 1.15 );
+	DrawRotateCenter( imgSpellReimu4, 0.6 );
+	SetGraphicScale( 1, 1 );
+	SetRenderState( ALPHA );
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	その他
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ボム中にバリアを張ります。
+*	onInitializeTHC内で一度呼び出してください。
+*/
+task Barrier{
+
+	loop{
+
+		/** ボム待ち */
+		while( !OnBomb() ){ yield; }
+
+		/** ボム中 */
+		let nLength = 128;
+		let obj = CreateSquareEffectObject( m_szImageBarrier, 0, 0, nLength, nLength, nLength, nLength );
+		m_nEnemyAlpha = 95;
+		let nAngle = 0;
+		let nAddAngle = 2;
+		while( OnBomb() ){
+			SetInvincibility( 2 );
+			Obj_SetPosition( obj, GetX(), GetY() );
+			ObjEffect_SetAngle( obj, 0, 0, nAngle );
+			yield;
+			nAngle += nAddAngle;
+		}
+
+		/** ボム終了 */
+		m_nEnemyAlpha = 255;
+		let nBlurFrame = 15;
+		let nScale = 1;
+		let nAddScale = ( 1.5 - nScale ) / nBlurFrame;
+		let nAlpha = 255;
+		let nAddAlpha = - nAlpha / nBlurFrame;
+		loop( nBlurFrame ){
+			nAngle += nAddAngle;
+			nScale += nAddScale;
+			nAlpha += nAddAlpha;
+			Obj_SetPosition( obj, GetX(), GetY() );
+			ObjEffect_SetAngle( obj, 0, 0, nAngle );
+			ObjEffect_SetScale( obj, nScale, nScale );
+			ascent( let i in 0 .. 4 ){
+				ObjEffect_SetVertexColor( obj, i, nAlpha, 255, 255, 255 );
+			}
+			yield;
+		}
+		Obj_Delete( obj );
+
+	}
+
+}

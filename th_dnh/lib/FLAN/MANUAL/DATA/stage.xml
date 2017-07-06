@@ -1,0 +1,215 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Stage" file="stage">
+	<category caption="概要" link="true">
+		<paragraph>
+			ステージスクリプトでのみ使用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/STAGE/</path>となります。
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+	</category>
+	<category caption="書換可能定数" link="true">
+		<define key="FLAN_STAGE_NORMLIST" type="var">
+			<paragraph>
+				ステージにおけるポイントエクステンドのリストを設定します。
+				デフォルト値は<value>[ 200, 450, 800, 1200, 1700, 2300, 9999 ]</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_MENU_MAXVISIBLE" type="var">
+			<paragraph>
+				メニューの最大表示数を定義します。
+				超えた場合、スクロール表示となります。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="メンバ変数" link="true">
+		<define key="m_nFlanMenuCursorMoveTime" type="var">
+			<paragraph>
+				最後にメニューカーソルを動かしたフレーム時間が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanMenuPrevCursor" type="var">
+			<paragraph>
+				前のカーソル位置が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_bFlanMenuBack" type="var">
+			<paragraph>
+				親のメニューに戻ったかどうかが格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanPlayerDefaultX" type="var">
+			<paragraph>
+				プレイヤー初期X座標が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanPlayerDefaultY" type="var">
+			<paragraph>
+				プレイヤー初期Y座標が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanLoadResourcePercentage" type="var">
+			<paragraph>
+				時間差読み込み用の進捗百分率が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanStageTime" type="var">
+			<paragraph>
+				各ステージが開始された時のカウント値。
+			</paragraph>
+		</define>
+		<define key="m_nFlanStageSystemTime" type="var">
+			<paragraph>
+				各ステージが開始された時の高精度タイマ値。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="メニュー制御処理">
+		<paragraph>
+			メニュー画面の制御を補助するヘルパー関数群です。
+		</paragraph>
+		<define key="MoveMenuCursor">
+			<argument>今までのカーソル位置</argument>
+			<argument>メニューの選択項目総数</argument>
+			<argument>選択不可項目のカーソル位置を列挙した配列</argument>
+			<return>キー入力を反映したカーソル位置、全て選択不可の場合は負数</return>
+			<paragraph>
+				メニュー<caption>カーソルをキー入力に応じて移動</caption>します。
+			</paragraph>
+		</define>
+		<define key="IsSubmitMenu">
+			<return>決定ならtrue</return>
+			<paragraph>
+				メニューの<caption>決定/キャンセルを判定検出</caption>します。
+			</paragraph>
+		</define>
+		<define key="MenuBooleanConfigSubmit">
+			<argument>現在のカーソル位置</argument>
+			<argument>名前空間</argument>
+			<argument>設定用キーのリスト</argument>
+			<argument>設定用キーに対応するデフォルト値リスト</argument>
+			<paragraph>
+				<caption>二値選択式設定メニューの設定を書き換えます</caption>。
+			</paragraph>
+		</define>
+		<define key="MenuRealConfigSubmit">
+			<argument>現在のカーソル位置</argument>
+			<argument>名前空間</argument>
+			<argument>設定用キーのリスト</argument>
+			<argument>設定用キーに対応するデフォルト値リスト</argument>
+			<argument>設定用キーに対応する最小値リスト</argument>
+			<argument>設定用キーに対応する最大値リスト</argument>
+			<paragraph>
+				<caption>数値選択式設定メニューの設定を書き換えます</caption>。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="ロード関連">
+		<paragraph>
+			主にディスクリソースを読み込む関数群です。
+		</paragraph>
+		<define key="LoadEnemyList">
+			<argument>敵スクリプトファイルのリスト</argument>
+			<paragraph>
+				<caption>配列にある敵スクリプトファイルを一気に読み出し、コンパイル</caption>します。
+			</paragraph>
+		</define>
+		<define key="LoadResourceProgress">
+			<argument>画像ファイルのリスト</argument>
+			<argument>敵スクリプトファイルのリスト</argument>
+			<argument>効果音ファイルのリスト</argument>
+			<paragraph>
+				<caption>ディスクリソースを時間差で読み込みます</caption>。
+				(1フレームにつき1ファイル)
+				全てのリソースを読み終えるまで処理が戻りません。
+				何か並列処理させたい場合はマイクロスレッドタスクを生成し、その中で呼び出してください。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="ポイントエクステンド処理">
+		<paragraph>
+			主にポイントエクステンド処理をする関数群です。
+		</paragraph>
+		<define key="__PointExtendLoop">
+			<paragraph>
+				<caption>ポイント数を監視し、値に応じてエクステンドします</caption>。<br />
+				<caution>自動的に内部から呼ばれますので直接呼び出すことは通常ありません。</caution>
+			</paragraph>
+		</define>
+		<define key="ExtendPlayerEx">
+			<argument>増加させる残機数</argument>
+			<paragraph>
+				<caption>プレイヤーの残機を増やします</caption>。
+				その際、弾幕風標準のエクステンド効果音を鳴らします。
+				但し、負数は無効となります(何もしません)<br />
+				<caution>
+					内部的に敵スクリプトを使用しております。
+					敵スクリプトを検出して何らかのアクションを起こすスクリプトが動いている場合、誤作動の可能性があります。
+				</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="プレイヤー初期位置関連">
+		<paragraph>
+			プレイヤー初期位置設定関連の関数群です。
+		</paragraph>
+		<define key="__SetPlayerDefaultPosition">
+			<paragraph>
+				<caption>プレイヤー初期位置を保存</caption>します。<br />
+				<caution>ステージスクリプト初期化時に自動的に内部から呼ばれますので直接呼び出すことは通常ありません。</caution>
+			</paragraph>
+		</define>
+		<define key="MovePlayerDefaultPosition">
+			<paragraph>
+				<caption>プレイヤー初期位置に強制移動させます</caption>。
+				<code>SetPlayerPosition</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="ステージ制御">
+		<paragraph>
+			ステージ制御関連の関数群です。
+		</paragraph>
+		<define key="SetNextStage">
+			<paragraph>
+				<caption>次のステージに移行</caption>します。
+			</paragraph>
+		</define>
+		<define key="SetStage">
+			<param>移行するステージ</param>
+			<paragraph>
+				<caption>指定したステージに移行</caption>します。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="画面内キャラ制御">
+		<paragraph>
+			主に画面内の敵を一斉制御するための関数群です。
+		</paragraph>
+		<define key="AllZakoEnemyKill">
+			<argument>弾も同時に削除するかどうか</argument>
+			<paragraph>
+				画面内の<caption>全ての雑魚敵を自殺</caption>させます。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="共通処理">
+		<paragraph>
+			このライブラリセットの読み込み対象となる全てのスクリプトで実行される共通処理です。<br />
+			<caution>
+				内部から自動的に呼ばれる関数です。
+				通常直接呼び出すことはありません。
+			</caution>
+		</paragraph>
+		<define key="__MainTask">
+			<paragraph>
+				該当<caption>スクリプトの共通メインタスク呼び出し処理</caption>です。
+			</paragraph>
+		</define>
+	</category>
+</contents>

@@ -1,0 +1,88 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	汎用エラーメッセージ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	エラーメッセージを投げます。
+*	「想定外の数値が入力されました。許容範囲( 0 ～ 5 )に対し、 6」
+*
+*	@param nExpr 対象の値
+*	@param nMin 許容最小値
+*	@param nMax 許容最大値
+*	@param szDescription 解説など
+*/
+function ErrorIllegalNumberArea( let nExpr, let nMin, let nMax, let szDescription ){
+	let szErrorMessage = 
+		"想定外の数値が入力されました。" ~ FLAN_COMMON_BR_CODE ~
+		"許容範囲( " ~ ToStringEx( nMin ) ~ " ～ " ~ ToStringEx( nMax ) ~ " )に対し、 " ~ ToStringEx( nExpr ) ~
+	( [ FLAN_COMMON_BR_CODE ~ FLAN_COMMON_BR_CODE ~  szDescription ,"" ][ length( szDescription ) == 0 ] );
+	RaiseError( szErrorMessage, "FLAN:ApplicationError" );
+}
+
+/**
+*	エラーメッセージを投げます。
+*	「想定外の数値が入力されました。許容値( 1, 2, 3 )に対し、 6」
+*
+*	@param nExpr 対象の値
+*	@param anAllowList 許容値リスト
+*	@param szDescription 解説など
+*/
+function ErrorIllegalNumberList( let nExpr, let anAllowList, let szDescription ){
+	let szErrorMessage = 
+		"想定外の数値が入力されました。" ~ FLAN_COMMON_BR_CODE ~
+		"許容値( ";
+	ascent( let i in 0..length( anAllowList ) ){
+		if( i != 0 ){ szErrorMessage = szErrorMessage ~ ", "; }
+		szErrorMessage = szErrorMessage ~ ToStringEx( anAllowList[ i ] );
+	}
+	szErrorMessage = szErrorMessage ~ " )に対し、 " ~ ToStringEx( nExpr ) ~
+	( [ FLAN_COMMON_BR_CODE ~ FLAN_COMMON_BR_CODE ~  szDescription ,"" ][ length( szDescription ) == 0 ] );
+	RaiseError( szErrorMessage, "FLAN:ApplicationError" );
+}
+
+/**
+*	エラーメッセージを投げます。
+*	「想定外の長さの文字列が入力されました。許容範囲( 0 ～ 5 )に対し、 6」
+*
+*	@param szExpr 対象の文字列
+*	@param nMin 許容最小文字列長
+*	@param nMax 許容最大文字列長
+*	@param szDescription 解説など
+*/
+function ErrorIllegalStringLength( let szExpr, let nMin, let nMax, let szDescription ){
+	let szErrorMessage = 
+		"想定外の数値が入力されました。" ~ FLAN_COMMON_BR_CODE ~
+		"許容範囲( " ~ ToStringEx( nMin ) ~ " ～ " ~ ToStringEx( nMax ) ~ " )に対し、 " ~ ToStringEx( length( szExpr ) ) ~
+	( [ FLAN_COMMON_BR_CODE ~ FLAN_COMMON_BR_CODE ~  szDescription ,"" ][ length( szDescription ) == 0 ] );
+	RaiseError( szErrorMessage, "FLAN:ApplicationError" );
+}

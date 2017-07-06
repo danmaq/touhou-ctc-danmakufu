@@ -1,0 +1,234 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Player" file="player">
+	<category caption="概要" link="true">
+		<paragraph>
+			プレイヤースクリプトでのみ使用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/PLAYER</path>となります。
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+	</category>
+	<category caption="書換可能定数" link="true">
+		<define key="FLAN_PLAYER_BOMB" type="var">
+			<paragraph>
+				初期ボム数を設定します。
+				デフォルト値は<value>3</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_BORDERLIFE_DEFAULT" type="var">
+			<paragraph>
+				喰らいボム初期時間を設定します。
+				デフォルト値は<value>15</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_BORDERLIFE_REDUCE" type="var">
+			<paragraph>
+				喰らいボム減少量を設定します。
+				負数を設定すると可変量減少となります。
+				(減少量算出式: (被弾～喰らいボム発動に費やした時間)*(-FLAN_PLAYER_BORDERLIFE_REDUCE) )
+				デフォルト値は<value>-1</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_SHOT_FRAME" type="var">
+			<paragraph>
+				一度ショットを撃ち始めたら最低撃ち続ける時間を設定します。
+				デフォルト値は<value>30</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_SHOT_INTERVAL" type="var">
+			<paragraph>
+				ショットのフレーム間隔を設定します。
+				デフォルト値は<value>5</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_COLLISION_HIT" type="var">
+			<paragraph>
+				自機被弾判定の半径を設定します。
+				デフォルト値は<value>0.5</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_COLLISION_GRAZE" type="var">
+			<paragraph>
+				自機カスり判定の半径を設定します。
+				デフォルト値は<value>40</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_SPEED_FAST" type="var">
+			<paragraph>
+				自機高速移動速度を設定します。(dot/frame)
+				デフォルト値は<value>4</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_SPEED_SLOW" type="var">
+			<paragraph>
+				自機低速移動速度を設定します。(dot/frame)
+				デフォルト値は<value>1.6</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_ITEM_AUTOCOLLECT_LINE" type="var">
+			<paragraph>
+				アイテム自動蒐集ラインを設定します。
+				デフォルト値は<value>128</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_ITEM_AUTOCOLLECT_BOMB" type="var">
+			<paragraph>
+				ボム時のアイテム全蒐集を有効にするかどうか設定します。
+				デフォルト値は<value>true</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_PLAYER_DELETE_KILLED_SHOT" type="var">
+			<paragraph>
+				被弾時に被弾した弾を即座に削除します。
+				デフォルト値は<value>true</value>です。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="メンバ変数" link="true">
+		<define key="m_bFlanPlayerShotEnable" type="var">
+			<paragraph>
+				現在のフレームでショットが発射可能かどうかが格納されます。
+			</paragraph>
+		</define>
+		<define key="m_bFranPlayerShot" type="var">
+			<paragraph>
+				現在ショット中かどうかが格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanBorderLifeUsedCount" type="var">
+			<paragraph>
+				喰らいボム時間使用量が格納されます。
+			</paragraph>
+		</define>
+		<define key="m_nFlanPlayerMissedCount" type="var">
+			<paragraph>
+				ミス時のカウンタが格納されます。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="定型弾発射関数">
+		<paragraph>
+			定型弾発射などの関数群です。<br />
+		</paragraph>
+		<define key="WayPlayerShot01">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>速度</argument>
+			<argument>攻撃力</argument>
+			<argument>貫通力</argument>
+			<argument>Way数</argument>
+			<argument>Wayの射程に含まれる角度</argument>
+			<argument>狙う基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定の座標から<caption>Way自機弾</caption>を発射します。
+				<code>__WayPlayerShot01</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="WayPlayerShotAnimationPos01">
+			<argument>モーション開始時のX座標</argument>
+			<argument>モーション終了時のX座標</argument>
+			<argument>X座標変化のパラメータリスト</argument>
+			<argument>モーション開始時のY座標</argument>
+			<argument>モーション終了時のY座標</argument>
+			<argument>Y座標変化のパラメータリスト</argument>
+			<argument>速度</argument>
+			<argument>攻撃力</argument>
+			<argument>貫通力</argument>
+			<argument>Way数</argument>
+			<argument>Wayの射程に含まれる角度</argument>
+			<argument>狙う基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				<caption>発射座標アニメーション付きWay自機弾</caption>を発射します。
+				<code>__WayPlayerShot01</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="WayPlayerShotAnimationSpeed01">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>モーション開始時の速度</argument>
+			<argument>モーション終了時の速度</argument>
+			<argument>速度変化のパラメータリスト</argument>
+			<argument>攻撃力</argument>
+			<argument>貫通力</argument>
+			<argument>Way数</argument>
+			<argument>Wayの射程に含まれる角度</argument>
+			<argument>狙う基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定の座標から<caption>速度アニメーション付きWay自機弾</caption>を発射します。
+				<code>__WayPlayerShot01</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="WayPlayerShotAnimationDamage01">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>速度</argument>
+			<argument>モーション開始時の攻撃力</argument>
+			<argument>モーション終了時の攻撃力</argument>
+			<argument>攻撃力変化のパラメータリスト</argument>
+			<argument>モーション開始時の貫通力</argument>
+			<argument>モーション終了時の貫通力</argument>
+			<argument>貫通力変化のパラメータリスト</argument>
+			<argument>Way数</argument>
+			<argument>Wayの射程に含まれる角度</argument>
+			<argument>狙う基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定の座標から<caption>攻撃力・貫通力アニメーション付きWay自機弾</caption>を発射します。
+				<code>__WayPlayerShot01</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="__WayPlayerShot01">
+			<argument>モーション開始時のX座標</argument>
+			<argument>モーション終了時のX座標</argument>
+			<argument>X座標変化のパラメータリスト</argument>
+			<argument>モーション開始時のY座標</argument>
+			<argument>モーション終了時のY座標</argument>
+			<argument>Y座標変化のパラメータリスト</argument>
+			<argument>モーション開始時の速度</argument>
+			<argument>モーション終了時の速度</argument>
+			<argument>速度変化のパラメータリスト</argument>
+			<argument>モーション開始時の攻撃力</argument>
+			<argument>モーション終了時の攻撃力</argument>
+			<argument>攻撃力変化のパラメータリスト</argument>
+			<argument>モーション開始時の貫通力</argument>
+			<argument>モーション終了時の貫通力</argument>
+			<argument>貫通力変化のパラメータリスト</argument>
+			<argument>Way数</argument>
+			<argument>Wayの射程に含まれる角度</argument>
+			<argument>Way間隔変化のパラメータリスト</argument>
+			<argument>狙う基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定した設定のとおりに<caption>Way自機弾</caption>を発射します。
+			</paragraph>
+		</define>
+		<define key="__ShotBasicShot">
+			<paragraph>
+				<caption>設定された条件に基づきonShotを呼び出します</caption>。<br />
+				<caution>自動的に内部から呼ばれますので直接呼び出すことは通常ありません。</caution>
+			</paragraph>
+		</define>
+	</category>
+	<category caption="共通処理">
+		<paragraph>
+			このライブラリセットの読み込み対象となる全てのスクリプトで実行される共通処理です。<br />
+			<caution>
+				内部から自動的に呼ばれる関数です。
+				通常直接呼び出すことはありません。
+			</caution>
+		</paragraph>
+		<define key="__MainTask">
+			<paragraph>
+				該当<caption>スクリプトの共通メインタスク呼び出し処理</caption>です。
+			</paragraph>
+		</define>
+	</category>
+</contents>

@@ -3,7 +3,8 @@
 //　ドット絵
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
-let dirImageCharDot = GetCurrentScriptDirectory ~ "IMAGE\CHAR\DOT\";
+
+#include_function ".\IMAGE\CHAR\DOT\index_mini.dnh"
 
 //　ボス
 let dotBossSample = dirImageCharDot ~ "ExRumia.png";
@@ -13,21 +14,28 @@ let dotBossSakuya = dirImageCharDot ~ "boss_sakuya.png";
 let dotBossRemilia = dirImageCharDot ~ "boss_remilia.png";
 let dotBossDevil = dirImageCharDot ~ "boss_devil.png";
 let dotBossPatchouli = dirImageCharDot ~ "boss_patchouli.png";
+let dotBossKaguya = dirImageCharDot ~ "boss_kaguya.png";
+let dotBossMokou = dirImageCharDot ~ "boss_mokou.png";
+let dotBossReisen = dirImageCharDot ~ "boss_reisen.png";
+let dotBossEirin = dirImageCharDot ~ "boss_eirin.png";
+let dotBossTewi = dirImageCharDot ~ "boss_tewi.png";
 let dotBossLily = dirImageCharDot ~ "boss_lily.png";
 let dotBossMedicine = dirImageCharDot ~ "boss_medicine.png";
 let dotBossAya = dirImageCharDot ~ "boss_aya.png";
 let dotBossKomachi = dirImageCharDot ~ "boss_komachi.png";
 let dotBossEiki = dirImageCharDot ~ "boss_eiki.png";
-
-//　ザコ
-let dotKedama = dirImageCharDot ~ "zako_kedama.png";
-let dotYousei = dirImageCharDot ~ "zako_yousei.png";
-
-//　魔法陣
-let dotCircle6s = dirImageCharDot ~ "circle6_s.png";
-let dotCircle6m = dirImageCharDot ~ "circle6_m.png";
-let dotCircle8s = dirImageCharDot ~ "circle8_s.png";
-let dotCircle8m = dirImageCharDot ~ "circle8_m.png";
+let dotBossMima = dirImageCharDot ~ "boss_mima.png";
+let dotBossYuka = dirImageCharDot ~ "boss_yuka.png";
+let dotBossShinki = dirImageCharDot ~ "boss_shinki.png";
+let dotBossAlice = dirImageCharDot ~ "boss_alice.png";
+let dotBossChen = dirImageCharDot ~ "boss_chen.png";
+let dotBossRan = dirImageCharDot ~ "boss_ran.png";
+let dotBossYukari = dirImageCharDot ~ "boss_yukari.png";
+let dotBossYoumu = dirImageCharDot ~ "boss_youmu.png";
+let dotBossYuyuko = dirImageCharDot ~ "boss_yuyuko.png";
+let dotBossReimuW = dirImageCharDot ~ "boss_reimu-w.png";
+let dotBossSuika = dirImageCharDot ~ "boss_suika.png";
+let dotBossReimu = dirImageCharDot ~ "boss_reimu.png";
 
 //　弾
 let dotShotAll = dirImageCharDot ~ "shot_all.png";

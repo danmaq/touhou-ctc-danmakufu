@@ -1,0 +1,108 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	ボムキーが押されているかどうかが格納されます。 */
+let m_bFlanKeyBomb	= false;
+/**	ショットキーが押されているかどうかが格納されます。 */
+let m_bFlanKeyShot	= false;
+/**	会話スキップキーが押されているかどうかが格納されます。 */
+let m_bFlanKeySkip	= false;
+/**	低速移動キーが押されているかどうかが格納されます。 */
+let m_bFlanKeySlow	= false;
+/**	ユーザ定義キーが押されているかどうかが格納されます。 */
+let m_bFlanKeyUser	= false;
+/**	上方向キーが押されているかどうかが格納されます。 */
+let m_bFlanKeyUp	= false;
+/**	下方向キーが押されているかどうかが格納されます。 */
+let m_bFlanKeyDown	= false;
+/**	左方向キーが押されているかどうかが格納されます。 */
+let m_bFlanKeyLeft	= false;
+/**	右方向キーが押されているかどうかが格納されます。 */
+let m_bFlanKeyRight	= false;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	キー入力判定処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	方向キー入力情報に基づいた角度を返します。
+*
+*	方向キー入力に対応した角度、何も押されていない場合は負数
+*/
+function GetAngleFromInput(){
+	if( m_bFlanKeyRight	&& m_bFlanKeyDown	){ return 45; }
+	if( m_bFlanKeyDown	&& m_bFlanKeyLeft	){ return 135; }
+	if( m_bFlanKeyLeft	&& m_bFlanKeyUp		){ return 225; }
+	if( m_bFlanKeyUp	&& m_bFlanKeyRight	){ return 315; }
+	if( m_bFlanKeyRight	){ return 0; }
+	if( m_bFlanKeyDown	){ return 90; }
+	if( m_bFlanKeyLeft	){ return 180; }
+	if( m_bFlanKeyUp	){ return 270; }
+	return -1;
+}
+
+/**
+*	毎フレームキー入力の有無を取得し、変数に記録します。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+task __GetKeyLoop(){
+	loop{
+		yield;
+		let nState;
+		nState = GetKeyState( VK_BOMB );		m_bFlanKeyBomb	= nState == KEY_PUSH || nState == KEY_HOLD;
+		nState = GetKeyState( VK_SHOT );		m_bFlanKeyShot	= nState == KEY_PUSH || nState == KEY_HOLD;
+		nState = GetKeyState( VK_SKIP );		m_bFlanKeySkip	= nState == KEY_PUSH || nState == KEY_HOLD;
+		nState = GetKeyState( VK_SLOWMOVE );	m_bFlanKeySlow	= nState == KEY_PUSH || nState == KEY_HOLD;
+		nState = GetKeyState( VK_USER );		m_bFlanKeyUser	= nState == KEY_PUSH || nState == KEY_HOLD;
+		nState = GetKeyState( VK_UP );			m_bFlanKeyUp	= nState == KEY_PUSH || nState == KEY_HOLD;
+		nState = GetKeyState( VK_DOWN );		m_bFlanKeyDown	= nState == KEY_PUSH || nState == KEY_HOLD;
+		nState = GetKeyState( VK_LEFT );		m_bFlanKeyLeft	= nState == KEY_PUSH || nState == KEY_HOLD;
+		nState = GetKeyState( VK_RIGHT );		m_bFlanKeyRight	= nState == KEY_PUSH || nState == KEY_HOLD;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	共通処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	該当スクリプトの共通初期化処理です。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*
+*	@param bCommonInitialize 下位初期化処理を呼ぶかどうか
+*/
+function __FlanCommonSPSInitialize(){
+	__FlanCommonInitialize();
+	__GetKeyLoop();
+}
+

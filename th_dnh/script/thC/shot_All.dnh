@@ -5,133 +5,133 @@ ShotImage = ".\IMAGE\CHAR\DOT\shot_all.png"
 // ó±íe --------------------------------
 ShotData{
 	id = 1
-	rect = ( 1, 1, 11, 11 )
+	rect = ( 0, 0, 12, 12 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 2
-	rect = ( 11, 1, 23, 11 )
+	rect = ( 12, 0, 24, 12 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 3
-	rect = ( 25, 1, 35, 11 )
+	rect = ( 24, 0, 36, 12 )
 	delay_color = ( 255,255, 63 )
 }
 ShotData{
 	id = 4
-	rect = ( 37, 1, 47, 11 )
+	rect = ( 36, 0, 48, 12 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 5
-	rect = ( 49, 1, 59, 11 )
+	rect = ( 48, 0, 60, 12 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 6
-	rect = ( 61, 1, 71, 11 )
+	rect = ( 60, 0, 72, 12 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 7
-	rect = ( 73, 1, 83, 11 )
+	rect = ( 72, 0, 84, 12 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 8
-	rect = ( 85, 1, 95, 11 )
+	rect = ( 84, 0, 96, 12 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // è¨íe --------------------------------
 ShotData{
 	id = 9
-	rect = ( 1, 13, 17, 29 )
+	rect = ( 0, 12, 17, 29 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 10
-	rect = ( 19, 13, 35, 29 )
+	rect = ( 18, 12, 35, 29 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 11
-	rect = ( 37, 13, 53, 29 )
+	rect = ( 36, 12, 53, 29 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 12
-	rect = ( 55, 13, 71, 29 )
+	rect = ( 54, 12, 71, 29 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 13
-	rect = ( 73, 13, 89, 29 )
+	rect = ( 72, 12, 89, 29 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 14
-	rect = ( 91, 13, 107, 29 )
+	rect = ( 90, 12, 107, 29 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 15
-	rect = ( 109, 13, 125, 29 )
+	rect = ( 108, 12, 125, 29 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 16
-	rect = ( 127, 13, 143, 29 )
+	rect = ( 126, 12, 143, 29 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // è¨íeÅiâ¡éZçáê¨ï`âÊópÅj --------------
 ShotData{
 	id = 241
-	rect = ( 257, 333, 273, 349 )
+	rect = ( 256, 332, 273, 349 )
 	render = ADD
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 242
-	rect = ( 275, 333, 291, 349 )
+	rect = ( 274, 332, 291, 349 )
 	render = ADD
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 243
-	rect = ( 293, 333, 309, 349 )
+	rect = ( 292, 332, 309, 349 )
 	render = ADD
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 244
-	rect = ( 311, 333, 327, 349 )
+	rect = ( 310, 332, 327, 349 )
 	render = ADD
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 245
-	rect = ( 329, 333, 345, 349 )
+	rect = ( 328, 332, 345, 349 )
 	render = ADD
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 246
-	rect = ( 347, 333, 363, 349 )
+	rect = ( 346, 332, 363, 349 )
 	render = ADD
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 247
-	rect = ( 365, 333, 381, 349 )
+	rect = ( 364, 332, 381, 349 )
 	render = ADD
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 248
-	rect = ( 383, 333, 399, 349 )
+	rect = ( 382, 332, 399, 349 )
 	render = ADD
 	delay_color = ( 255, 255, 255 )
 }
@@ -139,133 +139,133 @@ ShotData{
 // ògè¨íe ------------------------------
 ShotData{
 	id = 17
-	rect = ( 1, 31, 19, 49 )
+	rect = ( 0, 30, 19, 49 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 18
-	rect = ( 21, 31, 39, 49 )
+	rect = ( 20, 30, 39, 49 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 19
-	rect = ( 41, 31, 59, 49 )
+	rect = ( 40, 30, 59, 49 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 20
-	rect = ( 61, 31, 79, 49 )
+	rect = ( 60, 30, 79, 49 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 21
-	rect = ( 81, 31, 99, 49 )
+	rect = ( 80, 30, 99, 49 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 22
-	rect = ( 101, 31, 119, 49 )
+	rect = ( 100, 30, 119, 49 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 23
-	rect = ( 121, 31, 139, 49 )
+	rect = ( 120, 30, 139, 49 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 24
-	rect = ( 141, 31, 159, 49 )
+	rect = ( 140, 30, 159, 49 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // íÜíe --------------------------------
 ShotData{
 	id = 25
-	rect = ( 1, 51, 29, 79 )
+	rect = ( 0, 50, 29, 79 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 26
-	rect = ( 31, 51, 59, 79 )
+	rect = ( 30, 50, 59, 79 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 27
-	rect = ( 61, 51, 89, 79 )
+	rect = ( 60, 50, 89, 79 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 28
-	rect = ( 91, 51, 119, 79 )
+	rect = ( 90, 50, 119, 79 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 29
-	rect = ( 121, 51, 149, 79 )
+	rect = ( 120, 50, 149, 79 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 30
-	rect = ( 151, 51, 179, 79 )
+	rect = ( 150, 50, 179, 79 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 31
-	rect = ( 181, 51, 209, 79 )
+	rect = ( 180, 50, 209, 79 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 32
-	rect = ( 211, 51, 239, 79 )
+	rect = ( 210, 50, 239, 79 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // íÜíeÅiâ¡éZçáê¨ï`âÊópÅj --------------
 ShotData{
 	id = 225
-	rect = ( 257, 303, 285, 331 )
+	rect = ( 256, 302, 285, 331 )
 	render = ADD
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 226
-	rect = ( 287, 303, 315, 331 )
+	rect = ( 286, 302, 315, 331 )
 	render = ADD
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 227
-	rect = ( 317, 303, 345, 331 )
+	rect = ( 316, 302, 345, 331 )
 	render = ADD
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 228
-	rect = ( 347, 303, 375, 331 )
+	rect = ( 346, 302, 375, 331 )
 	render = ADD
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 229
-	rect = ( 377, 303, 405, 331 )
+	rect = ( 376, 302, 405, 331 )
 	render = ADD
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 230
-	rect = ( 407, 303, 435, 331 )
+	rect = ( 406, 302, 435, 331 )
 	render = ADD
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 231
-	rect = ( 437, 303, 465, 331 )
+	rect = ( 436, 302, 465, 331 )
 	render = ADD
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 232
-	rect = ( 467, 303, 495, 331)
+	rect = ( 466, 302, 495, 331 )
 	render = ADD
 	delay_color = ( 255, 255, 255 )
 }
@@ -273,427 +273,435 @@ ShotData{
 // êjíe --------------------------------
 ShotData{
 	id = 33
-	rect = ( 1, 81, 9, 99 )
+	rect = ( 0, 80, 9, 100 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 34
-	rect = ( 11, 81, 19, 99 )
+	rect = ( 10, 80, 19, 100 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 35
-	rect = ( 21, 81, 29, 99 )
+	rect = ( 20, 80, 29, 100 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 36
-	rect = ( 31, 81, 39, 99 )
+	rect = ( 30, 80, 39, 100 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 37
-	rect = ( 41, 81, 49, 99 )
+	rect = ( 40, 80, 49, 100 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 38
-	rect = ( 51, 81, 59, 99 )
+	rect = ( 50, 80, 59, 100 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 39
-	rect = ( 61, 81, 69, 99 )
+	rect = ( 60, 80, 69, 100 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 40
-	rect = ( 71, 81, 79, 99 )
+	rect = ( 70, 80, 79, 100 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // ïƒó±íe ------------------------------
 ShotData{
 	id = 41
-	rect = ( 1, 101, 11, 117 )
+	rect = ( 0, 100, 11, 118 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 42
-	rect = ( 13, 101, 23, 117 )
+	rect = ( 12, 100, 23, 118 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 43
-	rect = ( 25, 101, 35, 117 )
+	rect = ( 24, 100, 35, 118 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 44
-	rect = ( 37, 101, 47, 117 )
+	rect = ( 36, 100, 47, 118 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 45
-	rect = ( 49, 101, 59, 117 )
+	rect = ( 48, 100, 59, 118 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 46
-	rect = ( 61, 101, 71, 117 )
+	rect = ( 60, 100, 71, 118 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 47
-	rect = ( 73, 101, 83, 117 )
+	rect = ( 72, 100, 83, 118 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 48
-	rect = ( 85, 101, 95, 117 )
+	rect = ( 84, 100, 95, 118 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // ïXâÚíe ------------------------------
 ShotData{
 	id = 49
-	rect = ( 1, 119, 11, 137 )
+	rect = ( 0, 118, 11, 138 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 50
-	rect = ( 13, 119, 23, 137 )
+	rect = ( 12, 118, 23, 138 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 51
-	rect = ( 25, 119, 35, 137 )
+	rect = ( 24, 118, 35, 138 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 52
-	rect = ( 37, 119, 47, 137 )
+	rect = ( 36, 118, 47, 138 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 53
-	rect = ( 49, 119, 59, 137 )
+	rect = ( 48, 118, 59, 138 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 54
-	rect = ( 61, 119, 71, 137 )
+	rect = ( 60, 118, 71, 138 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 55
-	rect = ( 73, 119, 83, 137 )
+	rect = ( 72, 118, 83, 138 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 56
-	rect = ( 85, 119, 95, 137 )
+	rect = ( 84, 118, 95, 138 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // ç¿ñÚíe ------------------------------
 ShotData{
 	id = 57
-	rect = ( 1, 139, 11, 157 )
+	rect = ( 0, 138, 11, 158 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 58
-	rect = ( 13, 139, 23, 157 )
+	rect = ( 12, 138, 23, 158 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 59
-	rect = ( 25, 139, 35, 157 )
+	rect = ( 24, 138, 35, 158 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 60
-	rect = ( 37, 139, 47, 157 )
+	rect = ( 36, 138, 47, 158 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 61
-	rect = ( 49, 139, 59, 157 )
+	rect = ( 48, 138, 59, 158 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 62
-	rect = ( 61, 139, 71, 157 )
+	rect = ( 60, 138, 71, 158 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 63
-	rect = ( 73, 139, 83, 157 )
+	rect = ( 72, 138, 83, 158 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 64
-	rect = ( 85, 139, 95, 157 )
+	rect = ( 84, 138, 93, 158 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // ëêóöíe ------------------------------
 ShotData{
 	id = 65
-	rect = ( 1, 159, 17, 185 )
+	rect = ( 0, 158, 17, 186 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 66
-	rect = ( 19, 159, 35, 185 )
+	rect = ( 18, 158, 35, 186 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 67
-	rect = ( 37, 159, 53, 185 )
+	rect = ( 36, 158, 53, 186 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 68
-	rect = ( 55, 159, 71, 185 )
+	rect = ( 54, 158, 71, 186 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 69
-	rect = ( 73, 159, 89, 185 )
+	rect = ( 72, 158, 89, 186 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 70
-	rect = ( 91, 159, 107, 185 )
+	rect = ( 90, 158, 107, 186 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 71
-	rect = ( 109, 159, 125, 185 )
+	rect = ( 108, 158, 125, 186 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 72
-	rect = ( 127, 159, 143, 185 )
+	rect = ( 126, 158, 143, 186 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // ãÍñ≥íe ------------------------------
 ShotData{
 	id = 73
-	rect = ( 1, 187, 13, 207 )
+	rect = ( 0, 186, 13, 208 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 74
-	rect = ( 15, 187, 27, 207 )
+	rect = ( 14, 186, 27, 208 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 75
-	rect = ( 29, 187, 41, 207 )
+	rect = ( 28, 186, 41, 208 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 76
-	rect = ( 43, 187, 55, 207 )
+	rect = ( 42, 186, 55, 208 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 77
-	rect = ( 57, 187, 69, 207 )
+	rect = ( 56, 186, 69, 208 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 78
-	rect = ( 71, 187, 83, 207 )
+	rect = ( 70, 186, 83, 208 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 79
-	rect = ( 85, 187, 97, 207 )
+	rect = ( 84, 186, 97, 208 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 80
-	rect = ( 99, 187, 111, 207 )
+	rect = ( 98, 186, 111, 208 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // óÿíe --------------------------------
 ShotData{
 	id = 81
-	rect = ( 1, 209, 17, 223 )
+	rect = ( 0, 209, 17, 224 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 82
-	rect = ( 19, 209, 35, 223 )
+	rect = ( 18, 209, 35, 224 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 83
-	rect = ( 37, 209, 53, 223 )
+	rect = ( 36, 209, 53, 224 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 84
-	rect = ( 55, 209, 71, 223 )
+	rect = ( 54, 209, 71, 224 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 85
-	rect = ( 73, 209, 89, 223 )
+	rect = ( 72, 209, 89, 224 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 86
-	rect = ( 91, 207, 107, 223 )
+	rect = ( 90, 209, 107, 224 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 87
-	rect = ( 109, 209, 125, 223 )
+	rect = ( 108, 209, 125, 224 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 88
-	rect = ( 127, 209, 143, 223 )
+	rect = ( 126, 209, 143, 224 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // óÿíeÅiâ¡éZçáê¨ï`âÊópÅj --------------
 ShotData{
 	id = 233
-	rect = ( 1, 493, 17, 507 )
+	rect = ( 0, 493, 17, 508 )
+	render = ADD
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 234
-	rect = ( 19, 493, 35, 507 )
+	rect = ( 18, 493, 35, 508 )
+	render = ADD
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 235
-	rect = ( 37, 493, 53, 507 )
+	rect = ( 36, 493, 53, 508 )
+	render = ADD
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 236
-	rect = ( 55, 493, 71, 507 )
+	rect = ( 54, 493, 71, 508 )
+	render = ADD
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 237
-	rect = ( 73, 493, 89, 507 )
+	rect = ( 72, 493, 89, 508 )
+	render = ADD
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 238
-	rect = ( 91, 493, 107, 507 )
+	rect = ( 90, 493, 107, 508 )
+	render = ADD
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 239
-	rect = ( 109, 493, 125, 507 )
+	rect = ( 108, 493, 125, 508 )
+	render = ADD
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 240
-	rect = ( 127, 493, 143, 507 )
+	rect = ( 126, 493, 143, 508 )
+	render = ADD
 	delay_color = ( 255, 255, 255 )
 }
 
 // éDíe --------------------------------
 ShotData{
 	id = 89
-	rect = ( 1, 225, 15, 241 )
+	rect = ( 0, 224, 16, 242 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 90
-	rect = ( 17, 225, 31, 241 )
+	rect = ( 16, 224, 32, 242 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 91
-	rect = ( 33, 225, 47, 241 )
+	rect = ( 32, 224, 48, 242 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 92
-	rect = ( 49, 225, 63, 241 )
+	rect = ( 48, 224, 64, 242 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 93
-	rect = ( 65, 225, 79, 241 )
+	rect = ( 64, 224, 80, 242 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 94
-	rect = ( 81, 225, 95, 241 )
+	rect = ( 80, 224, 96, 242 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 95
-	rect = ( 97, 225, 111, 241 )
+	rect = ( 96, 224, 112, 242 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 96
-	rect = ( 113, 225, 127, 241 )
+	rect = ( 112, 224, 128, 242 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // ëKíe --------------------------------
 ShotData{
 	id = 97
-	rect = ( 1, 243, 19, 259 )
+	rect = ( 0, 242, 19, 260 )
 	delay_color = ( 255, 63, 63 )
 	angular_velocity = 2.5
 }
 ShotData{
 	id = 98
-	rect = ( 21, 243, 39, 259 )
+	rect = ( 20, 242, 39, 260 )
 	delay_color = ( 255, 127, 63 )
 	angular_velocity = 2.5
 }
 ShotData{
 	id = 99
-	rect = ( 41, 243, 59, 259 )
+	rect = ( 40, 242, 59, 260 )
 	delay_color = ( 255, 255, 63 )
 	angular_velocity = 2.5
 }
 ShotData{
 	id = 100
-	rect = ( 61, 243, 79, 259 )
+	rect = ( 60, 242, 79, 260 )
 	delay_color = ( 63, 255, 63 )
 	angular_velocity = 2.5
 }
 ShotData{
 	id = 101
-	rect = ( 81, 243, 99, 259 )
+	rect = ( 80, 242, 99, 260 )
 	delay_color = ( 63, 255, 255 )
 	angular_velocity = 2.5
 }
 ShotData{
 	id = 102
-	rect = ( 101, 243, 119, 259 )
+	rect = ( 100, 242, 119, 260 )
 	delay_color = ( 63, 63, 255 )
 	angular_velocity = 2.5
 }
 ShotData{
 	id = 103
-	rect = ( 121, 243, 139, 259 )
+	rect = ( 120, 242, 139, 260 )
 	delay_color = ( 255, 63, 255 )
 	angular_velocity = 2.5
 }
 ShotData{
 	id = 104
-	rect = ( 141, 243, 159, 259 )
+	rect = ( 140, 242, 159, 260 )
 	delay_color = ( 255, 255, 255 )
 	angular_velocity = 2.5
 }
@@ -701,133 +709,133 @@ ShotData{
 // í±íe --------------------------------
 ShotData{
 	id = 105
-	rect = ( 1, 261, 29, 289 )
+	rect = ( 0, 260, 30, 290 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 106
-	rect = ( 31, 261, 59, 289 )
+	rect = ( 30, 260, 60, 290 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 107
-	rect = ( 61, 261, 89, 289 )
+	rect = ( 60, 260, 90, 290 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 108
-	rect = ( 91, 261, 119, 289 )
+	rect = ( 90, 260, 120, 290 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 109
-	rect = ( 121, 261, 149, 289 )
+	rect = ( 120, 260, 150, 290 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 110
-	rect = ( 151, 261, 179, 289 )
+	rect = ( 150, 260, 180, 290 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 111
-	rect = ( 181, 261, 209, 289 )
+	rect = ( 180, 260, 210, 290 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 112
-	rect = ( 211, 261, 239, 289 )
+	rect = ( 210, 260, 240, 290 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // åıíe --------------------------------
 ShotData{
 	id = 113
-	rect = ( 1, 291, 27, 317 )
+	rect = ( 0, 290, 27, 317 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 114
-	rect = ( 29, 291, 55, 317 )
+	rect = ( 28, 290, 55, 317 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 115
-	rect = ( 57, 291, 83, 317 )
+	rect = ( 56, 290, 83, 317 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 116
-	rect = ( 85, 291, 111, 317 )
+	rect = ( 84, 290, 111, 317 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 117
-	rect = ( 113, 291, 139, 317 )
+	rect = ( 112, 290, 139, 317 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 118
-	rect = ( 141, 291, 167, 317 )
+	rect = ( 140, 290, 167, 317 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 119
-	rect = ( 169, 291, 195, 317 )
+	rect = ( 168, 290, 195, 317 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 120
-	rect = ( 197, 291, 223, 317 )
+	rect = ( 196, 290, 223, 317 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // è¨êØíe ------------------------------
 ShotData{
 	id = 121
-	rect = ( 1, 319, 19, 337 )
+	rect = ( 0, 318, 19, 338 )
 	delay_color = ( 255, 63, 63 )
 	angular_velocity = -3
 }
 ShotData{
 	id = 122
-	rect = ( 21, 319, 39, 337 )
+	rect = ( 20, 318, 39, 338 )
 	delay_color = ( 255, 127, 63 )
 	angular_velocity = -3
 }
 ShotData{
 	id = 123
-	rect = ( 41, 319, 59, 337 )
+	rect = ( 40, 318, 59, 338 )
 	delay_color = ( 255, 255, 63 )
 	angular_velocity = -3
 }
 ShotData{
 	id = 124
-	rect = ( 61, 319, 79, 337 )
+	rect = ( 60, 318, 79, 338 )
 	delay_color = ( 63, 255, 63 )
 	angular_velocity = -3
 }
 ShotData{
 	id = 125
-	rect = ( 81, 319, 99, 337 )
+	rect = ( 80, 318, 99, 338 )
 	delay_color = ( 63, 255, 255 )
 	angular_velocity = -3
 }
 ShotData{
 	id = 126
-	rect = ( 101, 319, 119, 337 )
+	rect = ( 100, 318, 119, 338 )
 	delay_color = ( 63, 63, 255 )
 	angular_velocity = -3
 }
 ShotData{
 	id = 127
-	rect = ( 121, 319, 139, 337 )
+	rect = ( 120, 318, 139, 338 )
 	delay_color = ( 255, 63, 255 )
 	angular_velocity = -3
 }
 ShotData{
 	id = 128
-	rect = ( 141, 319, 159, 337 )
+	rect = ( 140, 318, 159, 338 )
 	delay_color = ( 255, 255, 255 )
 	angular_velocity = -3
 }
@@ -835,49 +843,49 @@ ShotData{
 // ëÂêØíe ------------------------------
 ShotData{
 	id = 129
-	rect = ( 1, 339, 31, 369 )
+	rect = ( 0, 338, 32, 370 )
 	delay_color = ( 255, 63, 63 )
 	angular_velocity = 2
 }
 ShotData{
 	id = 130
-	rect = ( 33, 339, 63, 369 )
+	rect = ( 32, 338, 64, 370 )
 	delay_color = ( 255, 127, 63 )
 	angular_velocity = 2
 }
 ShotData{
 	id = 131
-	rect = ( 65, 339, 95, 369 )
+	rect = ( 64, 338, 96, 370 )
 	delay_color = ( 255, 255, 63 )
 	angular_velocity = 2
 }
 ShotData{
 	id = 132
-	rect = ( 97, 339, 127, 369 )
+	rect = ( 96, 338, 128, 370 )
 	delay_color = ( 63, 255, 63 )
 	angular_velocity = 2
 }
 ShotData{
 	id = 133
-	rect = ( 129, 339, 159, 369 )
+	rect = ( 128, 338, 160, 370 )
 	delay_color = ( 63, 255, 255 )
 	angular_velocity = 2
 }
 ShotData{
 	id = 134
-	rect = ( 161, 339, 191, 369 )
+	rect = ( 160, 338, 192, 370 )
 	delay_color = ( 63, 63, 255 )
 	angular_velocity = 2
 }
 ShotData{
 	id = 135
-	rect = ( 193, 339, 223, 369 )
+	rect = ( 192, 338, 224, 370 )
 	delay_color = ( 255, 63, 255 )
 	angular_velocity = 2
 }
 ShotData{
 	id = 136
-	rect = ( 225, 339, 255, 369 )
+	rect = ( 225, 339, 256, 370 )
 	delay_color = ( 255, 255, 255 )
 	angular_velocity = 2
 }
@@ -885,84 +893,84 @@ ShotData{
 // è¨ìÅíe ------------------------------
 ShotData{
 	id = 137
-	rect = ( 1, 371, 21, 397 )
+	rect = ( 0, 370, 22, 398 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 138
-	rect = ( 23, 371, 43, 397 )
+	rect = ( 22, 370, 44, 398 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 139
-	rect = ( 45, 371, 65, 397 )
+	rect = ( 44, 370, 66, 398 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 140
-	rect = ( 67, 371, 87, 397 )
+	rect = ( 66, 370, 88, 398 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 141
-	rect = ( 89, 371, 109, 397 )
+	rect = ( 88, 370, 110, 398 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 142
-	rect = ( 111, 371, 131, 397 )
+	rect = ( 110, 370, 132, 398 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 143
-	rect = ( 133, 371, 153, 397 )
+	rect = ( 132, 370, 154, 398 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 144
-	rect = ( 155, 371, 175, 397 )
+	rect = ( 154, 370, 176, 398 )
 	delay_color = ( 255, 255, 255 )
 }
 
 // ÉiÉCÉtíe ----------------------------
 ShotData{
 	id = 145
-	rect = ( 1, 399, 21, 429 )
+	rect = ( 0, 398, 22, 430 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 146
-	rect = ( 23, 399, 43, 429 )
+	rect = ( 22, 398, 44, 430 )
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 147
-	rect = ( 45, 399, 65, 429 )
+	rect = ( 44, 398, 66, 430 )
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 148
-	rect = ( 67, 399, 87, 429 )
+	rect = ( 66, 398, 88, 430 )
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 149
-	rect = ( 89, 399, 109, 429 )
+	rect = ( 88, 398, 110, 430 )
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 150
-	rect = ( 111, 399, 131, 429 )
+	rect = ( 110, 398, 132, 430 )
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 151
-	rect = ( 133, 399, 153, 429 )
+	rect = ( 132, 398, 154, 430 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 152
-	rect = ( 155, 399, 175, 429 )
+	rect = ( 154, 398, 176, 430 )
 	delay_color = ( 255, 255, 255 )
 }
 
@@ -1018,74 +1026,74 @@ ShotData{
 	id = 162
 	delay_color = ( 255, 63, 63 )
 	AnimationData{
-		animation_data = ( 4, 1, 461, 19, 491 )
-		animation_data = ( 4, 21, 461, 39, 491 )
-		animation_data = ( 4, 41, 461, 59, 491 )
+		animation_data = ( 4, 0, 460, 20, 492 )
+		animation_data = ( 4, 20, 460, 40, 492 )
+		animation_data = ( 4, 40, 460, 60, 492 )
 	}
 }
 ShotData{
 	id = 163
 	delay_color = ( 63, 63, 255 )
 	AnimationData{
-		animation_data = ( 4, 61, 461, 79, 491 )
-		animation_data = ( 4, 81, 461, 99, 491 )
-		animation_data = ( 4, 101, 461, 119, 491 )
+		animation_data = ( 4, 60, 460, 80, 492 )
+		animation_data = ( 4, 80, 460, 100, 492 )
+		animation_data = ( 4, 100, 460, 120, 492 )
 	}
 }
 
 // ë≤ìÉîkíe ----------------------------
 ShotData{
 	id = 164
-	rect = ( 121, 461, 135, 491 )
+	rect = ( 120, 460, 134, 492 )
 	delay_color = ( 255, 127, 63 )
 }
 
 // ëÂíe --------------------------------
 ShotData{
 	id = 165
-	rect = ( 321, 1, 383, 63 )
+	rect = ( 320, 0, 384, 64 )
 	render = ADD
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 166
-	rect = ( 449, 65, 511, 127 )
+	rect = ( 448, 64, 512, 128 )
 	render = ADD
 	delay_color = ( 255, 127, 63 )
 }
 ShotData{
 	id = 167
-	rect = ( 321, 65, 383, 127 )
+	rect = ( 320, 64, 384, 128 )
 	render = ADD
 	delay_color = ( 255, 255, 63 )
 }
 ShotData{
 	id = 168
-	rect = ( 385, 1, 447, 63 )
+	rect = ( 384, 0, 448, 64 )
 	render = ADD
 	delay_color = ( 63, 255, 63 )
 }
 ShotData{
 	id = 169
-	rect = ( 385, 65, 447, 127 )
+	rect = ( 384, 64, 448, 128 )
 	render = ADD
 	delay_color = ( 63, 255, 255 )
 }
 ShotData{
 	id = 170
-	rect = ( 449, 1, 511, 63 )
+	rect = ( 448, 0, 512, 64 )
 	render = ADD
 	delay_color = ( 63, 63, 255 )
 }
 ShotData{
 	id = 171
-	rect = ( 257, 65, 319, 127 )
+	rect = ( 256, 64, 320, 128 )
 	render = ADD
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 172
-	rect = ( 257, 1, 319, 63 )
+	rect = ( 256, 0, 320, 64 )
 	render = ADD
 	delay_color = ( 255, 255, 255 )
 }
@@ -1093,245 +1101,245 @@ ShotData{
 // îΩì]è¨íe ----------------------------
 ShotData{
 	id = 173
-	rect = ( 257, 129, 273, 145 )
+	rect = ( 256, 128, 273, 145 )
 	delay_color = ( 255, 255, 255 )
 }
 ShotData{
 	id = 174
-	rect = ( 275, 129, 291, 145 )
+	rect = ( 274, 128, 291, 145 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 175
-	rect = ( 293, 129, 309, 145 )
+	rect = ( 292, 128, 309, 145 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 176
-	rect = ( 311, 129, 327, 145 )
+	rect = ( 310, 128, 327, 145 )
 	delay_color = ( 63, 63, 255 )
 }
 
 // îΩì]ògè¨íe --------------------------
 ShotData{
 	id = 177
-	rect = ( 257, 147, 275, 165 )
+	rect = ( 256, 146, 275, 165 )
 	delay_color = ( 255, 255, 255 )
 }
 ShotData{
 	id = 178
-	rect = ( 277, 147, 295, 165 )
+	rect = ( 276, 146, 295, 165 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 179
-	rect = ( 297, 147, 315, 165 )
+	rect = ( 296, 146, 315, 165 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 180
-	rect = ( 317, 147, 335, 165 )
+	rect = ( 316, 146, 335, 165 )
 	delay_color = ( 63, 63, 255 )
 }
 
 // îΩì]íÜíe ----------------------------
 ShotData{
 	id = 181
-	rect = ( 257, 167, 285, 195 )
+	rect = ( 256, 166, 285, 195 )
 	delay_color = ( 255, 255, 255 )
 }
 ShotData{
 	id = 182
-	rect = ( 287, 167, 315, 195 )
+	rect = ( 286, 166, 315, 195 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 183
-	rect = ( 317, 167, 345, 195 )
+	rect = ( 316, 166, 345, 195 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 184
-	rect = ( 347, 167, 375, 195 )
+	rect = ( 346, 166, 375, 195 )
 	delay_color = ( 63, 63, 255 )
 }
 
 // îΩì]êjíe ----------------------------
 ShotData{
 	id = 185
-	rect = ( 257, 197, 265, 215 )
+	rect = ( 256, 196, 265, 216 )
 	delay_color = ( 255, 255, 255 )
 }
 ShotData{
 	id = 186
-	rect = ( 267, 197, 275, 215 )
+	rect = ( 266, 196, 275, 216 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 187
-	rect = ( 277, 197, 285, 215 )
+	rect = ( 276, 196, 285, 216 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 188
-	rect = ( 287, 197, 295, 215 )
+	rect = ( 286, 196, 295, 216 )
 	delay_color = ( 63, 63, 255 )
 }
 
 // îΩì]ïƒó±íe --------------------------
 ShotData{
 	id = 189
-	rect = ( 257, 217, 267, 233 )
+	rect = ( 256, 216, 267, 234 )
 	delay_color = ( 255, 255, 255 )
 }
 ShotData{
 	id = 190
-	rect = ( 269, 217, 279, 233 )
+	rect = ( 268, 216, 279, 234 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 191
-	rect = ( 281, 217, 291, 233 )
+	rect = ( 280, 216, 291, 234 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 192
-	rect = ( 293, 217, 303, 233 )
+	rect = ( 292, 216, 303, 234 )
 	delay_color = ( 63, 63, 255 )
 }
 
 // îΩì]ïXâÚíe --------------------------
 ShotData{
 	id = 193
-	rect = ( 257, 235, 267, 253 )
+	rect = ( 256, 234, 267, 254 )
 	delay_color = ( 255, 255, 255 )
 }
 ShotData{
 	id = 194
-	rect = ( 269, 235, 279, 253 )
+	rect = ( 268, 234, 279, 254 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 195
-	rect = ( 281, 235, 291, 253 )
+	rect = ( 280, 234, 291, 254 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 196
-	rect = ( 293, 235, 303, 253 )
+	rect = ( 292, 234, 303, 254 )
 	delay_color = ( 63, 63, 255 )
 }
 
 // îΩì]ç¿ñÚíe --------------------------
 ShotData{
 	id = 197
-	rect = ( 257, 255, 267, 273 )
+	rect = ( 256, 254, 267, 274 )
 	delay_color = ( 255, 255, 255 )
 }
 ShotData{
 	id = 198
-	rect = ( 269, 255, 279, 273 )
+	rect = ( 268, 254, 279, 274 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 199
-	rect = ( 281, 255, 291, 273 )
+	rect = ( 280, 254, 291, 274 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 200
-	rect = ( 293, 255, 303, 273 )
+	rect = ( 292, 254, 303, 274 )
 	delay_color = ( 63, 63, 255 )
 }
 
 // îΩì]ëêóöíe --------------------------
 ShotData{
 	id = 201
-	rect = ( 257, 275, 273, 301 )
+	rect = ( 256, 274, 273, 302 )
 	delay_color = ( 255, 255, 255 )
 }
 ShotData{
 	id = 202
-	rect = ( 275, 275, 291, 301 )
+	rect = ( 274, 274, 291, 302 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 203
-	rect = ( 293, 275, 309, 301 )
+	rect = ( 292, 274, 309, 302 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 204
-	rect = ( 311, 275, 327, 301 )
+	rect = ( 310, 274, 327, 302 )
 	delay_color = ( 63, 63, 255 )
 }
 
 // îΩì]í±íe ----------------------------
 ShotData{
 	id = 205
-	rect = ( 385, 129, 413, 157 )
+	rect = ( 384, 128, 414, 158 )
 	delay_color = ( 255, 255, 255 )
 }
 ShotData{
 	id = 206
-	rect = ( 415, 129, 443, 157 )
+	rect = ( 414, 128, 444, 158 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 207
-	rect = ( 445, 129, 473, 157 )
+	rect = ( 444, 128, 474, 158 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 208
-	rect = ( 475, 129, 503, 157 )
+	rect = ( 474, 128, 504, 158 )
 	delay_color = ( 63, 63, 255 )
 }
 
 // îΩì]åıíe ----------------------------
 ShotData{
 	id = 209
-	rect = ( 385, 159, 411, 185 )
+	rect = ( 384, 158, 411, 185 )
 	delay_color = ( 255, 255, 255 )
 }
 ShotData{
 	id = 210
-	rect = ( 413, 159, 439, 185 )
+	rect = ( 412, 158, 439, 185 )
 	delay_color = ( 255, 63, 63 )
 }
 ShotData{
 	id = 211
-	rect = ( 441, 159, 467, 185 )
+	rect = ( 440, 158, 467, 185 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 212
-	rect = ( 469, 159, 495, 185 )
+	rect = ( 468, 158, 495, 185 )
 	delay_color = ( 63, 63, 255 )
 }
 
 // îΩì]è¨êØíe --------------------------
 ShotData{
 	id = 213
-	rect = ( 385, 187, 403, 205 )
+	rect = ( 384, 186, 403, 206 )
 	delay_color = ( 255, 255, 255 )
 	angular_velocity = -3
 }
 ShotData{
 	id = 214
-	rect = ( 405, 187, 423, 205 )
+	rect = ( 404, 186, 423, 206 )
 	delay_color = ( 255, 63, 63 )
 	angular_velocity = -3
 }
 ShotData{
 	id = 215
-	rect = ( 425, 187, 443, 205 )
+	rect = ( 424, 186, 443, 206 )
 	delay_color = ( 255, 63, 255 )
 	angular_velocity = -3
 }
 ShotData{
 	id = 216
-	rect = ( 445, 187, 463, 205 )
+	rect = ( 444, 186, 463, 206 )
 	delay_color = ( 63, 63, 255 )
 	angular_velocity = -3
 }
@@ -1339,25 +1347,25 @@ ShotData{
 // îΩì]ëÂêØíe --------------------------
 ShotData{
 	id = 217
-	rect = ( 385, 207, 415, 237 )
+	rect = ( 384, 206, 416, 238 )
 	delay_color = ( 255, 255, 255 )
 	angular_velocity = 2
 }
 ShotData{
 	id = 218
-	rect = ( 417, 207, 447, 237 )
+	rect = ( 416, 206, 448, 238 )
 	delay_color = ( 255, 63, 63 )
 	angular_velocity = 2
 }
 ShotData{
 	id = 219
-	rect = ( 449, 207, 479, 237 )
+	rect = ( 448, 206, 480, 238 )
 	delay_color = ( 255, 63, 255 )
 	angular_velocity = 2
 }
 ShotData{
 	id = 220
-	rect = ( 481, 207, 511, 237 )
+	rect = ( 480, 206, 512, 238 )
 	delay_color = ( 63, 63, 255 )
 	angular_velocity = 2
 }
@@ -1375,19 +1383,19 @@ ShotData{
 }
 ShotData{
 	id = 223
-	rect = ( 437, 239, 451, 267 )
+	rect = ( 437, 239, 461, 267 )
 	delay_color = ( 255, 63, 255 )
 }
 ShotData{
 	id = 224
-	rect = ( 453, 239, 477, 267 )
+	rect = ( 463, 239, 487, 267 )
 	delay_color = ( 63, 63, 255 )
 }
 
 // ìVãÁíe ------------------------------
 ShotData{
 	id = 254
-	rect = ( 481, 385, 511, 511 )
+	rect = ( 480, 384, 511, 512 )
 	render = ADD
 	delay_color = ( 255, 255, 255 )
 }

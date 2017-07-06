@@ -1,73 +1,145 @@
-script_enemy_main
-{
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 2d(毛玉妖精雑魚)
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
-#include_function ".\INCLUDE\Enemy.dnh"
+
+//////////////////////////////////////////////////////////////////////
+//	スクリプトここから
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
 
 
-//変数宣言--------------------------------------
-	let count=0;
-	let Level = GetCommonDataDefault( "Level", 1 );
-//タスクの作成----------------------------------
+//////////////////////////////////////////////////////////////////////
+//	THCELをインクルード
+//	(FLAN/THCELへのインクルードはTHCELが勝手にやってくれます)
+//////////////////////////////////////////////////////////////////////
 
-task MainAction()
-{
-	yield;
-	_Wait(int(rand(10,50)));
-	let base=rand(0,360);
-	while(1)
-	{
-		let angle=-180;
-		let i=0;
-		while(angle<180)
-		{
-			CreateShotA(0,GetX(),GetY(),5);
-			SetShotDataA(0,0,(0.2+0.3*(i%2))*[0.5,1,1.5,2][Level],base+angle,0,-0.0002,0,PURPLE12);
-			SetShotDataA(0,70,NULL,GetAngleToPlayer(),0,0.07,[1,1.5,2,3][Level],PURPLE04);
-			FireShot(0);
-			angle+=6;
-			i++;
+#include_function ".\INCLUDE\Zako.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	/**	デフォルトアイテムの落下量を設定します。 */
+	ENEMY_ITEMEX_NUM_DEFAULT = 1;
+	/**	被弾判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_A = 13;
+	/**	接触判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_B = 8;
+	/**	onMainLoopへ処理をまわさないよう設定します。(まわしても何の処理も無い) */
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵の移動を管理するタスクです。
+	*
+	*	@param nLevel レベル(0～3)
+	*/
+	task DoMove( let nLevel ){
+		SetMovePositionHermite([GetCenterX()-70,GetCenterX+70][GetX<GetCenterX()],GetClipMaxY()+80,1500,GetAngle(),2500,90,250);
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵固有のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nArgv, let nLevel ){
+		DoMove( nLevel );
+		let Speed = [0.5,rand(0,1),rand(0,1),rand(0,1.5)][nLevel];
+		let wideAngle = [rand(-1,1),rand(-5,5),rand(-15,15),rand(-30,30)][nLevel];
+		__Wait(130+int(rand(0,20)));
+		loop([1,3,7,15][nLevel]){
+			GravityShot(
+				GetX(),
+				GetY(),
+				Speed,
+				GetAngleToPlayer(),
+				0.02,
+				GetAngleToPlayer()+wideAngle,
+				[US_SCALE_ORANGE,US_SCALE_YELLOW][int(rand(0,2))],
+				10
+			);
 		}
-		_Wait([999,200,80,60][Level]);
+		PlaySEEx(seShot1);
 	}
-}
-task SubAction01()
-{
-	yield;
-	let XX=GetX+rand(-100,100);
-	SetMovePositionHermite(XX,GetClipMinY()-50,1500,atan2(GetCenterY()-GetY(),GetCenterX()-GetX()),300,-90,250);
-}
 
-//実行部分---------------------------------------
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( let nArgv, let nLevel ){
+//		CreateDebugWindow();
+		SetLife( 12 );
+	}
 
-	@Initialize
-	{
-		SetLife(30);
-		MainAction();
-		SubAction01();
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	}
-	
-	@MainLoop
-	{
-		Gone();
-		Deletemine();
-		yield;
-		count++;
-		//敵画像代わり------------------------------------
-		if(int(count/2)==count/2)
-		{
-			CreateShotA(0,GetX(),GetY(),0);
-			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
-			SetShotKillTime(0,2);
-			FireShot(0);
-		}
-		//------------------------------------------------
-		Collision( 20, 8 );
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	}
-	@DrawLoop
-	{
-	}
-	@Finalize
-	{
-		DropItem( 1 , 20 );
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		DrawRKedama(RECT_R_KEDAMA_WHITE,nCount)
 	}
 }

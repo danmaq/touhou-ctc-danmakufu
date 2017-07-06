@@ -1,0 +1,76 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	共通処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	該当スクリプトの共通初期化処理です。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*
+*	@param bESSInitialize 下位初期化処理を呼ぶかどうか
+*/
+function __FlanCommonEnemyShotInitialize( let bESSInitialize ){
+	if( bESSInitialize ){ __FlanCommonESSInitialize(); }
+	__FlanCommonEnemyShotMainLoop();
+}
+
+/**
+*	該当スクリプトの共通メインループ処理です。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+task __FlanCommonEnemyShotMainLoop(){
+	loop{
+		yield;
+		let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+		if( !FLAN_ESS_NOCALL_MAINLOOP ){ onMainLoop( m_vFlanArgv, m_nFlanLevel, m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase ); }
+	}
+}
+
+/**
+*	該当スクリプトの共通終了処理です。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+function __FlanCommonEnemyShotFinalize(){
+	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+	onFinalize( m_vFlanArgv, m_nFlanLevel, m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase );
+}
+
+/**
+*	該当スクリプトの共通絵画処理です。
+*	注意:自動的に内部から呼ばれますので直接呼び出すことは通常ありません。
+*/
+function __FlanCommonEnemyShotDrawLoop(){
+	if( !FLAN_ESS_NOCALL_DRAWLOOP ){
+		let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
+		onDrawLoop( m_vFlanArgv, m_nFlanLevel, m_nFlanCount, anStackData[ 0 ], m_nFlanPhaseCount, m_nFlanPrevPhase );
+	}
+}

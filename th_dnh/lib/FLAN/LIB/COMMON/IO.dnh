@@ -1,0 +1,71 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(原則書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ロード関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**	配列にある画像ファイルを一気に読み出します。
+*	@param aszFileList 複数画像ファイル名からなる配列
+*/
+function LoadGraphicList( let aszFileList ){ ascent( let i in 0..length( aszFileList ) ){ LoadGraphic( aszFileList[ i ] ); } }
+
+/**	配列にある効果音ファイルを一気に読み出します。
+*	@param aszFileList 複数効果音ファイル名からなる配列
+*/
+function LoadSEList( let aszFileList ){ ascent( let i in 0..length( aszFileList ) ){ LoadSE( aszFileList[ i ] ); } }
+
+/**	LoadGraphic/SEListのラッパー。
+*	@param aszGraphicFileList 複数画像ファイル名からなる配列
+*	@param aszSEFileList 複数効果音ファイル名からなる配列
+*/
+function LoadResource( let aszGraphicFileList, let aszSEFileList ){
+	LoadGraphicList( aszGraphicFileList );
+	LoadSEList( aszSEFileList );
+}
+
+/**	配列にある画像ファイルを一気にメモリ上から解放します。
+*	@param aszFileList 複数画像ファイル名からなる配列
+*/
+function DeleteGraphicList( let aszFileList ){ ascent( let i in 0..length( aszFileList ) ){ DeleteGraphic( aszFileList[ i ] ); } }
+
+/**	配列にある効果音ファイルを一気にメモリ上から解放します。
+*	@param aszFileList 複数効果音ファイル名からなる配列
+*/
+function DeleteSEList( let aszFileList ){ ascent( let i in 0..length( aszFileList ) ){ DeleteSE( aszFileList[ i ] ); } }
+
+/**	DeleteGraphic/SEListのラッパー。
+*	@param aszGraphicFileList 複数画像ファイル名からなる配列
+*	@param aszSEFileList 複数効果音ファイル名からなる配列
+*/
+function DeleteResource( let aszGraphicFileList, let aszSEFileList ){
+	DeleteGraphicList( aszGraphicFileList );
+	DeleteSEList( aszSEFileList );
+}

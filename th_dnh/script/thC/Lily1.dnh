@@ -1,314 +1,342 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ1C　中ボス　リリー・ホワイト　通常攻撃1
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Lily - 通常攻撃1]
+#Text[ステージ1C 中ボス
+リリー・ホワイト]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_enemy_main{
 
-	// 共通関数読み込み
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
 	#include_function ".\INCLUDE\Boss.dnh"
-	#include_function ".\_index_UserShot.dnh"
+	#include_function ".\INCLUDE\BOSS\Lily.dnh"
 
-	// 画像及び効果音ファイル
-	let userShot=shotAll;
-	let imgBoss=dotBossLily;
-	let imgList=[imgBoss];
-	let seList=[];
 
-	// 各種設定値（難易度等）
-	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
-	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
-	Debug_SetLevel;
-	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
-	let DamageRate=1;
-	if(!THC||Practice){DamageRate=0.25;}
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
 
-	let warpSt=0;
-	let warpFr=0;
-	let maxWarpFr=16;
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 80;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
 
-	// -------------------------------------------------------------------------
-	@Initialize{
 
-		// ボス初期設定（ファイルのロード他）
-		if(!THC){
-			LoadUserShotData(userShot);
-			seList=seList~seListEnemy;
-			SetX(cenX);
-			SetY(minY+80);
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** ダメージ率（スペルプラクティス及び単体テスト時に固くする） */
+	let m_nDamageRate = 1;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			SetPosition( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y );
+			m_nDamageRate = 0.3;
 		}
-		InitializeBoss(imgList,seList);
+		else{
+			if( m_nLevel < 2 ){ CheckTimer(); }
+			if( m_bStagePractice ){ m_nDamageRate = 0.3; }
+		}
+		SetTimer( 29 );
+		SetLife( 750 );
+		SetDamageRate( 75 * m_nDamageRate, 75 * m_nDamageRate );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 121 );
+		BehaviorBoss( ACT_STAND3 );
 
-		// スペルカード設定
-		SetTimer(46);
-		SetLife(625);
-		SetDamageRate(75*DamageRate,75*DamageRate);
-		SetShotAutoDeleteClip(32,32,32,32);
-
-		// ボス基本処理、メイン処理
-		CountTimer(seTimeOut);
-		BehaviorBoss(ACT_STAND3);
-		Main;
-
-	}
-
-	// -------------------------------------------------------------------------
-	@MainLoop{
-
-		// 当たり判定（自弾,体当たり）
-		if(warpSt!=2){Collision(32,24);}
-
-		// ダメージ音
-		PlayDamageSE(seDamage);
-
-		// カウンタ加算
-		m_nCount++;
-
-		yield;
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_KAEI + CL_TTH_CHARACTER_NAME_KAEI_LILY;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
 
 	}
 
-	// メイン処理 --------------------------------------------------------------
-	task Main{
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		SetInvincibility(122);
-		_Wait(62);
-
-		let assign=1;
-
-		loop{
-
-			// ワープ移動
-			let area=1;
-			if(GetPlayerX>GetX){area=2;}
-			warp(maxWarpFr+40,area);
-			_Wait(70);
-
-			// 花弾
-			SetAction(ACT_SHOT_A3_B,60);
-			_Wait(20);
-			FlowerShot(assign);
-			assign*=-1;
-			_Wait(90);
-
-			// ワープ移動
-			warp(maxWarpFr+40,0);
-			_Wait(70);
-
-			// 花弾
-			SetAction(ACT_SHOT_A3_B,60);
-			_Wait(20);
-			FlowerShot(assign);
-			assign*=-1;
-			_Wait(90);
-
-			// ワープ移動
-			area=3-area;
-			warp(maxWarpFr+40,area);
-			_Wait(70);
-
-			// 花弾
-			SetAction(ACT_SHOT_A3_B,60);
-			_Wait(20);
-			FlowerShot(assign);
-			assign*=-1;
-			_Wait(90);
-
-			// ワープ移動
-			warp(maxWarpFr+40,3);
-			_Wait(120);
-
-			// 対称弾＆移動
-			SymmetryShot;
-			let power=300;
-			let angle=90;
-			SetMovePositionHermite(cenX,minY+40,power,angle,power,-angle,120);
-			_Wait(180);
-
+		/** 当たり判定 */
+		if( m_nWarpStatus != 2 ){
+			FLAN_ENEMY_COLLISION_A = 32;
+			FLAN_ENEMY_COLLISION_B = 16;
+		}
+		else{
+			FLAN_ENEMY_COLLISION_A = 0;
+			FLAN_ENEMY_COLLISION_B = 0;
 		}
 
 	}
 
-	// 花弾 --------------------------------------------------------------------
-	task FlowerShot(assign){
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		let num=[3,5,8,10];
-		let way_=8;
-		let way=way_*6;
-		let baseSpeed0=0.8;
-		let maxSpeed0=2.4+0.6*Lv;
-		let numSpeed0=(maxSpeed0-baseSpeed0)/(num[Lv]-1);
-		let speed1=1.4+0.2*Lv;
-		let baseAngle=rand(0,360);
-		let numAngle=10*assign;
-		let wayAngle=360/way*assign;
-		let graphic=[US_SCALE_PURPLE,US_RICE_S_SKY];
-		let delay=15;
-		let fr1=90;
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice && m_nLevel < 2 ){ DropItemTHC( 6 ); }
 
-		PlaySE(seShot1);
-		ascent(let i in 0 .. num[Lv]){
-			let speed0=baseSpeed0+numSpeed0*i;
-			let addSpeed0=-speed0/fr1;
-			ascent(let j in 0 .. way){
-				let angle=baseAngle+numAngle*i+wayAngle*j;
-				CreateShotA(0,GetX,GetY,delay);
-				if(j%way_<way_/2){
-					SetShotDataA(0,0,speed0,angle,0,addSpeed0,0,graphic[0]);
-					SetShotDataA(0,fr1,speed1,angle,0,0,0,graphic[0]);
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		SetDrawDataLily();
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		__Wait( 60 );
+
+		let nAssign = 1;
+		let nWarpFrame = 50;
+
+		loop( 2 ){
+
+			/** ワープ移動 */
+			let nArea = 1;
+			if( GetPlayerX() > GetX() ){ nArea = 2; }
+			Warp( nWarpFrame, nArea );
+			__Wait( 70 );
+
+			/** 花弾 */
+			SetAction( ACT_SHOT_A3_B, 60 );
+			__Wait( 20 );
+			FlowerShot( nAssign );
+			nAssign = - nAssign;
+			__Wait( 90 );
+
+			/** ワープ移動 */
+			Warp( nWarpFrame, 0 );
+			__Wait( 70 );
+
+			/** 花弾 */
+			SetAction( ACT_SHOT_A3_B, 60 );
+			__Wait( 20 );
+			FlowerShot( nAssign );
+			nAssign = - nAssign;
+			__Wait( 90 );
+
+			/** ワープ移動 */
+			nArea = 3 - nArea;
+			Warp( nWarpFrame, nArea );
+			__Wait( 70 );
+
+			/** 花弾 */
+			SetAction( ACT_SHOT_A3_B, 60 );
+			__Wait( 20 );
+			FlowerShot( nAssign );
+			nAssign = - nAssign;
+			__Wait( 90 );
+
+			/** ワープ移動 */
+			Warp( nWarpFrame, 3 );
+			__Wait( 120 );
+
+			/** 対称弾＆移動 */
+			SetDamageRate( 100 * m_nDamageRate, 100 * m_nDamageRate );
+			SymmetryShot();
+			Move;
+			__Wait( 180 );
+
+		}
+
+	}
+
+	/**
+	*	花弾
+	*	@param nAssign	割り振り係数
+	*/
+	task FlowerShot( let nAssign ){
+
+		let nNum = [ 2, 3, 5, 7 ][ m_nLevel ];
+		let _nWay = 8;
+		let nWay = _nWay * 6;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed0 = 0.8;
+		if( m_nLevel == 0 ){ nSpeed0 = 1.2; }
+		let nNumSpeed0 = ( 2.4 + 0.2 * m_nLevel - nSpeed0 ) / ( nNum - 1 );
+		let nSpeed1 = 1.4 + 0.2 * m_nLevel;
+		let nAngle = rand( 0, 360 );
+		let nNumAngle = 10 * nAssign;
+		let nWayAngle = 360 / nWay * nAssign;
+		let anGraphic = [ US_SCALE_PURPLE, US_RICE_S_SKY ];
+		let nDelay = 15;
+		let nFrame = 90;
+
+		PlaySEEx( seShot1 );
+		PlaySEDelay( seKira1, nFrame + nDelay );
+		loop( nNum ){
+			let nAccelSpeed0 = - nSpeed0 / nFrame;
+			let _nAngle = nAngle;
+			ascent( let i in 0 .. nWay ){
+				CreateShotA( 0, nX, nY, nDelay );
+				if( i % _nWay < _nWay / 2 ){
+					SetShotDataA( 0, 0, nSpeed0, _nAngle, 0, nAccelSpeed0, 0, anGraphic[ 0 ] );
+					SetShotDataA( 0, nFrame, nSpeed1, _nAngle, 0, 0, 0, anGraphic[ 0 ] );
 				}
 				else{
-					SetShotDataA(0,0,speed0,angle,0,addSpeed0,0,graphic[1]);
-					SetShotDataA(0,fr1,speed1*0.75,angle,0,0,0,graphic[1]);
+					SetShotDataA( 0, 0, nSpeed0, _nAngle, 0, nAccelSpeed0, 0, anGraphic[ 1 ] );
+					SetShotDataA( 0, nFrame, nSpeed1 * 0.75, _nAngle, 0, 0, 0, anGraphic[ 1 ] );
 				}
-				FireShot(0);
+				FireShot( 0 );
+				_nAngle += nWayAngle;
 			}
+			nSpeed0 += nNumSpeed0;
+			nAngle += nNumAngle;
 		}
-		_Wait(fr1+delay);
-		PlaySE(seKira1);
 
 	}
 
-	// 対称弾 ------------------------------------------------------------------
+	/**
+	*	対称弾
+	*/
 	task SymmetryShot{
 
-		let num=30;
-		let way=[1,2,5,9];
-		let symX=[-18,18];
-		let minSpeed=0.8;
-		let maxSpeed=1.6+0.4*Lv;
-		let numSpeed=0.02;
-		let wideAngle=0;
-		let numAngle=(225-wideAngle)/(num-1);
-		let wayAngle=0;
-		if(Lv>0){wayAngle=wideAngle/(way[Lv]-1);}
-		let baseAngle=[0,180];
-		let graphic=[US_BALL_BS_RED,US_BALL_BS_BLUE];
-		let delay=5;
-		let assign=[1,-1];
-		let fr=4;
+		let nNum = 30;
+		let nFrame = 4;
+		let nWay = [ 1, 2, 3, 9 ][ m_nLevel ];
+		let anSymX = [ -18, 18 ];
+		let nMinSpeed = 0.8;
+		let nMaxSpeed = 1.6 + 0.4 * m_nLevel;
+		let nNumSpeed = 0.02;
+		let nWideAngle = 0;
+		let nNumAngle = ( 225 - nWideAngle ) / ( nNum - 1 );
+		let nWayAngle = 0;
+		if( m_nLevel > 0 ){ nWayAngle = nWideAngle / ( nWay - 1 ); }
+		let anBaseAngle = [ 0, 180 ];
+		let anGraphic = [ US_BALL_BS_RED, US_BALL_BS_BLUE ];
+		let nDelay = 5;
+		let anAssign = [ 1, -1 ];
 
-		SetAction(ACT_SHOT_B3,fr*num+30);
-		LoopPlaySE(seShot3,fr*num,6);
-		ascent(let i in 0 .. num){
-			let y=GetY-18;
-			ascent(let j in 0 .. way[Lv]){
-				let speed=rand(minSpeed,maxSpeed)+numSpeed*i;
-				ascent(let k in 0 .. 2){
-					let x=GetX+symX[k];
-					let angle=baseAngle[k]+(numAngle*i+wayAngle*j)*assign[k];
-					CreateShot01(x,y,speed,angle,graphic[k],delay);
+		SetAction( ACT_SHOT_B3, nFrame * nNum + 30 );
+		PlaySELoop( seShot3, nFrame * nNum, 6 );
+		ascent( let i in 0 .. nNum ){
+			let _nX = GetX();
+			let _nY = GetY() - 18;
+			ascent( let j in 0 .. nWay ){
+				let nSpeed = rand( nMinSpeed, nMaxSpeed ) + nNumSpeed * i;
+				ascent( let k in 0 .. 2 ){
+					let nX = _nX + anSymX[ k ];
+					let nAngle = anBaseAngle[ k ] + ( nNumAngle * i + nWayAngle * j ) * anAssign[ k ];
+					CreateShot01( nX, _nY, nSpeed, nAngle, anGraphic[ k ], nDelay );
 				}
 			}
-			_Wait(fr);
+			__Wait( nFrame );
 		}
 
 	}
 
-	// ワープ移動 --------------------------------------------------------------
-	task warp(let fr, let area){
+	/**
+	*	移動
+	*/
+	function Move{
 
-		// 消滅
-		warpSt=1;
-		warpFr=0;
-		loop(maxWarpFr){
-			yield;
-			warpFr++;
-		}
-
-		// 待ち
-		SetEnemyMarker(false);
-		warpSt=2;
-		SetX(cenX);
-		SetY(minY-400);
-		_Wait(fr-maxWarpFr*2);
-
-		// 出現
-		SetEnemyMarker(true);
-		alternative(area)
-		case(1){
-			SetX(rand(minX+90,cenX-60));
-			SetY(minY+100+rand(-20,20));
-		}
-		case(2){
-			SetX(rand(cenX+60,maxX-90));
-			SetY(minY+100+rand(-20,20));
-		}
-		case(3){
-			SetX(cenX);
-			SetY(cenY-60);
-		}
-		others{
-			SetX(cenX);
-			SetY(minY+100);
-		}
-		warpSt=3;
-		warpFr=0;
-		loop(maxWarpFr){
-			yield;
-			warpFr++;
-		}
-		warpSt=0;
-
-	}
-
-	// -------------------------------------------------------------------------
-	@Finalize{
-
-		// アイテム放出
-		if(THC&&!Practice&&Lv<2){DropItem(6,80);}
-
-		// ロードしたファイルを削除
-		DeleteGraphicList(imgList,seList);
-
-	}
-
-	// -------------------------------------------------------------------------
-	@DrawLoop{
-
-		// ボス描画
-		setDrawData;
-		DrawBoss(imgBoss);
-
-	}
-
-	// 描画倍率 ----------------------------------------------------------------
-	function setDrawData{
-
-		alternative(warpSt)
-		case(1){
-			let scX=1;
-			let scY=1;
-			let halfWarpFr=maxWarpFr/2;
-			if(warpFr<halfWarpFr){
-				scX=1+0.5/halfWarpFr*warpFr;
-				scY=1-0.9/halfWarpFr*warpFr;
-			}
-			else{
-				scX=1.5-1.5/halfWarpFr*(warpFr-halfWarpFr);
-				scY=0.1+2.4/halfWarpFr*(warpFr-halfWarpFr);
-			}
-			SetGraphicScale(scX,scY);
-			SetAlpha(255);
-		}
-		case(2){
-			SetGraphicScale(1,1);
-			SetAlpha(0);
-		}
-		case(3){
-			let scX=1;
-			let scY=1;
-			let halfWarpFr=maxWarpFr/2;
-			if(warpFr<halfWarpFr){
-				scX=1.5/halfWarpFr*warpFr;
-				scY=2.5-2.4/halfWarpFr*warpFr;
-			}
-			else{
-				scX=1.5-0.5/halfWarpFr*(warpFr-halfWarpFr);
-				scY=0.1+0.9/halfWarpFr*(warpFr-halfWarpFr);
-			}
-			SetGraphicScale(scX,scY);
-			SetAlpha(255);
-		}
-		others{
-			SetGraphicScale(1,1);
-			SetAlpha(255);
-		}
+		let nForce = 300;
+		let nAngle = 90;
+		SetMovePositionHermite( CL_CEN_X, CL_MIN_Y + 40, nForce, nAngle, nForce, -nAngle, 120 );
 
 	}
 

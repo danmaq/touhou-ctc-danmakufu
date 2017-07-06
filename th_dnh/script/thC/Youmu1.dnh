@@ -1,0 +1,367 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ4　中ボス　魂魄 妖夢　通常攻撃1
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Youmu - 通常攻撃1]
+#Text[ステージ4 中ボス
+魂魄 妖夢]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Youmu.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 100;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetPosition( CL_MIN_X - 140, CL_MIN_Y + 70 );
+		SetTimer( 32 );
+		SetLife( 2500 );
+		SetDamageRate( 100, 100 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		BehaviorBoss( ACT_STAND3 );
+		CheckIsOut();
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_YOUMU + CL_TTH_CHARACTER_NAME_YOUMU_YOUMU;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		let nAssign = 0;
+		let anAssign = [ - 1 , 1 ];
+		let anX = [ CL_MIN_X - 140, CL_MAX_X + 140, CL_CEN_X ];
+		let anY = [ CL_MIN_Y + 70, CL_MIN_Y + 100 ];
+
+		loop{
+
+			/** 移動＋連射扇状弾 */
+			let nFrame = 90;
+			SetAction( ACT_MOVE, nFrame * 2 );
+			SetMovePosition02( anX[ 1 - nAssign ], anY[ 0 ], nFrame );
+			RapidWideShot( nFrame, anAssign[ nAssign ] );
+			__Wait( nFrame );
+			SetMovePosition02( anX[ nAssign ], anY[ 0 ], nFrame );
+			RapidWideShot( nFrame, - anAssign[ nAssign ] );
+			__Wait( nFrame );
+
+			/** 移動 */
+			nFrame=30;
+			SetAction( ACT_MOVE, nFrame );
+			SlowMove( anX[ 2 ], anY[ 1 ], nFrame );
+			__Wait( nFrame );
+
+			/** 回転全方向扇状弾 */
+			SetAction( ACT_SHOT_A3_B, 10 );
+			__Wait( 10 );
+			SetAction( ACT_SHOT_B2_B, 185 );
+			__Wait( 5 );
+			RollRoundWideShot( 120, anAssign[ 1 - nAssign ] );
+			__Wait( 105 );
+
+			/** 交差扇状弾 */
+			CrossWideShot( 60, anAssign[ nAssign ] );
+			__Wait( 75 );
+			SetAction( ACT_SHOT_A3_C, 0 );
+			__Wait( 60 );
+
+			/** 移動 */
+			nFrame = 45;
+			SetAction( ACT_MOVE, nFrame );
+			SlowMove( anX[ 1 - nAssign ], anY[ 0 ], nFrame );
+			__Wait( nFrame );
+
+			nAssign = 1 - nAssign;
+
+		}
+
+	}
+
+	/**
+	*	連射扇状弾
+	*	@param nFrame	攻撃終了までのフレーム数
+	*	@param nAssign	割り振り係数
+	*/
+	task RapidWideShot( let nFrame, let nAssign ){
+
+		let _nFrame = 7 - m_nLevel;
+		let nWay = 6;
+		let nSpeed = 1.5;
+		let nWaySpeed = ( 3.5 + 0.3 * m_nLevel - nSpeed ) / ( nWay - 1 );
+		let nAngle = 90;
+		let nWayAngle = 7;
+		let nGraphic = US_SCALE_SKY;
+		let nDelay=5;
+
+		while( nFrame > 0 ){
+			let nX = GetX();
+			let nY = GetY();
+			SynchroWideShot( nX, nY, nSpeed, nWaySpeed, nAngle, nWayAngle, nWay, nDelay, nGraphic, nAssign );
+			PlaySEEx( seShot1 );
+			__Wait( _nFrame );
+			nFrame -= _nFrame;
+		}
+
+	}
+
+	/**
+	*	回転全方向扇状弾
+	*	@param nFrame	攻撃終了までのフレーム数
+	*	@param nAssign	割り振り係数
+	*/
+	task RollRoundWideShot( let nFrame, let nAssign ){
+
+		let _nFrame = 5;
+		let nRoundWay = 4;
+		let nWay = 8;
+		let nX = GetX();
+		let nY = GetY() + 8;
+		let nSpeed = 1.5;
+		let nWaySpeed = ( 3.5 + 0.3 * m_nLevel - nSpeed ) / ( nWay - 1 );
+		let nAngle = 90;
+		let nRoundWayAngle = 360 / nRoundWay;
+		let nWayAngle = 7;
+		let nAddAngle = 180 / 120 * nAssign;
+		let nGraphic = US_SCALE_GREEN;
+		let nDelay = 5;
+
+		while( nFrame > 0 ){
+			let _nAngle = nAngle;
+			loop( nRoundWay ){
+				SynchroWideShot( nX, nY, nSpeed, nWaySpeed, _nAngle, nWayAngle, nWay, nDelay, nGraphic, nAssign );
+				_nAngle += nRoundWayAngle;
+			}
+			PlaySEEx( seShot1 );
+			__Wait( _nFrame );
+			nAngle += nAddAngle * _nFrame;
+			nFrame -= _nFrame;
+		}
+
+	}
+
+	/**
+	*	交差扇状弾
+	*	@param nFrame	攻撃終了までのフレーム数
+	*	@param nAssign	割り振り係数
+	*/
+	task CrossWideShot( let nFrame, let nAssign ){
+
+		let _nFrame = 8;
+		let nWay = 8;
+		let nX = GetX();
+		let nY = GetY() + 8;
+		let nSpeed = 1.5;
+		let nWaySpeed = ( 3.5 + 0.3 * m_nLevel - nSpeed ) / ( nWay - 1 );
+		let nAngle = GetAngleToPlayer();
+		let nWideAngle = 75 - 15 * m_nLevel;
+		let nWayAngle = nWideAngle / ( nWay - 1 );
+		let nDelay = 5;
+
+		while( nFrame > 0 ){
+			let nGraphic = [ US_KNIFE_YOUMU_RED, US_KNIFE_YOUMU_BLUE ][ nAssign == - 1 ];
+			OrderWideShot( nX, nY, nSpeed, nWaySpeed, nAngle, nWayAngle, nWay, nDelay, nGraphic, nAssign );
+			PlaySEEx( seShot2 );
+			__Wait( _nFrame );
+			nAssign = - nAssign;
+			nFrame -= _nFrame;
+		}
+
+	}
+
+	/**
+	*	扇状弾（同時）
+	*	@param nX			弾源x座標
+	*	@param nY			弾源y座標
+	*	@param nSpeed		速度
+	*	@param nWaySpeed	way毎にプラスされる速度
+	*	@param nAngle		角度（中心）
+	*	@param nWayAngle	隣の弾との角度
+	*	@param nWay			way数
+	*	@param nDelay		遅延フレーム数
+	*	@param nGraphic		弾画像
+	*	@param nAssign		割り振り係数
+	*/
+	function SynchroWideShot( let nX, let nY, let nSpeed, let nWaySpeed, let nAngle, let nWayAngle, let nWay, let nDelay, let nGraphic, let nAssign){
+
+		nWayAngle *= nAssign;
+		nAngle -= nWayAngle * ( nWay - 1 ) / 2;
+		loop( nWay ){
+			CreateShot01( nX, nY, nSpeed, nAngle, nGraphic, nDelay );
+			nSpeed += nWaySpeed;
+			nAngle += nWayAngle;
+		}
+
+	}
+
+	/**
+	*	扇状弾（順次）
+	*	@param nX			弾源x座標
+	*	@param nY			弾源y座標
+	*	@param nSpeed		速度
+	*	@param nWaySpeed	way毎にプラスされる速度
+	*	@param nAngle		角度（中心）
+	*	@param nWayAngle	隣の弾との角度
+	*	@param nWay			way数
+	*	@param nDelay		遅延フレーム数
+	*	@param nGraphic		弾画像
+	*	@param nAssign		割り振り係数
+	*/
+	task OrderWideShot(let nX, let nY, let nSpeed, let nWaySpeed, let nAngle, let nWayAngle, let nWay, let nDelay, let nGraphic, let nAssign){
+
+		nWayAngle *= nAssign;
+		nAngle -= nWayAngle * ( nWay - 1 ) / 2;
+		loop( nWay ){
+			CreateShot01( nX, nY, nSpeed, nAngle, nGraphic, nDelay );
+			yield;
+			nSpeed += nWaySpeed;
+			nAngle += nWayAngle;
+		}
+
+	}
+
+	/**
+	*	画面外チェック
+	*/
+	task CheckIsOut{
+
+		loop{
+			if( IsOut( 0 ) ){ SetInvincibility( 2 ); }
+			yield;
+		}
+
+	}
+
+}

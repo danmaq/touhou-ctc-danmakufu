@@ -1,0 +1,219 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Extend-Library (extends FLAN)
+//
+//		※ステージスクリプト部です。
+//			それ以外からはインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	目標からの距離を示す要素番号です。 */
+let BG_FROM_DISTANCE = 0;
+/**	目標からの方位角を示す要素番号です。 */
+let BG_FROM_YAW = 1;
+/**	目標からの仰角を示す要素番号です。 */
+let BG_FROM_PITCH = 2;
+/**	目標のX座標を示す要素番号です。 */
+let BG_TO_X = 3;
+/**	目標のY座標を示す要素番号です。 */
+let BG_TO_Y = 4;
+/**	目標のZ座標を示す要素番号です。 */
+let BG_TO_Z = 5;
+/**	ステージカットインのフェード時間です。 */
+let STAGE_LOGO_FADETIME = 90;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	BGM再生開始時のカウント値が格納されます。 */
+let m_nStageStartMusicTime = 0;
+/**	BGM再生開始時の高精度タイマ値が格納されます。 */
+let m_nStageStartMusicSystemTime = 0;
+/**	現在再生されているBGMのインデックスが格納されます。 */
+let m_nStageMusicIndex = -1;
+/**	ステージカットイン画像のインデックスが格納されます。 */
+let m_nStageLogoIndex = -1;
+/**	ステージカットインの透明度が格納されます。 */
+let m_nStageLogoAlpha = 0;
+/**	ステージカットインの位置ズレが格納されます。 */
+let m_nStageLogoGap = 0;
+/**	ステージカットイン副文のフォントハンドルが格納されます。 */
+let m_nTTHStageLogoDescription = CL_TT_INVALID;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	BGM/SE制御
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	BGM再生キューを拾ってBGMを再生するループです。
+*/
+task PlayMusicLoop(){
+	loop{
+		__Wait( 10 );
+		let nIndex = PopCommonDataEx( CL_CDNS_TEMP, CL_CD_BGM_INDEX, -1 );
+		if( nIndex != -1 ){
+			if( GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGM, true ) ){
+				ascent( let i in 1..length( bgmList ) ){ DeleteMusic( bgmList[ i ] ); }
+				yield;
+				LoadMusic( bgmList[ nIndex ] );
+				__Wait( 30 );
+				PlayMusic( bgmList[ nIndex ] );
+			}
+			else{ __Wait( 31 ); }
+			m_nStageStartMusicTime = m_nFlanCount;
+			m_nStageStartMusicSystemTime = GetTime();
+			m_nStageMusicIndex = nIndex - 1;
+			AddCommonDataExArray( CL_CDNS_RESULT, CL_CD_HISTORY_BGM, nIndex, 1, length( bgmList ), 0 );
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ステージカットインを制御します。
+*/
+task StageLogo(){
+	let nScenario = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_STAGE_SCENARIO, 0 );
+	let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
+	m_nTTHStageLogoDescription = CL_TTHBASE_STAGE_DESCRIPTION + nStage - 1;
+	if( nStage >= 10 ){
+		m_nStageLogoIndex = nStage + 5;
+		m_nTTHStageLogoDescription = CL_TTHBASE_STAGE_DESCRIPTION + nStage - 10;
+	}
+	else if( nStage >= 4 ){ m_nStageLogoIndex = nStage + 8; }
+	else{ m_nStageLogoIndex = ( nStage - 1 ) * 4 + nScenario; }
+	ascent( let j in 0..STAGE_LOGO_FADETIME ){
+		m_nStageLogoGap = SlowDown( -12, 0, j, STAGE_LOGO_FADETIME );
+		m_nStageLogoAlpha = SlowDown( 0, 255, j, STAGE_LOGO_FADETIME );
+		yield;
+	}
+	__Wait( [ 160, 210 ][ nStage >= 4 ] );
+	ascent( let j in 0..STAGE_LOGO_FADETIME ){
+		m_nStageLogoGap = Accelerate( 0, 12, j, STAGE_LOGO_FADETIME );
+		m_nStageLogoAlpha = Accelerate( 255, 0, j, STAGE_LOGO_FADETIME );
+		yield;
+	}
+	m_nStageLogoIndex = -1;
+	m_nTTHStageLogoDescription = CL_TT_INVALID;
+}
+
+/**
+*	ステージカットインを絵画します。
+*/
+function DrawStageLogo(){
+	if( m_nStageLogoIndex == -1 ){ return; }
+	SetAlpha( m_nStageLogoAlpha );
+	__DrawChrRect( IMAGE_THC_STAGE_LOGO[ m_nStageLogoIndex ], GetCenterX() - 2, GetCenterY() + m_nStageLogoGap, 0, 0, 384, 512 );
+	DrawTexTextOnCache( m_nTTHStageLogoDescription, -2, -5, GetClipMinX() + 32 - m_nStageLogoGap, GetCenterY() - 64 );
+	SetAlpha( 255 );
+}
+
+/**
+*	書き込み可能テクスチャを生成します。
+*/
+function CreateWritableTexture(){
+	__CreateWritableTexture( IMAGE_CL_WRITABLE_NAME_LIST,		CL_CD_WRITABLE_TEXTURE_CREATED,			IMAGE_CL_WRITABLE_WIDTH,		IMAGE_CL_WRITABLE_WIDTH			);
+	__CreateWritableTexture( IMAGE_CL_WRITABLE_MID_NAME_LIST,	CL_CD_WRITABLE_TEXTURE_MID_CREATED,		IMAGE_CL_WRITABLE_MID_WIDTH,	IMAGE_CL_WRITABLE_MID_HEIGHT	);
+	__CreateWritableTexture( IMAGE_CL_WRITABLE_MINI_NAME_LIST,	CL_CD_WRITABLE_TEXTURE_MINI_CREATED,	IMAGE_CL_WRITABLE_MINI_WIDTH,	IMAGE_CL_WRITABLE_MINI_HEIGHT	);
+	ascent( let i in 0..length( IMAGE_CL_WRITABLE_MINI_NAME_LIST ) ){ m_abItemWritableTextureUsed = m_abItemWritableTextureUsed ~ [ !IsWritableTextureMiniCreated( i ) ]; }
+}
+
+/**
+*	書き込み可能テクスチャを生成します。
+*
+*	@param aszTextureNameList テクスチャ名
+*	@param szCDKey 生成結果格納先共通データのキー
+*	@param nWidth 幅
+*	@param nHeight 高さ
+*/
+function __CreateWritableTexture( let aszTextureNameList, let szCDKey, let nWidth, let nHeight ){
+	let abWritableTextureCreated = [];
+	ascent( let i in 0..length( aszTextureNameList ) ){
+		abWritableTextureCreated = abWritableTextureCreated ~ [ CreateRenderTarget( aszTextureNameList[ i ], nWidth, nHeight ) ];
+		ClearRenderTarget( aszTextureNameList[ i ] );
+	}
+	SetCommonDataEx( CL_CDNS_TEMP, szCDKey, abWritableTextureCreated );
+}
+
+/**
+*	画面をフェードイン/アウトさせます。
+*
+*	@param bFadeOut フェードアウトかどうか
+*	@param nInterval 効果が完結するまでのフレーム時間
+*/
+task ScreenFade( let bFadeOut, let nInterval ){
+	let anObj = CreateFillScreenEffectObject( IMAGE_CL_WHITE, IMAGE_THC_WHITE_FRAME );
+	ascent( let i in 0..nInterval ){
+		let nAlpha = Smooth( [ 255, 0 ][ bFadeOut ], [ 0, 255 ][ bFadeOut ], i, nInterval );
+		m_nFadeOutAlpha = Max( 240 - nAlpha, 0 );
+		SetFillScreenEffectObjectColor( anObj, nAlpha, 255, 255, 255 );
+		yield;
+	}
+	ascent( let i in 0..length( anObj ) ){ Obj_Delete( anObj[ i ] ); }
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	背景処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	背景フォグを設定します。
+*	但しフォグ設定が無効の場合設定しません。
+*	SetFogのラッパーです。
+*
+*	@param nDistStart フォグがかかり始める距離
+*	@param nDistEnd フォグがかかり終わる距離
+*	@param nColorR 赤輝度
+*	@param nColorG 緑輝度
+*	@param nColorB 青輝度
+*/
+function SetFogEx( let nDistStart, let nDistEnd, let nColorR, let nColorG, let nColorB ){
+	if( GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG_FOG, true ) ){ SetFog( nDistStart, nDistEnd, nColorR, nColorG, nColorB ); }
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	未分類
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	自機種別を取得します。
+*
+*	@return 対応する自機ID
+*/
+function GetPlayerID(){
+	alternative( GetPlayerScriptName() )
+	case( "1.dnh" ){ return PLAYER_A; }
+	case( "2.dnh" ){ return PLAYER_B; }
+	case( "3.dnh" ){ return PLAYER_C; }
+	case( "4.dnh" ){ return PLAYER_D; }
+	others{ return PLAYER_OTHER; }
+}

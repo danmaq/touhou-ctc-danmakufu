@@ -1,0 +1,374 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージEx　中ボス　伊吹 萃香　スペル2
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[SuikaA - スペル2]
+#Text[ステージEx 中ボス
+伊吹 萃香]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Suika.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 160;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 100;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		SetTimer( 62 );
+		SetLife( 500 );
+		SetDamageRate( 5, 5 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_EXPH + CL_TTH_CHARACTER_NAME_EXPH_SUIKA;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){ DropItemTHC( 24 ); }
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_EXTRA + CL_TTH_SPELL_EXPH_HALFWAY_2;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		/** 壁レーザー */
+		SetAction( ACT_SHOT_B5, 120 );
+		PlaySEEx( sePower );
+		Concentration01( 120 );
+		WallLaser( 1 );
+		WallLaser( - 1 );
+		__Wait( 120 );
+		PlaySEEx( seLaser2 );
+
+		/** 移動 */
+		FLAN_BOSS_HOME_Y = 80;
+		nFrame = 60;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 60 );
+		PlaySELoop( seShot3, 6000, 30 );
+
+		loop{
+
+			/** 移動 */
+			Move( 60 );
+			__Wait( 60 );
+
+			/** 扇状消去レーザー */
+			SetAction( ACT_SHOT_A5, 60 );
+			PlaySEEx( seKira2 );
+			Concentration01( 30 );
+			__Wait( 30 );
+			WideEraseLaser();
+			__Wait( 30 );
+			SetDamageRate( 16.5, 20 );
+
+		}
+
+	}
+
+	/**
+	*	壁レーザー
+	*	@param nAssign	割り振り係数
+	*/
+	task WallLaser( let nAssign ){
+
+		/** レーザー */
+		let nMaxLength = CL_CEN_X - CL_MIN_X + 30;
+		let nX = CL_CEN_X + nMaxLength * nAssign;
+		let nY = GetY();
+		let nWidth = 18;
+		let nGraphic = US_BEAM_RED;
+		let nDelay = 120;
+		let nAngle = 90 + 90 * nAssign;
+		let nAddLength = nMaxLength / nDelay;
+
+		CreateLaserA( 0, nX, nY, 0, nWidth, nGraphic, nDelay );
+		SetLaserDataA( 0, 0, nAngle, 0, nAddLength, 0, 0 );
+		if( nAssign == 1 ){
+			SetLaserDataA( 0, nDelay, NULL, 0, nMaxLength, 0, 0 );
+			SetLaserDataA( 0, nDelay + 1, NULL, 0, 0, 0, 0 );
+		}
+		else{
+			SetLaserDataA( 0, nDelay, NULL, 0, 0, 0, 0 );
+			SetShotKillTime( 0, nDelay + 1 );
+		}
+		FireShot( 0 );
+		__Wait( 180 );
+
+		/** 壁弾 */
+		loop{
+			WallShot( nX, nY, nMaxLength * 2, nAssign );
+			__Wait( 30 );
+		}
+
+	}
+
+	/**
+	*	壁弾
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nLength	発射源レーザー長さ
+	*	@param nAssign	割り振り係数
+	*/
+	task WallShot( let nX, let nY, let nLength, let nAssign ){
+
+		let nSpeed = 1.5;
+		let nAngle = 180 + 90 * nAssign;
+		let nRandAngle = 6;
+		let nGraphic = US_LIGHT_RED;
+		let nDelay = 5;
+		let nNum = 40;
+		let nShotX = - nLength / ( nNum - 1 ) * nAssign;
+
+		loop( nNum ){
+			let _nAngle = RandBlur( nRandAngle );
+			let _nSpeed = nSpeed / cos( _nAngle );
+			CreateShot01( nX, nY, _nSpeed, nAngle + _nAngle, nGraphic, nDelay );
+			nX += nShotX;
+		}
+
+	}
+
+	/**
+	*	扇状消去レーザー
+	*/
+	task WideEraseLaser(){
+
+		let nX = GetX();
+		let nY = GetY();
+		let nAngle = GetAngleToPlayer();
+		let anAngle = [ - 40, - 30, - 10, 0, 10, 30, 40 ];
+
+		PlaySEEx( seLaser2 );
+		ascent( let i in 0 .. 7 ){
+			EraseLaser( nX, nY, nAngle + anAngle[ i ] );
+		}
+
+	}
+
+	/**
+	*	消去レーザー
+	*	@param nX		レーザー源x座標
+	*	@param nY		レーザー源y座標
+	*	@param nAngle	角度
+	*/
+	task EraseLaser( let nX, let nY, let nAngle ){
+
+		let obj = Obj_Create( OBJ_LASER );
+		let nWidth = 20;
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetAngle( obj, nAngle );
+		ObjShot_SetGraphic( obj, US_BALL_M_A_SKY );
+		ObjLaser_SetLength( obj, 0 );
+		ObjLaser_SetWidth( obj, nWidth );
+		ObjLaser_SetSource( obj, false );
+
+		/** 弾消し */
+		let nSpeed = 14;
+		let nAddX = nSpeed * cos( nAngle );
+		let nAddY = nSpeed * sin( nAngle );
+		_Erase();
+
+		/** 伸びる */
+		let nLength = 0;
+		let nFrame = 20;
+		loop( nFrame ){
+			nLength += nSpeed;
+			ObjLaser_SetLength( obj, nLength );
+			yield;
+		}
+
+		/** 移動 */
+		while( !Obj_BeDeleted( obj ) ){
+			nX += nAddX;
+			nY += nAddY;
+			Obj_SetPosition( obj, nX, nY );
+			yield;
+		}
+
+		/** 弾消し */
+		task _Erase{
+			let nEraseR = 12;
+			let nAdjustX = - nEraseR * cos( nAngle );
+			let nAdjustY = - nEraseR * sin( nAngle );
+			yield;
+			while( !Obj_BeDeleted( obj ) ){
+				let _nX = ObjLaser_GetEndX( obj ) - nAdjustX;
+				let _nY = ObjLaser_GetEndY( obj ) - nAdjustY;
+				DeleteEnemyShotImmediatelyInCircle( SHOT, _nX, _nY, nEraseR );
+				yield;
+			}
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 60;
+		let nMaxMoveX = 80;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 20;
+
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

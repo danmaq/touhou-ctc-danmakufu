@@ -1,30 +1,70 @@
-	@Initialize
-	{	
-		SetLife(5);
-		SetDamageRateExDelay(0,15,10,1,1);
-		LightShadow;
-		MainAction();
-		SubAction01();
-		LoadUserShotData(shotAll);
 
+	/**
+	*	固有動作のタスクです。onInitialize()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+		MainAction( nLevel );
+		SubAction01( nLevel );
 	}
-	@MainLoop
-	{
-		//優先順位高
-		GoneEx(40);
-		Deletemine();
-		BehaviorShadow(seShadowHidden,seShadowSudden);
-		//優先順位中
-		CollisionShadow( 24,18 );
-		m_nCount++;
-		//優先順位低
-		scale=Smooth( 0,1,m_nCount,40 );
-		PlayDamageSE(seDamage);
-		yield;
-	}
-	@DrawLoop{_DrawShadow(SHADOW_S_WHITE,dotCircle6s,m_nCount*2,0.8*scale,0.5*scale);}
 
-	@Finalize{
-		DestructShadow( 40 );
-		DropPointSmall(1,1);
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( let nArgv, let nLevel ){
+		SetLife( SHADOW_LIFE );
+		SetDamageRateDelayEx( 100, 100, 30, 30, 3 );
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*	@param bIsAppear 具現化中かどうか
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase, let bIsAppear ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*	@param bIsAppear 具現化中かどうか
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase, let bIsAppear ){
+		if(!BeVanished()){DropItemPointSmallTHC( 1 );}
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*	@param bIsAppear 具現化中かどうか
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase, let bIsAppear ){
+		/** 使い魔描画 */
+		let nAngle = 2 * nCount;
+		let nScale = 0.6;
+		DrawShadow( SHADOW_IMAGE_6S, SHADOW_COLOR, nAngle, nScale, nScale );
 	}

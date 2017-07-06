@@ -1,114 +1,194 @@
-script_enemy_main
-{
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 2c(ギミック)
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
-#include_function ".\INCLUDE\Enemy.dnh"
+
+//////////////////////////////////////////////////////////////////////
+//	スクリプトここから
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
 
 
-//変数宣言--------------------------------------
-	let Level = GetCommonDataDefault( "Level", 1 );
-	SetCommonData("limit",250);
+//////////////////////////////////////////////////////////////////////
+//	THCELをインクルード
+//	(FLAN/THCELへのインクルードはTHCELが勝手にやってくれます)
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\Zako.dnh"
+#include_function ".\IMAGE\index_boss.dnh"
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	/**	デフォルトアイテムの落下量を設定します。 */
+	ENEMY_ITEMEX_NUM_DEFAULT = 0;
+	/**	被弾判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_A = 0;
+	/**	接触判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_B = 0;
+	/**	onMainLoopへ処理をまわさないよう設定します。(まわしても何の処理も無い) */
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+	FLAN_ESS_NOGONE = true;
+
+//////////////////////////////////////////////////////////////////////
+//	定数宣言
+//////////////////////////////////////////////////////////////////////
+
 	let x=0;
 	let y=0;
+	SetCommonDataEx( CL_CDNS_TEMP , "limit" , 250 );
 
-//タスクの作成----------------------------------
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数宣言
+//////////////////////////////////////////////////////////////////////
 
-task MainAction()
-{
-	yield;
-	SetShotDirectionType(ABSOLUTE);
-	_Wait(100);
-	Concentration01(80);
-	PlaySE(sePower2);
-	_Wait(80);
-	SetCommonData("SetX",GetCenterX());
-	SetCommonData("SetY",GetCenterY());
-	let angle=-180;
-	while(angle<180+40.6)
-	{
-		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),2,angle,0);
-		angle+=(12+1.4);
-		yield;
-	}
-	PlaySE(seShadow);
-	_Wait(200);
-	ascent(i in 0..300)
-	{
-		SetCommonData("limit",Smooth(250,[200,150,100,70][Level],i,300));
-		yield;
-	}
-	ascent(i in 0..300)
-	{
-		SetCommonData("SetX",Smooth(GetCenterX(),GetCenterX()/2,i,300));
-		SetCommonData("SetY",Smooth(GetCenterY(),GetCenterY()*1.5,i,300));
-		yield;
-	}
-	_Wait(200);
-	ascent(i in 0..300)
-	{
-		SetCommonData("SetX",Smooth(GetCenterX()/2,GetCenterX()*1.5,i,300));
-		yield;
-	}
-	_Wait(200);
-	ascent(i in 0..200)
-	{
-		SetCommonData("limit",Smooth([200,150,100,70][Level],[200,150,100,70][Level]/2,i,200));
-		yield;
-	}
-	ascent(i in 0..200)
-	{
-		SetCommonData("limit",Smooth([200,150,100,70][Level]/2,[200,150,100,70][Level]*0.66,i,200));
-		yield;
-	}
-	_Wait(200);
-	ascent(i in 0..300)
-	{
-		SetCommonData("SetX",Smooth(GetCenterX()*1.5,GetCenterX(),i,300));
-		SetCommonData("SetY",Smooth(GetCenterY()*1.5,GetCenterY(),i,300));
-		yield;
-	}
-	_Wait(600);
-	ascent(i in 0..100)
-	{
-		SetCommonData("limit",Smooth([200,150,100,70][Level],500,i,100));
-		yield;
+
+//////////////////////////////////////////////////////////////////////
+//	固有動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵の移動を管理するタスクです。
+	*
+	*	@param nLevel レベル(0～3)
+	*/
+	task DoMove( let nLevel ){
+		SetX(GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_X, GetCenterX() ));
+		SetY(GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, GetCenterY()/2 ));
+		__Wait(100);
+		SetMovePositionHermite(GetCenterX/2,GetClipMinY-50,200,45,300,-90,80);
+		__Wait(90);
+		SetX(-65535);
+		SetY(-65535);
 	}
 
-}
-task SubAction()
-{
-	yield;
-	SetX(GetCommonDataDefault( "Aya_X",GetCenterX() ));
-	SetY(GetCommonDataDefault( "Aya_Y",GetCenterY()/2 ));
-	_Wait(150);
-	SetMovePositionHermite(GetCenterX/2,GetClipMinY-50,200,45,300,-90,80);
-	_Wait(90);
-	SetX(-65535);
-	SetY(-65535);
-}
 
+//////////////////////////////////////////////////////////////////////
+//	共通動作実装部
+//////////////////////////////////////////////////////////////////////
 
+	/**
+	*	敵固有のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nArgv, let nLevel ){
+		DoMove( nLevel );
+		__Wait(50);
+		Concentration01(80);
+		PlaySEEx(sePower2);
+		__Wait(80);
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_X, GetPlayerX() );
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, GetPlayerY() );
+		let angle=-180;
+		while(angle<180+28){
+			CreateShotFromScript("Shadow",GetX(),GetY(),2,angle,0,0);
+			angle+=(16+1.4);
+			yield;
+		}
+		PlaySEEx(seShadow);
+		__Wait(200);
+		ascent(i in 0..300){
+			SetCommonDataEx( CL_CDNS_TEMP, "limit",Smooth(250,[200,170,120,100][nLevel],i,300));
+			yield;
+		}
+		let XX=GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_X, GetCenterX() );
+		let YY=GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, GetCenterY()/2 );
+		ascent(i in 0..300){
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_X, Smooth(XX,GetCenterX()/2,i,300) );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, Smooth(YY,GetCenterY()*1.5,i,300) );
+			yield;
+		}
+		__Wait(150);
+		ascent(i in 0..300){
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_X, Smooth(GetCenterX()/2,GetCenterX()*1.5,i,300) );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, GetCenterY()*1.5 );
+			yield;
+		}
+		__Wait(150);
+		ascent(i in 0..200){
+			SetCommonDataEx( CL_CDNS_TEMP, "limit",Smooth([200,170,120,100][nLevel],[200,170,120,100][nLevel]*0.7,i,200));
+			yield;
+		}
+		__Wait(150);
+		ascent(i in 0..300){
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_X, Smooth(GetCenterX()*1.5,GetCenterX(),i,300) );
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, Smooth(GetCenterY()*1.5,GetCenterY(),i,300) );
+			yield;
+		}
+		__Wait(200);
+		ascent(i in 0..100){
+			SetCommonDataEx( CL_CDNS_TEMP, "limit",Smooth([200,150,100,70][nLevel],500,i,100));
+			yield;
+		}
+		__Wait(30);
+		VanishEnemy();
+	}
 
-
-
-//実行部分---------------------------------------
-
-	@Initialize
-	{
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( let nArgv, let nLevel ){
+//		CreateDebugWindow();
+		CheckExplosion01Ex;
 		LoadGraphic(dotBossAya);
-		SetLife(1);
-		MainAction();
-		SubAction();
+		SetLife( 3 );
 	}
-	@MainLoop
-	{
-		Deletemine();
-		yield;
-		m_nCount++;
 
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	}
-	@DrawLoop
-	{
-		if(m_nCount<150){
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		EndExplosion01Ex;
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_X );
+		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_Y );
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		if(nCount<150){
 			x=0;y=0;
 		}
 		else{
@@ -117,81 +197,169 @@ task SubAction()
 		let sLength=128;
 		SetAlpha(255);
 		SetColor(255,255,255);
-		_DrawChrRectSqr(dotBossAya,GetX,GetY,x,y,sLength);
+		__DrawChrRect(dotBossAya,GetX,GetY,x,y,sLength,sLength);
 	}
-	@Finalize{}
+
 }
 
 
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	使い魔
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
-//使い魔--------------------------------------
 
-script_enemy t_ma_01
-{
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
 
-#include_function ".\INCLUDE\Shadow.dnh"
-#include_function ".\_index_UserShot.dnh"
+script_shot Shadow{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Shot.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
 
 	let angle=GetAngle();
-	let limit=GetCommonData("limit");
+	let limit=GetCommonDataEx( CL_CDNS_TEMP, "limit");
 
-task MainAction()
-{
-	yield;
-	_Wait(200);
-	let i=int(rand(0,80));
-	while(1)
-	{
-		CreateShot01(GetX(),GetY(),3,angle+Smooth(-90,90,i,145),US_NEEDLE_SKY,10);
-		CreateShot01(GetX(),GetY(),3,angle+Smooth(90,-90,i,145),US_NEEDLE_SKY,10);
-		PlaySE(seShot3);
-		i++;
-		if(i==146){i=0;}
-		loop(7){yield;}
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		m_bShadow = true;
+		m_bShadowLighting = false;
+
 	}
-}
 
-task SubAction()
-{
-	yield;
-	SetMovePositionHermite(GetCenterX()+limit*cos(angle),GetCenterY()+limit*sin(angle),200,0,300,angle,130);
-	_Wait(130);
-	while(1)
-	{
-		SetX(GetCommonData("SetX")+limit*cos(angle));
-		SetY(GetCommonData("SetY")+limit*sin(angle));
-		angle+=1.4;
-		if(limit>250){
-			DropItem( 1 , 20 );
-			VanishEnemy();
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		SetBombResist();
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 魔法陣描画 */
+		let nShadowImage = SHADOW_IMAGE_6S;
+		let nShadowColor = SHADOW_COLOR_WHITE;
+		let nAngle = 2 * m_nFlanCount;
+		let nScale = 0.8;
+		DrawShadowEx( nShadowImage, nShadowColor, nAngle, nScale );
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+		DoMove( nLevel );
+		__Wait(200);
+		let i=int(rand(0,80));
+		while(1){
+			CreateShot01(GetX(),GetY(),5,angle+Smooth(-90,90,i,145),US_NEEDLE_SKY,10);
+			CreateShot01(GetX(),GetY(),5,angle+Smooth(90,-90,i,145),US_NEEDLE_SKY,10);
+			PlaySEEx(seShot3);
+			i++;
+			if(i==146){i=0;}
+			loop(7){yield;}
 		}
-		yield;
 	}
-}
 
-	@Initialize
-	{	
-		SetLife(1);
-		MainAction();
-		SubAction();
-		LoadUserShotData(shotAll);
+	/**
+	*	敵の移動を管理するタスクです。
+	*
+	*	@param nLevel レベル(0～3)
+	*/
+	task DoMove( let nLevel ){
+		let count=0;
+		SetMovePositionHermite(GetPlayerX()+limit*cos(angle),GetPlayerY()+limit*sin(angle),200,0,300,angle,110);
+		__Wait(110);
+		while(1){
+			limit=GetCommonDataEx( CL_CDNS_TEMP, "limit");
+			SetX(GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_X, GetCenterX() )+limit*cos(angle));
+			SetY(GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, GetCenterY()/2 )+limit*sin(angle));
+			angle+=1.4;
+			if(limit>201 && count > 600){
+				DropItemPowerBigTHC( 1 );
+				DropItemTHC( 2 );
+				Explosion01Ex(GetX(),GetY(),5,0.2,15);
+				End();
+			}
+			yield;
+			count++;
+		}
 	}
-	@MainLoop
-	{
-		yield;
-		Deletemine();
-		m_nCount++;
-		limit=GetCommonData("limit");
-	}
-	@DrawLoop
-	{
-		SetTexture(dotCircle6s);
-		SetGraphicRect(0,0,64,64);
-		SetGraphicScale(0.8,0.8);
-		SetColor(255,255,255);
-		SetGraphicAngle(0,0,m_nCount*2);
-		DrawGraphic(GetX,GetY);
-	}
-	@Finalize{DropItem( 1 , 20 );}
+
+
+
 
 }

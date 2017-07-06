@@ -1,891 +1,601 @@
 //////////////////////////////////////////////////////////////////////
 //====================================================================
 //
-//	ボススクリプト本体専用インクルードライブラリ
+//	THC Extend-Library (extends FLAN)
 //
-//		※ボススクリプト本体以外からは使用出来ません。
+//		※ボススクリプト部です。
 //			それ以外からはインクルードしないでください。
-//		※使い魔スクリプトからも使用出来ません。
+//		※ボスの子スクリプトや使い魔にも使用できません。
+//			それぞれZako.dnh/Shadow.dnhを使用してください。
 //
 //====================================================================
 //////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
+//	インデックスをインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function "lib\THCCL\IMAGE\index.dnh"
+#include_function ".\SOUND\index.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
 //	下位ライブラリをインクルード
-//--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-#include_function ".\INCLUDE\Enemy.dnh"
-
-
-//////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	定数
-//--------------------------------------------------------------------
-//////////////////////////////////////////////////////////////////////
-
-//　アクション定数
-let ACT_STAND3 = 0;		//　立ち＋まばたき（3カットアニメ）
-let ACT_STAND4 = 1;		//　立ち＋まばたき（4カットアニメ）
-let ACT_MOVE = 2;		//　移動（自動で左右判定）
-let ACT_MOVE_L = 3;		//　左移動
-let ACT_MOVE_R = 4;		//　右移動
-let ACT_SHOT_A3 = 5;	//　弾幕A（3カットアニメ）
-let ACT_SHOT_A3_B = 6;	//　弾幕A（3カットアニメ-B）
-let ACT_SHOT_A4 = 7;	//　弾幕A（4カットアニメ）
-let ACT_SHOT_A5 = 8;	//　弾幕A（5カットアニメ）
-let ACT_SHOT_B3 = 9;	//　弾幕B（3カットアニメ）
-let ACT_SHOT_B3_B = 10;	//　弾幕B（3カットアニメ-B）
-let ACT_SHOT_B5 = 11;	//　弾幕B（5カットアニメ）
-let ACT_SPELL3 = 12;	//　スペルカード発動（3カットアニメ）
-let ACT_SPELL4 = 13;	//　スペルカード発動（4カットアニメ）
-let ACT_SPELL5 = 14;	//　スペルカード発動（5カットアニメ）
-
-//　キャラ定数
-let CHAR_BOSS = 0;
-let CHAR_DOLL = 1;
-
-//　ボス　カット別描画矩形定数
-let RECT_BOSS_LENGTH = 128;
-let RECT_BOSS_STAND0 = [ 0, 0 ];
-let RECT_BOSS_STAND1 = [ 0, 1 ];
-let RECT_BOSS_STAND2 = [ 0, 2 ];
-let RECT_BOSS_STAND3 = [ 0, 3 ];
-let RECT_BOSS_BLINK0 = [ 1, 0 ];
-let RECT_BOSS_BLINK1 = [ 1, 1 ];
-let RECT_BOSS_MOVE_L0 = [ 2, 0 ];
-let RECT_BOSS_MOVE_L1 = [ 2, 1 ];
-let RECT_BOSS_MOVE_R0 = [ 2, 2 ];
-let RECT_BOSS_MOVE_R1 = [ 2, 3 ];
-let RECT_BOSS_SPELL0 = [ 3, 0 ];
-let RECT_BOSS_SPELL1 = [ 3, 1 ];
-let RECT_BOSS_SPELL2 = [ 3, 2 ];
-let RECT_BOSS_SHOT_A0 = [ 4, 0 ];
-let RECT_BOSS_SHOT_A1 = [ 4, 1 ];
-let RECT_BOSS_SHOT_A2 = [ 4, 2 ];
-let RECT_BOSS_SHOT_B0 = [ 5, 0 ];
-let RECT_BOSS_SHOT_B1 = [ 5, 1 ];
-let RECT_BOSS_SHOT_B2 = [ 5, 2 ];
-let RECT_BOSS_SHOT_B3 = [ 5, 3 ];
-
-//　スーさん　カット別描画矩形定数
-let RECT_DOLL_LENGTH = 32;
-let RECT_DOLL_STAND0 = [ 0, 0 ];
-let RECT_DOLL_STAND1 = [ 0, 1 ];
-let RECT_DOLL_STAND2 = [ 0, 2 ];
-let RECT_DOLL_SPELL0 = [ 1, 0 ];
-let RECT_DOLL_SPELL1 = [ 1, 1 ];
+#include_function ".\INCLUDE\BossAnimation.dnh"
+#include_function "\lib\FLAN\HEADER\Boss.dnh"
+#include_function "\lib\THCCL\CutIn.dnh"
+#include_function ".\INCLUDE\EnemyShadow.dnh"
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+/**	画面外に出ても自滅しないようにするか */
+FLAN_ESS_NOGONE = true;
+/** メインループに処理を回さないか */
+FLAN_ESS_NOCALL_MAINLOOP = true;
+/** 当たり判定半径 A:ショット B:体当たり */
+FLAN_ENEMY_COLLISION_A = 32;
+FLAN_ENEMY_COLLISION_B = 18;
+/**	自機ショットを被弾した時の効果音 */
+FLAN_ENEMY_SE_DAMAGE_FILE_A = seDamage;
+/**	ライフ低下時に自機ショットを被弾した時の効果音 */
+FLAN_ENEMY_SE_DAMAGE_FILE_B = seDamage2;
+/** カウントダウン効果音（前半） */
+FLAN_BOSS_SE_TIMEOUT_FILE_A = seTimeOut;
+/** カウントダウン効果音（後半） */
+FLAN_BOSS_SE_TIMEOUT_FILE_B = seTimeOut2;
+/** アイテム分散幅 */
+FLAN_ITEM_WIDTH = 80;
+/** アイテム分散時の画面外補正精度を設定します。 */
+FLAN_ITEM_OUT_COMPENSATION = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
 //	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/** ユーザー定義弾 */
+let m_szUserShot = shotAll;
+/** プレイヤーカットイン画像（会話用） */
+let m_aszImageCutInPlayer = [
+	cutMarisa,
+	cutMarisa2,
+	cutMarisa3,
+	cutMarisa4,
+	cutMarisa5,
+	cutMarisa6,
+	cutMarisa7,
+	cutMarisa8,
+	cutMarisa9
+];
+
+/** 夢終劇本体からの起動であるか */
+let m_bStage = false;
+/** スペルプラクティスであるか */
+let m_bSpellPractice = false;
+/** ステージプラクティスであるか */
+let m_bStagePractice = false;
+/** レベル */
+let m_nLevel = 0;
+
+/** 戦闘前後のデモであるか */
+let m_bDemo = false;
+/** 撃破エフェクトを使用するか */
+let m_bDeadEffect = false;
+/** スペルプラクティス時の初期位置 */
+let m_nPracticeX = CL_MIN_X - 140;
+let m_nPracticeY = CL_MIN_Y - 140;
+/** 残像配列（残像設定＆描画で使用） */
+let m_aanBlur = [];
+/** スペルカードスコア */
+let m_nSpellScore = 500000;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+// デバッグ用
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-let m_nEnemyAlpha = 255;				//　絵画のα値（ラストスペルで使用）
-let m_nActionDefault = ACT_STAND3;		//　特に指示しない場合のアクション
-let m_nAction = m_nActionDefault;		//　現在のアクション
-let m_nActionCount = 0;					//　アクションフレームカウンタ
-let m_nActionCountMax = 0;				//　アクションに要するカウント数
-let m_nSubActionDefault = ACT_STAND3;	//　サブキャラ：特に指示しない場合のアクション
-let m_nSubAction = m_nSubActionDefault;	//　サブキャラ：現在のアクション
-let m_nSubActionCount = 0;				//　サブキャラ：アクションフレームカウンタ
-let m_nSubActionCountMax = 0;			//　サブキャラ：アクションに要するカウント数
-
-
-//////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	BGM/SE関連
-//--------------------------------------------------------------------
-//////////////////////////////////////////////////////////////////////
-
-//	30フレームのミュート時間を設けてBGMを再生する
-task PlayMusicEx( let nBGMIndex, let szName ){
-	StopMusic();
-	_PlayMusicEx( bgmList[ nBGMIndex ], szName );
+/**
+*	ステージに組み込むスクリプトのPlural単体テスト用にレベルを設定します。
+*	基本0でスキップキーで+1、ユーザ定義キーで+2します。
+*/
+function SetLevelTemporary(){
+	if( !IsDebugMode() ){ return; }
+	let nLevel = 0;
+	if( GetKeyState( VK_SKIP ) == KEY_HOLD ){ nLevel++; }
+	if( GetKeyState( VK_USER ) == KEY_HOLD ){ nLevel += 2; }
+	__SetLevelTemporary( nLevel );
 }
 
-//	BGMを停止する(無音BGMを再生する)
-function StopMusic(){
-	ascent( let i in 1..length( bgmList ) ){ DeleteMusic( bgmList[ i ] ); }
-	PlayMusic( bgmList[ 0 ] );
-}
-
 
 //////////////////////////////////////////////////////////////////////
-// -------------------------------------------------------------------
-//	その他
-// -------------------------------------------------------------------
+//--------------------------------------------------------------------
+// リザルト関連
+//-------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	リザルト
-function CreateResult( let nStage ){
+/**
+*	ステージスクリプトへリザルトのキューを投げます。
+*/
+function SetResult(){
+	let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
 	let nClear = nStage * 10000000;
 	let nPoint = GetPoint() * 50000;
 	let nGraze = GetGraze() * 500;
-	let nRate = [ 50, 100, 120, 150 ][ GetCommonDataDefault( CD_STAGE_LEVEL, 0 ) ];
-	let nTotal = ( nClear + nPoint + nGraze ) * ( nRate / 100 );
+	let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 ) * 2500;
+	let nRate = [ 50, 100, 120, 150 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 0 ) ];
+	let nPlayerPenalty = [ 100, 100, 100, 100 , 60, 30, 20, 10, 10, 10, 10 ][ GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_PLAYER, 3 ) ];
+	let nPlayer = 0;
+	let nBomb = 0;
+	if( !m_bStagePractice && nStage >= 6 ){
+		nPlayer = GetPlayerLife() * 1000000;
+		nBomb = GetPlayerBomb() * 50000;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_PLAYER, nPlayer );
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_BOMB, nBomb );
+	}
+	let nTotal = ( nClear + nPoint + nGraze + nHakurei + nPlayer + nBomb ) * ( nRate / 100 ) * ( nPlayerPenalty / 100 );
 	AddScore( nTotal );
-	SetCommonData( CD_RESULT, true );
-	SetCommonData( CD_RESULT_CLEAR, nClear );
-	SetCommonData( CD_RESULT_POINT, nPoint );
-	SetCommonData( CD_RESULT_GRAZE, nGraze );
-	SetCommonData( CD_RESULT_RATE, nRate );
-	SetCommonData( CD_RESULT_TOTAL, nTotal );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT, true );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_CLEAR, nClear );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_POINT, nPoint );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_GRAZE, nGraze );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_HAKUREI, nHakurei );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_RATE, nRate );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_PLAYER_INIT, nPlayerPenalty );
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_RESULT_TOTAL, nTotal );
 }
 
-//	カットイン
-function CutInEnemy( let szSpellName, let szCutInImage, let nCutInWidth, let nCutInHeight ){
-	SetCommonData( CD_CUTIN_SPELL_END, false );
-	THC_CutIn( m_nCount, false, szCutInImage, nCutInWidth, nCutInHeight, szSpellName, imgSystemSpellLine, imgSystemFont, imgSystemFontSmall, imgSystemFontSJIS16 );
-}
 
-//　ボス初期設定
-function InitializeBoss( let aszImgFileList, let aszSeFileList ){
-	LoadGraphicList( aszImgFileList );
-	LoadSEList( aszSeFileList );
-	SetShotDirectionType( ABSOLUTE );
-	SetEffectForZeroLife( 0, 0, 0 );
-	SetEnemyMarker( true );
-}
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+// BGM/SE関連
+//-------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
 
-//　残時間カウント (※注 task)
-//　※@InitializeでSetTimerの後に1回呼び出すこと
-task CountTimer( let szSeFile ){
-	while( GetTimer > 9 ){ yield; }
-	loop( 10 ){
-		PlaySE( szSeFile );
-		loop( 60 ){ yield; }
+/**
+*	効果音を再生フレーム毎に再生します。
+*	合計フレームが経過するか、ボスのライフが0になると停止します。
+*
+*	@param szSeFile		効果音ファイル
+*	@param nTotalFrame	合計フレーム数
+*	@param nPlayFrame	再生フレーム数
+*/
+task PlaySELoopEx( let szSeFile, let nTotalFrame, let nPlayFrame ){
+	while( nTotalFrame > 0 ){
+		if( m_bDead ){ break; }
+		PlaySEEx( szSeFile );
+		loop( nPlayFrame ){ yield; }
+		nTotalFrame -= nPlayFrame;
 	}
 }
 
-//　ラストスペル開始時の集中エフェクト＆フェードイン (※注 task)
-//　※@InitializeでSetLifeの後に1回呼び出すこと
-//　　@DrawLoopでSetAlpha( m_nEnemyAlpha );すること→DrawBossで行っている
-//　　frame時間中(m_nEnemyAlpha==0の間)は当たり判定をなくすこと
-//　　frame+60時間中(m_nEnemyAlpha<255の間)はダメージが通らないようにすること
-task LastSpellEffect( let frame ){
-	LastSpell;
+/**
+*	効果音を遅延フレーム後に再生します。
+*	ボスのライフが0になると再生をキャンセルします。
+*
+*	@param szSeFile		効果音ファイル
+*	@param nDelayFrame	遅延フレーム数
+*/
+task PlaySEDelayEx( let szSeFile, let nDelayFrame ){
+	loop( nDelayFrame ){ yield; }
+	if( !m_bDead ){ PlaySEEx( szSeFile ); }
+}
+
+/**
+*	効果音を遅延フレーム後、再生フレーム毎に再生します。
+*	合計フレームが経過するか、ボスのライフが0になると停止します。
+*
+*	@param szSeFile		効果音ファイル
+*	@param nDelayFrame	遅延フレーム数
+*	@param nTotalFrame	合計フレーム数（遅延フレーム数を含まない）
+*	@param nPlayFrame	再生フレーム数
+*/
+task PlaySEDelayLoopEx( let szSeFile, let nDelayFrame, let nTotalFrame, let nPlayFrame ){
+	loop( nDelayFrame ){ yield; }
+	PlaySELoopEx( szSeFile, nTotalFrame, nPlayFrame );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	初期設定関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	スペルボーナス設定をします。
+*	博麗システム対応版です。博麗小符の値によってボーナスに補正がかかります。
+*/
+function SetScoreTHC( let nScore ){
+	let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 );
+	SetScore( nScore * ( nHakurei / 500 + 1 ) );
+}
+
+/**
+*	ボスを初期化します。
+*/
+function InitializeBoss(){
+	if( !m_bStage ){
+		LoadUserShotData( m_szUserShot );
+		if( m_bDemo ){ m_aszImageFileList = m_aszImageFileList ~ m_aszImageCutInPlayer; }
+		m_aszImageFileList = m_aszImageFileList ~ m_aszImageFileListNotStage;
+		m_aszSeFileList = m_aszSeFileList ~ m_aszSeFileListNotStage;
+	}
+	LoadResource( m_aszImageFileList, m_aszSeFileList );
+	SetShotDirectionType( ABSOLUTE );
+	SetEnemyMarker( true );
+	if( m_bDemo ){ FLAN_ENEMY_SE_DAMAGE_FILE_B = FLAN_ENEMY_SE_DAMAGE_FILE_A; }
+	else{ CheckLife(); }
+	if( !m_bDeadEffect || m_bSpellPractice ){ SetEffectForZeroLife( 0, 0, 0 ); }
+	else{ SetEffectForZeroLife( 60, 0, 0 ); }
+	if( m_bSpellPractice ){ LastSpell(); }
+}
+
+/**
+*	ボスのライフを監視します。0になると撃破フラグを立てます。
+*	その後、撃破エフェクトを使用する場合は効果音を鳴らします。
+*	ボス初期化InitializeBossから呼ばれるもので、直接呼び出すことはありません。
+*/
+task CheckLife(){
+	while( GetLife() <= 0 ){ yield; }
+	while( GetLife() > 0 ){ yield; }
+	m_bDead = true;
+	if( m_bDeadEffect && !m_bSpellPractice ){
+		loop( 6 ){
+			PlaySEEx( seShot1 );
+			loop( 10 ){ yield; }
+		}
+	}
+}
+
+/**
+*	ラストスペル開始時のエフェクトです。
+*	Initialize時に1度だけ、SetLifeの後に記述してください。
+*	m_nEnemyAlpha==0の間は当たり判定をなくしてください。
+*	m_nEnemyAlpha<255の間はダメージが通らないようにしてください。
+*	55フレーム後、スペルを発動してください。
+*/
+task LastSpellEffect(){
+	LastSpell();
+	SetEnemyMarker( false );
 	m_nEnemyAlpha = 0;
-	let maxLife = GetLife;
-	let disLife = maxLife - 1;
-	if( disLife > 0 ){ AddLife( -disLife ); }
-	Concentration01( frame );
-	loop( frame ){ yield; }
-	frame = 60;
-	let addLife = maxLife / frame;
-	let addAlpha = 255 / frame;
-	loop( frame ){
-		AddLife( addLife );
-		m_nEnemyAlpha += addAlpha;
+	CheckAlpha( 0, FLAN_ENEMY_COLLISION_A, FLAN_ENEMY_COLLISION_B );
+	FLAN_ENEMY_COLLISION_A = 0;
+	FLAN_ENEMY_COLLISION_B = 0;
+	let nMaxLife = GetLife();
+	let nDisLife = nMaxLife - 1;
+	if( nDisLife > 0 ){ AddLife( -nDisLife ); }
+	SetColor( 255, 128, 128 );
+	Concentration01( 60 );
+	SetColor( 255, 255, 255 );
+	loop( 55 ){ yield; }
+	SetEnemyMarker( true );
+	let nFrame = 60;
+	let nAddLife = nMaxLife / nFrame;
+	let nAddAlpha = 255 / nFrame;
+	loop( nFrame ){
+		if( m_bDead ){ break; }
+		AddLife( nAddLife );
+		m_nEnemyAlpha += nAddAlpha;
 		yield;
 	}
 }
 
-//　ボス基本処理 (※注 task)
-//	※@Initializeで1回呼び出すこと
-//　　actionには基本となるアクション定数（立ちアクションのいずれか）を指定
-task BehaviorBoss( let action ){
-	m_nActionDefault = action;
-	loop{
-		SetAction( m_nActionDefault, 0 );
-		while( m_nActionCount < m_nActionCountMax ){
-			m_nActionCount ++;
-			yield;
-		}
-	}
+/**
+*	α値を監視し、指定値を超えたら当たり判定を登録します。
+*	ラストスペルエフェクトLastSpellEffectから呼ばれる他、任意で使用できます。
+*	
+*	@param nAlpha		αしきい値
+*	@param nCollisionA	ショット当たり判定半径
+*	@param nCollisionB	体当たり判定半径
+*/
+task CheckAlpha( let nAlpha, let nCollisionA, let nCollisionB ){
+	while( m_nEnemyAlpha <= nAlpha ){ yield; }
+	FLAN_ENEMY_COLLISION_A = nCollisionA;
+	FLAN_ENEMY_COLLISION_B = nCollisionB;
 }
 
-//　サブキャラ基本処理 (※注 task)
-task BehaviorSub( let action ){
-	m_nSubActionDefault = action;
-	loop{
-		SetSubAction( m_nSubActionDefault, 0 );
-		while( m_nSubActionCount < m_nSubActionCountMax ){
-			m_nSubActionCount ++;
-			yield;
-		}
-	}
-}
-
-//　アクション設定
-//　※基本処理が行われていること
-//　　actionにはアクション定数を指定
-//　　「立ち」及び「スペルカード」のフレーム数は固定
-//　　指定フレーム経過すると「立ち」に移行
-function SetAction( let action, let frame ){
-	alternative( action )
-	case( ACT_STAND3, ACT_STAND4 ){ frame = 36000; }
-	case( ACT_SPELL3, ACT_SPELL4, ACT_SPELL5 ){ frame = 100; }
-	m_nAction = action;
-	m_nActionCount = 0;
-	m_nActionCountMax = frame;
-}
-
-//　サブキャラアクション設定
-function SetSubAction( let action, let frame ){
-	alternative( action )
-	case( ACT_STAND3, ACT_STAND4 ){ frame = 36000; }
-	case( ACT_SPELL3, ACT_SPELL4, ACT_SPELL5 ){ frame = 100; }
-	m_nSubAction = action;
-	m_nSubActionCount = 0;
-	m_nSubActionCountMax = frame;
+/**
+*	タイマーを監視し、0になる寸前にVanishEnemyで自殺します。
+*	（中ボスがタイムアウトで逃げる際、爆発を起こさないようにします）
+*	また自殺の際、戦闘後スクリプトに渡す各種CommonDataを設定します。
+*	中ボス最後の攻撃のonInitializeTHCにて、1回呼び出してください。
+*/
+task CheckTimer(){
+	while( GetTimer() > 0 ){ yield; }
+	loop( 58 ){ yield; }
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_DEAD, false ); 
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_X, GetX() ); 
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, GetY() ); 
+	VanishEnemy();
 }
 
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	絵画関数
+//	終了設定関連
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//　ボス描画
-function DrawBoss( let szTexFile ){
-	let rect = [];
+/**
+*	ボスの終了設定を行います。
+*/
+function FinalizeBoss(){
+	DeleteResource( m_aszImageFileList, m_aszSeFileList );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+// アクション関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ボスに残像を付けます。
+*	移動開始及びアクション設定SetActionと同時に呼び出してください。
+*	そのとき、SetActionより後に記述してください。
+*	Draw時に残像描画DrawBlurを実施することで表示します。
+*
+*	@param nFrame	残像が残るフレーム数
+*/
+task SetBlur( let nFrame ){
+	let nBlurFrame = 3;
+	while( nFrame >= nBlurFrame ){
+		if( m_bDead ){ break; }
+		loop( nBlurFrame ){ yield; }
+		nFrame -= nBlurFrame;
+		_SetBlur();
+	}
+}
+
+/**
+*	残像を生成します。
+*	残像設定SetBlurから呼び出すもので、直接呼び出すことはありません。
+*/
+task _SetBlur(){
+	let nAction = ACT_STAND1;
 	alternative( m_nAction )
-	case( ACT_STAND3 ){
-		let count0 = 12;
-		let count = m_nActionCount % ( count0 * 12 );
-		let anime = 2;
-		let animeNum = [ 0, 1, 2, 0, 1, 2, 0, 3, 4, 0, 1, 2 ];
-		let animeCount = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
-		ascent( let i in 0 .. 12 ){
-			if( count < count0 * animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_STAND0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_STAND1; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_STAND2; }
-		case( 3 ){ rect = rect ~ RECT_BOSS_BLINK0; }
-		case( 4 ){ rect = rect ~ RECT_BOSS_BLINK1; }
+	case( ACT_MOVE ){
+		if( cos( GetAngle() ) > 0 ){ nAction = ACT_MOVE_R; }
+		else{ nAction = ACT_MOVE_L; }
 	}
-	case( ACT_STAND4 ){
-		let count0 = 12;
-		let count = m_nActionCount % ( count0 * 12 );
-		let anime = 3;
-		let animeNum = [ 0, 1, 2, 3, 0, 1, 2, 3, 0, 4, 5, 3 ];
-		let animeCount = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
-		ascent( let i in 0 .. 12 ){
-			if( count < count0 * animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_STAND0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_STAND1; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_STAND2; }
-		case( 3 ){ rect = rect ~ RECT_BOSS_STAND3; }
-		case( 4 ){ rect = rect ~ RECT_BOSS_BLINK0; }
-		case( 5 ){ rect = rect ~ RECT_BOSS_BLINK1; }
-	}
-	case( ACT_MOVE, ACT_MOVE_L, ACT_MOVE_R ){
-		if( m_nAction == ACT_MOVE && GetSpeed < 0.1 ){ rect = rect ~ RECT_BOSS_STAND0; }
-		else{
-			let count0 = 10;
-			if( m_nActionCountMax < 40 ){ count0 = trunc( m_nActionCountMax / 4 ); }
-			let count1 = m_nActionCountMax - count0;
-			let anime = 0;
-			let animeNum = [ 0, 1, 0 ];
-			let animeCount = [ count0, count1, m_nActionCountMax ];
-			ascent( let i in 0 .. 3 ){
-				if( m_nActionCount < animeCount[ i ] ){
-					anime = animeNum[ i ];
-					break;
-				}
-			}
-			let moveL = true;
-			alternative( m_nAction )
-			case( ACT_MOVE_R ){ moveL = false; }
-			case( ACT_MOVE ){
-				if( cos( GetAngle ) > 0 ){ moveL = false; }
-			}
-			alternative( anime )
-			case( 0 ){
-				if( moveL ){ rect = rect ~ RECT_BOSS_MOVE_L0; }
-				else{ rect = rect ~ RECT_BOSS_MOVE_R0; }
-			}
-			case( 1 ){
-				if( moveL ){ rect = rect ~ RECT_BOSS_MOVE_L1; }
-				else{ rect = rect ~ RECT_BOSS_MOVE_R1; }
-			}
-		}
-	}
-	case( ACT_SHOT_A3, ACT_SHOT_B3 ){
-		let count0 = 6;
-		if( m_nActionCountMax < 24 ){ count0 = trunc( m_nActionCountMax / 4 ); }
-		let count1 = m_nActionCountMax - count0;
-		let anime = 0;
-		let animeNum = [ 0, 1, 0 ];
-		let animeCount = [ count0, count1, m_nActionCountMax ];
-		ascent( let i in 0 .. 3 ){
-			if( m_nActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){
-			if( m_nAction == ACT_SHOT_A3 ){ rect = rect ~ RECT_BOSS_SHOT_A0; }
-			else{ rect = rect ~ RECT_BOSS_SHOT_B0; }
-		}
-		case( 1 ){
-			if( m_nAction == ACT_SHOT_A3 ){ rect = rect ~ RECT_BOSS_SHOT_A1; }
-			else{ rect = rect ~ RECT_BOSS_SHOT_B1; }
-		}
-	}
-	case( ACT_SHOT_A3_B ){
-		let count0 = 6;
-		if( m_nActionCountMax < 24 ){ count0 = trunc( m_nActionCountMax / 4 ); }
-		let anime = 2;
-		let animeNum = [ 0, 1, 2 ];
-		let animeCount = [ count0, count0 * 2, m_nActionCountMax ];
-		ascent( let i in 0 .. 3 ){
-			if( m_nActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_SHOT_A0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_SHOT_A1; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_SHOT_A2; }
-	}
-	case( ACT_SHOT_B3_B ){
-		let count0 = 6;
-		if( m_nActionCountMax < 24 ){ count0 = trunc( m_nActionCountMax / 4 ); }
-		let anime = 2;
-		let animeNum = [ 0, 1, 2 ];
-		let animeCount = [ count0, count0 * 2, m_nActionCountMax ];
-		ascent( let i in 0 .. 3 ){
-			if( m_nActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_SHOT_B0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_SHOT_B2; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_SHOT_B3; }
-	}
-	case( ACT_SHOT_A4 ){
-		let count0 = 6;
-		if( m_nActionCountMax < 30 ){ count0 = trunc( m_nActionCountMax / 5 ); }
-		let count1 = m_nActionCountMax - count0;
-		let anime = 1;
-		let animeNum = [ 0, 1, 2, 1 ];
-		let animeCount = [ count0, count0 * 2, count1, m_nActionCountMax ];
-		ascent( let i in 0 .. 4 ){
-			if( m_nActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_SHOT_A0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_SHOT_A1; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_SHOT_A2; }
-	}
-	case( ACT_SHOT_A5, ACT_SHOT_B5 ){
-		let count0 = 6;
-		if( m_nActionCountMax < 36 ){ count0 = trunc( m_nActionCountMax / 6 ); }
-		let count1 = m_nActionCountMax - count0 * 2;
-		let anime = 0;
-		let animeNum = [ 0, 1, 2, 1, 0 ];
-		let animeCount = [ count0, count0 * 2, count1, count0 + count1, m_nActionCountMax ];
-		ascent( let i in 0 .. 5 ){
-			if( m_nActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){
-			if( m_nAction == ACT_SHOT_A5 ){ rect = rect ~ RECT_BOSS_SHOT_A0; }
-			else{ rect = rect ~ RECT_BOSS_SHOT_B0; }
-		}
-		case( 1 ){
-			if( m_nAction == ACT_SHOT_A5 ){ rect = rect ~ RECT_BOSS_SHOT_A1; }
-			else{ rect = rect ~ RECT_BOSS_SHOT_B1; }
-		}
-		case( 2 ){
-			if( m_nAction == ACT_SHOT_A5 ){ rect = rect ~ RECT_BOSS_SHOT_A2; }
-			else{ rect = rect ~ RECT_BOSS_SHOT_B2; }
-		}
-	}
-	case( ACT_SPELL3 ){
-		let anime = 0;
-		let animeNum = [ 0, 1, 0 ];
-		let animeCount = [ 6, 94, 100 ];
-		ascent( let i in 0 .. 3 ){
-			if( m_nActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_SPELL0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_SPELL1; }
-	}
-	case( ACT_SPELL4 ){
-		let anime = 1;
-		let animeNum = [ 0, 1, 2, 1 ];
-		let animeCount = [ 6, 12, 94, 100 ];
-		ascent( let i in 0 .. 4 ){
-			if( m_nActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_SPELL0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_SPELL1; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_SPELL2; }
-	}
-	case( ACT_SPELL5 ){
-		let anime = 0;
-		let animeNum = [ 0, 1, 2, 1, 0 ];
-		let animeCount = [ 6, 12, 88, 94, 100 ];
-		ascent( let i in 0 .. 5 ){
-			if( m_nActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_SPELL0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_SPELL1; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_SPELL2; }
-	}
-	others{ rect = rect ~ RECT_BOSS_STAND0; }
-	let rectX = RECT_BOSS_LENGTH * rect[ 0 ];
-	let rectY = RECT_BOSS_LENGTH * rect[ 1 ];
-	SetAlpha( m_nEnemyAlpha );
-	_DrawChrRectSqr( szTexFile, GetX, GetY, rectX, rectY, RECT_BOSS_LENGTH );
-}
-
-//　サブキャラ描画
-function DrawSub( let szTexFile, let subChar, let x, let y ){
-	let rect = [];
-	alternative( m_nSubAction )
-	case( ACT_STAND3 ){
-		let count0 = 12;
-		let count = m_nSubActionCount % ( count0 * 12 );
-		let anime = 2;
-		let animeNum = [ 0, 1, 2, 0, 1, 2, 0, 3, 4, 0, 1, 2 ];
-		let animeCount = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
-		ascent( let i in 0 .. 12 ){
-			if( count < count0 * animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( subChar )
-		case( CHAR_DOLL ){
-			alternative( anime )
-			case( 0 ){ rect = rect ~ RECT_DOLL_STAND0; }
-			case( 1,3 ){ rect = rect ~ RECT_DOLL_STAND1; }
-			case( 2,4 ){ rect = rect ~ RECT_DOLL_STAND2; }
-		}
-		others{
-			alternative( anime )
-			case( 0 ){ rect = rect ~ RECT_BOSS_STAND0; }
-			case( 1 ){ rect = rect ~ RECT_BOSS_STAND1; }
-			case( 2 ){ rect = rect ~ RECT_BOSS_STAND2; }
-			case( 3 ){ rect = rect ~ RECT_BOSS_BLINK0; }
-			case( 4 ){ rect = rect ~ RECT_BOSS_BLINK1; }
-		}
-	}
-	case( ACT_STAND4 ){
-		let count0 = 12;
-		let count = m_nSubActionCount % ( count0 * 12 );
-		let anime = 3;
-		let animeNum = [ 0, 1, 2, 3, 0, 1, 2, 3, 0, 4, 5, 3 ];
-		let animeCount = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
-		ascent( let i in 0 .. 12 ){
-			if( count < count0 * animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_STAND0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_STAND1; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_STAND2; }
-		case( 3 ){ rect = rect ~ RECT_BOSS_STAND3; }
-		case( 4 ){ rect = rect ~ RECT_BOSS_BLINK0; }
-		case( 5 ){ rect = rect ~ RECT_BOSS_BLINK1; }
-	}
-	case( ACT_MOVE, ACT_MOVE_L, ACT_MOVE_R ){
-		if( m_nSubAction == ACT_MOVE && GetSpeed < 0.1 ){ rect = rect ~ RECT_BOSS_STAND0; }
-		else{
-			let count0 = 10;
-			if( m_nSubActionCountMax < 40 ){ count0 = trunc( m_nSubActionCountMax / 4 ); }
-			let count1 = m_nSubActionCountMax - count0;
-			let anime = 0;
-			let animeNum = [ 0, 1, 0 ];
-			let animeCount = [ count0, count1, m_nSubActionCountMax ];
-			ascent( let i in 0 .. 3 ){
-				if( m_nSubActionCount < animeCount[ i ] ){
-					anime = animeNum[ i ];
-					break;
-				}
-			}
-			let moveL = true;
-			alternative( m_nSubAction )
-			case( ACT_MOVE_R ){ moveL = false; }
-			case( ACT_MOVE ){
-				if( cos( GetAngle ) > 0 ){ moveL = false; }
-			}
-			alternative( anime )
-			case( 0 ){
-				if( moveL ){ rect = rect ~ RECT_BOSS_MOVE_L0; }
-				else{ rect = rect ~ RECT_BOSS_MOVE_R0; }
-			}
-			case( 1 ){
-				if( moveL ){ rect = rect ~ RECT_BOSS_MOVE_L1; }
-				else{ rect = rect ~ RECT_BOSS_MOVE_R1; }
-			}
-		}
-	}
-	case( ACT_SHOT_A3, ACT_SHOT_B3 ){
-		let count0 = 6;
-		if( m_nSubActionCountMax < 24 ){ count0 = trunc( m_nSubActionCountMax / 4 ); }
-		let count1 = m_nSubActionCountMax - count0;
-		let anime = 0;
-		let animeNum = [ 0, 1, 0 ];
-		let animeCount = [ count0, count1, m_nSubActionCountMax ];
-		ascent( let i in 0 .. 3 ){
-			if( m_nSubActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){
-			if( m_nSubAction == ACT_SHOT_A3 ){ rect = rect ~ RECT_BOSS_SHOT_A0; }
-			else{ rect = rect ~ RECT_BOSS_SHOT_B0; }
-		}
-		case( 1 ){
-			if( m_nSubAction == ACT_SHOT_A3 ){ rect = rect ~ RECT_BOSS_SHOT_A1; }
-			else{ rect = rect ~ RECT_BOSS_SHOT_B1; }
-		}
-	}
-	case( ACT_SHOT_A3_B ){
-		let count0 = 6;
-		if( m_nSubActionCountMax < 24 ){ count0 = trunc( m_nSubActionCountMax / 4 ); }
-		let anime = 2;
-		let animeNum = [ 0, 1, 2 ];
-		let animeCount = [ count0, count0 * 2, m_nSubActionCountMax ];
-		ascent( let i in 0 .. 3 ){
-			if( m_nSubActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_SHOT_A0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_SHOT_A1; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_SHOT_A2; }
-	}
-	case( ACT_SHOT_B3_B ){
-		let count0 = 6;
-		if( m_nSubActionCountMax < 24 ){ count0 = trunc( m_nSubActionCountMax / 4 ); }
-		let anime = 2;
-		let animeNum = [ 0, 1, 2 ];
-		let animeCount = [ count0, count0 * 2, m_nSubActionCountMax ];
-		ascent( let i in 0 .. 3 ){
-			if( m_nSubActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_SHOT_B0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_SHOT_B2; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_SHOT_B3; }
-	}
-	case( ACT_SHOT_A4 ){
-		let count0 = 6;
-		if( m_nSubActionCountMax < 30 ){ count0 = trunc( m_nSubActionCountMax / 5 ); }
-		let count1 = m_nSubActionCountMax - count0;
-		let anime = 1;
-		let animeNum = [ 0, 1, 2, 1 ];
-		let animeCount = [ count0, count0 * 2, count1, m_nSubActionCountMax ];
-		ascent( let i in 0 .. 4 ){
-			if( m_nSubActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_SHOT_A0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_SHOT_A1; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_SHOT_A2; }
-	}
-	case( ACT_SHOT_A5, ACT_SHOT_B5 ){
-		let count0 = 6;
-		if( m_nSubActionCountMax < 36 ){ count0 = trunc( m_nSubActionCountMax / 6 ); }
-		let count1 = m_nSubActionCountMax - count0 * 2;
-		let anime = 0;
-		let animeNum = [ 0, 1, 2, 1, 0 ];
-		let animeCount = [ count0, count0 * 2, count1, count0 + count1, m_nSubActionCountMax ];
-		ascent( let i in 0 .. 5 ){
-			if( m_nSubActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){
-			if( m_nSubAction == ACT_SHOT_A5 ){ rect = rect ~ RECT_BOSS_SHOT_A0; }
-			else{ rect = rect ~ RECT_BOSS_SHOT_B0; }
-		}
-		case( 1 ){
-			if( m_nSubAction == ACT_SHOT_A5 ){ rect = rect ~ RECT_BOSS_SHOT_A1; }
-			else{ rect = rect ~ RECT_BOSS_SHOT_B1; }
-		}
-		case( 2 ){
-			if( m_nSubAction == ACT_SHOT_A5 ){ rect = rect ~ RECT_BOSS_SHOT_A2; }
-			else{ rect = rect ~ RECT_BOSS_SHOT_B2; }
-		}
-	}
-	case( ACT_SPELL3 ){
-		let anime = 0;
-		let animeNum = [ 0, 1, 0 ];
-		let animeCount = [ 6, 94, 100 ];
-		ascent( let i in 0 .. 3 ){
-			if( m_nSubActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( subChar )
-		case( CHAR_DOLL ){
-			alternative( anime )
-			case( 0 ){ rect = rect ~ RECT_DOLL_SPELL0; }
-			case( 1 ){ rect = rect ~ RECT_DOLL_SPELL1; }
-		}
-		others{
-			alternative( anime )
-			case( 0 ){ rect = rect ~ RECT_BOSS_SPELL0; }
-			case( 1 ){ rect = rect ~ RECT_BOSS_SPELL1; }
-		}
-	}
-	case( ACT_SPELL4 ){
-		let anime = 1;
-		let animeNum = [ 0, 1, 2, 1 ];
-		let animeCount = [ 6, 12, 94, 100 ];
-		ascent( let i in 0 .. 4 ){
-			if( m_nSubActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_SPELL0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_SPELL1; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_SPELL2; }
-	}
-	case( ACT_SPELL5 ){
-		let anime = 0;
-		let animeNum = [ 0, 1, 2, 1, 0 ];
-		let animeCount = [ 6, 12, 88, 94, 100 ];
-		ascent( let i in 0 .. 5 ){
-			if( m_nSubActionCount < animeCount[ i ] ){
-				anime = animeNum[ i ];
-				break;
-			}
-		}
-		alternative( anime )
-		case( 0 ){ rect = rect ~ RECT_BOSS_SPELL0; }
-		case( 1 ){ rect = rect ~ RECT_BOSS_SPELL1; }
-		case( 2 ){ rect = rect ~ RECT_BOSS_SPELL2; }
-	}
-	others{
-		alternative( subChar )
-		case( CHAR_DOLL ){ rect = rect ~ RECT_DOLL_STAND0; }
-		others{ rect = rect ~ RECT_BOSS_STAND0; }
-	}
-	let rectX = 0;
-	let rectY = 0;
-	let rectLength = RECT_BOSS_LENGTH;
-	alternative( subChar )
-	case( CHAR_DOLL ){
-		rectLength=RECT_DOLL_LENGTH;
-		rectX += RECT_BOSS_LENGTH * 6;
-	}
-	rectX += rectLength * rect[ 0 ];
-	rectY += rectLength * rect[ 1 ];
-	SetAlpha( m_nEnemyAlpha );
-	_DrawChrRectSqr( szTexFile, x, y, rectX, rectY, rectLength );
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// -------------------------------------------------------------------
-//	スペル背景操作
-//	※内部でm_nCountを参照しますので必ず使用していてください
-// -------------------------------------------------------------------
-//////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////
-//	紅ルート
-//////////////////////////////////////////////////////////////////////
-
-function OnBGFrandre(){
-	SetGraphicRect( 0, 0, 512, 512 );
-	DrawRotateCenter( imgSpellRedMoon, 1 );
-	SetAlpha( 144 + sin( m_nCount ) * 16 );
-	SetGraphicRect( 0, 0, 384, 448 );
-	ascent( let i in 0..2 ){ _DrawChr( imgSpellRedWall, GetCenterX(), GetCenterY() + i * 448 - m_nCount * 3 % 448 ); }
-	SetAlpha( 255 );
-}
-
-function OnBGMeirin(){
-	SetGraphicRect( 0, 0, 1024, 1024 );
-	DrawRotateCenter( imgSpellRotateStone, -0.5 );
-}
-
-function OnBGSakuya(){
-	let nColor = [ 255, 48 ][ IsBGStopping() ];
-	SetColor( 255, nColor, nColor );
-	SetGraphicRect( 0, 0, 1024, 1024 );
-	DrawRotateCenter( imgSpellRotateStone, -0.5 );
-	SetColor( 255, 255, 255 );
-	if( !IsBGStopping() ){
-		SetAlpha( 128 );
-		let nSpeed = m_nCount * 1.5;
-		SetGraphicRect( nSpeed, nSpeed, nSpeed + 512, nSpeed + 512 );
-		DrawCenter( imgSpellBlood );
-		SetAlpha( 255 );
-	}
-}
-
-function OnBGRemilia(){ OnBGFrandre(); }
-
-function OnBGDevil(){
-	SetAlpha( 255 );
-	SetGraphicRect( 0, 0, 512, 512 );
-	DrawCenter( imgSpellLittle1 );
-	SetAlpha( 140 );
-	SetGraphicRect( 0, m_nCount*1.4, 512, 512 + m_nCount*1.4 );
-	DrawCenter( imgSpellLittle2 );
-}
-
-function OnBGPachouli(){
-	let nSrcGap = m_nCount * 3.5;
-	let nDstXGap = GetClipMinX() + 64;
-	SetGraphicRect( 0, m_nCount * 3.5, 128, m_nCount * 3.5 + 128 );
-	ascent( let x in 0..3 ){
-		ascent( let y in 0..4 ){ _DrawChr( imgSpellScrollStone, x * 128 + nDstXGap, y * 128 + 64 ); }
+	case( ACT_MOVE_R, ACT_MOVE_L ){ nAction = m_nAction; }
+	let nAlpha = 250;
+	let nAddAlpha = -10;
+	let anBlurStatus = [ GetX(), GetY(), nAlpha, nAction ];
+	while( nAlpha > 0 ){
+		m_aanBlur = m_aanBlur ~ [ anBlurStatus ];
+		yield;
+		m_aanBlur = erase( m_aanBlur, 0 );
+		nAlpha += nAddAlpha;
+		anBlurStatus[ 2 ] = nAlpha;
 	}
 }
 
 
 //////////////////////////////////////////////////////////////////////
-//	永ルート
+//--------------------------------------------------------------------
+//	絵画関連
+//--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-
-function OnBGKaguya(){
-}
-
-function OnBGMokou(){
-}
-
-function OnBGReisen(){
-}
-
-function OnBGEirin(){
-}
-
-function OnBGTewi(){
-}
-
-
-//////////////////////////////////////////////////////////////////////
-//	花ルート
-//////////////////////////////////////////////////////////////////////
-
-function OnBGLily(){
-	SetGraphicRect( 0, 0, 1024, 1024 );
-	DrawRotateCenter( imgSpellBamboo, 0.3 );
-}
-
-function OnBGMedicine(){
-	SetGraphicRect( 0, 0, 512, 512 );
-	DrawCenter( imgSpellP2 );
-	SetAlpha( 64 );
-	SetGraphicRect( m_nCount*0.1, m_nCount*1.41, 512+m_nCount*0.1, 512 + m_nCount*1.41 );
-	DrawCenter( imgSpellP1 );
-	SetAlpha( 144 );
-	SetGraphicRect( -m_nCount*0.13, -m_nCount, 512-m_nCount*0.13, 512 - m_nCount );
-	DrawCenter( imgSpellP1 );
-	SetAlpha( 255 );
-}
-
-function OnBGAya(){
-	SetGraphicRect( 0, m_nCount*0.2, 512, 512 + m_nCount*0.2 );
-	SetAlpha( 255 );
-	DrawCenter( imgSpellAya1 );
-	SetGraphicRect( -m_nCount*1, -m_nCount*0.5, 512 -m_nCount*1, 512 + -m_nCount*0.5 );
-	SetGraphicScale( 2, 2.5 );
-	SetAlpha( 255 );
-	DrawCenter( imgSpellAya2 );
-	SetGraphicRect( m_nCount*1.1, m_nCount*0.3, 512 +m_nCount*1.1, 512 + m_nCount*0.3 );
-	SetGraphicScale( 1.3, 2 );
-	SetAlpha( 180 );
-	DrawCenter( imgSpellAya2 );
-	SetGraphicScale( 1,1 );
-}
-
-function OnBGKomachi(){
-	SetGraphicRect( 0, 0, 384, 448 );
-	DrawCenter( imgSpellRiverside );
-	SetRenderState( SUBTRACT );
-	SetGraphicRect( 0, -m_nCount, 512, 512 - m_nCount );
-	DrawCenter( imgSpellBlood );
-	SetRenderState( ALPHA );
-}
-
-function OnBGEiki(){ OnBGKomachi(); }
-
-
-//////////////////////////////////////////////////////////////////////
-//	旧作ルート
-//////////////////////////////////////////////////////////////////////
-
-function OnBGMima(){
-}
-
-function OnBGYuka(){
-}
-
-function OnBGShinki(){
-}
-
-function OnBGAlice(){
+/**
+*	ボスの残像を描画します。
+*	残像設定SetBlurが行われている場合にのみ有効です。
+*
+*	@param szIamgeFile	ボス画像ファイル
+*/
+function DrawBlur( let szImageFile ){
+	ascent( let i in 0 .. length( m_aanBlur ) ){
+		let anBlurStatus = m_aanBlur[ i ];
+		let anRect = [];
+		alternative( anBlurStatus[ 3 ] )
+		case( ACT_MOVE_R ){ anRect = RECT_BOSS_MOVE_R1; }
+		case( ACT_MOVE_L ){ anRect = RECT_BOSS_MOVE_L1; }
+		others{ anRect = RECT_BOSS_STAND0; }
+		let nRectX = RECT_BOSS_LENGTH * anRect[ 0 ];
+		let nRectY = RECT_BOSS_LENGTH * anRect[ 1 ];
+		SetAlpha( anBlurStatus[ 2 ] );
+		__DrawChrRect( szImageFile, anBlurStatus[ 0 ], anBlurStatus[ 1 ], nRectX, nRectY, RECT_BOSS_LENGTH, RECT_BOSS_LENGTH );
+	}
 }
 
 
 //////////////////////////////////////////////////////////////////////
-// -------------------------------------------------------------------
-//	スペル背景操作共通部
-//	※内部でm_nCountを参照しますので必ず使用していてください
-// -------------------------------------------------------------------
+//--------------------------------------------------------------------
+//	アイテム関連
+//--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-function DrawRotateCenter( let szTexFile, let nSpeed ){
-	SetGraphicAngle( 0, 0, m_nCount * nSpeed );
-	DrawCenter( szTexFile );
-	SetGraphicAngle( 0, 0, 0 );
+/**
+*	博麗小符アイテムを自身の位置に落下させます。
+*
+*	@param nNum 個数
+*/
+function DropItemHakureiTHC( let nNum ){
+	let aanPutItemPosList = GetDropItemPosListCircle( GetPlayerX(), GetPlayerY(), nNum );
+	ascent( let i in 0..length( aanPutItemPosList ) ){
+		let anPutItemPos = aanPutItemPosList[ i ];
+		SetItemQueue( ITEMEX_HAKUREI, anPutItemPos[ FLAN_ITEM_X ], anPutItemPos[ FLAN_ITEM_Y ], 2.8, 270 );
+	}
 }
 
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	移動処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	ボスを減速移動でホームポジションへ移動させます。
+*	nFrame>=2としてください。また、nFrame経過するまで他の移動を行わないでください。
+*	y座標を-0.1～0.1の範囲でランダムにずらすこともできます。
+*
+*	@param nFrame	移動完了までのフレーム数
+*	@param bRandomY	y座標をランダムにずらすか
+*/
+task BossMoveHome( let nFrame, let bRandomY ){
+	let nY = FLAN_BOSS_HOME_Y;
+	if( bRandomY ){ nY += RandBlur( 0.1 ); }
+	SlowMove( FLAN_BOSS_HOME_X, nY, nFrame );
+}
+
+/**
+*	ボスの基本移動です。減速移動で、移動量はランダムです。
+*	xは自機方向に移動します。FLAN_BOSS_MOVE_MARGIN_SIDEを超える場合は反対に移動します。
+*	yはFLAN_BOSS_HOME_Y方向に移動します。
+*	nFrame>=2としてください。また、nFrame経過するまで他の移動を行わないでください。
+*
+*	@param nMinMoveX	ランダム最小x移動量
+*	@param nMaxMoveX	ランダム最大x移動量
+*	@param nMinMoveY	ランダム最小y移動量
+*	@param nMaxMoveY	ランダム最大y移動量
+*	@param nFrame		移動完了までのフレーム数
+*/
+task BossMove( let nMinMoveX, let nMaxMoveX, let nMinMoveY, let nMaxMoveY, let nFrame ){
+	let nX = GetX();
+	let nY = GetY();
+	let nMoveX = rand( nMinMoveX, nMaxMoveX );
+	let nMoveY = rand( nMinMoveY, nMaxMoveY );
+	if( nX > GetPlayerX() ){
+		if( nX - nMoveX >= CL_MIN_X + FLAN_BOSS_MOVE_MARGIN_SIDE ){ nMoveX = - nMoveX; }
+	}
+	else{
+		if( nX + nMoveX >= CL_MAX_X - FLAN_BOSS_MOVE_MARGIN_SIDE ){ nMoveX = - nMoveX; }
+	}
+	if( nY > FLAN_BOSS_HOME_Y ){ nMoveY = - nMoveY; }
+	SlowMove( nX + nMoveX, nY + nMoveY, nFrame );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+// 共通処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	初期化時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*/
+function onInitialize( let nArgv, let nLevel ){
+	if( !GetCommonDataDefault( CL_CD_CDNS_INITIALIZED, false ) ){ CLCommonNameSpaceInitialize(); }
+	SetLevelTemporary();
+	m_bStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_ENABLE, false );
+	m_nLevel = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 0 );
+	let nStageNumber = GetCommonDataDefaultEx( CL_CDNS_RESULT, FLAN_CD_STAGE, - 1 );
+	if( nStageNumber >= 0 && nStageNumber <= 5 ){ m_bStagePractice = true; }
+	else if( nStageNumber == 7 ){ m_bSpellPractice = true; }
+	onInitializeTHC( nArgv, m_nLevel );
+}
+
+/**
+*	毎フレームごとに呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onMainLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	onMainLoopTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+}
+
+/**
+*	終了時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onFinalize( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	onFinalizeTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+	if( GotSpellCardBonus() ){ DropItemHakureiTHC( 50 ); }
+	if( m_nCLCutInSpellID >= 0 ){
+		AddCommonDataExArray(				CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_COUNT_TRY,	m_nCLCutInSpellID, 1, CL_SPELL_TOTAL, 0 );
+		if( GotSpellCardBonus() ){
+			AddCommonDataExArray(			CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_COUNT_GET,	m_nCLCutInSpellID, 1, CL_SPELL_TOTAL, 0 );
+			SetCommonDataExArrayMax(		CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_HISCORE,	m_nCLCutInSpellID, GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_BOSS_SPELL_SCORE, -1 ), CL_SPELL_TOTAL, 0 );
+			if( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) == 7 ){
+				SetCommonDataExArrayMax(	CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_RELEASE,	m_nCLCutInSpellID, CL_SPELL_HISTORY_RELEASE_LEVEL_COMMENT, CL_SPELL_TOTAL, 0 );
+			}
+		}
+		else{	SetCommonDataExArrayMax(	CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_RELEASE,	m_nCLCutInSpellID, CL_SPELL_HISTORY_RELEASE_LEVEL_TITLE, CL_SPELL_TOTAL, 0 ); }
+	}
+	DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID );
+	__CommonEnemyShadowFinalizeTHC();
+}
+
+/**
+*	絵画時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onDrawLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	onDrawLoopTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+	if( OnEnemySpell() && !GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_ENABLE, false ) ){ CLDrawSpellCardEffect(); }
+}
+
+/**
+*	背景絵画時に呼ばれます。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function onBackGround( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	if( !( GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG, true ) || GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, true ) ) ){ return; }
+	onBackGroundTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	固有処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	敵固有のタスクです。onInitialize()より1フレーム後に呼ばれます。
+*	ここに固有の動作を記述します。
+*
+*	@param nArgv 任意の値
+*	@param nLevel レベル(0～3)
+*/
+task MainTask( let nArgv, let nLevel ){
+	MainTaskTHC( nArgv, nLevel );
+}

@@ -1,0 +1,55 @@
+// ‘ÌŒ±”ÅC‚É‚Äíœ‚µ‚½’è‹`
+// ‘K’eiÔ—Î‹óÂ‡j///////////////////////////////////////
+ShotData{
+	id = 
+	rect = ( 0, 242, 19, 260 )
+	delay_color = ( 255, 63, 63 )
+	angular_velocity = 2.5
+}
+ShotData{
+	id = 
+	rect = ( 60, 242, 79, 260 )
+	delay_color = ( 63, 255, 63 )
+	angular_velocity = 2.5
+}
+ShotData{
+	id = 
+	rect = ( 80, 242, 99, 260 )
+	delay_color = ( 63, 255, 255 )
+	angular_velocity = 2.5
+}
+ShotData{
+	id = 
+	rect = ( 100, 242, 119, 260 )
+	delay_color = ( 63, 63, 255 )
+	angular_velocity = 2.5
+}
+ShotData{
+	id = 
+	rect = ( 120, 242, 139, 260 )
+	delay_color = ( 255, 63, 255 )
+	angular_velocity = 2.5
+}
+
+// ”½“]Œõü ////////////////////////////////////////////////
+ShotData{
+	id = 
+	rect = ( 385, 239, 409, 267 )
+	delay_color = ( 255, 255, 255 )
+}
+ShotData{
+	id = 
+	rect = ( 411, 239, 435, 267 )
+	delay_color = ( 255, 63, 63 )
+}
+ShotData{
+	id = 
+	rect = ( 437, 239, 461, 267 )
+	delay_color = ( 255, 63, 255 )
+}
+ShotData{
+	id = 
+	rect = ( 463, 239, 487, 267 )
+	delay_color = ( 63, 63, 255 )
+}
+

@@ -1,0 +1,240 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 4(橙・藍後半)
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	スクリプトここから
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	THCELをインクルード
+//	(FLAN/THCELへのインクルードはTHCELが勝手にやってくれます)
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\Zako.dnh"
+#include_function ".\INCLUDE\BossAnimation.dnh"
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	/**	デフォルトアイテムの落下量を設定します。 */
+	ENEMY_ITEMEX_NUM_DEFAULT = 0;
+	/**	被弾判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_A = 13;
+	/**	接触判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_B = 8;
+	/**	onMainLoopへ処理をまわさないよう設定します。(まわしても何の処理も無い) */
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+	FLAN_ESS_NOGONE = true;
+
+//////////////////////////////////////////////////////////////////////
+//	定数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数宣言
+//////////////////////////////////////////////////////////////////////
+
+/** 絵画のz軸回転角度 */
+let m_nEnemyAngle = 0;
+
+//////////////////////////////////////////////////////////////////////
+//	固有動作実装部  ボス個別ライブラリからのコピペ
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	回転付きボス描画
+*	DrawBossの代わりに使用する
+*	@param szImageFile	ボス画像ファイル
+*/
+function DrawChenRan( let szImageFile ){
+	SetGraphicAngle( 0, 0, m_nEnemyAngle );
+	_DrawBoss( szImageFile, GetX(), GetY() );
+	SetGraphicAngle( 0, 0, 0 );
+}
+
+/**
+*	回転設定（回転力減衰）
+*	移動開始＋SetAction後に同時に呼び出すこと
+*	終了際に回転力が落ちる（通常はこちら）
+*	@param nFrame	回転（移動）完了までのフレーム数
+*/
+task SetRoll( let nFrame ){
+	let nCount = m_nFlanCount;
+	loop( nFrame ){
+		if( GetSpeed() > 0.1 ){ break; }
+		yield;
+	}
+	nFrame -= m_nFlanCount - nCount;
+	if( nFrame < 1 ){ break; }
+ 	let nAssign = 1;
+	alternative( m_nAction )
+	case( ACT_MOVE ){
+		if( cos( GetAngle() ) < 0 ){ nAssign = - nAssign; }
+	}
+	case( ACT_MOVE_L ){ nAssign = - nAssign; }
+	case( ACT_MOVE_R ){ }
+	others{ nAssign = 0; }
+	let nMinRollAngle = 12;
+	let nMaxRollAngle = 24;
+	ascent( let i in nMinRollAngle .. nMinRollAngle + nFrame ){
+		let j = i;
+		if( j > nMaxRollAngle ){ j = nMaxRollAngle; }
+		m_nEnemyAngle -= j * nAssign;
+	}
+	descent( let i in nMinRollAngle .. nMinRollAngle + nFrame ){
+		let j = i;
+		if( j > nMaxRollAngle ){ j = nMaxRollAngle; }
+		m_nEnemyAngle += j * nAssign;
+		yield;
+	}
+	m_nEnemyAngle = 0;
+}
+
+/**
+*	回転設定（回転力一定）
+*	移動開始＋SetAction後に同時に呼び出すこと
+*	終了際に回転力が落ちない（画面外への移動等に使用）
+*	@param nFrame	回転（移動）完了までのフレーム数
+*/
+task SetRollConstant( let nFrame ){
+	let nCount = m_nFlanCount;
+	loop( nFrame ){
+		if( GetSpeed() > 0.1 ){ break; }
+		yield;
+	}
+	nFrame -= m_nFlanCount - nCount;
+	if( nFrame < 1 ){ break; }
+	let nRollAngle = 24;
+	alternative( m_nAction )
+	case( ACT_MOVE ){
+		if( cos( GetAngle() ) < 0 ){ nRollAngle = - nRollAngle; }
+	}
+	case( ACT_MOVE_L ){ nRollAngle = - nRollAngle; }
+	case( ACT_MOVE_R ){ }
+	others{ nRollAngle = 0; }
+	loop( nFrame ){
+		m_nEnemyAngle += nRollAngle;
+		yield;
+	}
+	m_nEnemyAngle = 0;
+}
+
+//////////////////////////////////////////////////////////////////////
+//	共通動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵固有のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nArgv, let nLevel ){
+		yield;
+		let ef_time=int(GetArgument()/10);
+		SetShotDirectionType(ABSOLUTE);
+		SetAction(ACT_MOVE,400);
+		SetRoll(400);
+		CreateLaserA(0,GetX(),GetY(),700,10,US_BEAM_WHITE,ef_time+50);
+		SetLaserDataA(0,0,GetAngle(),0,0,0,0);
+		SetShotKillTime(0,ef_time+40);
+		FireShot(0);
+		__Wait(ef_time);
+		SetSpeed(6);
+		if(GetArgument()%10==0){
+			while(IsOut(-30)){yield;}
+			CreateLaser01(GetX(),GetY(),GetSpeed(),GetAngle(),300,7,US_BALL_S_A_ORANGE,0);
+			while(!IsOut(-30)){
+				loop([10,15,20,20][nLevel]){CreateShot01(GetX(),GetY(),rand(1,[2,3,4,4.5][nLevel]),rand(0,360),US_SCALE_SKY,10);}
+				PlaySEEx(seShot1);
+				DropItemTHC( 2 );
+				__Wait([20,16,12,7][nLevel]);
+			}
+		}
+		if(GetArgument()%10==1){
+			while(IsOut(-30)){yield;}
+			CreateLaser01(GetX(),GetY(),GetSpeed(),GetAngle(),300,7,US_BALL_S_A_GREEN,0);
+			while(!IsOut(-30)){
+				_RoundShot02(GetX(),GetY(),0,0.05,[3,4,5,5][nLevel],GetAngleToPlayer,[1,5,9,13][nLevel],US_BILL_PURPLE, 10 );
+				PlaySEEx(seShot2);
+				DropItemTHC( 2 );
+				__Wait([8,6,5,3][nLevel]);
+			}
+		}
+		while(!IsOut(30)){yield;}
+		VanishEnemy();
+
+	}
+
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( let nArgv, let nLevel ){
+//		CreateDebugWindow();
+		let imgboss=[dotBossChen,dotBossRan][GetArgument()%10];
+		LoadGraphic(imgboss);
+		SetLife(65000);
+		SetInvincibility( 1500 );
+		BehaviorBoss(ACT_STAND3);
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		let imgboss=[dotBossChen,dotBossRan][GetArgument()%10];
+		DrawChenRan( imgboss );
+	}
+
+}
+

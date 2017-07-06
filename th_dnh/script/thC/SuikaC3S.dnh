@@ -1,0 +1,399 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージPh　中ボス　伊吹 萃香　スペル3
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[SuikaC - スペル3]
+#Text[ステージPh 中ボス
+伊吹 萃香]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Suika.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 105;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/**	内向き弾発射源からボスまでの距離 */
+	let m_nGapLength = GetGapLength( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y, CL_MAX_X, CL_MAX_Y ) + 20;
+
+	/** 弾パラメーター */
+	let m_nMinSpeed = 2;
+	let m_nMaxSpeed = 5;
+	let m_anGraphic = [ US_RICE_S_PURPLE, US_RICE_S_BLUE, US_RICE_S_SKY ];
+	let m_nDelay = 6;
+
+	/** 弾SEを鳴らすか */
+	let m_bPlaySE = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		else{ CheckTimer(); }
+		SetTimer( 63 );
+		SetLife( 500 );
+		SetDamageRate( 5, 5 );
+		let nClipX = m_nGapLength - ( CL_MAX_X - FLAN_BOSS_HOME_X ) + 5;
+		let nClipYU = m_nGapLength - ( FLAN_BOSS_HOME_Y - CL_MIN_Y ) + 5;
+		let nClipYD = m_nGapLength - ( CL_MAX_Y - FLAN_BOSS_HOME_Y ) + 5;
+		SetShotAutoDeleteClip( nClipX, nClipYU, nClipX, nClipYD );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_EXPH + CL_TTH_CHARACTER_NAME_EXPH_SUIKA;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出＋個別終了設定 */
+		if( m_bStage && !m_bSpellPractice ){
+			DropItemTHC( 24 );
+			DropItemExtendTHC();
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_X, GetX() ); 
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_Y, GetY() ); 
+		}
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_PHANTASM + CL_TTH_SPELL_EXPH_HALFWAY_3;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		/** ランダム外向き弾 */
+		SetAction( ACT_SHOT_B5, 6000 );
+		PlaySEEx( sePower );
+		Concentration01( 120 );
+		__Wait( 120 );
+		RandomOutShot();
+		ShotSE();
+		SetDamageRate( 14, 17.5 );
+		while( GetRatio() > 0.8 ){ yield; }
+
+		/** ランダム反転弾＋自機吸引 */
+		RandomTurnShot( 240 );
+		AspiratePlayer();
+		__Wait( 120 );
+		PlaySEEx( sePower );
+		Concentration01( 6000 );
+		__Wait( 60 + m_nDelay );
+		m_bPlaySE = false;
+		__Wait( 120 - m_nDelay );
+		m_bPlaySE = true;
+
+		/** ランダム内向き弾 */
+		RandomInShot();
+		loop{
+			DeleteEnemyShotImmediatelyInCircle( SHOT, FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y, 5 );
+			yield;
+		}
+
+	}
+
+	/**
+	*	ランダム外向き弾
+	*/
+	task RandomOutShot{
+
+		let nX = FLAN_BOSS_HOME_X;
+		let nY = FLAN_BOSS_HOME_Y;
+		let nAngle = - 90;
+		let nRollAngle = 90;
+		let nRandAngle = nRollAngle / 2;
+
+		loop{
+			if( GetRatio() < 0.8 ){ break; }
+			let _nAngle = nAngle;
+			loop( 3 ){
+				let nSpeed = rand( m_nMinSpeed, m_nMaxSpeed );
+				let __nAngle = _nAngle + RandBlur( nRandAngle );
+				OutInShot( nX, nY, nSpeed, __nAngle );
+				_nAngle += 120;
+			}
+			yield;
+			nAngle += nRollAngle;
+		}
+
+	}
+
+	/**
+	*	ランダム内向き弾
+	*/
+	task RandomInShot{
+
+		let nX = FLAN_BOSS_HOME_X;
+		let nY = FLAN_BOSS_HOME_Y;
+		let nAngle = - 90;
+		let nRollAngle = - 90;
+		let nRandAngle = nRollAngle / 2;
+
+		loop{
+			let _nAngle = nAngle;
+			loop( 3 ){
+				let nSpeed = rand( m_nMinSpeed, m_nMaxSpeed ) * 0.66;
+				let __nAngle = _nAngle + RandBlur( nRandAngle );
+				let _nX = GetGapX( nX, m_nGapLength, __nAngle );
+				let _nY = GetGapY( nY, m_nGapLength, __nAngle );
+				OutInShot( _nX, _nY, nSpeed, __nAngle - 180 );
+				_nAngle += 120;
+			}
+			yield;
+			nAngle += nRollAngle;
+		}
+
+	}
+
+	/**
+	*	外向きor内向き弾
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nSpeed	速度
+	*	@param nAngle	角度
+	*/
+	task OutInShot( let nX, let nY, let nSpeed, let nAngle ){
+
+		let nGraphic = m_anGraphic[ rand_int( 0, 2 ) ];
+		CreateShot01( nX, nY, nSpeed, nAngle, nGraphic, m_nDelay );	
+
+	}
+
+	/**
+	*	ランダム反転弾
+	*	@param nTotalFrame	攻撃終了（反転）までのフレーム数
+	*/
+	task RandomTurnShot( let nTotalFrame ){
+
+		let nX = FLAN_BOSS_HOME_X;
+		let nY = FLAN_BOSS_HOME_Y;
+		let nAngle = - 90;
+		let nRollAngle = 90;
+		let nRandAngle = nRollAngle / 2;
+
+		while( nTotalFrame > m_nDelay + 60 ){
+			let _nAngle = nAngle;
+			loop( 3 ){
+				let nSpeed = rand( m_nMinSpeed, m_nMaxSpeed );
+				let nAccelSpeed = - nSpeed / nTotalFrame;
+				let nMaxSpeed = - nSpeed * 0.8;
+				let __nAngle = _nAngle + RandBlur( nRandAngle );
+				let nGraphic = m_anGraphic[ rand_int( 0, 2 ) ];
+				CreateShot02( nX, nY, nSpeed, __nAngle, nAccelSpeed, nMaxSpeed, nGraphic, m_nDelay );
+				_nAngle += 120;
+			}
+			yield;
+			nAngle += nRollAngle;
+			nTotalFrame --;
+		}
+
+	}
+
+	/**
+	*	弾SE
+	*/
+	task ShotSE{
+
+		let nFrame = 5;
+		while( m_bPlaySE ){
+			PlaySEEx( seShot1 );
+			__Wait( nFrame );
+		}
+		while( !m_bPlaySE ){ yield; }
+		nFrame = 5;
+		loop{
+			PlaySEEx( seShot3 );
+			__Wait( nFrame );
+		}
+
+	}
+
+	/**
+	*	自機吸引
+	*/
+	task AspiratePlayer{
+
+		__Wait( 240 );
+
+		let nAspirate = 0;
+		SetAspirate();
+
+		loop{
+			let nAngle = GetAngleToPlayer() - 180;
+			let nAspX = nAspirate * cos( nAngle );
+			let nAspY = nAspirate * sin( nAngle );
+			SetPlayerX( GetPlayerX() + nAspX );
+			SetPlayerY( GetPlayerY() + nAspY );
+			yield;
+		}
+
+		/** 吸引力設定 */
+		task SetAspirate{
+			let nFrame = 120;
+			let nAddAspirate = 2 / nFrame;
+			loop( nFrame ){
+				nAspirate += nAddAspirate;
+				yield;
+			}
+		}
+
+	}
+
+	/**
+	*	ライフorタイム比率取得
+	*/
+	function GetRatio{
+
+		let nMaxLife = 500;
+		let nMaxCount = 60 * 60;
+		let nLifeRatio = GetLife() / nMaxLife;
+		let nTimeRatio = ( nMaxCount - ( m_nFlanCount - 180 ) ) / nMaxCount;
+
+		return Min( nLifeRatio, nTimeRatio );
+
+
+	}
+
+}

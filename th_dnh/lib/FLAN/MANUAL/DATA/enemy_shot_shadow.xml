@@ -1,0 +1,520 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="Enemy / Shot / Shadow" file="enemy_shot_shadow">
+	<category caption="概要" link="true">
+		<paragraph>
+			敵・使い魔・弾スクリプトで利用可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/ENEMY_SHOT_SHADOW/</path>となります。
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="書換不可定数" link="true">
+		<define key="FLAN_ITEM_X" type="var">
+			<paragraph>
+				敵がアイテムを落とすX座標を示す要素番号です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ITEM_Y" type="var">
+			<paragraph>
+				敵がアイテムを落とすY座標を示す要素番号です。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="書換可能定数" link="true">
+		<define key="FLAN_ESS_NOGONE" type="var">
+			<paragraph>
+				この定数にtrueを代入すると画面外に出ても自動的に自殺しません。<br />
+				デフォルト値は<value>false</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ESS_FLOATMOVE_GAP_DEFAULT" type="var">
+			<paragraph>
+				DrawChrにおけるキャラ浮遊効果のギャップ値。<br />
+				デフォルト値は<value>8</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ESS_FLOATMOVE_SPEED_DEFAULT" type="var">
+			<paragraph>
+				DrawChrにおけるキャラ浮遊効果の速度。<br />
+				デフォルト値は<value>2.5</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ESS_NOCALL_MAINLOOP" type="var">
+			<paragraph>
+				この定数に<value>true</value>を代入すると<code>onMainLoop</code>に処理を回しません。
+				(気休め程度ですがの負荷低減効果があります。)<br />
+				<caution>
+					この定数を<value>true</value>にしても<code>onMainLoop</code>は必須です。
+					(ないとコンパイル時にエラーを起こします。)
+				</caution><br />
+				デフォルト値は<value>false</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ESS_NOCALL_DRAWLOOP" type="var">
+			<paragraph>
+				この定数に<value>true</value>を代入すると<code>onDrawLoop</code>に処理を回しません。
+				(気休め程度ですがの負荷低減効果があります。)<br />
+				<caution>
+					この定数を<value>true</value>にしても<code>onDrawLoop</code>は必須です。
+					(ないとコンパイル時にエラーを起こします。)
+				</caution><br />
+				デフォルト値は<value>false</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ITEM_WIDTH" type="var">
+			<paragraph>
+				敵が落とすアイテムのばら撒き半径を設定します。
+				デフォルト値は<value>32</value>です。
+			</paragraph>
+		</define>
+		<define key="FLAN_ITEM_OUT_COMPENSATION" type="var">
+			<paragraph>
+				アイテムが画面側方外にはみ出るのを補正する精度を設定します。
+				値を増やすほど画面外にアイテムがはみ出にくくなりますが代わりに重くなります(最悪フリーズします)。
+				逆に値を減らすと軽くなりますが画面外にアイテムがはみ出やすくなります。
+				デフォルト値は<value>20</value>です。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="メンバ変数" link="true">
+	</category>
+	<category caption="定型弾A">
+		<paragraph>
+			定型弾を発射する処理の関数群です。
+			大半の関数が定型弾Bカテゴリのラッパーです。
+		</paragraph>
+		<define key="RoundShot">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>遅延フレーム時間</argument>
+			<argument>初速度</argument>
+			<argument>加速度</argument>
+			<argument>最大速度</argument>
+			<argument>Way数</argument>
+			<argument>基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定した座標から<caption>全方位弾</caption>を発射します。
+				加速度・最大速度によって<code>CreateShot01</code>か<code>CreateShot02</code>かを判別します。
+				<code>__RoundShot02</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="RoundShotAnimationPos">
+			<argument>モーション開始時のX座標</argument>
+			<argument>モーション終了時のX座標</argument>
+			<argument>X座標変化のパラメータリスト</argument>
+			<argument>モーション開始時のY座標</argument>
+			<argument>モーション終了時のY座標</argument>
+			<argument>Y座標変化のパラメータリスト</argument>
+			<argument>遅延フレーム時間</argument>
+			<argument>初速度</argument>
+			<argument>加速度</argument>
+			<argument>最大速度</argument>
+			<argument>Way数</argument>
+			<argument>基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				<caption>発射座標アニメーション付きで全方位弾を発射</caption>します。
+				加速度・最大速度によって<code>CreateShot01</code>か<code>CreateShot02</code>かを判別します。
+				<code>__RoundShot02</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="RoundShotAnimationDelay">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>モーション開始時遅延フレーム数</argument>
+			<argument>モーション終了時の遅延フレーム数</argument>
+			<argument>遅延フレーム数変化のパラメータリスト</argument>
+			<argument>初速度</argument>
+			<argument>加速度</argument>
+			<argument>最大速度</argument>
+			<argument>Way数</argument>
+			<argument>基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定した座標から<caption>遅延フレーム時間アニメーション付きで全方位弾を発射</caption>します。
+				加速度・最大速度によって<code>CreateShot01</code>か<code>CreateShot02</code>かを判別します。
+				<code>__RoundShot02</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="RoundShotAnimationSpeed">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>遅延フレーム時間</argument>
+			<argument>モーション開始時の速度</argument>
+			<argument>モーション終了時の速度</argument>
+			<argument>速度変化のパラメータリスト</argument>
+			<argument>モーション開始時の加速度</argument>
+			<argument>モーション終了時の加速度</argument>
+			<argument>加速度変化のパラメータリスト</argument>
+			<argument>モーション開始時の最大速度</argument>
+			<argument>モーション終了時の最大速度</argument>
+			<argument>最大速度変化のパラメータリスト</argument>
+			<argument>Way数</argument>
+			<argument>基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定した座標から<caption>速度アニメーション付きで全方位弾を発射</caption>します。
+				加速度・最大速度によって<code>CreateShot01</code>か<code>CreateShot02</code>かを判別します。
+				<code>__RoundShot02</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="WayShot">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>遅延フレーム時間</argument>
+			<argument>初速度</argument>
+			<argument>加速度</argument>
+			<argument>最大速度</argument>
+			<argument>Way数</argument>
+			<argument>Wayの射程に含まれる角度幅</argument>
+			<argument>基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定した座標から<caption>Way弾</caption>を発射します。
+				加速度・最大速度によって<code>CreateShot01</code>か<code>CreateShot02</code>かを判別します。
+				<code>__WayShot02</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="WayShotAnimationPos">
+			<argument>モーション開始時のX座標</argument>
+			<argument>モーション終了時のX座標</argument>
+			<argument>X座標変化のパラメータリスト</argument>
+			<argument>モーション開始時のY座標</argument>
+			<argument>モーション終了時のY座標</argument>
+			<argument>Y座標変化のパラメータリスト</argument>
+			<argument>遅延フレーム時間</argument>
+			<argument>初速度</argument>
+			<argument>加速度</argument>
+			<argument>最大速度</argument>
+			<argument>Way数</argument>
+			<argument>Wayの射程に含まれる角度幅</argument>
+			<argument>基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				<caption>発射座標アニメーション付きでWay弾を発射</caption>します。
+				加速度・最大速度によって<code>CreateShot01</code>か<code>CreateShot02</code>かを判別します。
+				<code>__WayShot02</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="WayShotAnimationDelay">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>モーション開始時遅延フレーム数</argument>
+			<argument>モーション終了時の遅延フレーム数</argument>
+			<argument>遅延フレーム数変化のパラメータリスト</argument>
+			<argument>初速度</argument>
+			<argument>加速度</argument>
+			<argument>最大速度</argument>
+			<argument>Way数</argument>
+			<argument>Wayの射程に含まれる角度幅</argument>
+			<argument>基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定した座標から<caption>遅延フレーム時間アニメーション付きでWay弾を発射</caption>します。
+				加速度・最大速度によって<code>CreateShot01</code>か<code>CreateShot02</code>かを判別します。
+				<code>__WayShot02</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="WayShotAnimationSpeed">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>遅延フレーム時間</argument>
+			<argument>モーション開始時の速度</argument>
+			<argument>モーション終了時の速度</argument>
+			<argument>速度変化のパラメータリスト</argument>
+			<argument>モーション開始時の加速度</argument>
+			<argument>モーション終了時の加速度</argument>
+			<argument>加速度変化のパラメータリスト</argument>
+			<argument>モーション開始時の最大速度</argument>
+			<argument>モーション終了時の最大速度</argument>
+			<argument>最大速度変化のパラメータリスト</argument>
+			<argument>Way数</argument>
+			<argument>Wayの射程に含まれる角度幅</argument>
+			<argument>基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定した座標から<caption>速度アニメーション付きでWay弾を発射</caption>します。
+				加速度・最大速度によって<code>CreateShot01</code>か<code>CreateShot02</code>かを判別します。
+				<code>__WayShot02</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="GravityShot">
+			<argument>X座標</argument>
+			<argument>Y座標</argument>
+			<argument>弾速度</argument>
+			<argument>基本角度</argument>
+			<argument>重力の強さ</argument>
+			<argument>重力の方向</argument>
+			<argument>弾種</argument>
+			<argument>遅延時間</argument>
+			<paragraph>
+				指定した座標から<caption>重力で加速する</caption>を発射します。
+				<code>CreateShot12</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="定型弾B">
+		<paragraph>
+			定型弾を発射する処理の関数群です。
+			拡張型内分カウンタを使用することでトリッキーな弾幕を作成出来ます。
+			パラメータリストには内分カウンタ設定用定数を使用します。
+		</paragraph>
+		<define key="__RoundShot01">
+			<argument>モーション開始時のX座標</argument>
+			<argument>モーション終了時のX座標</argument>
+			<argument>X座標変化のパラメータリスト</argument>
+			<argument>モーション開始時のY座標</argument>
+			<argument>モーション終了時のY座標</argument>
+			<argument>Y座標変化のパラメータリスト</argument>
+			<argument>モーション開始時遅延フレーム数</argument>
+			<argument>モーション終了時の遅延フレーム数</argument>
+			<argument>遅延フレーム数変化のパラメータリスト</argument>
+			<argument>モーション開始時の速度</argument>
+			<argument>モーション終了時の速度</argument>
+			<argument>速度変化のパラメータリスト</argument>
+			<argument>Way数</argument>
+			<argument>Way間隔変化のパラメータリスト</argument>
+			<argument>狙う基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定した設定のとおりに<caption>等速全方位弾</caption>を発射します。
+				<code>__RoundShot02</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="__RoundShot02">
+			<argument>モーション開始時のX座標</argument>
+			<argument>モーション終了時のX座標</argument>
+			<argument>X座標変化のパラメータリスト</argument>
+			<argument>モーション開始時のY座標</argument>
+			<argument>モーション終了時のY座標</argument>
+			<argument>Y座標変化のパラメータリスト</argument>
+			<argument>モーション開始時遅延フレーム数</argument>
+			<argument>モーション終了時の遅延フレーム数</argument>
+			<argument>遅延フレーム数変化のパラメータリスト</argument>
+			<argument>モーション開始時の速度</argument>
+			<argument>モーション終了時の速度</argument>
+			<argument>速度変化のパラメータリスト</argument>
+			<argument>モーション開始時の加速度</argument>
+			<argument>モーション終了時の加速度</argument>
+			<argument>加速度変化のパラメータリスト</argument>
+			<argument>モーション開始時の最大速度</argument>
+			<argument>モーション終了時の最大速度</argument>
+			<argument>最大速度変化のパラメータリスト</argument>
+			<argument>Way数</argument>
+			<argument>Way間隔変化のパラメータリスト</argument>
+			<argument>狙う基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定した設定のとおりに<caption>等加速全方位弾</caption>を発射します。
+				<code>__WayShot02</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="__WayShot01">
+			<argument>モーション開始時のX座標</argument>
+			<argument>モーション終了時のX座標</argument>
+			<argument>X座標変化のパラメータリスト</argument>
+			<argument>モーション開始時のY座標</argument>
+			<argument>モーション終了時のY座標</argument>
+			<argument>Y座標変化のパラメータリスト</argument>
+			<argument>モーション開始時遅延フレーム数</argument>
+			<argument>モーション終了時の遅延フレーム数</argument>
+			<argument>遅延フレーム数変化のパラメータリスト</argument>
+			<argument>モーション開始時の速度</argument>
+			<argument>モーション終了時の速度</argument>
+			<argument>速度変化のパラメータリスト</argument>
+			<argument>Way数</argument>
+			<argument>Wayの射程に含まれる角度</argument>
+			<argument>Way間隔変化のパラメータリスト</argument>
+			<argument>狙う基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定した設定のとおりに<caption>等速Way弾</caption>を発射します。
+				<code>__WayShot02</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="__WayShot02">
+			<argument>モーション開始時のX座標</argument>
+			<argument>モーション終了時のX座標</argument>
+			<argument>X座標変化のパラメータリスト</argument>
+			<argument>モーション開始時のY座標</argument>
+			<argument>モーション終了時のY座標</argument>
+			<argument>Y座標変化のパラメータリスト</argument>
+			<argument>モーション開始時遅延フレーム数</argument>
+			<argument>モーション終了時の遅延フレーム数</argument>
+			<argument>遅延フレーム数変化のパラメータリスト</argument>
+			<argument>モーション開始時の速度</argument>
+			<argument>モーション終了時の速度</argument>
+			<argument>速度変化のパラメータリスト</argument>
+			<argument>モーション開始時の加速度</argument>
+			<argument>モーション終了時の加速度</argument>
+			<argument>加速度変化のパラメータリスト</argument>
+			<argument>モーション開始時の最大速度</argument>
+			<argument>モーション終了時の最大速度</argument>
+			<argument>最大速度変化のパラメータリスト</argument>
+			<argument>Way数</argument>
+			<argument>Wayの射程に含まれる角度</argument>
+			<argument>Way間隔変化のパラメータリスト</argument>
+			<argument>狙う基本角度</argument>
+			<argument>弾種</argument>
+			<paragraph>
+				指定した設定のとおりに<caption>等加速Way弾</caption>を発射します。
+			</paragraph>
+		</define>
+		<define key="__RoundShotScript">
+			<argument>モーション開始時のX座標</argument>
+			<argument>モーション終了時のX座標</argument>
+			<argument>X座標変化のパラメータリスト</argument>
+			<argument>モーション開始時のY座標</argument>
+			<argument>モーション終了時のY座標</argument>
+			<argument>Y座標変化のパラメータリスト</argument>
+			<argument>モーション開始時遅延フレーム数</argument>
+			<argument>モーション終了時の遅延フレーム数</argument>
+			<argument>遅延フレーム数変化のパラメータリスト</argument>
+			<argument>モーション開始時の速度</argument>
+			<argument>モーション終了時の速度</argument>
+			<argument>速度変化のパラメータリスト</argument>
+			<argument>Way数</argument>
+			<argument>Way間隔変化のパラメータリスト</argument>
+			<argument>狙う基本角度</argument>
+			<argument>スクリプト名</argument>
+			<argument>スクリプトに渡す任意の値</argument>
+			<paragraph>
+				指定した設定のとおりに<caption>全方位にスクリプト弾を発射</caption>します。
+				<code>__RoundShot02</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="__WayShotScript">
+			<argument>モーション開始時のX座標</argument>
+			<argument>モーション終了時のX座標</argument>
+			<argument>X座標変化のパラメータリスト</argument>
+			<argument>モーション開始時のY座標</argument>
+			<argument>モーション終了時のY座標</argument>
+			<argument>Y座標変化のパラメータリスト</argument>
+			<argument>モーション開始時遅延フレーム数</argument>
+			<argument>モーション終了時の遅延フレーム数</argument>
+			<argument>遅延フレーム数変化のパラメータリスト</argument>
+			<argument>モーション開始時の速度</argument>
+			<argument>モーション終了時の速度</argument>
+			<argument>速度変化のパラメータリスト</argument>
+			<argument>Way数</argument>
+			<argument>Wayの射程に含まれる角度</argument>
+			<argument>Way間隔変化のパラメータリスト</argument>
+			<argument>狙う基本角度</argument>
+			<argument>スクリプト名</argument>
+			<argument>スクリプトに渡す任意の値</argument>
+			<paragraph>
+				指定した設定のとおりに<caption>Way状にスクリプト弾を発射</caption>します。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="判定関連">
+		<paragraph>
+			判定関連の関数群です。
+		</paragraph>
+		<define key="IsOut">
+			<argument>画面端からの判定猶予距離</argument>
+			<return>画面端から指定の判定猶予距離以上はみ出ていればtrue</return>
+			<paragraph>
+				自分自身が<caption>画面から一定以上はみ出ているか</caption>判定します。
+				<code>IsOutPos</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="マイクロスレッド制御">
+		<paragraph>
+			主にマイクロスレッド制御関連の関数群です。
+		</paragraph>
+		<define key="WaitSpeedDown">
+			<argument>一時停止解除の条件となる速度</argument>
+			<paragraph>
+				自分自身のマイクロスレッドを一時停止して、<caption>一定速度以下になるまで待機</caption>します。
+			</paragraph>
+		</define>
+		<define key="WaitZeroSpeed">
+			<paragraph>
+				自分自身のマイクロスレッドを一時停止して、<caption>速度がゼロになるまで待機</caption>します。
+				<code>WaitSpeedDown</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="移動制御関連">
+		<paragraph>
+			主に移動制御関連の関数群です。
+		</paragraph>
+		<define key="SetPosition">
+			<argument>移動先のX座標</argument>
+			<argument>移動先のY座標</argument>
+			<paragraph>
+				自分自身を<caption>指定座標に瞬間移動</caption>させます。
+				<code>SetX</code> / <code>SetY</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="SetVector">
+			<argument>角度</argument>
+			<argument>速度</argument>
+			<paragraph>
+				自分自身の<caption>ベクトルを設定</caption>します。
+				<code>SetAngle</code> / <code>SetSpeed</code>のラッパーです。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="アイテム関連">
+		<paragraph>
+			アイテム関連の関数群です。
+		</paragraph>
+		<define key="GetDropItemPosList">
+			<argument>アイテムの数</argument>
+			<return>アイテム座標の配列<value>[ [ X1, Y1 ], [ X2, Y2 ], ... ]</value></return>
+			<paragraph>
+				<caption>アイテムを落とす座標をランダムに生成</caption>します。<br />
+			</paragraph>
+		</define>
+	</category>
+	<category caption="絵画関連">
+		<paragraph>
+			絵画関連機能です。
+			絵画時(<code>onDrawLoop</code> / <code>onBackGSpaceRound</code> / <code>onBottomObject</code> / <code>onTopObject</code>)にて呼び出してください。
+		</paragraph>
+		<define key="DrawChrGap">
+			<argument>貼り付ける画像のファイルパス</argument>
+			<argument>Y座標のズレ</argument>
+			<paragraph>
+				<caption>自分自身の座標にテクスチャを貼り付けます</caption>。
+				<code>__DrawChr</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="DrawChr">
+			<argument>テクスチャファイル名</argument>
+			<paragraph>
+				<caption>自分自身の座標にテクスチャを貼り付けます</caption>。
+				自動的に縦方向に正弦波運動し、あたかも浮遊しているかのように表現します。
+				<code>DrawChrGap</code>のラッパーです。
+			</paragraph>
+		</define>
+		<define key="DrawRotate">
+			<argument>貼り付ける画像のファイルパス</argument>
+			<argument>回転速度</argument>
+			<paragraph>
+				<caption>自分自身の座標にテクスチャを自動回転して貼り付けます</caption>。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="共通処理">
+		<paragraph>
+			このライブラリセットの読み込み対象となる全てのスクリプトで実行される共通処理です。<br />
+			<caution>
+				内部から自動的に呼ばれる関数です。
+				通常直接呼び出すことはありません。
+			</caution>
+		</paragraph>
+		<define key="__FlanCommonESSInitialize">
+			<paragraph>
+				該当<caption>スクリプトの共通初期化処理</caption>です。
+			</paragraph>
+		</define>
+	</category>
+</contents>

@@ -1,56 +1,148 @@
-script_enemy_main
-{
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 1d(毛玉雑魚)
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
-#include_function ".\INCLUDE\Enemy.dnh"
-#include_function ".\_index_UserShot.dnh"
 
-//変数宣言--------------------------------------
-	let Level=GetCommonData("Level");
-//タスクの作成----------------------------------
-task MainAction()
-{
-	yield;
-	_Wait(5);
-	let speed=0.6;
-	loop(20)
-	{
-		if( GetY() <= GetCenterY() )
-		{
-			CreateShot01(GetX(),GetY(),speed,GetAngleToPlayer(),US_SCALE_ORANGE,0);
-			speed+=0.3;
-			PlaySE(seShot3);
-			loop([999,999,20,6][Level]){yield;}
+//////////////////////////////////////////////////////////////////////
+//	スクリプトここから
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	THCELをインクルード
+//	(FLAN/THCELへのインクルードはTHCELが勝手にやってくれます)
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\Zako.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	/**	デフォルトアイテムの落下量を設定します。 */
+	ENEMY_ITEMEX_NUM_DEFAULT = [ 0, 1 ][ ItemDropStage(70) ];
+	/**	被弾判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_A = 13;
+	/**	接触判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_B = 0;
+	/**	onMainLoopへ処理をまわさないよう設定します。(まわしても何の処理も無い) */
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵の移動を管理するタスクです。
+	*
+	*	@param nLevel レベル(0～3)
+	*/
+	task DoMove( let nLevel ){
+		let spmax=GetSpeed();
+		let addangle=rand(-1,1);
+		ascent(i in 0..50){
+			SetSpeed(SlowDown( spmax , spmax/3 , i , 50 ));
+			yield;
+		}
+		ascent(i in 0..100){
+			SetAngle(GetAngle()+addangle);
+			yield;
 		}
 	}
-}
 
-//実行部分---------------------------------------
 
-	@Initialize
-	{
-		SetLife(8);
-		SetInvincibility( 10 );
-		MainAction();
-		LoadUserShotData(shotAll);
-	}
-	@MainLoop
-	{
-		Gone();
-		Deletemine();
-		PlayDamageSE(seDamage);
-		yield;
-		Collision(16 , 12);
-		m_nCount++;
-	}
-	@DrawLoop{DrawRKedama(64,0,m_nCount);}
-	@Finalize
-	{
-		DropItem( 2 , 20 );
-		if(BeVanished() == false && GetY() <= GetCenterY()+80 && rand(0,100)>60 && Level > 0)
-		{
-			SetShotDirectionType(PLAYER);
-			RoundShot01(GetX(),GetY(),1,0,[3,5,15,30][Level],US_SCALE_ORANGE,20);
-			SetShotDirectionType(ABSOLUTE);
+//////////////////////////////////////////////////////////////////////
+//	共通動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵固有のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nArgv, let nLevel ){
+		DoMove( nLevel );
+		if(nLevel==0){return;}
+		if(rand(0,100)>70){return;}
+		__Wait([0,55,45,30][nLevel]*rand(0.7,1.7));
+		ascent(i in 0..10){
+			if(GetY() >= GetCenterY()){break;}
+			CreateShot01(GetX(),GetY(),Smooth([1.1,1.1,1.5,2][nLevel],4,i,10),GetAngleToPlayer(),US_BALL_S_WHITE,0);
+			PlaySEEx(seShot3);
+			if(nLevel <= 1){break;}
+			loop([0,0,50,2][nLevel]){yield;}
 		}
+	}
+
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( let nArgv, let nLevel ){
+//		CreateDebugWindow();
+		SetLife( 3 );
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		DrawRKedama(RECT_R_KEDAMA_ORANGE,nCount);
 	}
 }

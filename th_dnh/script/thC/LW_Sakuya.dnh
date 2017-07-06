@@ -1,0 +1,280 @@
+
+#Title[Sakuya - ラストワード]
+#Text[十六夜 咲夜]
+#BackGround[User]
+#ScriptVersion[2]
+
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\__INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossSakuya;
+	let imgCutIn=cutSakuya;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgShadow=dotCircle6s;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_SAKUYA~imgFontList~[imgShadow];
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+		LoadSE(seSaku0);
+
+		// スペルカード設定
+		SetTimer(62);
+		SetLife(450);
+		SetDamageRate(10,0);
+		SetShotAutoDeleteClip(32,32,32,32);
+		SetEffectForZeroLife(60,0,0);
+		LastSpell;
+
+		// ボス基本処理、メイン処理
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// Slowキー判定
+		GetSlowCount;
+
+		// ボーナス値取得
+		m_nSpellBonus=GetSpellCardBonusScore;
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,16);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+120;
+		SlowMove(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName= "誘符「迷宮入事件の構図」";
+		CutInEnemy(spellName,imgCutIn,192,256);
+		SetScore(500000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(150);
+
+		SetAction(ACT_SHOT_B3,60);
+		let angle=-45;
+		while(angle<300){
+			CreateEnemyFromScript("Shadow",GetX(),GetY(),rand(0.8,1.2),angle+rand(-6,6),0);
+			angle+=90;
+		}
+		PlaySE(seShadow);
+		_Wait(200);
+		BehaviorBoss(ACT_STAND3);
+		while(1){
+			loop(3){
+				let angle=GetAngleToPlayer()+180+rand(-100,100);
+				let time=rand(20,50);
+				PlaySE(seShot2);
+				loop(5){
+					shotobjA (GetX(),GetY(),2,angle,time,0);
+					_Wait(3);
+					angle+=8;
+				}
+				_Wait(20);
+			}
+			_Wait(150);
+		}
+
+
+	}
+	// -------------------------------------------------------------------------
+
+	task shotobjA (let x, let y, let speed, let angle, let hikisu, let delay){
+		let obj = Obj_Create(OBJ_SHOT);//弾オブジェクトを作成
+		Obj_SetX(obj, x);//x座標設定
+		Obj_SetY(obj, y);//y座標設定;
+		Obj_SetSpeed(obj, speed);//速度設定
+		Obj_SetAngle(obj, angle);//移動角度設定
+		ObjShot_SetGraphic(obj, 152 );//画像設定
+		ObjShot_SetDelay(obj, delay);//遅延時間設定
+	
+		task MainLoop(){
+			WaitObject( obj,hikisu );
+			Obj_SetSpeed(obj,0);
+			ascent(i in 0..40){
+				Obj_SetAngle(obj,Smooth(angle,GetAngleToPlayerObject( obj ),i, 40 ));
+				yield;
+			}
+			CreateLaser01(Obj_GetX(obj),Obj_GetY(obj),5,GetAngleToPlayerObject( obj ),200,6,152,0);
+			PlaySE(seSaku0);
+			Obj_Delete(obj);
+		}
+	
+		MainLoop();
+	}
+
+
+
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+		DeleteSE(seSaku0);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+		// カットイン描画
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGSakuya;
+
+	}
+
+}
+
+// 使い魔 ----------------------------------------------------------------------
+script_enemy Shadow{
+
+	// 共通関数読み込み
+	#include_function ".\__INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let imgShadow=dotCircle6s;
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(200);
+		SetDamageRateExDelay(90,85,85,50,50);
+
+		// 実体化時の光
+		LightShadow;
+
+		// メイン処理
+		PlayDamageSE(seDamage);
+		Reflect_Shadow;
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 使い魔基本処理
+		BehaviorShadow(seShadowHidden,seShadowSudden);
+
+		// 画面外で消滅
+		GoneEx(32);
+
+		// 当たり判定（自弾,体当たり）
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+		yield;
+		let _angle=-180;
+		while(_angle<180){
+			CreateLaserB(0,40,20,US_BEAM_BLUE,0);
+			SetLaserDataB(0,0,0,20,0,_angle,2,_angle,2);
+			FireShot(0);
+			_angle+=24;
+		}
+		while(1){
+			_Wait(rand(100,300));
+			RoundShot01(GetX(),GetY(),1,rand(0,360),30,US_BALL_S_RED,20);
+			PlaySE(seShot1);
+			yield;
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	task Reflect_Shadow(){
+		while(1){
+			if(GetX()<=GetClipMinX()+30)//左端反射
+			{SetAngle(180-GetAngle());}
+			if(GetX()>=GetClipMaxX()-30)//右端反射
+			{SetAngle(180-GetAngle());}
+			if(GetY()<=GetClipMinY()+30)//上端反射
+			{SetAngle(-GetAngle());}
+			if(GetY()>=GetClipMaxY()-30)//下端反射 
+			{SetAngle(-GetAngle());}
+			yield;
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// 弾消し
+		DestructShadow(40);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// 本体描画
+		let shadow=SHADOW_S_BLUE;
+		let angle=2*m_nCount;
+		let scale=0.8;
+		_DrawShadow(shadow,imgShadow,angle,scale,scale);
+
+	}
+
+}

@@ -1,0 +1,149 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Extend-Library (extends FLAN)
+//
+//		※ステージスクリプト部です。
+//			それ以外からはインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	下位ライブラリをインクルード
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	インデックスをインクルード
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**	メニューの最大表示数を定義します。
+*	超えた場合、スクロール表示となります。
+*/
+let FLAN_MENU_MAXVISIBLE = 10;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**	最後にメニューカーソルを動かしたフレーム時間が格納されます。 */
+let m_nFlanMenuCursorMoveTime = 0;
+/**	前のカーソル位置が格納されます。 */
+let m_nFlanMenuPrevCursor = -1;
+/**	親のメニューに戻ったかどうかが格納されます。 */
+let m_bFlanMenuBack = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メニュー制御処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	メニューカーソルをキー入力に応じて移動します。
+*
+*	@param nCursorPos 今までのカーソル位置
+*	@param nMenuSize メニューの選択項目総数
+*	@param anLock 選択不可項目のカーソル位置を列挙した配列
+*	@return キー入力を反映したカーソル位置
+*/
+function MoveMenuCursor( let nCursorPos, let nMenuSize, let anLock ){
+	let bLock = true;
+	while( bLock ){
+		bLock = false;
+		ascent( let i in 0..length( anLock ) ){
+			bLock = [ bLock, true ][ nCursorPos == anLock[ i ] ];
+		}
+		if( bLock ){ nCursorPos++; }
+		if( nCursorPos == nMenuSize ){ return 0; }
+	}
+	let bPushUp = GetKeyStateEx( VK_UP ) == KEY_PUSH;
+	let bPushDown = GetKeyStateEx( VK_DOWN ) == KEY_PUSH;
+	let bPushLeft = GetKeyStateEx( VK_LEFT ) == KEY_PUSH;
+	let bPushRight = GetKeyStateEx( VK_RIGHT ) == KEY_PUSH;
+	if( !( bPushUp || bPushDown || bPushLeft || bPushRight ) ){ return nCursorPos; }
+	let nMovedCursor = nCursorPos;
+	let bLock = true;
+	while( bLock ){
+		if( nMenuSize > FLAN_MENU_MAXVISIBLE ){
+			if( bPushUp		){ nMovedCursor--;		}
+			if( bPushDown	){ nMovedCursor++;		}
+			if( bPushLeft	){ nMovedCursor -= 10;	}
+			if( bPushRight	){ nMovedCursor += 10;	}
+		}
+		else{ nMovedCursor += [ 1, -1 ][ bPushUp || bPushLeft ]; }
+		nMovedCursor = MinMaxLoop( nMovedCursor, 0, nMenuSize );
+		bLock = false;
+		ascent( let i in 0..length( anLock ) ){
+			bLock = [ bLock, true ][ nMovedCursor == anLock[ i ] ];
+		}
+	}
+	if( nMovedCursor != nCursorPos ){
+		m_nFlanMenuPrevCursor = nCursorPos;
+		m_nFlanMenuCursorMoveTime = m_nFlanCount;
+	}
+	return nMovedCursor;
+}
+
+/**
+*	メニューの決定/キャンセルを判定検出します。
+*
+*	@return 決定ならtrue、そうでなければfalse
+*/
+function IsSubmitMenu(){
+	m_nFlanMenuPrevCursor = -1;
+	m_nFlanMenuCursorMoveTime = 0;
+	let bCancel = GetKeyStateEx( VK_BOMB ) == KEY_PUSH;
+	m_bFlanMenuBack = bCancel;
+	return !bCancel;
+}
+
+/**
+*	二値選択式設定メニューの設定を書き換えます。
+*
+*	@param nCursorPos 現在のカーソル位置
+*	@param szNameSpace 名前空間
+*	@param aszKeyList 設定用キーのリスト
+*	@param abDefaultValueList 設定用キーに対応するデフォルト値リスト
+*/
+function MenuBooleanConfigSubmit( let nCursorPos, let szNameSpace, let aszKeyList, let abDefaultValueList ){
+	SetCommonDataEx( szNameSpace, aszKeyList[ nCursorPos ], !GetCommonDataDefaultEx( szNameSpace, aszKeyList[ nCursorPos ], abDefaultValueList[ nCursorPos ] ) );
+}
+
+/**
+*	数値選択式設定メニューの設定を書き換えます。
+*
+*	@param nCursorPos 現在のカーソル位置
+*	@param szNameSpace 名前空間
+*	@param aszKeyList 設定用キーのリスト
+*	@param anDefaultValueList 設定用キーに対応するデフォルト値リスト
+*	@param anMinimumValueList 設定用キーに対応する最小値リスト
+*	@param anMaximumValueList 設定用キーに対応する最大値リスト
+*/
+function MenuRealConfigSubmit( let nCursorPos, let szNameSpace, let aszKeyList, let anDefaultValueList, let anMinimumValueList, let anMaximumValueList ){
+	SetCommonDataEx(
+		szNameSpace, aszKeyList[ nCursorPos ],
+		MinMaxLoop(
+			GetCommonDataDefaultEx( szNameSpace, aszKeyList[ nCursorPos ], anDefaultValueList[ nCursorPos ] ) + 1,
+			anMinimumValueList[ nCursorPos ], anMaximumValueList[ nCursorPos ]
+		)
+	);
+}
+

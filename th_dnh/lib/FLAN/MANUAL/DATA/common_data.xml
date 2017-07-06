@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./style.xsl"?>
+<contents caption="CommonData" file="common_data">
+	<category caption="概要" link="true">
+		<paragraph>
+			CommonDataのキーとなる文字列を定義しています。
+			全てのスクリプトから呼び出し可能なライブラリセットです。
+			配置フォルダは<path>/lib/FLAN/LIB/CommonData.dnh</path>となります。
+			(関数の数が少ないので1ファイルのみの構成となります)
+		</paragraph>
+		<paragraph>
+			このライブラリセットはより上位のライブラリから自動的にインクルードされます。
+			これに直接インクルードする必要はありません。
+		</paragraph>
+	</category>
+	<category caption="名前空間" id="namespace" link="true">
+		<define key="FLAN_CDNS" type="var">
+			<paragraph>
+				FLANが使用する共通データ名前空間。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="システム関連" id="key" link="true">
+		<define key="FLAN_CD_DEBUG" type="var">
+			<paragraph>
+				デバッグモードが有効かどうか。
+				bool型。
+				未定義の場合<value>true</value>と見なされます。
+			</paragraph>
+		</define>
+		<define key="FLAN_CD_KEY_SLOW_TIME" type="var">
+			<paragraph>
+				最後に低速ボタンが押され/離されてからの経過フレーム数。
+				数値型。
+			</paragraph>
+		</define>
+		<define key="FLAN_CD_KEY_SLOW_STAT" type="var">
+			<paragraph>
+				使い魔タイムラグ対応用ディレイのかかった低速キー状態。
+				数値型。
+			</paragraph>
+		</define>
+		<define key="FLAN_CD_COUNT_DRAW" type="var">
+			<paragraph>
+				絵画フレームカウンタ。
+				数値型。
+			</paragraph>
+		</define>
+		<define key="FLAN_CD_SE_ENABLE" type="var">
+			<paragraph>
+				効果音が有効かどうか。
+				bool型。
+				未定義の場合<value>true</value>と見なされます。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="ボス関連" id="key" link="true">
+		<define key="FLAN_CD_BOSS_ENABLE" type="var">
+			<paragraph>
+				ボススクリプトが有効かどうか。
+				bool型。
+			</paragraph>
+		</define>
+		<define key="FLAN_CD_BOSS_EVENT_ENABLE" type="var">
+			<paragraph>
+				イベントスクリプトが再生中かどうか。
+				bool型。
+			</paragraph>
+		</define>
+		<define key="FLAN_CD_BOSS_SPELL_SCORE" type="var">
+			<paragraph>
+				スペルカードボーナス。
+				real型。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="雑魚関連" id="key" link="true">
+		<define key="FLAN_CD_ENEMY_OWNKILL" type="var">
+			<paragraph>
+				雑魚スクリプトがその場で無条件自殺するかどうか。
+				bool型。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="ステージ関連" id="key" link="true">
+		<define key="FLAN_CD_STAGE" type="var">
+			<paragraph>
+				現在のステージ面数を取得できます。
+				数値型。
+			</paragraph>
+		</define>
+		<define key="FLAN_CD_STAGE_ENABLE" type="var">
+			<paragraph>
+				ステージスクリプトが有効かどうか。
+				bool型。
+			</paragraph>
+		</define>
+		<define key="FLAN_CD_STAGE_LEVEL" type="var">
+			<paragraph>
+				ステージレベル。
+				数値型。
+			</paragraph>
+		</define>
+		<define key="FLAN_CD_STAGE_NEXTPHASE" type="var">
+			<paragraph>
+				<value>true</value>にすると敵スクリプトなどからステージスクリプトのフェーズが1つ進みます。
+				自動的に<value>false</value>へ戻ります。
+				また有効なのは1フレームにつき1回のみです。
+				bool型。
+			</paragraph>
+		</define>
+	</category>
+	<category caption="プレイヤー関連" id="key" link="true">
+		<define key="FLAN_CD_PLAYER_ENABLE" type="var">
+			<paragraph>
+				プレイヤースクリプトが有効かどうか。
+				bool型。
+			</paragraph>
+		</define>
+		<define key="FLAN_CD_PLAYER_POWER" type="var">
+			<paragraph>
+				プレイヤーの攻撃力値。
+				数値型。
+			</paragraph>
+		</define>
+		<define key="FLAN_CD_PLAYER_POWER_ENABLE" type="var">
+			<paragraph>
+				プレイヤーの攻撃力値が有効かどうか。
+				bool型。
+				未定義の場合<value>false</value>と見なされます。
+			</paragraph>
+		</define>
+		<define key="FLAN_CD_PLAYER_SHOT_ENABLE" type="var">
+			<paragraph>
+				ショットが有効かどうか。
+				bool型。
+				未定義の場合<value>true</value>と見なされます。
+			</paragraph>
+		</define>
+	</category>
+</contents>

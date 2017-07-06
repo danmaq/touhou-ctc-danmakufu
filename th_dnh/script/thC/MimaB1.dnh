@@ -1,0 +1,342 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ1D　ボス　魅魔　通常攻撃1
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[MimaB - 通常攻撃1]
+#Text[ステージ1D ボス
+魅魔]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Mima.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 100;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** ダメージ率（スペルプラクティス及び単体テスト時に固くする） */
+	let m_nDamageRate = 1;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			SetPosition( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y + RandBlur( 0.1 ) );
+			m_nDamageRate = 0.8;
+		}
+		else if( m_bStagePractice ){ m_nDamageRate = 0.8; }
+		SetTimer( 44 );
+		SetLife( 2000 );
+		SetDamageRate( 80 * m_nDamageRate, 80 * m_nDamageRate );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 61 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_LOTUS + CL_TTH_CHARACTER_NAME_LOTUS_MIMA;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		__Wait( 60 );
+
+		let nAssign = 1;
+
+		loop{
+
+			loop( 2 ){
+
+				/** はさみ弾 */
+				SetAction( ACT_SHOT_B5, 100 );
+				Concentration01( 30 );
+				__Wait( 30 );
+				PinchShot();
+				__Wait( 100 );
+
+				/** 扇状弾 */
+				SetAction( ACT_SHOT_A4, 50 );
+				__Wait( 20 );
+				WideShotEx( nAssign );
+				__Wait( 30 );
+
+				/** 移動 */
+				Move( 60 );
+				__Wait( 30 );
+
+				nAssign = - nAssign;
+
+			}
+			__Wait( 30 );
+
+			/** 小移動＋全方向弾 */
+			let nFrame = [ 30, 30, 22, 18 ][ m_nLevel ];
+			let nNum = [ 3, 3, 4, 5 ][ m_nLevel ];
+			loop( nNum ){
+				Move2( nFrame );
+				RoundShotEx();
+				__Wait( nFrame );
+			}
+			if( m_nLevel == 2 ){ __Wait( 2 ); }
+
+		}
+
+	}
+
+	/**
+	*	はさみ弾
+	*/
+	task PinchShot{
+
+		let nX = GetX();
+		let nY = GetY();
+		let nAngle = GetGapAngle( nX, nY, GetPlayerX(), CL_MAX_Y ) - 180 + RandBlur( 5 );
+		PlaySELoop( seShot3, 60, 6 );
+		_PinchShot( nX, nY, nAngle, 1 );
+		_PinchShot( nX, nY, nAngle, - 1 );
+
+	}
+
+	/**
+	*	はさみ弾（片方）
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nAngle	角度
+	*	@param nAssign	割り振り係数
+	*/
+	task _PinchShot( let nX, let nY, let nAngle, let nAssign ){
+
+		let nWay = 30;
+		let nFrame = 2;
+		let nNum = 1 + m_nLevel;
+		let nSpeed = 4 - 0.3 * m_nLevel;
+		let nMaxSpeed = 4;
+		if( m_nLevel == 0 ){ nSpeed = 4; }
+		let nWayAngle = ( 175 + 1.5 * m_nLevel ) / nWay * nAssign;
+		let nGraphic = US_LIGHT_WHITE;
+		let nDelay = 10;
+
+		loop( nWay ){
+			_LineShot( nX, nY, nSpeed, nMaxSpeed, nAngle, nNum, nGraphic, nDelay );
+			__Wait( nFrame );
+			nAngle += nWayAngle;
+		}
+
+	}
+
+	/**
+	*	扇状弾
+	*	@param nAssign	割り振り係数
+	*/
+	task WideShotEx( let nAssign ){
+
+		let nNum = 12 + 2 * m_nLevel;
+		let nGapLength = 20;
+		let nGapAngle = GetAngleToPlayer();
+		let nNumGapAngle = 360 / nNum * nAssign;
+		let nWay = [ 1, 3, 5, 11 ][ m_nLevel ];
+		let _nX = GetX();
+		let _nY = GetY();
+		let nSpeed = 0.5;
+		let nNumSpeed = ( 3.6 + 0.4 * m_nLevel - nSpeed ) / ( nNum - 1 );
+		let nAngle = nGapAngle;
+		let nWideAngle = [ 1, 5, 10, 20 ][ m_nLevel ];
+		let nDelay = 10;
+
+		PlaySEEx( seShot1 );
+		ascent( let i in 0 .. nNum ){
+			let nX = GetGapX( _nX, nGapLength, nGapAngle );
+			let nY = GetGapY( _nY, nGapLength, nGapAngle );
+			let nGraphic = US_BALL_SS_BLUE;
+			if( i == nNum - 1 ){ nGraphic = US_STAR_S_BLUE; }
+			_WideShot01( nX, nY, nSpeed, nAngle, nWideAngle, nWay, nGraphic, nDelay );
+			yield;
+			nSpeed += nNumSpeed;
+			nGapAngle += nNumGapAngle;
+		}
+
+	}
+
+	/**
+	*	全方向弾
+	*/
+	function RoundShotEx{
+
+		let nWay= 16 + 4 * m_nLevel;
+		let nX = GetX();
+		let nY = GetY();
+		let anSpeed = [ 1.8 + 0.2 * m_nLevel, 2.4 + 0.2 * m_nLevel ];
+		let nWayAngle = 360 / nWay;
+		let anAngle = [ 90, 90 + nWayAngle / 2 ];
+		let anGraphic = [ US_STAR_S_BLUE, US_STAR_S_RED ];
+		let nDelay = 5;
+
+		PlaySEEx( seShot1 );
+		ascent( let i in 0 .. 2 ){
+			_RoundShot01( nX, nY, anSpeed[ i ], anAngle[ i ], nWay, anGraphic[ i ], nDelay );
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 40;
+		let nMaxMoveX = 80;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 20;
+
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+	/**
+	*	小移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move2( let nFrame ){
+
+		let nMinMoveX = 20;
+		let nMaxMoveX = 40;
+		let nMinMoveY = 10;
+		let nMaxMoveY = 20;
+
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

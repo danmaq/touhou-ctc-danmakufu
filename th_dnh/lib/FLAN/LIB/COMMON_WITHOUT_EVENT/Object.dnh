@@ -1,0 +1,232 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(原則書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	エフェクトオブジェクト
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	真円形エフェクトオブジェクトを生成します。
+*	注:三角形の集合体で円が形成されますが、ピザやケーキのような
+*	均等分割ではなく団扇のような扇状の分割となります。
+*
+*	@param nVertex 頂点数
+*	@param nRadius 半径
+*	@param nAlpha 各頂点のα値
+*	@param nColorR 各頂点の赤輝度
+*	@param nColorG 各頂点の緑輝度
+*	@param nColorB 各頂点の青輝度
+*	@return エフェクトオブジェクトハンドル
+*/
+function CreateCircleEffectObject( let nVertex, let nRadius, let nAlpha, let nColorR, let nColorG, let nColorB ){
+	let obj = Obj_Create( OBJ_EFFECT );
+	ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLEFAN );
+	ObjEffect_CreateVertex( obj, nVertex );
+	ascent( let i in 0..nVertex ){
+		let nVangle = Smooth( 0, 360, i, nVertex );
+		ObjEffect_SetVertexXY( obj, i, nRadius * cos( nVangle ), nRadius * sin( nVangle ) );
+		ObjEffect_SetVertexColor( obj, i, nAlpha, nColorR, nColorG, nColorB );
+	}
+	return obj;
+}
+
+/**
+*	四角形のエフェクトオブジェクトを生成します。
+*
+*	@param szImageFile 画像ファイルパス
+*	@param nSrcX テクスチャの切り出し左端X座標
+*	@param nSrcY テクスチャの切り出し上端Y座標
+*	@param nSrcWidth テクスチャの切り出し幅
+*	@param nSrcHeight テクスチャの切り出し高さ
+*	@param nDstWidth 本体の幅
+*	@param nDstHeight 本体の高さ
+*	@return エフェクトオブジェクトハンドル
+*/
+function CreateSquareEffectObject( let szImageFile, let nSrcX, let nSrcY, let nSrcWidth, let nSrcHeight, let nDstWidth, let nDstHeight ){
+	let nDstWidthHalf = nDstWidth / 2;
+	let nDstHeightHalf = nDstHeight / 2;
+	let obj = Obj_Create( OBJ_EFFECT );
+	Obj_SetAutoDelete( obj, false );
+	ObjEffect_SetTexture( obj, szImageFile );
+	ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLESTRIP );
+	ObjEffect_CreateVertex( obj, 4 );
+	ascent( let i in 0..4 ){
+		let nXIndex = truncate( i / 2 );
+		let nYIndex = i % 2;
+		ObjEffect_SetVertexColor( obj, i, 255, 255, 255, 255 );
+		ObjEffect_SetVertexXY( obj, i, nDstWidthHalf * [ -1, 1 ][ nXIndex ], nDstHeightHalf * [ -1, 1 ][ nYIndex ] );
+		ObjEffect_SetVertexUV( obj, i, nSrcX + [ 0, nSrcWidth ][ nXIndex ], nSrcY + [ 0, nSrcHeight ][ nYIndex ] );
+	}
+	return obj;
+}
+
+/**
+*	全画面を埋め尽くすエフェクトオブジェクトを生成します。
+*	但し、onDrawTopObjectの絵画はフィールド内に限り表示可能です。
+*
+*	@param szImageField フィールドの画像ファイルパス
+*	@param szImageFrame 枠の画像ファイルパス
+*	@return 配列[ フィールドのエフェクトオブジェクト, 枠のエフェクトオブジェクト ]
+*/
+function CreateFillScreenEffectObject( let szImageField, let szImageFrame ){
+	let anObj = [ CreateSquareEffectObject( szImageField, 0, 0, 384, 448, 384, 448 ), CreateSquareEffectObject( szImageFrame, 0, 0, 640, 480, 640, 480 ) ];
+	let anXTable = [ GetCenterX(), 320 ];
+	let anLayerTable = [ 4, 8 ];
+	ascent( let i in 0..2 ){
+		Obj_SetPosition( anObj[ i ], anXTable[ i ], GetCenterY() );
+		ObjEffect_SetLayer( anObj[ i ], anLayerTable[ i ] );
+	}
+	return anObj;
+}
+
+/**
+*	CreateFillScreenEffectObjectで生成したオブジェクトのRGB輝度や透明度を設定します。
+*
+*	@param anObj CreateFillScreenEffectObjectオブジェクト
+*	@param nAlpha 透明度
+*	@param nBrightR 赤輝度
+*	@param nBrightG 緑輝度
+*	@param nBrightB 青輝度
+*/
+function SetFillScreenEffectObjectColor( let anObj, let nAlpha, let nBrightR, let nBrightG, let nBrightB ){
+	ascent( let i in 0..2 ){
+		ascent( let j in 0..4 ){ ObjEffect_SetVertexColor( anObj[ i ], j, nAlpha, nBrightR, nBrightG, nBrightB ); }
+	}
+}
+
+/**
+*	エフェクトオブジェクトの大きさをアニメーションします。
+*	各オブジェクトタスク内部から初期化時に呼び出してください。
+*
+*	@param obj スペルエフェクトオブジェクトハンドル
+*	@param nStartScale 初期縮尺
+*	@param nEndScale 最終的な縮尺
+*	@param nTime エフェクト時間の長さ
+*	@param anAnimationSplitParameter 内分変化分割用定数のリスト
+*/
+task AnimationScaleEffectObject( let obj, let nStartScale, let nEndScale, let nTime, let anAnimationSplitParameter ){
+	ascent( let i in 0..nTime ){
+		let fScale = Animation( nStartScale, nEndScale, i, 20, anAnimationSplitParameter );
+		ObjEffect_SetScale( obj, fScale, fScale );
+		if( Obj_BeDeleted( obj ) ){ break; }
+		yield;
+	}
+}
+
+/**
+*	オブジェクトの速度をアニメーションします。
+*	各オブジェクトタスク内部から初期化時に呼び出してください。
+*
+*	@param obj スペルエフェクトオブジェクトハンドル
+*	@param nStartSpeed 初速度
+*	@param nEndSpeed 最終的な速度
+*	@param nTime エフェクト時間の長さ
+*	@param anAnimationSplitParameter 内分変化分割用定数のリスト
+*/
+task AnimationSpeedObject( let obj, let nStartSpeed, let nEndSpeed, let nTime, let anAnimationSplitParameter ){
+	ascent( let i in 0..nTime ){
+		Obj_SetSpeed( obj, Animation( nStartSpeed, nEndSpeed, i, nTime, anAnimationSplitParameter ) );
+		if( Obj_BeDeleted( obj ) ){ break; }
+		yield;
+	}
+}
+
+/**
+*	オブジェクト弾からプレイヤーへの角度を算出します。
+*	GetAngleToPointObjectのラッパーです。
+*
+*	@param obj 基準となるオブジェクトハンドル
+*	@return プレイヤーへの角度
+*/
+function GetAngleToPlayerObject( let obj ){ return GetAngleToPointObject( obj, GetPlayerX(), GetPlayerY() ); }
+
+/**
+*	オブジェクト弾から指定座標への角度を算出します。
+*	GetGapAngleのラッパーです。
+*
+*	@param obj 基準となるオブジェクトハンドル
+*	@param nX ターゲットのX座標
+*	@param nY ターゲットのY座標
+*	@return 指定ターゲットへの角度
+*/
+function GetAngleToPointObject( let obj, let nX, let nY ){ return GetGapAngle( Obj_GetX( obj ), Obj_GetY( obj ), nX, nY ); }
+
+/**
+*	指定フレーム数オブジェクトのマイクロスレッドを一時停止し待機します。
+*	オブジェクトが実体を失った場合、即座に処理を再開します。
+*	注意:少ないフレーム数でみだりに呼び出さないでください(過負荷の原因となります)
+*
+*	@param obj オブジェクトハンドル
+*	@param nWait 待機するフレーム数
+*	@return 待機中にオブジェクトが実体を失った場合true
+*/
+function WaitObject( let obj, let nWait ){
+	loop( nWait ){
+		if( Obj_BeDeleted( obj ) ){ return true; }
+		yield;
+	}
+	return false;
+}
+
+/**
+*	オブジェクトを画面端で反射させます。
+*	注意:反射させる場合、そのオブジェクトタスク内にて毎フレーム呼び出してください。
+*
+*	@param obj オブジェクトハンドル
+*	@param bBottom 下端で反射するかどうか
+*	@param bSide 左右端で反射するかどうか
+*	@param bTop 上端で反射するかどうか
+*	@return 実際に反射したらtrue
+*/
+function ReflectObject( let obj, let bBottom, let bSide, let bTop ){
+	let nAngle = Obj_GetAngle( obj ) % 360;
+	if( ( bTop && Obj_GetY( obj ) < GetClipMinY() ) || ( bBottom && Obj_GetY( obj ) > GetClipMaxY() ) ){
+		Obj_SetAngle( obj, -nAngle );
+		return true;
+	}
+	if( bSide && ( Obj_GetX( obj ) < GetClipMinX() || Obj_GetX( obj ) > GetClipMaxX() ) ){
+		Obj_SetAngle( obj, 180 - nAngle );
+		return true;
+	}
+	return false;
+}
+
+/**
+*	オブジェクトのベクトルを設定します。
+*	Obj_SetAngle/Obj_SetSpeedのラッパーです。
+*
+*	@param obj オブジェクトハンドル
+*	@param SetAngle 角度
+*	@param SetSpeed 速度
+*/
+function SetVectorObject( let obj, let nAngle, let nSpeed ){
+	Obj_SetAngle( obj, nAngle );
+	Obj_SetSpeed( obj, nSpeed );
+}

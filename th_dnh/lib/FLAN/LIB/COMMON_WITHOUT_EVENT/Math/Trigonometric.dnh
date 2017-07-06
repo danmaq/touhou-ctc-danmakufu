@@ -1,0 +1,159 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	Framework of LunAtic Notation
+//	(c)2006 danmaq
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+/**	自然対数の底e */
+let __e = 2.7182818284590452353602874713526624977572470936999595749669676277240766303535475945713821785251664274;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数(原則書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	算術関数(三角関数系)
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	角度をラジアンに変換します。
+*
+*	@param nDegree 角度
+*	@return 角度に対応したラジアン値
+*/
+function ToRadian( let nDegree ){ return nDegree / 180 * pi; }
+
+/**
+*	ラジアンを角度に変換します。
+*
+*	@param nRadian ラジアン値
+*	@return ラジアン値に対応した角度
+*/
+function ToDegree( let nRadian ){ return nRadian * 180 / pi; }
+
+/**
+*	周回軌道の角速度を計算します。
+*
+*	@param nRadius 周回半径
+*	@param nSpeed 速度
+*	@return 周回軌道を回り続ける角速度
+*/
+function CycricOrbit( let nRadius, let nSpeed ){ return nSpeed / nRadius * 180 / pi; }
+
+/**
+*	対数を計算します。
+*
+*	@param nExpr 対象値
+*	@return 対象値の指数値
+*/
+function Exp( let nExpr ){ return __e ^ nExpr; }
+
+/**
+*	指数を計算します。
+*	logのラッパーです。
+*
+*	@param nN 底数
+*	@param nExpr 対象値
+*	@return 指定した底数を底とした対象値の対数
+*/
+function LogN( let nN, let nExpr ){ return log( nExpr ) / log( nN ); }
+
+/**
+*	セカントを計算します。
+*	cosのラッパーです。
+*
+*	@param nDegree 角度
+*	@return 角度に対応するセカント値
+*/
+function Sec( let nDegree ){ return 1 / cos( nDegree ); }
+
+/**
+*	コセカントを計算します。
+*	sinのラッパーです。
+*
+*	@param nDegree 角度
+*	@return 角度に対応するコセカント値
+*/
+function Cosec( let nDegree ){ return 1 / sin( nDegree ); }
+
+/**
+*	コタンジェントを計算します。
+*	tanのラッパーです。
+*
+*	@param nDegree 角度
+*	@return 角度に対応するコタンジェント値
+*/
+function Cotan( let nDegree ){ return 1 / tan( nDegree ); }
+
+/**
+*	アークセカントを計算します。
+*	atan/GetSignのラッパーです。
+*
+*	@param nDegree 角度
+*	@return 角度に対応するアークセカント値
+*/
+function Asec( let nDegree ){ return atan( ( nDegree ^ 2 - 1 ) ^ 0.5 ) + ( GetSign( nDegree ) - 1 ) * ( pi / 2 ); }
+
+/**
+*	アークコセカントを計算します。
+*	atan/GetSignのラッパーです。
+*
+*	@param nDegree 角度
+*	@return 角度に対応するアークコセカント値
+*/
+function Acosec( let nDegree ){ return atan( 1 / ( nDegree ^ 2 - 1 ) ^ 0.5 ) + ( GetSign( nDegree ) - 1 ) * ( pi / 2 ); }
+
+/**
+*	アークコタンジェントを計算します。
+*	atanのラッパーです。
+*
+*	@param nDegree 角度
+*	@return 角度に対応するアークコタンジェント値
+*/
+function Acotan( let nDegree ){ return -atan( nDegree ) + pi / 2; }
+
+/**
+*	矩形波を計算します。
+*
+*	@param nDegree 角度
+*	@return 角度に対応する矩形波値
+*/
+function Square( let nDegree ){ return [ 0, 1 ][ nDegree % 360 > 180 ]; }
+
+/**
+*	鋸波を計算します。
+*	Smoothのラッパーです。
+*
+*	@param nDegree 角度
+*	@return 角度に対応する鋸波値
+*/
+function Saw( let nDegree ){ return Smooth( 0, 1, nDegree % 360, 360 ); }
+
+/**
+*	三角波を計算します。
+*	Animationのラッパーです。
+*
+*	@param nDegree 角度
+*	@return 角度に対応する三角波値
+*/
+function Triangle( let nDegree ){ return Animation( 0, 1, nDegree % 360, 360, [ FLAN_ANIMATION_NORMAL, FLAN_ANIMATION_NORMAL * FLAN_SPLIT_REVERSE ] ); }

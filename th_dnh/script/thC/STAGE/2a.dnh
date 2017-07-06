@@ -11,222 +11,203 @@
 
 
 //////////////////////////////////////////////////////////////////////
-//--------------------------------------------------------------------
-//	メンバ変数
-//--------------------------------------------------------------------
+//	定数
 //////////////////////////////////////////////////////////////////////
 
-let m_aszStage2ALoadFileListGraphic = [
-	dotYousei,
-	dotKedama,
-	dotCircle6s,
-	dotCircle6m,
-	dotCircle8s,
-	dotCircle8m,
+/**	読み込むステージ固有の背景グラフィックです。
+*	背景無効時は無視されます。
+*/
+let STAGE_2A_LOAD_LIST_GRAPHIC_BG = [
 	imgMapCarpet,
 	imgMapKouma,
 	imgMapWindowLight,
-	imgDnhItem,
-	imgSystemFont,
-	imgSystemFontSmall,
-	dirImageSystemFont ~ "sjis16_1.png",
-	dirImageSystemFont ~ "sjis16_2.png",
-	dirImageSystemFont ~ "sjis16_3.png",
 ] ~ LOADBGLIST_SAKUYA ~ LOADBGLIST_REMILIA;
-let m_aszStage2ALoadFileListEnemy = [
+
+let STAGE_2A_LOAD_LIST_GRAPHIC = [
+	IMAGE_THC_STAGE_LOGO[ 4 ],
+] ~ IMAGE_LIST_SAKUYA ~ IMAGE_LIST_REMILIA;
+
+let STAGE_2A_LOAD_LIST_ENEMY = [
 	z_g_14,
 	z_g_15,
 	z_s_08,
 	z_g_13,
-	z_o_06
-];
-let m_aszStage2ALoadFileListSound = [
-	sePower,
-	seDamage,
-	seBossExplode,
-	seTimeOut,
-	seKira1,
-	seKira2,
-	seKira3,
-	seLaser1,
-	seLaser2,
-	sePower2,
-	seShot1,
-	seShot2,
-	seShot3,
+	z_o_06,
+] ~ bossSakuyaList ~ bossRemiliaList;
+let STAGE_2A_LOAD_LIST_SOUND = [
 	seSaku0,
-
-	seShadow,
-	seShadowHidden,
-	seShadowSudden
 ];
 
 
 //////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	内部処理
+//	固有処理
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
 //	初期化
 function Stage2AInitialize(){
-	SetCommonData("Level",m_nStageLevel);
-	SetCommonData("DeleteEnemy",0);
-	LoadProgress( m_aszStageDefaultLoadFileListGraphic ~ m_aszStage2ALoadFileListGraphic, m_aszStage2ALoadFileListEnemy, m_aszStageDefaultLoadFileListSE ~ m_aszStage2ALoadFileListSound, imgSystemProgress, imgMapBlack );
-	PlayMusicEx( 4, "" );
+	AllZakoEnemyKill( true );
+	if( GetCommonDataDefaultEx( CL_CDNS_RESULT, FLAN_CD_STAGE, -1 ) >= 0 ){
+		STAGE_2A_LOAD_LIST_GRAPHIC	= STAGE_DEFAULT_LOAD_GRAPHIC	~ STAGE_2A_LOAD_LIST_GRAPHIC;
+		STAGE_2A_LOAD_LIST_SOUND	= STAGE_DEFAULT_LOAD_SE			~ STAGE_2A_LOAD_LIST_SOUND;
+	}
+	LoadProgress(
+		STAGE_2A_LOAD_LIST_GRAPHIC	~ GetBGRealLoadList( STAGE_2A_LOAD_LIST_GRAPHIC_BG ),
+		STAGE_2A_LOAD_LIST_ENEMY	~ STAGE_DEFAULT_LOAD_ENEMY,
+		STAGE_2A_LOAD_LIST_SOUND
+	);
+	PlayMusicEx( 4 );
 }
 
 //	ここにステージの中身を書く
 task Stage2A(){
 
-	SetShotAutoDeleteClip(32,64,32,32);
-	_Wait(320);
+	SetShotAutoDeleteClip( 32, 64, 32, 32 );
+	__Wait( 120 );
+	StageLogo();
+	__Wait( 500 );
 
-	loop(2)
-	{
-		loop(4)
-		{
-			CreateEnemyFromFile(z_g_14,GetClipMinX()-20,GetCenterY(),rand(2,7),rand(-20,-45),0);
-			_Wait(25);
-		}
-		_Wait(50);
-		loop(4)
-		{
-			CreateEnemyFromFile(z_g_15,GetCenterX*1.5,GetClipMinY()-20,rand(3,7),rand(-10,0)+90,0);
-			_Wait(25);
-		}
-		_Wait(200);
-		loop(4)
-		{
-			CreateEnemyFromFile(z_g_14,GetClipMaxX()+20,GetCenterY(),rand(2,7),rand(200,225),0);
-			_Wait(25);
-		}
-		_Wait(50);
-		loop(4)
-		{
-			CreateEnemyFromFile(z_g_15,GetCenterX/2,GetClipMinY()-20,rand(3,7),rand(0,10)+90,0);
-			_Wait(25);
-		}
-		_Wait(200);
+	loop( 4 ){
+		CreateEnemyFromFile( z_g_14, GetClipMinX()-20, GetCenterY()/2+rand( 0, 50 ), rand( 2, 7.5 ), rand( 0, 10 ), 0 );
+		__Wait( 25 );
 	}
-	_Wait(80);
+	__Wait( 80 );
+	loop( 4 ){
+		CreateEnemyFromFile( z_g_15, GetCenterX/2, GetClipMinY()-20, rand( 3, 6 ), rand( -10, 0 )+90, 0 );
+		__Wait( 25 );
+	}
+	__Wait( 80 );
+	loop( 4 ){
+		CreateEnemyFromFile( z_g_14, GetClipMaxX()+20, GetCenterY()/2+rand( 0, 50 ), rand( 2, 7.5 ), rand( 180, 190 ), 0 );
+		__Wait( 25 );
+	}
+	__Wait( 50 );
+	loop( 4 ){
+		CreateEnemyFromFile( z_g_15, GetCenterX*1.5, GetClipMinY()-20, rand( 3, 6 ), rand( 0, 10 )+90, 0 );
+		__Wait( 25 );
+	}
+	__Wait( 120 );
 
 
 //---------------------------------------------------------------
 
-	loop(8)
-	{
-		CreateEnemyFromFile(z_s_08,GetCenterX/2,GetClipMinY()-20,0,0,0);
-		_Wait(15);
+	loop( 8 ){
+		CreateEnemyFromFile( z_s_08, GetCenterX/2, GetClipMinY()-20, 0, 0, 0 );
+		__Wait( 15 );
 	}
-	_Wait(150);
-	loop(8)
-	{
-		CreateEnemyFromFile(z_s_08,GetCenterX*1.5,GetClipMinY()-20,0,0,0);
-		_Wait(15);
+	__Wait( 70 );
+	loop( 8 ){
+		CreateEnemyFromFile( z_s_08, GetCenterX*1.5, GetClipMinY()-20, 0, 0, 0 );
+		__Wait( 15 );
 	}
 
 
-	_Wait(250);
+	__Wait( 100 );
 
 //---------------------------------------------------------------
 
-	loop(2)
-	{
-		loop(4)
-		{
-			CreateEnemyFromFile(z_g_13,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,rand(3,9),rand(-10,10)+90,0);
-		}
-		_Wait(200);
+	loop( 15 ){
+		CreateEnemyFromFile( z_g_13, rand( GetClipMinX()+30, GetClipMaxX()-30 ), GetClipMinY()-20, rand( 3, 9 ), rand( -10, 10 )+90, 0 );
+		__Wait( 21 );
 	}
+	__Wait( 120 );
 
-	DeleteEnemyShotToItem(ALL);
-	SetCommonData("DeleteEnemy",1);
+	DeleteEnemyShotToItem( ALL );
+	AllZakoEnemyKill( true );
 	yield;
 
 ///////////////////////////////////////////////////////////////////////
-if( !m_bNoBoss || !m_bDebug ){
-	CreateEnemyBossFromFile(bossSakuya,GetCenterX(),0,0,0,0);
-	WaitZeroEnemy();//敵が消えるまで停止
-	CreateEnemyFromFile(bossSakuya99,GetCenterX(),0,0,0,0);
-	WaitZeroEnemy();//敵が消えるまで停止
-}
+	CreateEnemyBossFromFile( bossSakuya, GetCenterX(), 0, 0, 0, 0 );
+	WaitZeroEnemy();	//敵が消えるまで停止
+	CreateEnemyFromFile( bossSakuya99, GetCenterX(), 0, 0, 0, 0 );
+	WaitZeroEnemy();	//敵が消えるまで停止
 ///////////////////////////////////////////////////////////////////////
 
-	SetShotAutoDeleteClip(32,100,50,50);
-	SetCommonData("DeleteEnemy",0);
+	SetShotAutoDeleteClip( 32, 100, 50, 50 );
 
 //---------------------------------------------------------------
 
-	CreateEnemyFromFile(z_o_06,GetCenterX(),GetCenterY(),0,0,0);
+	CreateEnemyFromFile( z_o_06, GetClipMinX()-50, GetClipMinY(), 0, 0, 0 );
 
-	_Wait(600);
-
-//---------------------------------------------------------------
-
-	loop(2)
-	{
-		CreateEnemyFromFile(z_g_14,GetCenterX*1.5+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+100,0);
-		CreateEnemyFromFile(z_g_14,GetCenterX/2+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+80,0);
-		CreateEnemyFromFile(z_g_14,GetCenterX+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+80,0);
-		_Wait(150);
-
-	}
-	_Wait(150);
-	loop(2)
-	{
-		CreateEnemyFromFile(z_g_15,GetCenterX/2+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+80,0);
-		CreateEnemyFromFile(z_g_15,GetCenterX*1.5+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+100,0);
-		CreateEnemyFromFile(z_g_15,GetCenterX+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+100,0);
-		_Wait(150);
-	}
-	_Wait(250);
-
-	loop(2)
-	{
-		CreateEnemyFromFile(z_g_13,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,rand(3,9),rand(-10,+10)+90,0);
-		CreateEnemyFromFile(z_g_13,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,rand(3,9),rand(-10,+10)+90,0);
-		_Wait(200);
-	}
-	_Wait(250);
-
+	__Wait( 600 );
 
 //---------------------------------------------------------------
 
-	loop(25)
-	{
-		CreateEnemyFromFile(z_s_08,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,0,0,0);
-		_Wait(20);
+
+	CreateEnemyFromFile( z_g_14, GetCenterX*1.5+RandBlur(60), GetClipMinY()-20, rand( 3, 7 ), rand( -10, +10 )+100, 0 );
+	__Wait( 30 );
+	CreateEnemyFromFile( z_g_14, GetCenterX/2+RandBlur(60), GetClipMinY()-20, rand( 3, 7 ), rand( -10, +10 )+80, 0 );
+	__Wait( 30 );
+	CreateEnemyFromFile( z_g_14, GetCenterX+RandBlur(60), GetClipMinY()-20, rand( 3, 7 ), rand( -10, +10 )+80, 0 );
+	__Wait( 80 );
+	CreateEnemyFromFile( z_g_15, GetCenterX/2+RandBlur(60), GetClipMinY()-20, rand( 3, 7 ), rand( -10, +10 )+80, 0 );
+	__Wait( 30 );
+	CreateEnemyFromFile( z_g_15, GetCenterX*1.5+RandBlur(60), GetClipMinY()-20, rand( 3, 7 ), rand( -10, +10 )+100, 0 );
+	__Wait( 30 );
+	CreateEnemyFromFile( z_g_15, GetCenterX+RandBlur(60), GetClipMinY()-20, rand( 3, 7 ), rand( -10, +10 )+100, 0 );
+	__Wait( 100 );
+
+	CreateEnemyFromFile( z_g_14, GetCenterX/2+RandBlur(60), GetClipMinY()-20, rand( 3, 7 ), rand( -10, +10 )+80, 0 );
+	__Wait( 30 );
+	CreateEnemyFromFile( z_g_14, GetCenterX*1.5+RandBlur(60), GetClipMinY()-20, rand( 3, 7 ), rand( -10, +10 )+100, 0 );
+	__Wait( 30 );
+	CreateEnemyFromFile( z_g_14, GetCenterX+RandBlur(60), GetClipMinY()-20, rand( 3, 7 ), rand( -10, +10 )+80, 0 );
+	__Wait( 80 );
+	CreateEnemyFromFile( z_g_15, GetCenterX*1.5+RandBlur(60), GetClipMinY()-20, rand( 3, 7 ), rand( -10, +10 )+100, 0 );
+	__Wait( 30 );
+	CreateEnemyFromFile( z_g_15, GetCenterX/2+RandBlur(60), GetClipMinY()-20, rand( 3, 7 ), rand( -10, +10 )+80, 0 );
+	__Wait( 30 );
+	CreateEnemyFromFile( z_g_15, GetCenterX+RandBlur(60), GetClipMinY()-20, rand( 3, 7 ), rand( -10, +10 )+100, 0 );
+	__Wait( 125 );
+
+	loop( 8 ){
+		CreateEnemyFromFile( z_g_13, rand( GetClipMinX()+30, GetClipMaxX()-30 ), GetClipMinY()-20, rand( 3, 9 ), rand( -10, +10 )+90, 0 );
+		__Wait( 50 );
 	}
-	_Wait(200);
+	__Wait( 125 );
 
 
-	SetCommonData("DeleteEnemy",1);
+//---------------------------------------------------------------
+
+	loop( 25 ){
+		CreateEnemyFromFile( z_s_08, rand( GetClipMinX()+30, GetClipMaxX()-30 ), GetClipMinY()-20, 0, 0, 0 );
+		__Wait( 20 );
+	}
+	__Wait( 200 );
+
+
+	AllZakoEnemyKill( true );
 	yield;
-	DeleteEnemyShotToItem(ALL);
-	SetCommonData("DeleteEnemy",0);
 
 
 ///////////////////////////////////////////////////////////////////////
-if( !m_bNoBoss || !m_bDebug ){
-	CreateEnemyBossFromFile(bossRemilia,GetCenterX(),0,0,0,0);
-	WaitZeroEnemy();//敵が消えるまで停止
-	if(GetMissCount == 0 && GetBombCount == 0 ){
-		CreateEnemyBossFromFile(bossRemiliaL,GetCenterX(),GetCenterY/2,0,0,0);
-		WaitZeroEnemy();//敵が消えるまで停止
+	CreateEnemyBossFromFile( bossRemilia, GetCenterX(), 0, 0, 0, 0 );
+	WaitZeroEnemy();	//敵が消えるまで停止
+	if( IsTryLastSpell() ){
+		CreateEnemyBossFromFile( bossRemiliaL, GetCenterX(), GetCenterY/2, 0, 0, 0 );
+		WaitZeroEnemy();	//敵が消えるまで停止
 	}
-	CreateEnemyBossFromFile(bossRemilia99,GetCenterX(),0,0,0,0);
-	WaitZeroEnemy();//敵が消えるまで停止
-}
+	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, false );
+	ForbidShot( true );
+	CreateEnemyFromFile( bossRemilia99, GetCenterX(), 0, 0, 0, 0 );
+	WaitZeroEnemy();	//敵が消えるまで停止
 //終了処理
-	yield;
-	DeleteCommonData(CD_SPELL_LASTSPELL);
 ///////////////////////////////////////////////////////////////////////
-
 
 
 ////////////////////////////////////////////////////
-	if( !GetCommonDataDefault( CD_STAGE_PRACTICE, false ) ){
+
+	FadeOutMusic( bgmList[ 5 ], 100 );
+	SetClearHistory( 2 );
+
+	if( !m_bStagePractice ){
+		DeleteResource( STAGE_2A_LOAD_LIST_GRAPHIC ~ STAGE_2A_LOAD_LIST_GRAPHIC_BG, STAGE_2A_LOAD_LIST_SOUND );
 		Stage3();
 	}
 	else{ Clear(); }
@@ -238,22 +219,46 @@ if( !m_bNoBoss || !m_bDebug ){
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
-//	メイン部
+//	共通処理
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-//	@MainLoop()にて毎フレーム呼ばれる部分
-function Stage2AMainLoop(){
+/**
+*	毎フレームごとに呼ばれます。
+*
+*	@param nStage 現在のステージ
+*	@param nStageCount 現在のステージカウンタ値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function Stage2AMainLoop( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	if( !GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG, true ) ){ return; }
 }
 
-//	@BackGround()にて毎回呼ばれる部分
-function Stage2ADrawBackGround(){
-	let nNow = ( m_nCount - m_nPhaseCount );
-	let nSpeed = -nNow * 0.2;
+/**
+*	背景絵画時に呼ばれます。
+*
+*	@param nStage 現在のステージ
+*	@param nStageCount 現在のステージカウンタ値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function Stage2ADrawBackGround( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	let nSpeed = -nPhaseCount * 0.2;
 	let nClipLimit = 1000;
-	SetTexture( imgMapWhite );
-	SetFog( 0, Smooth( 0, 600, nNow, 200 ), Smooth( 32, 128, nNow, 200 ), 0, 0 );
-	SetViewTo( 0, 0, 0 );
+	let nViewToX = 0 + GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_X, 0 );
+	let nViewToY = 0 + GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Y, 0 );
+	let nViewToZ = 0 + GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Z, 0 );
+	SetTexture( IMAGE_CL_WHITE );
+	if( nStageCount > 200 ){ SetFogEx( 0, 600, 128, 0, 0 ); }
+	else{ SetFogEx( 0, Smooth( 0, 600, nStageCount, 200 ), Smooth( 32, 128, nStageCount, 200 ), 0, 0 ); }
+	SetViewTo( nViewToX, nViewToY, nViewToZ );
 	SetViewFrom( 500, 30, 45 );
 
 	SetTexture( imgMapCarpet );
@@ -278,10 +283,30 @@ function Stage2ADrawBackGround(){
 	SetGraphicAngle( 0, 0, 0 );
 }
 
-//	@DrawBottomObject()にて毎回呼ばれる部分
-function Stage2ADrawBottomObject(){
+/**
+*	下位レイヤ絵画時に呼ばれます。
+*
+*	@param nStage 現在のステージ
+*	@param nStageCount 現在のステージカウンタ値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function Stage2ADrawBottomObject( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 }
 
-//	@DrawTopObject()にて毎回呼ばれる部分
-function Stage2ADrawTopObject(){
+/**
+*	上位レイヤ絵画時に呼ばれます。
+*
+*	@param nStage 現在のステージ
+*	@param nStageCount 現在のステージカウンタ値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function Stage2ADrawTopObject( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 }

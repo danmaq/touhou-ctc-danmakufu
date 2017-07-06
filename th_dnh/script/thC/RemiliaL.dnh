@@ -1,427 +1,554 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ2A　ボス　レミリア・スカーレット　ラストスペル
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Remilia - ラストスペル]
+#Text[ステージ2A ボス
+レミリア・スカーレット]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_enemy_main{
 
-	// 共通関数読み込み
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
 	#include_function ".\INCLUDE\Boss.dnh"
-	#include_function ".\_index_UserShot.dnh"
+	#include_function ".\INCLUDE\BOSS\Remilia.dnh"
 
-	// 画像及び効果音ファイル
-	let userShot=shotAll;
-	let imgBoss=dotBossRemilia;
-	let imgCutIn=cutRemilia;
-	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
-	let imgList=[imgBoss,imgCutIn];
-	let seList=[];
 
-	// 各種設定値（難易度等）
-	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
-	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
-	Debug_SetLevel;
-	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
-	if(Lv==0){Lv=1;}
-	Lv--;
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
 
-	let maxLife=600;
-	let nextPhase=false;
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 60;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
 
-	// -------------------------------------------------------------------------
-	@Initialize{
 
-		// ボス初期設定（ファイルのロード他）
-		if(!THC){
-			LoadUserShotData(userShot);
-			imgList=imgList~LOADBGLIST_REMILIA~imgFontList;
-			seList=seList~seListEnemy;
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 最大ライフ（ラストスペルエフェクトでm_nFlanEnemyMaxLifeは使えない） */
+	let m_nMaxLife = 500;
+
+	/** 次のフェイズに移るか */
+	let m_bNextPhase = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		m_bDeadEffect = true;
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( m_nLevel > 0 ){ m_nLevel --; }
+		SetTimer( 69 );
+		SetLife( 500 );
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+			let nBossID = CL_TTH_CHARACTER_NAME_KOUMA + CL_TTH_CHARACTER_NAME_KOUMA_REMILIA;
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
 		}
-		InitializeBoss(imgList,seList);
-
-		// スペルカード設定
-		SetTimer(70);
-		SetLife(500);
-		SetDamageRate(5,0);
-		SetShotAutoDeleteClip(32,32,32,32);
-		SetX(cenX);
-		SetY(minY+60);
-		LastSpellEffect(115);
-
-		// ボス基本処理、メイン処理
-		CountTimer(seTimeOut);
-		BehaviorBoss(ACT_STAND4);
-		Main;
+		else{
+			SetPosition( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y );
+			LastSpellEffect();
+		}
+		SetDamageRate( 5, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND4 );
 
 	}
 
-	// -------------------------------------------------------------------------
-	@MainLoop{
-		m_nSpellBonus = GetSpellCardBonusScore();
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-		// 当たり判定（自弾,体当たり）
-		if(m_nEnemyAlpha>0){Collision(32,24);}
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		// ダメージ音
-		PlayDamageSE(seDamage);
-
-		// カウンタ加算
-		m_nCount++;
-
-		yield;
+		/** 共通終了設定 */
+		FinalizeBoss();
 
 	}
 
-	// メイン処理 --------------------------------------------------------------
-	task Main{
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		SetInvincibility(242);
-		_Wait(117);
-
-		// スペルカード発動
-		let spellName=[
-			"「エンジェル・マヌーヴァ」",
-			"「エンジェル・マヌーヴァ－Ｈａｒｄ－」",
-			"「エンジェル・マヌーヴァ－Ｌｕｎａｔｉｃ－」"
-		];
-		SetCommonData(CD_SPELL_LASTSPELL,true);
-		CutInEnemy(spellName[Lv],imgCutIn,192,256);
-		SetScore(100000);
-		SetAction(ACT_SPELL5,0);
-		_Wait(125);
-
-		// ライフチェック
-		CheckLife;
-
-		// 弾幕コンボ
-		ShotCombo;
-
-		// 移動
-		PlaySE(sePower);
-		Concentration01(120);
-		DeleteEnemyShotToItem(ALL);
-		SetDamageRate(5,0);
-		_move(60);
-		_Wait(114);
-
-		// 全方向機雷弾
-		SetAction(ACT_SHOT_B3,66);
-		_Wait(6);
-		RoundMineShot(0);
-		_Wait(30);
-		RoundMineShot(1);
-		_Wait(60);
-
-		// 弾幕コンボ
-		nextPhase=false;
-		ShotCombo;
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
 
 	}
 
-	// 弾幕コンボ --------------------------------------------------------------
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		if( !m_bStage || m_bSpellPractice ){
+			SetAction( ACT_MOVE, nFrame );
+			BossMoveHome( nFrame, false );
+		}
+		__Wait( 55 );
+		if( m_bDead ){ break; }
+
+		/** ボスID設定 */
+		if( m_bStage && !m_bSpellPractice ){
+			let nBossID = CL_TTH_CHARACTER_NAME_KOUMA + CL_TTH_CHARACTER_NAME_KOUMA_REMILIA;
+			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+		}
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_KOUMA + CL_TTH_SPELL_STAGE2_BOSS_LAST + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+		if( m_bDead ){ break; }
+
+		/** ライフチェック */
+		CheckLifePhase();
+
+		/** 弾幕コンボ */
+		ShotCombo();
+
+		/** 移動 */
+		PlaySEEx( sePower );
+		Concentration01( 120 );
+		DeleteEnemyShotToItem( ALL );
+		SetDamageRate( 5, 0 );
+		nFrame = 60;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 114 );
+		if( m_bDead ){ break; }
+
+		/** 全方向機雷弾 */
+		SetAction( ACT_SHOT_B3, 66 );
+		__Wait( 6 );
+		if( m_bDead ){ break; }
+		RoundMineShot( 0 );
+		__Wait( 30 );
+		if( m_bDead ){ break; }
+		RoundMineShot( 1 );
+		__Wait( 60 );
+		if( m_bDead ){ break; }
+
+		/** 弾幕コンボ */
+		m_bNextPhase = false;
+		ShotCombo();
+
+	}
+
+	/**
+	*	弾幕コンボ
+	*/
 	function ShotCombo{
 
-		let assign=1;
+		let nAssign = 1;
 
 		loop{
 
-			// クロス直線弾
-			SetAction(ACT_SHOT_A5,90);
-			let ly=rand(20,40);
-			CrossLineShot(ly,assign);
-			loop(18){
-				if(nextPhase){break;}
+			/** クロス直線弾 */
+			SetAction( ACT_SHOT_A5, 90 );
+			let nHalfY = rand( 20, 40 );
+			CrossLineShot( nHalfY, nAssign );
+			loop( 18 ){
+				if( m_bNextPhase ){ break; }
 				yield;
 			}
-			CrossLineShot(ly,-assign);
-			loop(82){
-				if(nextPhase){break;}
+			if( m_bNextPhase || m_bDead ){ break; }
+			CrossLineShot( nHalfY, - nAssign );
+			loop( 82 ){
+				if( m_bNextPhase ){ break; }
 				yield;
 			}
-			if(nextPhase){break;}
+			if( m_bNextPhase || m_bDead ){ break; }
 
-			// 移動
-			move(45,-1);
-			loop(45){
-				if(nextPhase){break;}
+			/** 移動 */
+			Move( 45, -1 );
+			loop( 45 ){
+				if( m_bNextPhase ){ break; }
 				yield;
 			}
-			if(nextPhase){break;}
+			if( m_bNextPhase || m_bDead ){ break; }
 
-			// 全方向レーザー
-			RoundLaser(-1);
-			loop(140){
-				if(nextPhase){break;}
+			/** 全方向レーザー */
+			RoundLaser( -1 );
+			loop( 140 ){
+				if( m_bNextPhase ){ break; }
 				yield;
 			}
-			if(nextPhase){break;}
+			if( m_bNextPhase || m_bDead ){ break; }
 
-			// 移動
-			move(45,0);
-			loop(45){
-				if(nextPhase){break;}
+			/** 移動 */
+			Move( 45, 0 );
+			loop( 45 ){
+				if( m_bNextPhase ){ break; }
 				yield;
 			}
-			if(nextPhase){break;}
+			if( m_bNextPhase || m_bDead ){ break; }
 
-			// 連続ばらつき弾
-			RapidVariedShot;
-			loop(100){
-				if(nextPhase){break;}
+			/** 連続ばらつき弾 */
+			RapidVariedShot();
+			loop( 100 ){
+				if( m_bNextPhase ){ break; }
 				yield;
 			}
-			if(nextPhase){break;}
+			if( m_bNextPhase || m_bDead ){ break; }
 
-			// 移動
-			move(45,1);
-			loop(45){
-				if(nextPhase){break;}
+			/** 移動 */
+			Move( 45, 1 );
+			loop( 45 ){
+				if( m_bNextPhase ){ break; }
 				yield;
 			}
-			if(nextPhase){break;}
+			if( m_bNextPhase || m_bDead ){ break; }
 
-			// 全方向レーザー
-			RoundLaser(1);
-			loop(140){
-				if(nextPhase){break;}
+			/** 全方向レーザー */
+			RoundLaser( 1 );
+			loop( 140 ){
+				if( m_bNextPhase ){ break; }
 				yield;
 			}
-			if(nextPhase){break;}
+			if( m_bNextPhase || m_bDead ){ break; }
 
-			// 移動
-			move(45,0);
-			loop(45){
-				if(nextPhase){break;}
+			/** 移動 */
+			Move( 45, 0 );
+			loop( 45 ){
+				if( m_bNextPhase ){ break; }
 				yield;
 			}
-			if(nextPhase){break;}
+			if( m_bNextPhase || m_bDead ){ break; }
 
-			assign*=-1;
-			SetDamageRate(15,0);
+			nAssign = - nAssign;
+			SetDamageRate( 20, 0 );
 
 		}
 
 	}
 
-	// 全方向機雷弾 ------------------------------------------------------------
-	function RoundMineShot(let assign){
+	/**
+	*	全方向機雷弾
+	*	@param nAssign	割り振り係数
+	*/
+	function RoundMineShot( let nAssign ){
 
-		let way=28+4*Lv;
-		let wayAngle=360/way;
-		let baseAngle=90+wayAngle/2*assign;
+		let nWay = 24 + 4 * m_nLevel;
+		let nX = GetX();
+		let nY = GetY();
+		let nWayAngle = 360 / nWay;
+		let nAngle = 90 + nWayAngle / 2 * nAssign;
 
-		PlaySE(seKira1);
-		ascent(let i in 0 .. way){
-			let angle=baseAngle+wayAngle*i;
-			MineShot(GetX,GetY,angle,assign);
+		PlaySEEx( seKira1 );
+		loop( nWay ){
+			MineShot( nX, nY, nAngle, nAssign );
+			nAngle += nWayAngle;
 		}
 
 	}
 
-	// 機雷弾 ------------------------------------------------------------------
-	function MineShot(let x, let y, let angle, let assign){
+	/**
+	*	機雷弾
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nAngle	角度
+	*	@param nAssign	割り振り係数
+	*/
+	function MineShot( let nX, let nY, let nAngle, let nAssign ){
 
-		// 設置弾
-		let speed=5;
-		let graphic=US_BALL_L_PURPLE;
+		/** 機雷設置弾 */
+		let nSpeed = 5;
+		let nGraphic = US_BALL_L_PURPLE;
 
-		// 機雷弾
-		let num=16;
-		let _graphic=US_BALL_BS_RED;
-		let delay=5;
-		let numShotFr=7;
-		let shotFr=7;
-		if(assign==1){shotFr-=numShotFr/2;}
+		/** 機雷弾 */
+		let nNum = 16;
+		let _nGraphic = US_BALL_BS_RED;
+		let nDelay = 5;
+		let nNumFrame = 7;
+		let nFrame = 7;
+		if( nAssign == 1 ){ nFrame -= nNumFrame / 2; }
 
-		CreateShotA(0,x,y,0);
-		SetShotDataA(0,0,speed,angle,0,0,0,graphic);
-		loop(num){
-			shotFr+=numShotFr;
-			CreateShotA(1,0,0,delay);
-			SetShotDataA(1,0,0,angle,0,0,0,_graphic);
-			AddShot(shotFr,0,1,0);
+		CreateShotA( 0, nX, nY, 0 );
+		SetShotDataA( 0, 0, nSpeed, nAngle, 0, 0, 0, nGraphic );
+		loop( nNum ){
+			nFrame += nNumFrame;
+			CreateShotA( 1, 0, 0, nDelay );
+			SetShotDataA( 1, 0, 0, nAngle, 0, 0, 0, _nGraphic );
+			AddShot( nFrame, 0, 1, 0 );
 		}
-		FireShot(0);
+		FireShot( 0 );
 
 	}
 
-	// 全方向レーザー ----------------------------------------------------------
-	task RoundLaser(let assign){
+	/**
+	*	全方向レーザー
+	*	@param nAssign	割り振り係数
+	*/
+	task RoundLaser( let nAssign ){
 
-		let way=42+6*Lv;
-		let wayAngle=360/way*assign;
-		let baseAngle=-90+RandBlur(wayAngle/2);
+		let nWay = 40 + 4 * m_nLevel;
+		if( m_nLevel == 2 ){ nWay += 4; }
+		let nWayAngle = 360 / nWay * nAssign;
+		let nAngle = - 90 + RandBlur( nWayAngle / 2 );
 
-		SetAction(ACT_SHOT_B3,130);
-		ascent(let i in 0 .. way){
-			let angle=baseAngle+wayAngle*i;
-			Laser(angle,wayAngle,i);
-		}
-
-	}
-
-	// レーザー ----------------------------------------------------------------
-	task Laser(let angle, let wayAngle, let n){
-
-		let assign=1;
-		if(n%2==1){assign=-1;}
-		let delay=90;
-		let addLength=600/delay;
-		let gapLength=50;
-		let addAngle=wayAngle*2/(delay-30)*assign;
-		let width=18;
-		let graphic=US_BEAM_RED;
-		let kill=135;
-
-		CreateLaserB(0,0,width,graphic,delay);
-		SetLaserDataB(0,0,addLength,gapLength,0,angle,addAngle,angle,addAngle);
-		SetLaserDataB(0,delay-30,0,NULL,0,NULL,0,NULL,0);
-		SetShotKillTime(0,kill);
-		FireShot(0);
-		if(n==0){PlaySE(seLaser1);}
-
-		loop(delay){yield;}
-
-		if(!nextPhase){
-			angle+=wayAngle*2*assign;
-			let x=GetGapX(GetX,gapLength,angle);
-			let y=GetGapY(GetY,gapLength,angle);
-			let speed=14;
-			let Length=100;
-			width=36;
-			graphic=US_BALL_M_A_RED;
-			CreateLaser01(x,y,speed,angle,Length,width,graphic,0);
-			if(n==0){PlaySE(seLaser2);}
+		SetAction( ACT_SHOT_B3, 130 );
+		ascent( let i in 0 .. nWay ){
+			Laser( nAngle, nWayAngle, i );
+			nAngle += nWayAngle;
 		}
 
 	}
 
-	// クロス直線弾 ------------------------------------------------------------
-	task CrossLineShot(let ly, let assign){
+	/**
+	*	レーザー
+	*	@param nAngle		角度
+	*	@param nWayAngle	隣のレーザーとの角度
+	*	@param nNumberr		番号
+	*/
+	task Laser( let nAngle, let nWayAngle, let nNumber ){
 
-		let x=GetX;
-		let y=GetY+10;
-		let num=5+Lv;
-		let way=34+4*Lv;
-		let lx=cenX-minX;
-		let lineX1=cenX-lx*assign;
-		let lineX2=cenX+lx*assign;
-		let gapX=(lineX2-lineX1)/(way-1);
-		let lineY1=cenY-40+ly;
-		let lineY2=cenY-40-ly;
-		let gapY=(lineY2-lineY1)/(way-1);
-		let graphic=US_KNIFE_KOUMA_RED;
-		let delay=10;
+		let nAssign = 1;
+		if( nNumber % 2 == 1 ){ nAssign = -1; }
+		let nDelay = 90;
+		let nAddLength = 600 / nDelay;
+		let nGapLength = 50;
+		let nAddAngle = nWayAngle * 2 / ( nDelay - 30 ) * nAssign;
+		let nWidth = 16;
+		let nGraphic = US_BEAM_RED;
+		let nKill = 135;
 
-		LoopPlaySE(seShot3,way,6);
-		ascent(let i in 0 .. way){
-			if(nextPhase){break;}
-			let _x=lineX1+gapX*i;
-			let _y=lineY1+gapY*i;
-			let minSpeed=GetGapLength(x,y,_x,_y)/140;
-			let maxSpeed=minSpeed*(3+0.4*Lv);
-			let angle=GetGapAngle(x,y,_x,_y);
-			LineShot(x,y,minSpeed,maxSpeed,angle,num,graphic,delay);
+		CreateLaserB( 0, 0, nWidth, nGraphic, nDelay );
+		SetLaserDataB( 0, 0, nAddLength, nGapLength, 0, nAngle, nAddAngle, nAngle, nAddAngle );
+		SetLaserDataB( 0, nDelay - 30, 0, NULL, 0, NULL, 0, NULL, 0 );
+		SetShotKillTime( 0, nKill );
+		FireShot( 0 );
+		if( nNumber == 0 ){ PlaySEEx( seLaser1 ); }
+		loop( nDelay ){ yield; }
+
+		if( !m_bNextPhase && !m_bDead ){
+			nAngle += nWayAngle * 2 * nAssign;
+			let nX = GetGapX( GetX(), nGapLength, nAngle );
+			let nY = GetGapY( GetY(), nGapLength, nAngle );
+			let nSpeed = 14;
+			let nLength = 100;
+			nWidth = 36;
+			nGraphic = US_BALL_M_A_RED;
+			CreateLaser01( nX, nY, nSpeed, nAngle, nLength, nWidth, nGraphic, 0 );
+			if( nNumber == 0 ){ PlaySEEx( seLaser2 ); }
+		}
+
+	}
+
+	/**
+	*	クロス直線弾
+	*	@param nHalfY	直線開始点～終了点のy座標距離 / 2
+	*	@param nAssign	割り振り係数
+	*/
+	task CrossLineShot( let nHalfY, let nAssign ){
+
+		let nX = GetX();
+		let nY = GetY() + 10;
+		let nNum = 4 + m_nLevel;
+		let nWay = 30 + 4 * m_nLevel;
+		let nHalfX = CL_CEN_X - CL_MIN_X;
+		let nLineX = CL_CEN_X - nHalfX * nAssign;
+		let nLineEndX = CL_CEN_X + nHalfX * nAssign;
+		let nGapX = ( nLineEndX - nLineX ) / ( nWay - 1 );
+		let nLineY = CL_CEN_Y - 40 + nHalfY;
+		let nLineEndY = CL_CEN_Y - 40 - nHalfY;
+		let nGapY = ( nLineEndY - nLineY ) / ( nWay - 1 );
+		let nGraphic = US_KNIFE_KOUMA_RED;
+		let nDelay = 10;
+
+		PlaySELoopEx( seShot3, nWay, 6 );
+		loop( nWay ){
+			let nSpeed = GetGapLength( nX, nY, nLineX, nLineY ) / 140;
+			let nMaxSpeed = nSpeed * ( 3 + 0.4 * m_nLevel );
+			let nAngle = GetGapAngle( nX, nY, nLineX, nLineY );
+			_LineShot( nX, nY, nSpeed, nMaxSpeed, nAngle, nNum, nGraphic, nDelay );
 			yield;
+			if( m_bNextPhase || m_bDead ){ break; }
+			nLineX += nGapX;
+			nLineY += nGapY;
 		}
 
 	}
 
-	// 連続ばらつき弾 ----------------------------------------------------------
+	/**
+	*	連続ばらつき弾
+	*/
 	task RapidVariedShot{
 
-		let num=5+Lv;
-		let fr=14;
+		let nNum = 5 + m_nLevel;
+		let nFrame = 14;
+		let nX = GetX();
+		let nY = GetY();
 
-		SetAction(ACT_SHOT_A5,fr*num+15);
-		ascent(let i in 0 .. num){
-			if(nextPhase){break;}
-			let angle=GetAngleToPlayer;
-			VariedShot(angle);
-			_Wait(fr);
+		SetAction( ACT_SHOT_A5, nFrame * nNum + 15 );
+		loop( nNum ){
+			let nAngle = GetAngleToPlayer();
+			VariedShot( nX, nY, nAngle );
+			__Wait( nFrame );
+			if( m_bNextPhase || m_bDead ){ break; }
 		}
 
 	}
 
-	// ばらつき弾 --------------------------------------------------------------
-	function VariedShot(let baseAngle){
+	/**
+	*	ばらつき弾
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nAngle	角度
+	*/
+	function VariedShot( let nX, let nY, let nAngle ){
 
-		let num=21;
-		let baseSpeed=1.5;
-		let numSpeed=(4.8+0.4*Lv-baseSpeed)/(num-1);
-		let graphic=[US_BALL_SS_RED,US_BALL_S_RED,US_BALL_M_RED,US_BALL_L_RED];
-		let gra=0;
-		let delay=12;
+		let nNum = 21;
+		let nSpeed = 1.5;
+		let nNumSpeed = ( 4.8 + 0.4 * m_nLevel - nSpeed ) / ( nNum - 1 );
+		let anGraphic = [ US_BALL_SS_RED, US_BALL_S_RED, US_BALL_M_RED, US_BALL_L_RED ];
+		let nGra = 0;
+		let nDelay = 12;
 
-		PlaySE(seShot1);
-		ascent(let i in 0 .. num){
-			let speed=baseSpeed+numSpeed*i;
-			if(i==7||i==14||i==20){gra++;}
-			let angle=baseAngle+RandBlur(4);
-			if(i==num-1){angle=baseAngle;}
-			CreateShot01(GetX,GetY,speed,angle,graphic[gra],delay);
+		PlaySEEx( seShot1 );
+		ascent( let i in 0 .. nNum ){
+			if( i == 7 || i == 14 || i == 20 ){ nGra ++; }
+			let _nAngle = nAngle + RandBlur( 4 );
+			if( i == nNum - 1 ){ _nAngle = nAngle; }
+			CreateShot01( nX, nY, nSpeed, _nAngle, anGraphic[ nGra ], nDelay );
+			nSpeed += nNumSpeed;
 		}
 
 	}
 
-	// ライフチェック ----------------------------------------------------------
-	task CheckLife{
+	/**
+	*	ライフチェック
+	*/
+	task CheckLifePhase{
 
 		loop{
-			if(GetLife<=maxLife*0.6){break;}
+			if( GetLife() <= m_nMaxLife * 0.55 ){ break; }
 			yield;
 		}
-		nextPhase=true;
+		m_bNextPhase = true;
 
 	}
 
-	// 移動 --------------------------------------------------------------------
-	function move(let fr, let assign){
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*	@param nAssign	割り振り係数
+	*/
+	task Move( let nFrame, let nAssign ){
 
-		let x=cenX+RandBlur(20);
-		let y=minY+60+RandBlur(10);
-		if(assign!=0){
-			x+=80*assign;
-			y+=60;
+		let _nX = GetX();
+		let _nY = GetY();
+		let nX = FLAN_BOSS_HOME_X + RandBlur( 20 );
+		let nY = FLAN_BOSS_HOME_Y + RandBlur( 10 );
+		if( nAssign != 0 ){
+			nX += 80 * nAssign;
+			nY += 60;
 		}
-		let power=GetGapLength(GetX,GetY,x,y)*2;
-		let angle=GetGapAngle(GetX,GetY,x,y);
-		SetMovePositionHermite(x,y,power,angle,0,0,fr);
-		SetAction(ACT_MOVE,fr);
-
-	}
-
-	function _move(let fr){
-
-		let x=cenX;
-		let y=minY+60;
-		let power=GetGapLength(GetX,GetY,x,y)*2;
-		let angle=GetGapAngle(GetX,GetY,x,y);
-		SetMovePositionHermite(x,y,power,angle,0,0,fr);
-		SetAction(ACT_MOVE,fr);
-
-	}
-
-	// -------------------------------------------------------------------------
-	@Finalize{
-
-		// カットイン消去
-		SetCommonData(CD_CUTIN_SPELL_END,true);
-
-		// ロードしたファイルを削除
-		DeleteGraphicList(imgList,seList);
-
-	}
-
-	// -------------------------------------------------------------------------
-	@DrawLoop{
-
-		// ボス描画
-		DrawBoss(imgBoss);
-		DrawCutIn( m_nCount );
-
-	}
-
-	// -------------------------------------------------------------------------
-	@BackGround{
-
-		// 背景描画
-		OnBGRemilia;
+		let nForce = GetGapLength( _nX, _nY, nX, nY ) * 2;
+		let nAngle = GetGapAngle( _nX, _nY, nX, nY );
+		SetAction( ACT_MOVE, nFrame );
+		SetMovePositionHermite( nX, nY, nForce, nAngle, 0, 0, nFrame - 1 );
+		loop( nFrame - 1 ){ yield; }
+		if( !m_bNextPhase ){ SetMovePosition02( nX, nY, 1 ); }
 
 	}
 

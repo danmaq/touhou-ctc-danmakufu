@@ -1,169 +1,258 @@
-script_enemy_main
-{
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 2d(妖精雑魚)
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
-#include_function ".\INCLUDE\Enemy.dnh"
 
-//変数宣言--------------------------------------
-	let count=0;
-	let Level=GetCommonData("Level");
-	let angle_b=GetAngleToPlayer();
-//タスクの作成----------------------------------
-task MainAction()
-{
-	yield;
-	_Wait(50);
-	
-	while(1)
-	{
-		let angle_b=rand(0,360);
-		let angle=-180;
-		while(angle<180)
-		{
-			CreateEnemyFromScript("t_ma_01",GetX(),GetY(),2.5,GetAngleToPlayer()+angle+angle_b,int(rand(0,6)));
-			angle+=40;
+//////////////////////////////////////////////////////////////////////
+//	スクリプトここから
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	THCELをインクルード
+//	(FLAN/THCELへのインクルードはTHCELが勝手にやってくれます)
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\Zako.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	設定定義
+//////////////////////////////////////////////////////////////////////
+
+	/**	デフォルトアイテムの落下量を設定します。 */
+	ENEMY_ITEMEX_NUM_DEFAULT = 8;
+	/**	被弾判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_A = 13;
+	/**	接触判定の大きさを設定します。 */
+	FLAN_ENEMY_COLLISION_B = 8;
+	/**	onMainLoopへ処理をまわさないよう設定します。(まわしても何の処理も無い) */
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数宣言
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有動作実装部
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	敵の移動を管理するタスクです。
+	*
+	*	@param nLevel レベル(0～3)
+	*/
+	task DoMove( let nLevel ){
+		let spmax=GetSpeed();
+		ascent(i in 0..100){
+			SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+			yield;
 		}
-		_Wait([80,60,40,30][Level]);
+		__Wait(110);
+		SetAngle(-90);
+		SetSpeed(0.7);
 	}
-}
-task SubAction01()
-{
-	yield;
-	let spmax=GetSpeed();
-	let i=0;
-	loop(50)
-	{
-		SetSpeed(SlowDown( spmax , 0 , i , 50 ));
-		i++;
-		yield;
+
+	/**
+	*	使い魔を出すのとは別のアクション
+	*
+	*	@param nLevel レベル(0～3)
+	*/
+	task SubAction( let nLevel){
+		__Wait(20);
+		if(nLevel==1){
+			ascent(i in 0..8){
+				let angle=-180;
+				while(angle<180){
+					CreateShot01(GetX(),GetY(),Smooth( 0.8,3,i, 8 ),angle+Smooth(0,55,i,8),US_NEEDLE_WHITE,10);
+					angle+=60;
+				}
+			}
+			PlaySEEx(seShot2);
+		}
+		if(nLevel>1){
+			while(1){
+				ascent(i in 0..[0,0,16,20][nLevel]){
+					let angle=-180;
+					while(angle<180){
+						CreateShot01(GetX(),GetY(),Smooth( 0.8,[0,0,3.5,4][nLevel],i, [0,0,16,20][nLevel] ),GetAngleToPlayer()+angle+Smooth(0,55,i,[0,0,16,20][nLevel]),US_NEEDLE_WHITE,10);
+						angle+=60;
+					}
+				}
+				PlaySEEx(seShot2);
+				__Wait([0,0,80,50][nLevel]);
+				ascent(i in 0..[0,0,25,30][nLevel]){
+					let angle=-180;
+					while(angle<180){
+						CreateShot01(GetX(),GetY(),Smooth( [0,0,3.5,4][nLevel],0.8,i, [0,0,25,30][nLevel] ),GetAngleToPlayer()+angle+Smooth(0,55,i,[0,0,25,30][nLevel]),US_NEEDLE_WHITE,10);
+						angle+=60;
+					}
+				}
+				PlaySEEx(seShot2);
+				__Wait([0,0,80,50][nLevel]);
+			}
+		}
 	}
-	_Wait(110);
-	SetAngle(-90);
-	SetSpeed(0.3);
 
+//////////////////////////////////////////////////////////////////////
+//	共通動作実装部
+//////////////////////////////////////////////////////////////////////
 
-}
-
-task SubAction02()
-{
-
-	yield;
-	_Wait(50);
-
-	if(Level==1)
-	{
-		let i=0;
-		loop(20)
-		{
+	/**
+	*	敵固有のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTask( let nArgv, let nLevel ){
+		DoMove( nLevel );
+		SubAction( nLevel );
+		__Wait(10);
+		while(1){
+			let angle_b=rand(0,360);
 			let angle=-180;
-			while(angle<180)
-			{
-				CreateShot01(GetX(),GetY(),Smooth( 0.8,3,i, 20 ),angle+Smooth(0,55,i,20),WHITE11,10);
-				angle+=60;
+			while(angle<180){
+				CreateEnemyFromScript("Shadow",GetX(),GetY(),2.5,GetAngleToPlayer()+angle+angle_b,int(rand(0,6)));
+				angle+=40;
 			}
-			i++;
+			PlaySEEx(seShadow);
+			__Wait([80,60,45,35][nLevel]);
 		}
 	}
-	if(Level>1)
-	{
-		while(1)
-		{
-			let i=0;
-			loop([0,0,25,30][Level])
-			{
-				let angle=-180;
-				while(angle<180)
-				{
-					CreateShot01(GetX(),GetY(),Smooth( 0.8,[0,0,3.5,4][Level],i, [0,0,25,30][Level] ),GetAngleToPlayer()+angle+Smooth(0,55,i,[0,0,25,30][Level]),WHITE11,10);
-					angle+=60;
-				}
-				i++;
-			}
-			_Wait([0,0,80,50][Level]);
-			let i=0;
-			loop([0,0,25,30][Level])
-			{
-				let angle=-180;
-				while(angle<180)
-				{
-					CreateShot01(GetX(),GetY(),Smooth( [0,0,3.5,4][Level],0.8,i, [0,0,25,30][Level] ),GetAngleToPlayer()+angle+Smooth(0,55,i,[0,0,25,30][Level]),WHITE11,10);
-					angle+=60;
-				}
-				i++;
-			}
-			_Wait([0,0,80,50][Level]);
-		}
+
+	/**
+	*	初期化時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( let nArgv, let nLevel ){
+//		CreateDebugWindow();
+		SetLife(100);
 	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		DarwZakoBack();
+		DrawYousei( RECT_YOUSEI_GREEN );
+	}
+
 }
 
-//実行部分---------------------------------------
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	使い魔
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
-	@Initialize
-	{
-		SetLife(130);
-		SetInvincibility( 100 );
-		MainAction();
-		SubAction01();
-		SubAction02();
-	}
-	
-	@MainLoop
-	{
-		Gone();
-		Deletemine();
-		yield;
-		Collision(16 , 12);
-		count++;
-		//敵画像代わり------------------------------------
-		if(int(count/2)==count/2)
-		{
-			CreateShotA(0,GetX(),GetY(),0);
-			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
-			SetShotKillTime(0,2);
-			FireShot(0);
-		}
-		//------------------------------------------------
 
-	}
-	@DrawLoop
-	{
-	}
-	@Finalize
-	{
-		DropItem( 2 , 20 );
-	}
-}
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////
-//仮の使い魔、使い魔の書式の統一が必要なので雛形の作成をお願いします
-////////////////////////////////////////////////////////////////////////
+script_enemy Shadow{
 
-script_enemy t_ma_01
-{
 
-#include_function ".\INCLUDE\Shadow.dnh"
-#include_function ".\index_UserShot.dnh"
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
 
-	let count=0;
-	let scale=0;
-	let color=[BLUE04,RED04,GREEN04,YELLOW04,PURPLE04,AQUA04,ORANGE04][GetArgument()];
-	let seHidden=seShadowHidden;
-	let seSudden=seShadowSudden;
+	#include_function ".\INCLUDE\Shadow.dnh"
 
-task MainAction()
-{
-	yield;
-	while(1)
-	{
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ESS_NOGONE = false;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_SHADOW_LIGHTING = true;
+	FLAN_SHADOW_COLLISION = true;
+	FLAN_SHADOW_DELETE_SHOT = 32;
+	FLAN_ENEMY_COLLISION_A = 24;
+	FLAN_ENEMY_COLLISION_B = 0;
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)独自ショートカットShadowBody専用
+//////////////////////////////////////////////////////////////////////
+
+	let SHADOW_LIFE = 30;
+	let SHADOW_COLOR = SHADOW_COLOR_BLUE;
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+task MainAction( let nLevel ){
+	let color=[US_BALL_S_A_RED,US_BALL_S_A_ORANGE,US_BALL_S_A_YELLOW,US_BALL_S_A_GREEN,US_BALL_S_A_SKY,US_BALL_S_A_BLUE,US_BALL_S_A_PURPLE][GetArgument()];
+	while(1){
 		CreateShotA(0,GetX(),GetY(),0);
 		SetShotDataA(0,0,rand(-1,5),GetAngle+rand(-40,40),0,0,0,color);
 		SetShotDataA(0,9,rand(GetSpeed*0.6,GetSpeed),GetAngle,0,0,0,color);
 		FireShot(0);
 		loop(3){yield;}
 	}
-
 }
-task SubAction01()
-{yield;}
+task SubAction01( let nLevel ){}
 
-#include_function ".\INCLUDE\ShadowBody.dnh"
+
+	#include_function ".\INCLUDE\ShadowBody.dnh"
+
 }

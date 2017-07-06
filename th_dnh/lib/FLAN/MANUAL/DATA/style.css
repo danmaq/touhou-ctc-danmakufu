@@ -1,0 +1,58 @@
+﻿@charset "UTF-8";
+.comment{
+	color: SeaGreen;
+}
+.header{
+	color: Purple;
+}
+address{
+	font-size: 88%;
+	text-align: right;
+}
+body{
+	background-color: AliceBlue;
+	font-family: sans-serif;
+}
+p{
+	margin: 1ex;
+	text-indent: 1ex;
+	letter-spacing: 0.2ex;
+	text-autospace: ideograph-alpha;
+}
+p.image{
+	float: right;
+}
+hr{
+	clear: both;
+}
+dd{
+	margin-left: 1em;
+}
+dd ol{
+	color: DarkGreen;
+	list-style-position: inside;
+	margin-left: 0px;
+}
+dd p{
+	margin: 0px;
+}
+dd p.return{
+	color: DarkOliveGreen;
+	letter-spacing: 0px;
+}
+div.indent, ul{
+	margin: 0px 0px 0px 1.5ex;
+}
+dt{
+	color: MidnightBlue;
+	font-weight: bolder;
+	margin-top: 1em;
+}
+h1, h2, h3, h4, h5, h6{
+	font-size: 100%;
+	margin: 0px;
+	color: DarkRed;
+}
+ul.menu{
+	list-style-type: none;
+}

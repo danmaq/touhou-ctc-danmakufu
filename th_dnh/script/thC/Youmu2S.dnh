@@ -1,0 +1,519 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ5　中ボス　魂魄 妖夢　スペル2
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Youmu - スペル2]
+#Text[ステージ5 中ボス
+魂魄 妖夢]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Youmu.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 回避するか */
+	let m_bAvoid = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+		}
+		else{ CheckTimer(); }
+		SetTimer( 56 );
+		SetLife( 500 );
+		SetDamageRate( 5, 5 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_YOUMU + CL_TTH_CHARACTER_NAME_YOUMU_YOUMU;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){
+			DropItemTHC( 14 );
+			DropItemExtendTHC();
+		}
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_YOUMU + CL_TTH_SPELL_STAGE5_HALFWAY_2 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		/** 移動 */
+		let anX = [ CL_MIN_X + 32, CL_MAX_X - 32 ];
+		let anY = [ CL_MIN_Y + 20, CL_MIN_Y + 20 ];
+		nFrame = 30;
+		SetAction( ACT_MOVE, nFrame );
+		SlowMove( anX[ 0 ], anY[ 0 ], nFrame );
+		__Wait( nFrame );
+
+		/** 壁斬 */
+		Slow( 1 );
+		m_bSlow = true;
+		nFrame = 60;
+		PlaySEEx( sePower );
+		MotionBlur( SHOT, nFrame, 200 );
+		SetAction( ACT_SHOT_A3_B, nFrame );
+		Concentration01( nFrame );
+		__Wait( nFrame );
+		Slow( 0 );
+		m_bSlow = false;
+		nFrame = 15;
+		PlaySEEx( seShot1 );
+		PlaySEEx( seLaser2 );
+ 		WallSlash( anX, anY, nFrame );
+		SetAction( ACT_SHOT_B2_B, nFrame );
+		SetMovePosition02( anX[ 1 ], anY[ 0 ], nFrame );
+		__Wait( nFrame );
+		SetAction( ACT_SHOT_A3_C, 0 );
+		__Wait( 60 - nFrame );
+
+		/** 移動 */
+		nFrame = 30;
+		SetAction( ACT_MOVE, nFrame );
+		SlowMove( FLAN_BOSS_HOME_X + RandBlur( 0.1 ), FLAN_BOSS_HOME_Y + RandBlur( 0.1 ), nFrame );
+		__Wait( nFrame );
+
+		/** 回避移動＋ランダム弾＋壁衝撃波 */
+		Avoid();
+		RandomShot();
+		WallWaveShot();
+		SetDamageRate( 22.5, 22.5 );
+
+		let nAssign = 1;
+
+		loop{
+
+			__Wait( 240 );
+
+			/** 回転衝撃波 */
+			nFrame = 60;
+			Slow( 1 );
+			m_bSlow = true;
+			m_bAvoid = false;
+			PlaySEEx( sePower );
+			MotionBlur( SHOT, nFrame, 200 );
+			SetAction( ACT_SHOT_A3_B, nFrame );
+			Concentration01( nFrame );
+			__Wait( nFrame );
+			Slow( 0 );
+			m_bSlow = false;
+			RollWaveShot( nAssign );
+			SetAction( ACT_SHOT_B2, 102 );
+			__Wait( 102 );
+			SetAction( ACT_SHOT_A3_C, 0 );
+			__Wait( 18 );
+			m_bAvoid = true;
+
+			nAssign = - nAssign;
+
+		}
+
+	}
+
+	/**
+	*	回避移動
+	*/
+	task Avoid{
+
+		loop{
+
+			while( GetHitCount() == 0 || !m_bAvoid ){ yield; }
+
+			let nFrame = 20;
+			let nBaseX = CL_CEN_X - 90;
+			if( GetX() < CL_CEN_X ){ nBaseX = CL_CEN_X + 90; }
+			let nX = nBaseX + RandBlur( 40 );
+			let _nY = GetY();
+			let nMoveY = rand( 0, 20 );
+			if( _nY > FLAN_BOSS_HOME_Y ){ nMoveY = - nMoveY; }
+			let nY = _nY + nMoveY;
+			SetAction( ACT_MOVE, nFrame );
+			SlowMove( nX, nY, nFrame );
+			__Wait( nFrame );
+
+		}
+
+	}
+
+	/**
+	*	ランダム弾
+	*/
+	task RandomShot{
+
+		let nFrame = 30;
+		let nWay = 8 + 4 * m_nLevel;
+		let nBaseSpeed = 1;
+		let nWaySpeed = ( 3 - nBaseSpeed ) / ( nWay - 1 );
+		let nWayAngle = 360 / nWay;
+		let anGraphic = [ US_BALL_M_RED, US_BALL_M_GREEN, US_BALL_M_BLUE, US_BALL_M_PURPLE ];
+		let nDelay = 8;
+
+		loop{
+			while( !m_bAvoid ){ yield; }
+			let nX = GetX();
+			let nY = GetY();
+			let nAngle = rand( 0, 360 );
+			let anSort = CreateMixOrderArray( nWay );
+			ascent( let i in 0 .. nWay ){
+				let nSpeed = nBaseSpeed + nWaySpeed * anSort[ i ];
+				CreateShot01( nX, nY, nSpeed, nAngle, anGraphic[ i % 3 ], nDelay );
+				nAngle += nWayAngle;
+			}
+			__Wait( nFrame );
+		}
+
+	}
+
+	/**
+	*	壁衝撃波
+	*/
+	task WallWaveShot{
+
+		let nFrame = 30;
+		let nGapX = ( CL_MAX_X - CL_MIN_X ) / 3;
+		let anX = [ CL_CEN_X - nGapX, CL_CEN_X, CL_CEN_X + nGapX ];
+		let nY = CL_MIN_Y + 20;
+		let nSpeed = 5 + 0.4 * m_nLevel;
+		let nAngle = 90;
+		let nLength = 50 + 10 * m_nLevel;
+		let nGapLength = 30 + 5 * m_nLevel;
+		let nGapWidth = 100 + 20 * m_nLevel;
+		let nGraphic = US_BALL_S_A_SKY;
+		let nAssign = 1;
+
+		loop{
+
+			while( !m_bAvoid ){ yield; }
+
+			WaveShot( anX[ nAssign ], nY, nSpeed, nAngle, nLength, nGapLength, nGapWidth, nGraphic );
+			PlaySEEx( seShot2 );
+			__Wait( nFrame );
+
+			nAssign += rand_int( 1, 2 );
+			if( nAssign > 2 ){ nAssign -= 3; }
+
+		}
+
+	}
+
+	/**
+	*	回転衝撃波
+	*	@param nAssign	割り振り係数
+	*/
+	task RollWaveShot( let nAssign ){
+
+		let nFrame = 5;
+		let nWay = 12;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 5 + 0.4 * m_nLevel;
+		let nAngle = GetAngleToPlayer() - 180;
+		let nWayAngle = 360 / nWay * nAssign;
+		let nLength = 50 + 10 * m_nLevel;
+		let nGapLength = 50 + 10 * m_nLevel;
+		let nGapWidth = 100 + 20 * m_nLevel;
+		let nGraphic = US_BALL_S_A_PURPLE;
+
+		RollLaser( nAngle, nAssign );
+		let _nAngle = nAngle;
+		loop( nWay / 2 ){
+			WaveShot( nX, nY, nSpeed, _nAngle, nLength, nGapLength, nGapWidth, nGraphic );
+			PlaySEEx( seKira1 );
+			__Wait( nFrame );
+			_nAngle += nWayAngle * 2;
+		}
+		_nAngle = nAngle + nWayAngle;
+		loop( nWay / 2 ){
+			WaveShot( nX, nY, nSpeed, _nAngle, nLength, nGapLength, nGapWidth, nGraphic );
+			PlaySEEx( seKira1 );
+			__Wait( nFrame );
+			_nAngle += nWayAngle * 2;
+		}
+
+	}
+
+	/**
+	*	衝撃波
+	*	@param nX			弾源x座標
+	*	@param nY			弾源y座標
+	*	@param _nSpeed		速度
+	*	@param _nAngle		角度
+	*	@param nLength		レーザー長さ
+	*	@param nGapLength	縦幅
+	*	@param nGapWidth	横幅
+	*	@param nGraphic		弾画像
+	*/
+	task WaveShot( let nX, let nY, let _nSpeed, let _nAngle, let nLength, let nGapLength, let nGapWidth, let nGraphic ){
+
+		let nWay = 10;
+		let nStartLineX = nX + nGapLength * cos( _nAngle );
+		let nStartLineY = nY + nGapLength * sin( _nAngle );
+		let nWidth = nGapWidth * 2 / ( nWay * 2 - 1 );
+		let nFrame = 15;
+		let nAssign = 1;
+
+		loop( 2 ){
+			let nEndLineX = nX + nGapWidth / 2 * cos( _nAngle - 90 * nAssign );
+			let nEndLineY = nY + nGapWidth / 2 * sin( _nAngle - 90 * nAssign );
+			let nWayLineX = ( nEndLineX - nStartLineX ) / ( nWay - 1 );
+			let nWayLineY = ( nEndLineY - nStartLineY ) / ( nWay - 1 );
+			let nLineX = nStartLineX;
+			let nLineY = nStartLineY;
+			ascent( let i in 0 .. nWay ){
+				if( nAssign == 1 || i > 0 ){
+					let nSpeed = GetGapLength( nX, nY, nLineX, nLineY ) / nFrame;
+					let nAngle = GetGapAngle( nX, nY, nLineX, nLineY );
+					_WaveShot( nFrame, nX, nY, nSpeed, nAngle, nLineX, nLineY, _nSpeed, _nAngle, nLength, nWidth, nGraphic );
+				}
+				nLineX += nWayLineX;
+				nLineY += nWayLineY;
+			}
+			nAssign = - nAssign;
+		}
+
+	}
+
+	/**
+	*	衝撃波（1発）
+	*	@param nFrame	方向転換までのフレーム数
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nSpeed	速度
+	*	@param nAngle	角度
+	*	@param _nX		方向転換するx座標
+	*	@param _nY		方向転換するy座標
+	*	@param _nSpeed	方向転換後速度
+	*	@param _nAngle	方向転換後角度
+	*	@param nLength	レーザー長さ
+	*	@param nWidth	レーザー幅
+	*	@param nGraphic	弾画像
+	*/
+	task _WaveShot( let nFrame, let nX, let nY, let nSpeed, let nAngle, let _nX, let _nY, let _nSpeed, let _nAngle, let nLength, let nWidth, let nGraphic ){
+
+		let obj = Obj_Create( OBJ_SHOT );
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetSpeed( obj, nSpeed );
+		Obj_SetAngle( obj, nAngle );
+		ObjShot_SetGraphic( obj, nGraphic );
+
+		loop( nFrame ){ yield; }
+
+		if( !Obj_BeDeleted( obj ) ){
+			CreateLaser01( _nX, _nY, _nSpeed, _nAngle, nLength, nWidth, nGraphic, 0 );
+			Obj_Delete( obj );
+		}
+
+	}
+
+	/**
+	*	回転斬
+	*	@param nGapAngle	レーザー源間隔角度
+	*	@param nAssign		割り振り係数
+	*/
+	task RollLaser( let nGapAngle, let nAssign ){
+
+		let nGapLength = 60;
+		let nX = GetGapX( GetX(), nGapLength, nGapAngle );
+		let nY = GetGapY( GetY(), nGapLength, nGapAngle );
+		let nWidth = 14;
+		let nBlur = 35;
+		let nGraphic = US_BALL_M_A_WHITE;
+		let nRollFrame = 35;
+		let nSpeed = 2 * nGapLength * 3.14159 / nRollFrame;
+		let nAddAngle = 360 / nRollFrame * nAssign;
+		let nAngle = nGapAngle + 90 * nAssign - nAddAngle / 2;
+		let nKill = nRollFrame * 2;
+
+		CreateLaserC( 0, nX, nY, nWidth, nBlur, nGraphic, 0 );
+		SetLaserDataC( 0, 0, nSpeed, nAngle, nAddAngle, 0, 0 );
+		SetLaserDataC( 0, nKill, 0, NULL, 0, 0, 0 );
+		SetShotKillTime( 0, nKill + nBlur );
+		FireShot( 0 );
+
+	}
+
+	/**
+	*	壁斬
+	*	@param anX		レーザー端x座標配列
+	*	@param anY		レーザー端y座標配列
+	*	@param nDelay	遅延フレーム数
+	*/
+	task WallSlash( let anX, let anY, let nDelay ){
+
+		let obj = Obj_Create( OBJ_LASER );
+		let nAngle = GetGapAngle( anX[ 0 ], anY[ 0 ], anX[ 1 ], anY[ 1 ] );
+		let nAdjustLength = 80;
+		let nX = anX[ 0 ] + nAdjustLength * cos( nAngle - 180 );
+		let nY = anY[ 0 ] + nAdjustLength * sin( nAngle - 180 );
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetAngle( obj, nAngle );
+		ObjShot_SetGraphic( obj, US_BALL_M_A_WHITE );
+		ObjShot_SetDelay( obj, nDelay );
+		ObjLaser_SetWidth( obj, 16 );
+		Obj_SetAutoDelete( obj, false );
+		ObjLaser_SetSource( obj, false );
+
+		let nLength = 0;
+		let nMaxLength = GetGapLength( anX[ 0 ], anY[ 0 ], anX[ 1 ], anY[ 1 ] ) + nAdjustLength * 2;
+		let nAddLength = nMaxLength / nDelay;
+		loop( nDelay ){
+			nLength += nAddLength;
+			ObjLaser_SetLength( obj, nLength );
+			yield;
+		}
+
+	}
+
+}

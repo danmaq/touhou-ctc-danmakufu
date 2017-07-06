@@ -1,377 +1,647 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ステージ3C　ボス　四季映姫・ヤマザナドゥ　スペル3
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Eiki - スペル3]
+#Text[ステージ3C ボス
+四季映姫・ヤマザナドゥ]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
 script_enemy_main{
 
-	// 共通関数読み込み
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
 	#include_function ".\INCLUDE\Boss.dnh"
-	#include_function ".\_index_UserShot.dnh"
+	#include_function ".\INCLUDE\BOSS\Eiki.dnh"
 
-	// 画像及び効果音ファイル
-	let userShot=shotAll;
-	let imgBoss=dotBossEiki;
-	let imgCutIn=cutEiki;
-	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
-	let imgList=[imgBoss,imgCutIn];
-	let seList=[];
 
-	// 各種設定値（難易度等）
-	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
-	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
-	Debug_SetLevel;
-	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
 
-	let objJ=[];
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 80;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 100;
 
-	// -------------------------------------------------------------------------
-	@Initialize{
 
-		// ボス初期設定（ファイルのロード他）
-		if(!THC){
-			LoadUserShotData(userShot);
-			imgList=imgList~LOADBGLIST_EIKI~imgFontList;
-			seList=seList~seListEnemy~seListShadow;
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage || m_bSpellPractice ){
+			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
 		}
-		InitializeBoss(imgList,seList);
+		SetTimer( 63 );
+		SetLife( 500 );
+		SetDamageRate( 14.5, 14.5 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+		CheckExplosion01Ex();
 
-		// スペルカード設定
-		SetTimer(66);
-		SetLife(500);
-		SetDamageRate(14,14);
-		SetShotAutoDeleteClip(32,32,32,32);
-
-		// ボス基本処理、メイン処理
-		CountTimer(seTimeOut);
-		BehaviorBoss(ACT_STAND3);
-		Main;
-
-	}
-
-	// -------------------------------------------------------------------------
-	@MainLoop{
-		m_nSpellBonus = GetSpellCardBonusScore();
-
-		// 当たり判定（自弾,体当たり）
-		Collision(32,24);
-
-		// ダメージ音
-		PlayDamageSE(seDamage);
-
-		// カウンタ加算
-		m_nCount++;
-
-		yield;
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_KAEI + CL_TTH_CHARACTER_NAME_KAEI_EIKI;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
 
 	}
 
-	// メイン処理 --------------------------------------------------------------
-	task Main{
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-		SetInvincibility(182);
-		_Wait(2);
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 
-		// 初期移動
-		let fr=45;
-		let x=cenX;
-		let y=minY+80+RandBlur(0.1);
-		SetMovePosition02(x,y,fr);
-		SetAction(ACT_MOVE,fr);
-		_Wait(55);
+		/** アイテム放出 */
+		if( m_bStage && !m_bSpellPractice ){ DropItemTHC( 16 ); }
 
-		// スペルカード発動
-		let spellName=[
-			"罪符「原罪の監獄－Ｅａｓｙ－」",
-			"罪符「原罪の監獄」",
-			"罪符「原罪の監獄－Ｈａｒｄ－」",
-			"罪符「原罪の監獄－Ｌｕｎａｔｉｃ－」"
-		];
-		CutInEnemy(spellName[Lv],imgCutIn,192,256);
-		SetScore(100000);
-		SetAction(ACT_SPELL5,0);
-		_Wait(125);
+		/** 共通終了設定 */
+		FinalizeBoss();
 
-		let assign=-1;
+		/**	個別終了設定 */
+		EndExplosion01Ex();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_KAEI + CL_TTH_SPELL_STAGE3_BOSS_3 + m_nLevel;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		let nAssign = - 1;
 
 		loop{
 
-			// 扇状反射回転弾
-			SetAction(ACT_SHOT_A3,300);
-			Concentration01(60);
-			_Wait(60);
-			WideRefRollShot(assign);
-			_Wait(270);
+			/** 扇状反射回転弾＋バリア */
+			SetAction( ACT_SHOT_A3, 300 );
+			Concentration01( 60 );
+			__Wait( 60 );
+			WideRefRollShot( nAssign );
+			CreateEnemyFromScript( "Barrier", GetX(), GetY(), 0, 0, 0 );
+			__Wait( 210 );
 
-			// 霊魂召喚
-			if(Lv>0){SummonSpilit(assign);}
-			_Wait(60);
+			/** 霊魂召喚 */
+			if( m_nLevel > 0 ){ SummonSpilit( nAssign ); }
+			__Wait( 60 );
 
-			// 移動
-			move(120);
-			_Wait(150);
+			/** 移動 */
+			Move( 120 );
+			__Wait( 150 );
 
-			assign*=-1;
+			nAssign = - nAssign;
 
 		}
 
 	}
 
-	// 扇状反射回転弾 ----------------------------------------------------------
-	task WideRefRollShot(let assign){
+	/**
+	*	扇状反射回転弾
+	*	@param nAssign	割り振り係数
+	*/
+	task WideRefRollShot( let nAssign ){
 
-		let num=48;
-		let way=2+Lv;
-		if(Lv==0){way=3;}
-		let wayAngle=[75,75,60,65];
-		let baseAngle=GetAngleToPlayer-wayAngle[Lv]*(way-1)/2;
-		let shotAngle=rand(0,360);
-		let addShotAngle=12*assign;
-		let fr=5;
+		let nNum = 36;
+		let nFrame = 5;
+		let nWay = 2 + m_nLevel;
+		if( m_nLevel == 0 ){ nWay = 3; }
+		let nX = GetX();
+		let nY = GetY();
+		let nWayAngle = [ 75, 75, 55, 65 ][ m_nLevel ];
+		let nAngle = GetAngleToPlayer() - nWayAngle * ( nWay -1 ) / 2;
+		let nShotAngle = rand( 0, 360 );
+		let nNumShotAngle = 15 * nAssign;
 
-		LoopPlaySE(seShot1,fr*num,10);
-		loop(num){
-			ascent(let i in 0 .. way){
-				let angle=baseAngle+wayAngle[Lv]*i;
-				RefRollShot(angle,shotAngle);
+		PlaySELoop( seShot1, nFrame * nNum, 10 );
+		loop( nNum ){
+			let _nAngle = nAngle;
+			loop( nWay ){
+				RefRollShot( nX, nY, _nAngle, nShotAngle );
+				_nAngle += nWayAngle;
 			}
-			_Wait(fr);
-			shotAngle+=addShotAngle;
+			__Wait( nFrame );
+			nShotAngle += nNumShotAngle;
 		}
 
 	}
 
-	// 反射回転弾 --------------------------------------------------------------
-	function RefRollShot(let angle, let shotAngle){
+	/**
+	*	反射回転弾
+	*	@param nX			弾源x座標
+	*	@param nY			弾源y座標
+	*	@param nAngle		角度
+	*	@param nShotAngle	反射角度
+	*/
+	function RefRollShot( let nX, let nY, let nAngle, let nShotAngle ){
 
-		while(angle<0){angle+=360;}
-		if(angle>=360){angle%=360;}
-		let angleLU=GetGapAngle(minX,minY,GetX,GetY)+180;
-		let angleRU=GetGapAngle(maxX,minY,GetX,GetY)+180;
-		let angleLD=GetGapAngle(minX,maxY,GetX,GetY)+180;
-		let angleRD=GetGapAngle(maxX,maxY,GetX,GetY)+180;
-		if(angleRU==0){angleRU=360;}
-		if(angleRD==360){angleRD=0;}
-		let rLength=0;
-		if(angle>=angleRU||angle<angleRD){rLength=(maxX-GetX)/cos(angle);}
-		else if(angle>=angleLD&&angle<angleLU){rLength=(minX-GetX)/cos(angle);}
-		else if(angle>=angleLU&&angle<angleRU){rLength=(minY-GetY)/sin(angle);}
-		else{rLength=(maxY-GetY)/sin(angle);}
+		while( nAngle < 0 ){ nAngle += 360; }
+		if( nAngle >= 360 ){ nAngle %= 360; }
+		let nAngleLU = GetGapAngle( CL_MIN_X, CL_MIN_Y, nX, nY ) + 180;
+		let nAngleRU = GetGapAngle( CL_MAX_X, CL_MIN_Y, nX, nY ) + 180;
+		let nAngleLD = GetGapAngle( CL_MIN_X, CL_MAX_Y, nX, nY ) + 180;
+		let nAngleRD = GetGapAngle( CL_MAX_X, CL_MAX_Y, nX, nY ) + 180;
+		if( nAngleRU == 0 ){ nAngleRU = 360; }
+		if( nAngleRD == 360 ){ nAngleRD = 0; }
+		let nReflectLength = 0;
+		if( nAngle >= nAngleRU || nAngle < nAngleRD ){ nReflectLength = ( CL_MAX_X - nX ) / cos( nAngle ); }
+		else if( nAngle >= nAngleLD && nAngle < nAngleLU ){ nReflectLength = ( CL_MIN_X - nX ) / cos( nAngle ); }
+		else if( nAngle >= nAngleLU && nAngle < nAngleRU ){ nReflectLength = ( CL_MIN_Y - nY ) / sin( nAngle ); }
+		else{ nReflectLength = ( CL_MAX_Y - nY ) / sin( nAngle ); }
 
-		let speed=6;
-		let rFr=trunc(rLength/speed);
-		let graphic=US_TABLET;
-		let delay=15;
-		let shotSpeed=1.5;
-		let shotDelay=15;
+		let nSpeed = 6;
+		let nReflectFrame = trunc( nReflectLength / nSpeed );
+		let nGraphic = US_TABLET;
+		let nDelay = 15;
+		let nShotSpeed = 1.5;
+		let nShotDelay = 15;
 
-		CreateShotA(0,GetX,GetY,delay);
-		SetShotDataA(0,0,speed,angle,0,0,0,graphic);
-		CreateShotA(1,0,0,shotDelay);
-		SetShotDataA(1,0,shotSpeed,shotAngle,0,0,0,graphic);
-		AddShot(rFr,0,1,0);
-		CreateShotA(2,0,0,shotDelay);
-		SetShotDataA(2,0,shotSpeed,shotAngle+180,0,0,0,graphic);
-		AddShot(rFr,0,2,0);
-		FireShot(0);
+		CreateShotA( 0, nX, nY, nDelay );
+		SetShotDataA( 0, 0, nSpeed, nAngle, 0, 0, 0, nGraphic );
+		CreateShotA( 1, 0, 0, nShotDelay );
+		SetShotDataA( 1, 0, nShotSpeed, nShotAngle, 0, 0, 0, nGraphic );
+		AddShot( nReflectFrame, 0, 1, 0 );
+		CreateShotA( 2, 0, 0, nShotDelay );
+		SetShotDataA( 2, 0, nShotSpeed, nShotAngle + 180, 0, 0, 0, nGraphic );
+		AddShot( nReflectFrame, 0, 2, 0 );
+		FireShot( 0 );
 
 	}
 
-	// 霊魂召喚 ----------------------------------------------------------------
-	task SummonSpilit(let assign){
+	/**
+	*	霊魂召喚
+	*	@param nAssign	割り振り係数
+	*/
+	task SummonSpilit( let nAssign ){
 
-		let num=2+Lv;
-		let baseAngle=rand(0,360);
-		let numAngle=360/num*assign;
-		let fr=10;
+		let nNum = 2 + m_nLevel;
+		if( m_nLevel == 3 ){ nNum = 10; }
+		let nFrame = 10;
+		let nAngle = rand( 0, 360 );
+		let nNumAngle = 360 / nNum * nAssign;
 
-		SetAction(ACT_SHOT_B5,60);
-		ascent(let i in 0 .. num){
-			let angle=baseAngle+numAngle*i;
-			CreateEnemyFromScript("Spilit",GetX,GetY,0,angle,0);
-			PlaySE(seShadow);
-			_Wait(fr);
+		SetAction( ACT_SHOT_B5, 60 );
+		loop( nNum ){
+			CreateShotFromScript( "Spilit", GetX(), GetY(), 0, nAngle, 0, 0 );
+			PlaySEEx( seShadow );
+			__Wait( nFrame );
+			nAngle += nNumAngle;
 		}
 
 	}
 
-	// 移動 --------------------------------------------------------------------
-	function move(let fr){
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
 
-		let x=GetX;
-		let y=GetY;
-		let mx=rand(40,80);
-		let my=rand(0,10);
-		if(x>=GetPlayerX){
-			if(x-mx>=minX+100){mx=-mx;}
-		}
-		else{
-			if(x+mx>=maxX-100){mx=-mx;}
-		}
-		if(y>=minY+80){my=-my;}
-		x+=mx;
-		y+=my;
-		let power=GetGapLength(GetX,GetY,x,y)*2;
-		let angle=GetGapAngle(GetX,GetY,x,y);
-		SetMovePositionHermite(x,y,power,angle,0,0,fr);
-		SetAction(ACT_MOVE,fr);
+		let nMinMoveX = 40;
+		let nMaxMoveX = 80;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 10;
 
-	}
-
-	// -------------------------------------------------------------------------
-	@Finalize{
-
-		// カットイン消去
-		SetCommonData(CD_CUTIN_SPELL_END,true);
-
-		// アイテム放出
-		if(THC&&!Practice){DropItem(16,80);}
-
-		// ロードしたファイルを削除
-		DeleteGraphicList(imgList,seList);
-
-	}
-
-	// -------------------------------------------------------------------------
-	@DrawLoop{
-
-		// ボス描画
-		DrawBoss(imgBoss);
-		DrawCutIn(m_nCount);
-
-	}
-
-	// -------------------------------------------------------------------------
-	@BackGround{
-
-		// 背景描画
-		OnBGEiki;
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
 
 	}
 
 }
 
-// 霊魂 ------------------------------------------------------------------------
-script_enemy Spilit{
 
-	// 共通関数読み込み
-	#include_function ".\INCLUDE\Shadow.dnh"
-	#include_function ".\_index_UserShot.dnh"
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	霊魂
+//====================================================================
+//////////////////////////////////////////////////////////////////////
 
-	// 各種設定値（難易度等）
-	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
-	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
-	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
 
-	// -------------------------------------------------------------------------
-	@Initialize{
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
 
-		// ステータス設定（ライフ、ダメージ率等）
-		SetLife(1);
+script_shot Spilit{
 
-		// 光
-		Light;
 
-		// メイン処理
-		Main;
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
 
-	}
+	#include_function ".\INCLUDE\Shot.dnh"
 
-	// -------------------------------------------------------------------------
-	@MainLoop{
 
-		// カウンタ加算
-		m_nCount++;
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
 
-		yield;
 
-	}
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
 
-	// メイン処理 --------------------------------------------------------------
-	task Main{
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
 
-		yield;
 
-		// 移動
-		move;
-		loop(60){yield;}
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
 
-		// 直線弾
-		_LineShot;
 
-		// 破裂
-		let fr=30;
-		let decAlpha=255/fr;
-		let addScale=0.05;
-		Explosion01(GetX,GetY,decAlpha,addScale,fr);
-		VanishEnemy;
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
 
-	}
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
 
-	// 直線弾 ------------------------------------------------------------------
-	function _LineShot{
-
-		let num=8;
-		let minSpeed=1;
-		let maxSpeed=3.5+0.5*Lv;
-		let angle=GetAngleToPlayer;
-		let graphic=US_FIRE_BLUE;
-		LineShot(GetX,GetY,minSpeed,maxSpeed,angle,num,graphic,0);
-		PlaySE(seShot2);
+		/** 個別初期設定 */
+		m_bShadow = true;
+		m_nShadowType = SHADOW_TYPE_SPILIT;
+		m_bShadowDead = true;
+		CheckBossLife();
 
 	}
 
-	// 移動 --------------------------------------------------------------------
-	task move{
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-		let gapLength=65;
-		let gapAngle=GetAngle+120;
-		let x=GetGapX(GetX,gapLength,gapAngle);
-		let y=GetGapY(GetY,gapLength,gapAngle);
-		let power1=300;
-		let angle1=rand(0,360);
-		let power2=300;
-		let angle2=rand(0,360);
-		let fr=29;
-		SetMovePositionHermite(x,y,power1,angle1,power2,angle2,fr);
-		loop(fr){yield;}
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-		gapAngle+=120;
-		x=GetGapX(GetX,gapLength,gapAngle);
-		y=GetGapY(GetY,gapLength,gapAngle);
-		angle1=rand(0,360);
-		SetMovePositionHermite(x,y,power2,angle2,power1,angle1,fr);
-		loop(fr){yield;}
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
 
-		fr=2;
-		SetMovePosition02(x,y,fr);
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 移動 */
+		Move();
+		loop( 60 ){ yield; }
+
+		/** 直線弾＋消滅 */
+		LineShotEx();
+		End();
 
 	}
 
-	// 光 ----------------------------------------------------------------------
-	task Light{
+	/**
+	*	直線弾
+	*/
+	function LineShotEx{
 
-		let call=1;
-		let delay=15;
-		loop(60){
-			_Light;
-			loop( call ){ yield; }
+		let nNum = 6;
+		let nSpeed = 1;
+		let nMaxSpeed = 3.5 + 0.5 * m_nLevel;
+		let nAngle = GetAngleToPlayer();
+		let nGraphic = US_FIRE_BLUE;
+		_LineShot( GetX(), GetY(), nSpeed, nMaxSpeed, nAngle, nNum, nGraphic, 0 );
+		PlaySEEx( seShot2 );
+
+	}
+
+	/**
+	*	移動
+	*/
+	task Move{
+
+		let nGapLength = 65;
+		let nGapAngle = GetAngle() + 120;
+		let nX = GetGapX( GetX(), nGapLength, nGapAngle );
+		let nY = GetGapY( GetY(), nGapLength, nGapAngle );
+		let nForce = 300;
+		let nAngle = rand( 0, 360 );
+		let _nForce = 300;
+		let _nAngle = rand( 0, 360 );
+		let nFrame = 30;
+		SetMovePositionHermite( nX, nY, nForce, nAngle, _nForce, _nAngle, nFrame );
+		loop( nFrame ){ yield; }
+
+		nGapAngle += 120;
+		nX = GetGapX( GetX(), nGapLength, nGapAngle );
+		nY = GetGapY( GetY(), nGapLength, nGapAngle );
+		nAngle = rand( 0, 360 );
+		nFrame = 29;
+		SetMovePositionHermite( nX, nY, _nForce, _nAngle, nForce, nAngle, nFrame );
+		loop( nFrame ){ yield; }
+
+		SetMovePosition02( nX, nY, 1 );
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	バリア
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy Barrier{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\ShadowNoHidden.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ZAKO_ACTION_EXISTBOSS = FLAN_ZAKO_EXISTBOSS_NONEACTION;
+	FLAN_ESS_NOGONE = false;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ENEMY_COLLISION_A = 0;
+	FLAN_ENEMY_COLLISION_B = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		SetLife( 1 );
+		_SetDamageRateDelayEx( 0, 0, 0, 0, 0 );
+		m_bShadowLighting = false;
+		m_nShadowDeleteShot = 0;
+		CheckBossLife();
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** バリア弾 */
+		BarrierShot();
+		loop( 180 ){ yield; }
+		DeleteEnemyShot( CHILD );
+		VanishEnemy();
+
+	}
+
+	/**
+	*	バリア弾
+	*/
+	function BarrierShot{
+
+		let anFrame = [ 30, 150 ];
+		let nWay = 72;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 1.5;
+		let nAngle = rand( 0, 360 );
+		let nWayAngle = 360 / nWay;
+		let nGraphic = US_BALL_S_A_PURPLE;
+
+		loop( nWay ){
+			CreateShotA( 0, nX, nY, 0 );
+			SetShotDataA( 0, 0, nSpeed, nAngle, 0, 0, 0, nGraphic );
+			SetShotDataA( 0, anFrame[ 0 ], 0, NULL, 0, 0, 0, nGraphic );
+			SetShotDataA( 0, anFrame[ 0 ] + anFrame[ 1 ], nSpeed / 3, NULL, 0, 0, 0, nGraphic );
+			FireShot( 0 );
+			nAngle += nWayAngle;
 		}
-
-		task _Light{
-			let obj=SetShotObject(GetX,GetY,500,0,US_BALL_SS_BLUE,delay);
-			Obj_SetAlpha(obj,0);
-			Obj_SetCollisionToPlayer(obj,false);
-			ObjShot_SetBombResist(obj,true);
-			ObjShot_ToItem(obj,false);
-			loop(delay){yield;}
-			Obj_Delete(obj);
-		}
-
-	}
-
-	// -------------------------------------------------------------------------
-	@Finalize{
-
-	}
-
-	// -------------------------------------------------------------------------
-	@DrawLoop{
 
 	}
 
