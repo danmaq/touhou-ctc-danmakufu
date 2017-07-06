@@ -1,0 +1,64 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+
+//変数宣言--------------------------------------
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	_Wait(100);
+	loop([8,15,25,40][Level])
+	{
+		CreateShotA(0,GetX(),GetY(),0);
+		SetShotDataA(0,0,[rand(1,2.5),rand(1,2.5),rand(1.5,3.5),rand(2,5)][Level],rand(0,360),0,-0.05,0,176);
+		SetShotDataA(0,80,0,GetAngleToPlayer()+[0,90,180,270][int(rand(0,100)%4)],0,0.02,1.5,38);
+		FireShot(0);
+	}
+	PlaySE(seShot2);
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..100)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		yield;
+	}
+	_Wait(240);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		LoadUserShotData(shotAll);
+		SetLife(50);
+		MainAction();
+		SubAction01();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		yield;
+		m_nCount++;
+		Collision( 20, 8 );
+	}
+	@DrawLoop
+	{
+		DrawYousei(0,m_nCount);
+		DarwZakoBack(m_nCount);
+	}
+	@Finalize{DropItem( 3 , 40 );}
+}

@@ -1,0 +1,201 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossMeirin;
+	let imgCutIn=cutMeirin;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.75;}
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_MEIRIN~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(67);
+		SetLife(375);
+		SetDamageRate(7*DamageRate,7*DamageRate);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+140;
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"華符「仙桃蓮花－Ｅａｓｙ－」",
+			"華符「仙桃蓮花」",
+			"華符「仙桃蓮花－Ｈａｒｄ－」",
+			"華符「仙桃蓮花－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL4,0);
+		_Wait(125);
+
+		SetAction(ACT_SHOT_B3,6000);
+		PlaySE(sePower);
+		Concentration01(120);
+		_Wait(120);
+		SetDamageRate(12*DamageRate,12*DamageRate);
+
+		// 花弾
+		FlowerShot(-1);
+		FlowerShot(1);
+
+		let gra=0;
+
+		loop{
+
+			_Wait(180);
+
+			// 全方向弾
+			_RoundShot(gra);
+			gra++;
+
+		}
+
+	}
+
+	// 花弾 --------------------------------------------------------------------
+	task FlowerShot(let assign){
+
+		let way=4+2*Lv;
+		let fr1=60;
+		let speed1=4;
+		let addSpeed1=-speed1/fr1;
+		let speed2=2;
+		let speed3=1.2;
+		let wayAngle1=360/way;
+		let baseAngle1=90-wayAngle1/2;
+		let addBaseAngle1=360/480*assign;
+		let angle2=-165*assign;
+		let graphic=[US_RICE_S_RED,US_RICE_S_ORANGE,US_RICE_S_YELLOW,US_RICE_S_GREEN,
+			US_RICE_S_SKY,US_RICE_S_BLUE,US_RICE_S_PURPLE];
+		let gra=0;
+		let delay=10;
+		let shotFr=[17,17,13,11];
+
+		loop{
+			let _gra=trunc(gra);
+			ascent(let i in 0 .. way){
+				let angle1=baseAngle1+wayAngle1*i;
+				CreateShotA(0,GetX,GetY,delay);
+				SetShotDataA(0,0,speed1,angle1,0,addSpeed1,0,graphic[_gra]);
+				SetShotDataA(0,fr1,speed2,angle1+angle2,0,0,0,graphic[_gra]);
+				CreateShotA(1,0,0,0);
+				SetShotDataA(1,0,speed3,angle1+angle2-180,0,0,0,graphic[_gra]);
+				AddShot(fr1,0,1,0);
+				FireShot(0);
+			}
+			PlaySE(seShot3);
+			_Wait(shotFr[Lv]);
+			baseAngle1+=addBaseAngle1*shotFr[Lv];
+			gra+=1/5;
+			if(gra>=7){gra=0;}
+		}
+
+	}
+
+	// 全方向弾 ----------------------------------------------------------------
+	task _RoundShot(let gra){
+
+		let way=6;
+		let speed=7+1.5*Lv;
+		let maxSpeed=0.8;
+		let addSpeed=(maxSpeed-speed)/30;
+		let angle=GetAngleToPlayer;
+		let graphic=[US_LIGHT_RED,US_LIGHT_ORANGE,US_LIGHT_YELLOW,US_LIGHT_GREEN,
+			US_LIGHT_SKY,US_LIGHT_BLUE,US_LIGHT_PURPLE];
+
+		RoundShot02(GetX,GetY,speed,addSpeed,maxSpeed,angle,way,graphic[gra%7],0);
+		PlaySE(seShot1);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice&&Lv>0){DropItem(10,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn( m_nCount );
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGMeirin;
+
+	}
+
+}

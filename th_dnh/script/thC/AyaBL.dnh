@@ -1,0 +1,385 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossAya;
+	let imgCutIn=cutAya;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgShadow=dotCircle6s;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	if(Lv==0){Lv=1;}
+	Lv--;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_AYA~imgFontList~[imgShadow];
+			seList=seList~seListEnemy~seListShadow;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(63);
+		SetLife(500);
+		SetDamageRate(6,6);
+		SetShotAutoDeleteClip(20,20,20,20);
+		SetX(cenX);
+		SetY(minY+100+RandBlur(0.1));
+		LastSpellEffect(115);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		if(m_nEnemyAlpha>0){Collision(32,24);}
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(242);
+		_Wait(117);
+
+		// スペルカード発動
+		let spellName=[
+			"宝具「鞍馬の降魔扇」",
+			"宝具「鞍馬の降魔扇－Ｈａｒｄ－」",
+			"宝具「鞍馬の降魔扇－Ｌｕｎａｔｉｃ－」"
+		];
+		SetCommonData(CD_SPELL_LASTSPELL,true);
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL3,0);
+		_Wait(125);
+
+		// 使い魔召喚
+		Concentration01(60);
+		_Wait(60);
+		SummonShadow;
+		SetDamageRate(14,14);
+
+		// 全方向弾
+		ascent(let i in 0 .. Lv+1){_RoundShot(i);}
+
+		loop{
+
+			// 時間差移動
+			LoopPlaySE(seShot3,210,6);
+			move;
+			_Wait(120);
+
+			// 風圧
+			PlaySE(sePower);
+			Concentration01(120);
+			_Wait(30);
+			SetAction(ACT_SHOT_A3,90);
+			_Wait(84);
+			SetAction(ACT_SHOT_B5,60);
+			_Wait(6);
+			let fr=60;
+			let decAlpha=255/fr;
+			let addScale=1.2;
+			Explosion01(GetX,GetY,decAlpha,addScale,fr);
+			PlaySE(seKira1);
+
+		}
+
+	}
+
+	// 使い魔召喚 --------------------------------------------------------------
+	function SummonShadow{
+
+		let num=4;
+		if(Lv==2){num=5;}
+		ascent(let i in 0 .. num){
+			CreateEnemyFromScript("Shadow",GetX,GetY,0,0,i);
+		}
+		PlaySE(seShadow);
+
+	}
+
+	// 全方向弾 ----------------------------------------------------------------
+	task _RoundShot(let assign){
+
+		let fr=[50,80,75];
+		let way=36;
+		let speed=3;
+		let wayAngle=360/way;
+		let angle=90+wayAngle/(Lv+1)*assign;
+		let graphic=[US_BUTTERFLY_RED,US_BUTTERFLY_BLUE,US_BUTTERFLY_ORANGE];
+		let delay=15;
+
+		_Wait(fr[Lv]/(Lv+1)*assign);
+
+		loop{
+			RoundShot01(GetX,GetY,speed,angle,way,graphic[assign],delay);
+			PlaySE(seShot1);
+			_Wait(fr[Lv]);
+		}
+
+
+	}
+
+	// 時間差移動 --------------------------------------------------------------
+	task move{
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,60);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+100){my=-my;}
+		x+=mx;
+		y+=my;
+		SetCommonData("WindX",x);
+		SetCommonData("WindY",y);
+
+		_Wait(75);
+		SetAction(ACT_MOVE,75);
+		SetMovePosition02(x,y,75);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGAya;
+
+	}
+
+}
+
+// 使い魔 ----------------------------------------------------------------------
+script_enemy Shadow{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let imgShadow=dotCircle6s;
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	if(Lv==0){Lv=1;}
+	Lv--;
+
+	let n=GetArgument;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(1);
+		SetDamageRateEx(0,0,0,0);
+
+		// 実体化時の光
+		LightShadow;
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 位置設定
+		setLocation;
+		loop(60){yield;}
+
+		// ランダム飛弾
+		RandomFlyShot(true);
+		_Wait(180);
+
+		loop{
+
+			// ランダム飛弾
+			RandomFlyShot(false);
+			_Wait(240);
+
+		}
+
+	}
+
+	// ランダム飛弾 ------------------------------------------------------------
+	task RandomFlyShot(let first){
+
+		let fr=2;
+		let num=trunc(210/fr);
+		let num0=0;
+		if(first){num0=trunc(60/fr);}
+		ascent(let i in num0 .. num){
+			FlyShot(fr*i);
+			loop(fr){yield;}
+		}
+
+	}
+
+	function FlyShot(let count){
+
+		let fr=235-count;
+		let windX=GetCommonData("WindX");
+		let windY=GetCommonData("WindY");
+		let speed0=rand(1.2,1.5);
+		let angle0=GetGapAngle(GetEnemyX,GetEnemyY,GetX,GetY)+RandBlur(150);
+		let graphic0=US_RICE_M_R_WHITE;
+		let flyX=GetGapX(GetX,speed0*fr,angle0);
+		let flyY=GetGapY(GetY,speed0*fr,angle0);
+		let speed1=5;
+		let addSpeed1=(speed0-speed1)/40;
+		let angle1=GetGapAngle(windX,windY,flyX,flyY);
+		let graphic1=[US_RICE_M_RED,US_RICE_M_ORANGE,US_RICE_M_YELLOW,US_RICE_M_PURPLE,US_RICE_M_WHITE];
+		let delay=5;
+
+		CreateShotA(0,GetX,GetY,delay);
+		SetShotDataA(0,0,speed0,angle0,0,0,0,graphic0);
+		SetShotDataA(0,fr,speed1,angle1,0,addSpeed1,speed0,graphic1[n]);
+		FireShot(0);
+
+	}
+
+	// 位置設定 ----------------------------------------------------------------
+	task setLocation{
+
+		let num=4;
+		if(Lv==2){num=5;}
+		let xTurnAngle=20;
+		let zTurnAngle=45;
+		let gapLength=0;
+		let gapAngle=360/num*n;
+		setGapLength;
+		setGapAngle;
+		setZTurnAngle;
+
+		// 位置設定 ----------------------------------------
+		loop{
+			let x=GetGapX(GetEnemyX,gapLength,gapAngle);
+			let y=GetGapY(GetEnemyY,gapLength*sin(xTurnAngle),gapAngle);
+			let _gapLength=GetGapLength(GetEnemyX,GetEnemyY,x,y);
+			let _gapAngle=GetGapAngle(GetEnemyX,GetEnemyY,x,y)+zTurnAngle;
+			let _x=GetGapX(GetEnemyX,_gapLength,_gapAngle);
+			let _y=GetGapY(GetEnemyY,_gapLength,_gapAngle);
+			SetX(_x);
+			SetY(_y);
+			yield;
+		}
+
+		// 間隔長さ設定 ------------------------------------
+		task setGapLength{
+			let fr=60;
+			let addGapLength=90/fr;
+			loop(fr){
+				gapLength+=addGapLength;
+				yield;
+			}
+		}
+
+		// 間隔角度設定 ------------------------------------
+		task setGapAngle{
+			let addGapAngle=-360/120;
+			loop{
+				gapAngle+=addGapAngle;
+				yield;
+			}
+		}
+
+		// z軸回転角度設定 ---------------------------------
+		task setZTurnAngle{
+			let addZTurnAngle=-360/600;
+			loop{
+				zTurnAngle+=addZTurnAngle;
+				yield;
+			}
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// 本体描画
+		let shadow=SHADOW_S_WHITE;
+		let angle=2*m_nCount;
+		let scale=0.8;
+		_DrawShadow(shadow,imgShadow,angle,scale,scale);
+
+	}
+
+}

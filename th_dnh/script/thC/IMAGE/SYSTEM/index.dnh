@@ -1,0 +1,17 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//　システム
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+#include_function ".\IMAGE\SYSTEM\FONT\index.dnh"
+
+let dirImageSystem = GetCurrentScriptDirectory ~ "IMAGE\SYSTEM\";
+
+//　タイトル
+let imgSystemLogo = dirImageSystem ~ "Logo2.png";
+let imgSystemLogoBG = dirImageSystem ~ "LogoBG.png";
+let imgSystemLogoMarisa = dirImageSystem ~ "logo_marisa.png";
+
+//　その他
+let imgSystemProgress = dirImageSystem ~ "Progress.png";
+let imgSystemSpellLine = dirImageSystem ~ "spell_line.png";

@@ -1,0 +1,395 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossLily;
+	let imgCutIn=cutLily;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgShadow=dotCircle6s;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	if(Lv<3){Lv=0;}
+	else{Lv=1;}
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.25;}
+
+	let warpSt=0;
+	let warpFr=0;
+	let maxWarpFr=16;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_LILY~imgFontList~[imgShadow];
+			seList=seList~seListEnemy~seListShadow;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(64);
+		SetLife(125);
+		SetDamageRate(7*DamageRate,7*DamageRate);
+		SetShotAutoDeleteClip(64,64,64,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		if(warpSt!=2){Collision(32,24);}
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		warp(55);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"輪廻「春夏秋冬」",
+			"輪廻「春夏秋冬－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL3,0);
+		_Wait(125);
+
+		// 使い魔召喚
+		SetAction(ACT_SHOT_B3,120);
+		PlaySE(sePower);
+		Concentration01(120);
+		_Wait(120);
+		SummonShadow;
+		_Wait(45);
+		SetDamageRate(13*DamageRate,13*DamageRate);
+		LoopPlaySE(seShot3,6000,6);
+		_Wait(75);
+		SetAction(ACT_SHOT_A3_B,6000);
+
+	}
+
+	// 使い魔召喚 --------------------------------------------------------------
+	function SummonShadow{
+
+		let gapLength=GetGapLength(GetX,GetY,cenX,cenY);
+		let speed=gapLength/15;
+		let angle=GetGapAngle(GetX,GetY,cenX,cenY);
+		CreateEnemyFromScript("Shadow",GetX,GetY,speed,angle,0);
+		PlaySE(seShadow);
+
+	}
+
+	// ワープ移動 --------------------------------------------------------------
+	task warp(let fr){
+
+		// 消滅
+		warpSt=1;
+		warpFr=0;
+		loop(maxWarpFr){
+			yield;
+			warpFr++;
+		}
+
+		// 待ち
+		SetEnemyMarker(false);
+		warpSt=2;
+		SetX(cenX);
+		SetY(minY-400);
+		_Wait(fr-maxWarpFr*2);
+
+		// 出現
+		SetEnemyMarker(true);
+		SetX(cenX);
+		SetY(minY+120);
+		warpSt=3;
+		warpFr=0;
+		loop(maxWarpFr){
+			yield;
+			warpFr++;
+		}
+		warpSt=0;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){DropItem(6,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		setDrawData;
+		DrawBoss(imgBoss);
+		DrawCutIn(m_nCount);
+
+	}
+
+	// 描画倍率 ----------------------------------------------------------------
+	function setDrawData{
+
+		alternative(warpSt)
+		case(1){
+			let scX=1;
+			let scY=1;
+			let halfWarpFr=maxWarpFr/2;
+			if(warpFr<halfWarpFr){
+				scX=1+0.5/halfWarpFr*warpFr;
+				scY=1-0.9/halfWarpFr*warpFr;
+			}
+			else{
+				scX=1.5-1.5/halfWarpFr*(warpFr-halfWarpFr);
+				scY=0.1+2.4/halfWarpFr*(warpFr-halfWarpFr);
+			}
+			SetGraphicScale(scX,scY);
+			SetAlpha(255);
+		}
+		case(2){
+			SetGraphicScale(1,1);
+			SetAlpha(0);
+		}
+		case(3){
+			let scX=1;
+			let scY=1;
+			let halfWarpFr=maxWarpFr/2;
+			if(warpFr<halfWarpFr){
+				scX=1.5/halfWarpFr*warpFr;
+				scY=2.5-2.4/halfWarpFr*warpFr;
+			}
+			else{
+				scX=1.5-0.5/halfWarpFr*(warpFr-halfWarpFr);
+				scY=0.1+0.9/halfWarpFr*(warpFr-halfWarpFr);
+			}
+			SetGraphicScale(scX,scY);
+			SetAlpha(255);
+		}
+		others{
+			SetGraphicScale(1,1);
+			SetAlpha(255);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGLily;
+
+	}
+
+}
+
+// 使い魔 ----------------------------------------------------------------------
+script_enemy Shadow{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let imgShadow=dotCircle6s;
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	if(Lv<3){Lv=0;}
+	else{Lv=1;}
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.25;}
+
+	let n=GetArgument;
+	let turn=0;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(1);
+		SetDamageRateEx(0,0,0,0);
+
+		// 実体化時の光
+		LightShadow;
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		if(n==0){
+
+			// 初期移動
+			loop(15){yield;}
+			SetSpeed(0);
+
+			// 使い魔召喚
+			ascent(let i in 1 .. 2+Lv){
+				CreateEnemyFromScript("Shadow",GetX,GetY,0,GetAngle,i);
+			}
+
+		}
+
+		// 位置設定
+		setLocation;
+		loop(30){yield;}
+
+		let assign=0;
+
+		loop{
+
+			// ランダム落下弾
+			RandomFallShot(assign);
+			loop(3){yield;}
+
+			assign=1-assign;
+
+		}
+
+	}
+
+	// ランダム落下弾 ----------------------------------------------------------
+	function RandomFallShot(let assign){
+
+		// 直線軌道
+		let rLength=32;
+		let x=GetX+RandBlur(rLength);
+		let y=GetY+RandBlur(rLength);
+		let delay=30;
+		let speed=rand(1,2.4);
+		let angle=GetGapAngle(x,y,GetEnemyX,GetEnemyY)+180*assign;
+		let gapLength=GetGapLength(x,y,GetEnemyX,GetEnemyY);
+		let fr=trunc(gapLength/speed);
+		let graphic=[US_RICE_M_PURPLE,US_RICE_M_GREEN,US_RICE_M_ORANGE,US_RICE_M_WHITE];
+		let g=turn%4;
+
+		// 重力軌道
+		let speedX=speed*cos(angle);
+		let speedY=speed*sin(angle);
+		let addSpeedY=0.01;
+
+		CreateShotA(0,x,y,delay);
+		SetShotDataA(0,0,speed,angle,0,0,0,graphic[g]);
+		SetShotDataA_XY(0,fr,speedX,speedY,0,addSpeedY,0,99,graphic[g]);
+		FireShot(0);
+
+	}
+
+	// 位置設定 ----------------------------------------------------------------
+	task setLocation{
+
+		let gapLength=0;
+		let gapAngle=360/(2+Lv)*n;
+		setGapLength;
+		setGapAngle;
+
+		// 位置設定 ----------------------------------------
+		loop{
+			let x=GetGapX(cenX,gapLength,gapAngle);
+			let y=GetGapY(cenY,gapLength,gapAngle);
+			SetX(x);
+			SetY(y);
+			yield;
+		}
+
+		// 間隔長さ設定 ------------------------------------
+		task setGapLength{
+			let fr=30;
+			let addGapLength=220/fr;
+			loop(fr){
+				gapLength+=addGapLength;
+				yield;
+			}
+		}
+
+		// 間隔角度設定 ------------------------------------
+		task setGapAngle{
+			let fr=240;
+			let addGapAngle=360/fr;
+			loop{
+				loop(fr){
+					gapAngle+=addGapAngle;
+					yield;
+				}
+				turn++;
+			}
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// 本体描画
+		let shadow=SHADOW_S_WHITE;
+		let angle=2*m_nCount;
+		let scale=0.8;
+		_DrawShadow(shadow,imgShadow,angle,scale,scale);
+
+	}
+
+}

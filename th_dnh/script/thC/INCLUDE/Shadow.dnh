@@ -1,0 +1,181 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	使い魔スクリプト専用インクルードライブラリ
+//
+//		※使い魔スクリプト以外からは使用出来ません。
+//			それ以外からはインクルードしないでください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	下位ライブラリをインクルード
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+#include_function ".\INCLUDE\EnemyShadow.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let SHADOW_M_WHITE = 0;		//　魔法陣指定－中/白
+let SHADOW_M_RED = 1;		//　魔法陣指定－中/赤
+let SHADOW_M_GREEN = 2;		//　魔法陣指定－中/緑
+let SHADOW_M_BLUE = 3;		//　魔法陣指定－中/青
+let SHADOW_M_YELLOW = 4;	//　魔法陣指定－中/黄
+let SHADOW_M_PURPLE = 5;	//　魔法陣指定－中/紫
+let SHADOW_M_ORANGE = 6;	//　魔法陣指定－中/橙
+let SHADOW_M_BLACK = 7;		//　魔法陣指定－中/黒
+let SHADOW_S_WHITE = 8;		//　魔法陣指定－小/白
+let SHADOW_S_RED = 9;		//　魔法陣指定－小/赤
+let SHADOW_S_GREEN = 10;	//　魔法陣指定－小/緑
+let SHADOW_S_BLUE = 11;		//　魔法陣指定－小/青
+let SHADOW_S_YELLOW = 12;	//　魔法陣指定－小/黄
+let SHADOW_S_PURPLE = 13;	//　魔法陣指定－小/紫
+let SHADOW_S_ORANGE = 14;	//　魔法陣指定－小/橙
+let SHADOW_S_BLACK = 15;	//　魔法陣指定－小/黒
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let m_nChangeTime = 0;		//	最後に切り替わった時間
+let m_bHiddenShot = false;	//　隠蔽中か否か（弾当たり判定）
+let m_bHidden = false;		//	隠蔽中か否か（体当たり判定、画像、光）
+let m_nSlowKey = GetCommonDataDefault( CD_STAGE_KEY_SLOWSTAT, KEY_SHADOW_HOLD );
+let m_nPrevSlowKey = m_nSlowKey;	//　←1フレーム前↑現在のSlowキー状態
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	判定関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	タイムラグ時間終了したか否かを返す
+function IsElapsedTimeLag(){ return m_nCount - m_nChangeTime > SHADOW_TIMELAG; }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	未分類
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	死亡時に特定半径の弾を消す
+function DestructShadow( let fRadius ){
+	if( !BeVanished() ){ DeleteEnemyShotToItemInCircle( SHOT, GetX(), GetY(), fRadius ); }
+	DeleteEnemyShotToItemInCircle( ALL, GetX(), GetY(), 0 );
+}
+
+//	基本処理（隠蔽設定）
+//	※@MainLoopの最初に毎回呼び出すこと
+function BehaviorShadow( let szSEHiddenFile, let szSESuddenFile ){
+	m_nSlowKey = GetCommonDataDefault( CD_STAGE_KEY_SLOWSTAT, KEY_SHADOW_FREE );
+	alternative( m_nSlowKey )
+	case( KEY_SHADOW_PUSH ){
+		m_bHiddenShot = false;
+		m_bHidden = true;
+		if( m_nPrevSlowKey == KEY_SHADOW_FREE ){ PlaySE( szSEHiddenFile ); }
+	}
+	case( KEY_SHADOW_HOLD ){
+		m_bHiddenShot = true;
+		m_bHidden = true;
+	}
+	case( KEY_SHADOW_PULL ){
+		m_bHiddenShot = false;
+		m_bHidden = true;
+	}
+	case( KEY_SHADOW_FREE ){
+		m_bHiddenShot = false;
+		m_bHidden = false;
+		if( m_nPrevSlowKey == KEY_SHADOW_PULL ){ PlaySE( szSESuddenFile ); }
+	}
+	m_nPrevSlowKey = m_nSlowKey;
+}
+
+//　当たり判定
+function CollisionShadow( let fCollisionA, let fCollisionB ){
+	if( m_bHiddenShot ){ fCollisionA = 0; }
+	if( m_bHidden ){ fCollisionB = 0; }
+	Collision( fCollisionA, fCollisionB );
+}
+
+//　実体化時の光 (※注 task)
+//　※@Initializeで1回呼び出すこと、基本処理を実施していること
+task LightShadow{
+	let call = 3;		//　何フレーム毎に光が出るか（小さい程光が濃くなる）
+	let delay = 15;		//　1つの光が最大何フレーム残るか（大きい程光が大きくなる）
+	loop{
+		if( !m_bHidden ){ _LightShadow; }
+		loop( call ){ yield; }
+	}
+	task _LightShadow{
+		let obj = SetShotObject( GetX, GetY, 500, 0, WHITE05, delay );
+		Obj_SetAlpha( obj, 0 );
+		Obj_SetCollisionToPlayer( obj, false );
+		ObjShot_SetBombResist( obj, true );
+		ObjShot_ToItem( obj, false );
+		loop( delay ){
+			if( m_bHidden ){ break; }
+			yield;
+		}
+		Obj_Delete( obj );
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+//　使い魔を絵画する（基本的には魔法陣指定の方を使う）
+//　※テクスチャ切り出し範囲が正方形であること
+function DrawShadow( let szTexFile, let srcx, let srcy, let sLength, let angle, let scaleH, let scaleS ){
+	if( m_bHidden ){
+		SetAlpha( 150 );
+		SetGraphicScale( scaleH, scaleH );
+	}
+	else{
+		SetAlpha( 255 );
+		SetGraphicScale( scaleS, scaleS );
+	}
+	SetGraphicAngle( 0, 0, angle );
+	_DrawChrRectSqr( szTexFile, GetX, GetY, srcx, srcy, sLength );
+}
+
+//　使い魔を絵画する（魔法陣指定）
+//　※shadowには魔法陣指定定数を設定
+function _DrawShadow( let shadow, let szTexFile, let angle, let scaleH, let scaleS ){
+	let rLength = 128;
+	let rX = 0;
+	let rY = 0;
+	alternative( shadow )
+	case( SHADOW_M_WHITE ){}
+	case( SHADOW_M_RED ){ rX = 1; }
+	case( SHADOW_M_GREEN ){ rX = 2; }
+	case( SHADOW_M_BLUE ){ rX = 3; }
+	case( SHADOW_M_YELLOW ){ rY = 1; }
+	case( SHADOW_M_PURPLE ){ rX = 1; rY = 1; }
+	case( SHADOW_M_ORANGE ){ rX = 2; rY = 1; }
+	case( SHADOW_M_BLACK ){ rX = 3; rY = 1; }
+	case( SHADOW_S_WHITE ){ rLength = 64; }
+	case( SHADOW_S_RED ){ rLength = 64; rX = 1; }
+	case( SHADOW_S_GREEN ){ rLength = 64; rX = 2; }
+	case( SHADOW_S_BLUE ){ rLength = 64; rX = 3; }
+	case( SHADOW_S_YELLOW ){ rLength = 64; rY = 1; }
+	case( SHADOW_S_PURPLE ){ rLength = 64; rX = 1; rY = 1; }
+	case( SHADOW_S_ORANGE ){ rLength = 64; rX = 2; rY = 1; }
+	case( SHADOW_S_BLACK ){ rLength = 64; rX = 3; rY = 1; }
+	let rectX = rLength * rX;
+	let rectY = rLength * rY;
+	DrawShadow( szTexFile, rectX, rectY, rLength, angle, scaleH, scaleS );
+}

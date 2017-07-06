@@ -1,0 +1,372 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇専用 プレイヤースクリプト共通ライブラリ
+//		魔理沙専用 プレイヤーメイン部
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	下位ライブラリをインクルード
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#include_function "player\THC_MARISA\INCLUDE\common.dnh"
+#include_function "script\thC\INCLUDE\CutIn.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	インデックスをインクルード
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\_index_UserShot.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let PLAYER_SHOTPULL_FRAMELAG		= 30;	// キーを離してからショット発射が残るフレーム
+let PLAYER_CHARGE_INTERVAL			= 300;	// 陰陽弾発射から次回チャージまでのキャスト時間
+let PLAYER_OVERCHARGE_INTERVAL		= 150;	// 満タンからオーバーチャージまでの猶予時間
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	弾幕風の仕様でアクセサを用意するだけで物凄い負荷になるので
+//	メンバ変数は直接呼び出すこと
+
+let m_szLoadGraphicList = [ imgWhite, imgBlack, imgDot, imgFlash, imgBorder, imgCutIn, imgCircle, imgSpellLine, imgEdge, imgFontSmall, imgGaugeBase, imgGaugeGreen, imgGaugeRed ] ~ imgFontSJIS16;
+let m_nLastShotStartCount = 0;
+let m_nLastShotEndCount = -65536;
+let m_nSlowBorderAlpha = 0;
+let m_bMiss = false;
+let m_bLastLife = false;
+
+let m_fInYanGauge = 0;
+let m_fInYanGaugeSpeed;
+let m_nInYanGaugeOverCount = 0;
+let m_nInYanShotCount = 0;
+
+let m_nItemCollectUnderBorder;
+let m_nCollisionCircle;
+let m_nBorderLifeLimit;
+let m_nBorderLifeUseCount = 0;;
+let m_nGrazeCircle;
+let m_nShotWidth;
+let m_nShotWidthSlow;
+
+let m_szSpellFuncSlow;
+let m_szSpellFuncFast;
+let m_szSpellNameSlow;
+let m_szSpellNameFast;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	共通動作
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	共通メインタスク
+task CommonTask(){
+//	CreateDebugWindow();
+	yield;
+	ascent( let i in 0..2 ){ Bit( i ); }
+	KeyCheck();
+}
+
+//	ビット共通
+task Bit( let bLeft ){
+	let nObjCount = 0;
+	let nVertex = 12;
+	let nDiam = 6;
+	let nDist = 32;
+	let nAngle = 90;
+	let obj = Obj_Create( OBJ_EFFECT );
+	ObjEffect_SetTexture( obj, imgWhite );
+	ObjEffect_SetRenderState( obj, ADD );
+	ObjEffect_SetPrimitiveType( obj, PRIMITIVE_TRIANGLEFAN );
+	ObjEffect_CreateVertex( obj, nVertex );
+	ascent( let i in 0..nVertex ){
+		let nVangle = i * ( 360 / nVertex );
+		ObjEffect_SetVertexXY( obj, i, nDiam * cos( nVangle ), nDiam * sin( nVangle ) );
+		ObjEffect_SetVertexColor( obj, i, Min( 288 - nObjCount, 255 ), 255, 255, 255 );
+	}
+	while( !Obj_BeDeleted( obj ) ){
+		nAngle = MinMax( nAngle + [ 8, -8 ][ m_bSlow ], 20, 90 );
+		let nAngle2 = nAngle * [ 1, -1 ][ bLeft ] - 90;
+		Obj_SetX( obj, GetPlayerX() + nDist * cos( nAngle2 ) );
+		Obj_SetY( obj, GetPlayerY() + nDist * sin( nAngle2 ) );
+		ObjEffect_SetAngle( obj, 0, 0, nObjCount * 2 );
+		if( !m_bUserKey ){ SubShot( obj, bLeft ); }
+		yield;
+		nObjCount++;
+	}
+}
+
+//	共通初期化部
+function OnInitialize(
+		let nDefaultItemCollectUnderBorder,	//	アイテム蒐集ライン
+		let nSpeedFast,						//	高速時移動速度
+		let nSpeedSlow,						//	低速時移動速度
+		let nCollisionCircle,				//	被弾半径
+		let nGrazeCircle,					//	カスり半径
+		let nBorderLifeTime,				//	喰らいボム最大猶予時間
+		let nShotWidth,						//	高速時基本ショット幅
+		let nShotWidthSlow,					//	低速時基本ショット幅
+		let fInYanGaugeSpeed,				//	陰陽弾ゲージ増量
+		let szSpellFuncFast,				//	高速時ボム呼び出し関数
+		let szSpellFuncSlow,				//	低速時ボム呼び出し関数
+		let szSpellNameFast,				//	高速時ボム呼び出し名
+		let szSpellNameSlow					//	低速時ボム呼び出し名
+	){
+//	CreateDebugWindow();
+	m_nItemCollectUnderBorder = nDefaultItemCollectUnderBorder;
+	m_nCollisionCircle = nCollisionCircle;
+	m_nGrazeCircle = nGrazeCircle;
+	m_nBorderLifeLimit = nBorderLifeTime;
+	m_nShotWidth = nShotWidth;
+	m_nShotWidthSlow = nShotWidthSlow;
+	m_fInYanGaugeSpeed = fInYanGaugeSpeed;
+	m_szSpellFuncSlow = szSpellFuncSlow;
+	m_szSpellFuncFast = szSpellFuncFast;
+	m_szSpellNameSlow = szSpellNameSlow;
+	m_szSpellNameFast = szSpellNameFast;
+	LoadGraphicList( m_szLoadGraphicList );
+	LoadPlayerShotData( fileUserShot );
+	SetPlayerLifeImage( imgDot, 192, 0, 240, 48 );
+	SetInitialBombCount( 3 );
+	SetRebirthFrameReduction( 0 );
+	SetSpeed( nSpeedFast, nSpeedSlow );
+	FontInitialize( imgFontSmall, imgFont, imgFontSJIS16 );
+	SetCommonData( CD_ENABLE_HAKUREI, false );
+	CommonTask();
+}
+
+//	共通メインループ
+function OnMainLoop(){
+	if( BeCanFire( 5 ) ){
+		let nWidth = [ m_nShotWidth, m_nShotWidthSlow ][ m_bSlow ];
+		BasicShot( nWidth );
+	}
+	if( GetCommonDataDefault( CD_ENABLE_HAKUREI, false ) ){
+		if( m_bUserKey && !OnBomb() ){
+			if( m_nInYanShotCount >= 0 ){
+				m_fInYanGauge = Min( m_fInYanGauge + m_fInYanGaugeSpeed / [ 1, 2 ][ m_bSlow ], [ 100, 200 ][ GetCommonDataDefault( CD_ITEM_HAKUREI, 0 ) > 0 && m_nInYanGaugeOverCount != 0 && m_nCount - m_nInYanGaugeOverCount > PLAYER_OVERCHARGE_INTERVAL ] );
+				if( m_fInYanGauge == 100 && m_nInYanGaugeOverCount == 0 ){ m_nInYanGaugeOverCount = m_nCount; }
+				m_nInYanShotCount = m_nCount;
+			}
+		}
+		else if( m_fInYanGauge > 0 ){
+			if( m_nCount - m_nInYanShotCount == 1 ){ CreateInYanShot(); }
+			m_nInYanGaugeOverCount = 0;
+			m_fInYanGauge = Max( m_fInYanGauge - [ 5, 20 ][ m_fInYanGauge > 100 ], 0 );
+		}
+		if( m_nInYanShotCount < 0 ){ m_nInYanShotCount++; }
+	}
+	m_nSlowBorderAlpha = MinMax( m_nSlowBorderAlpha + [ -5, 5 ][ m_bSlow ], 0, 96 );
+	SetRebirthFrame( Max( m_nBorderLifeLimit - m_nBorderLifeUseCount, 0 ) );
+	SetItemCollectLine( [ m_nItemCollectUnderBorder, GetClipMaxY() ][ OnBomb() ] );
+	SetIntersectionCircle( GetPlayerX(), GetPlayerY(), m_nCollisionCircle );
+	SetGrazeCircle( m_nGrazeCircle + [ 0, 16 ][ m_fInYanGauge > 0 ] );
+	m_bMiss = false;
+	m_bLastLife = ( GetPlayerLife() == 1 );
+	SetCommonData( CD_PLAYER_ONMISSED, false );
+	OnMainLoopCommon();
+}
+
+//	ミス時のループ
+function OnMissedLoop(){
+	if( OnBorderOfLife() ){ m_nBorderLifeUseCount++; }
+	else{
+		m_nBorderLifeUseCount = 0;
+		SetCommonData( CD_PLAYER_ONMISSED, true );
+		if( !m_bMiss && !GetCommonDataDefault( CD_SPELL_LASTSPELL, false ) ){
+			m_bMiss = true;
+			let nNowPower = GetCommonDataDefault( CD_ITEM_POWER, 0 );
+			if( m_bLastLife ){ loop( 3 ){ SetItemQueue( ITEMEX_POWER_FULL, GetPlayerX(), GetPlayerY(), rand( 4, 8 ), 270 + RandBlur( 45 ) ); } }
+			else{
+				if( nNowPower > 5 ){ SetItemQueue( ITEMEX_POWER_BIG, GetPlayerX(), GetPlayerY(), rand( 4, 8 ), 270 ); }
+				loop( Min( nNowPower, 5 ) ){ SetItemQueue( ITEMEX_POWER, GetPlayerX(), GetPlayerY(), rand( 3, 6 ), 270 + RandBlur( 45 ) ); }
+			}
+			SetCommonData( CD_ITEM_POWER, Max( nNowPower - 20, 0 ) );
+		}
+	}
+	if( GetCommonDataDefault( CD_ENABLE_HAKUREI, false ) ){ CreateInYanShot(); }
+	m_nSlowBorderAlpha = MinMax( m_nSlowBorderAlpha + -5, 0, 96 );
+	OnMainLoopCommon();
+}
+
+//	スペルカード部
+function OnSpellCard{
+	UseSpellCard( [ m_szSpellFuncFast, m_szSpellFuncSlow ][ m_bSlow ], 0 );
+	THC_CutIn( m_nCount, true, imgCutIn, 192, 320, [ m_szSpellNameFast, m_szSpellNameSlow ][ m_bSlow ], imgSpellLine, imgFont, imgFontSmall, imgFontSJIS16 );
+}
+
+//	共通終了部
+function OnFinalize(){
+	DeleteGraphicList( m_szLoadGraphicList, [] );
+}
+
+//	共通絵画部
+function OnDrawLoop(){
+	let y = 64;
+	let x = 0;
+	if( m_bLeft ){
+		x = 64;
+		if( m_nCount < m_nLastMoveCount + 8 ){ y = 0; }
+	}
+	else if( m_bRight ){
+		x = 128;
+		if( m_nCount < m_nLastMoveCount + 8 ){ y = 0; }
+	}
+	else{ y = trunc( m_nCount / 8 ) % 3 * 64; }
+	SetGraphicRect( x, y, x + 64, y + 64 );
+	if( m_fInYanGauge >= 100 ){
+		let c = Smooth( 255, 96, m_fInYanGauge - 100, 30 );
+		SetColor( 255, c, c );
+	}
+	else if( m_nInYanShotCount < 0 ){ SetColor( 192, 160, 255 ); }
+	DrawPlayer( imgDot );
+	if( m_nSlowBorderAlpha > 0 ){
+		SetAlpha( m_nSlowBorderAlpha );
+		SetGraphicAngle( 0, 0, m_nCount * 2 );
+		SetGraphicRect( 0, 0, 64, 64 );
+		DrawPlayer( imgBorder );
+		SetGraphicAngle( 0, 0, 0 );
+	}
+	if( GetCommonDataDefault( CD_ENABLE_HAKUREI, false ) ){
+		SetAlpha( [ Smooth( 64, 160, m_fInYanGauge, 100 ), 160 ][ m_fInYanGauge > 0 ] );
+		let nGaugeY = GetPlayerY() + 22 * [ -1, 1 ][ GetClipMaxY() - GetPlayerY() > 32 ];
+		SetGraphicRect( 0, 0, 32, 4 );
+		_DrawChr( imgGaugeBase, GetPlayerX(), nGaugeY );
+		if( m_fInYanGauge > 0 ){
+			SetGraphicScale( Smooth( 0, 1, m_fInYanGauge, 100 ), 1 );
+			_DrawChr( imgGaugeGreen, GetPlayerX() - Smooth( 16, 0, m_fInYanGauge, 100 ), nGaugeY );
+			SetGraphicScale( Smooth( 0, 1, m_fInYanGauge - 100, 100 ), 1 );
+			_DrawChr( imgGaugeRed, GetPlayerX() - Smooth( 16, 0, m_fInYanGauge - 100, 100 ), nGaugeY );
+			SetGraphicScale( 1, 1 );
+		}
+	}
+	SetAlpha( 255 );
+	SetColor( 255, 255, 255 );
+	if( IsCutIn() && !GetCommonDataDefault( "thC", false ) ){ DrawCutIn( m_nCount ); }
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定型弾発射関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	撃っていいの？
+//		内部実装がスマートでないので少し考えること
+function BeCanFire( let nInterval ){
+	if( GetCommonDataDefault( CD_STAGE_EVENT, false ) || OnMissed() ){ return; }
+	if( m_bShot ){
+		if( m_nLastShotStartCount <= 0 ){ m_nLastShotStartCount = m_nCount; }
+		if( ( m_nLastShotStartCount - m_nCount ) % nInterval == 0 ){ return true; }
+	}
+	else{
+		if( m_nLastShotStartCount > 0 ){
+			m_nLastShotStartCount = -m_nLastShotStartCount;
+			m_nLastShotEndCount = m_nCount;
+		}
+		if( ( m_nCount - m_nLastShotEndCount < PLAYER_SHOTPULL_FRAMELAG ) && ( ( m_nLastShotStartCount - m_nCount ) % nInterval == 0 ) ){ return true; }
+	}
+	return false;
+}
+
+//	基本ショット
+function BasicShot( let width ){
+	if( m_nPowerPhase == 0 ){ CreatePlayerShot01( GetPlayerX(), GetPlayerY(), 15, 270, 1.3, 1, US_MAINSHOT ); }
+	else{
+		let space = width / 3;
+		alternative( m_nPowerPhase )
+		case( 1 ){
+			width /= 4;
+			space = width * 2;
+		}
+		case( 2 ){
+			width /= 3;
+			space = width;
+		}
+		case( 3 ){
+			width /= 2;
+			space = width / 2;
+		}
+		case( 4 ){
+			width /= 1.5;
+			space = width / 2.5;
+		}
+		let angle = -width;
+		while( angle <= width ){
+			CreatePlayerShot01( GetPlayerX(), GetPlayerY(), 15, angle + 270, 1.3, 1, US_MAINSHOT );
+			angle += space;
+		}
+	}
+}
+
+//	陰陽弾を発射する
+function CreateInYanShot(){
+	if( m_fInYanGauge < 16 ){
+		m_nInYanShotCount = 0;
+		return;
+	}
+	let nInterval = PLAYER_CHARGE_INTERVAL;
+	if( m_fInYanGauge < 50 ){ nInterval *= 0.5; }
+	else if( m_fInYanGauge > 100 ){ nInterval *= Accelerate( 1, 2, m_fInYanGauge - 100, 100 ); }
+	m_nInYanShotCount = -nInterval;
+	InYanShot( m_fInYanGauge );
+}
+
+//	陰陽弾(仮実装)
+task InYanShot( let nPower ){
+	let nX = GetPlayerX();
+	let nY = GetPlayerY();
+	let nVertex = 16;
+	let nObjCount = 0;
+	let bLeft = m_bLeft;
+	let bRight = m_bRight;
+	let bSlow = m_bSlow;
+	let obj = Obj_Create( OBJ_LASER );
+	let nX = GetPlayerX();
+	let nY = GetPlayerY();
+	let nScale;
+	Obj_SetAutoDelete( obj, true );
+	Obj_SetPosition( obj, nX, nY );
+	Obj_SetSpeed( obj, 10 );
+	Obj_SetAngle( obj, 270 );
+	ObjShot_SetGraphic( obj, RED03 );
+	ObjShot_SetPenetration( obj, 2 );
+	ObjLaser_SetSource( obj, false );
+	while( !Obj_BeDeleted( obj ) ){
+		let nNowPower = nPower - nObjCount;
+		nScale = Accelerate( 16, 160, nNowPower, 200 );
+		Obj_SetY( obj, Obj_GetY( obj ) - Smooth( 3, 6, nNowPower, 200 ) );
+		Obj_SetX( obj, Obj_GetX( obj ) + [ 0, [ 2.5, 1 ][ bSlow ] * [ 1, -1 ][ bLeft ] ][ bLeft || bRight ] );
+		if( nNowPower < 0 ){ ObjShot_FadeDelete( obj ); }
+		if( Obj_IsIntersected( obj ) ){
+			SetItemQueue( ITEMEX_HAKUREI, Obj_GetX( obj ) + RandBlur( 8 ), Obj_GetY( obj ) + RandBlur( 8 ), 2, 270 );
+			DeleteEnemyShotToItemInCircle( SHOT, nX, nY, nScale * 3 + 32 );
+			Obj_Delete( obj );
+		}
+		ObjShot_SetDamage( obj, Accelerate( 200, 2000, nNowPower, 200 ) );
+		ObjLaser_SetLength( obj, nScale * 2 );
+		ObjLaser_SetWidth( obj, nScale * 2 );
+		yield;
+		nObjCount++;
+	}
+}

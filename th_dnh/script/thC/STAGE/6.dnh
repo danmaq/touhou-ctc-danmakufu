@@ -1,0 +1,74 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 6
+//
+//		※ステージライブラリから自動的にインクルードされます
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let m_aszStage6DLoadFileListGraphic = [];
+let m_aszStage6DLoadFileListEnemy = [];
+let m_aszStage6DLoadFileListSound = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	内部処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	初期化
+function Stage6Initialize(){
+	ForbidBomb( true );
+	ForbidShot( true );
+	LoadProgress( m_aszStageDefaultLoadFileListGraphic ~ m_aszStage6DLoadFileListGraphic, m_aszStage6DLoadFileListEnemy, m_aszStageDefaultLoadFileListSE ~ m_aszStage6DLoadFileListSound, imgSystemProgress, imgMapBlack );
+	SetStage( 6 );
+	ForbidBomb( false );
+	ForbidShot( false );
+	PlayMusicEx( 30, "" );
+}
+
+//	ここにステージの中身を書く
+task Stage6MainTask(){
+	if( !GetCommonDataDefault( CD_STAGE_PRACTICE, false ) ){ Clear(); }// ED
+	else{ Clear(); }
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メイン部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	メインタスク
+task Stage6(){
+	Stage6Initialize();
+	Stage6MainTask();
+}
+
+//	@MainLoop()にて毎フレーム呼ばれる部分
+function Stage6Loop(){
+}
+
+//	@BackGround()にて毎回呼ばれる部分
+function Stage6DrawBackGround(){
+}
+
+//	@DrawBottomObject()にて毎回呼ばれる部分
+function Stage6DrawBottomObject(){
+}
+
+//	@DrawTopObject()にて毎回呼ばれる部分
+function Stage6DrawTopObject(){
+}

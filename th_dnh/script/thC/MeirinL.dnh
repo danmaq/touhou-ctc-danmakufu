@@ -1,0 +1,196 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossMeirin;
+	let imgCutIn=cutMeirin;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	if(Lv==0){Lv=1;}
+	Lv--;
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.75;}
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_MEIRIN~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(64);
+		SetLife(375);
+		SetDamageRate(15*DamageRate,0);
+		SetShotAutoDeleteClip(64,64,64,32);
+		SetX(cenX);
+		SetY(minY+120+RandBlur(0.1));
+		LastSpellEffect(115);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		if(m_nEnemyAlpha>0){Collision(32,24);}
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(242);
+		_Wait(117);
+
+		// スペルカード発動
+		let spellName=[
+			"彩符「孔雀七輪星」",
+			"彩符「孔雀七輪星－Ｈａｒｄ－」",
+			"彩符「孔雀十四輪星」"
+		];
+		SetCommonData(CD_SPELL_LASTSPELL,true);
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL4,0);
+		_Wait(125);
+
+		let assign=1;
+
+		loop{
+
+			// 扇状サークル弾
+			WideCircleShot(assign);
+			_Wait(210);
+
+			// 移動
+			move(90);
+			_Wait(90);
+
+			assign*=-1;
+
+		}
+
+	}
+
+	// 扇状サークル弾 ----------------------------------------------------------
+	task WideCircleShot(let assign){
+
+		let way=7;
+		let fr=20;
+		if(Lv==2){
+			way=14;
+			fr=10;
+		}
+		let baseAngle=GetAngleToPlayer-90*assign;
+		let wayAngle=180/(way-1)*assign;
+		let graphic=[US_ICE_RED,US_ICE_ORANGE,US_ICE_YELLOW,US_ICE_GREEN,US_ICE_SKY,US_ICE_BLUE,US_ICE_PURPLE];
+
+		SetAction(ACT_SHOT_A3_B,fr*way+20);
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i;
+			CircleShot(angle,graphic[i%7]);
+			PlaySE(seKira1);
+			_Wait(fr);
+		}
+
+	}
+
+	// サークル弾 --------------------------------------------------------------
+	task CircleShot(let gravAngle, let graphic){
+
+		let way=[32,44,24];
+		let speed=1.5;
+		let baseAngle=-90;
+		let wayAngle=360/way[Lv];
+		let gravSpeed=0.01;
+		let delay=10;
+
+		ascent(let i in 0 .. way[Lv]){
+			let angle=baseAngle+wayAngle*i;
+			GravityShot(GetX,GetY,speed,angle,gravSpeed,gravAngle,graphic,delay);
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+80){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-80){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn( m_nCount );
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGMeirin;
+
+	}
+
+}

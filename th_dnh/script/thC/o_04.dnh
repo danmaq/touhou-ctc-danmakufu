@@ -1,0 +1,197 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+
+//変数宣言--------------------------------------
+	let Level = GetCommonDataDefault( "Level", 1 );
+	SetCommonData("limit",250);
+	let x=0;
+	let y=0;
+
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	SetShotDirectionType(ABSOLUTE);
+	_Wait(100);
+	Concentration01(80);
+	PlaySE(sePower2);
+	_Wait(80);
+	SetCommonData("SetX",GetCenterX());
+	SetCommonData("SetY",GetCenterY());
+	let angle=-180;
+	while(angle<180+40.6)
+	{
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),2,angle,0);
+		angle+=(12+1.4);
+		yield;
+	}
+	PlaySE(seShadow);
+	_Wait(200);
+	ascent(i in 0..300)
+	{
+		SetCommonData("limit",Smooth(250,[200,150,100,70][Level],i,300));
+		yield;
+	}
+	ascent(i in 0..300)
+	{
+		SetCommonData("SetX",Smooth(GetCenterX(),GetCenterX()/2,i,300));
+		SetCommonData("SetY",Smooth(GetCenterY(),GetCenterY()*1.5,i,300));
+		yield;
+	}
+	_Wait(200);
+	ascent(i in 0..300)
+	{
+		SetCommonData("SetX",Smooth(GetCenterX()/2,GetCenterX()*1.5,i,300));
+		yield;
+	}
+	_Wait(200);
+	ascent(i in 0..200)
+	{
+		SetCommonData("limit",Smooth([200,150,100,70][Level],[200,150,100,70][Level]/2,i,200));
+		yield;
+	}
+	ascent(i in 0..200)
+	{
+		SetCommonData("limit",Smooth([200,150,100,70][Level]/2,[200,150,100,70][Level]*0.66,i,200));
+		yield;
+	}
+	_Wait(200);
+	ascent(i in 0..300)
+	{
+		SetCommonData("SetX",Smooth(GetCenterX()*1.5,GetCenterX(),i,300));
+		SetCommonData("SetY",Smooth(GetCenterY()*1.5,GetCenterY(),i,300));
+		yield;
+	}
+	_Wait(600);
+	ascent(i in 0..100)
+	{
+		SetCommonData("limit",Smooth([200,150,100,70][Level],500,i,100));
+		yield;
+	}
+
+}
+task SubAction()
+{
+	yield;
+	SetX(GetCommonDataDefault( "Aya_X",GetCenterX() ));
+	SetY(GetCommonDataDefault( "Aya_Y",GetCenterY()/2 ));
+	_Wait(150);
+	SetMovePositionHermite(GetCenterX/2,GetClipMinY-50,200,45,300,-90,80);
+	_Wait(90);
+	SetX(-65535);
+	SetY(-65535);
+}
+
+
+
+
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		LoadGraphic(dotBossAya);
+		SetLife(1);
+		MainAction();
+		SubAction();
+	}
+	@MainLoop
+	{
+		Deletemine();
+		yield;
+		m_nCount++;
+
+	}
+	@DrawLoop
+	{
+		if(m_nCount<150){
+			x=0;y=0;
+		}
+		else{
+			x=256;y=128;
+		}
+		let sLength=128;
+		SetAlpha(255);
+		SetColor(255,255,255);
+		_DrawChrRectSqr(dotBossAya,GetX,GetY,x,y,sLength);
+	}
+	@Finalize{}
+}
+
+
+
+//使い魔--------------------------------------
+
+script_enemy t_ma_01
+{
+
+#include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+	let angle=GetAngle();
+	let limit=GetCommonData("limit");
+
+task MainAction()
+{
+	yield;
+	_Wait(200);
+	let i=int(rand(0,80));
+	while(1)
+	{
+		CreateShot01(GetX(),GetY(),3,angle+Smooth(-90,90,i,145),US_NEEDLE_SKY,10);
+		CreateShot01(GetX(),GetY(),3,angle+Smooth(90,-90,i,145),US_NEEDLE_SKY,10);
+		PlaySE(seShot3);
+		i++;
+		if(i==146){i=0;}
+		loop(7){yield;}
+	}
+}
+
+task SubAction()
+{
+	yield;
+	SetMovePositionHermite(GetCenterX()+limit*cos(angle),GetCenterY()+limit*sin(angle),200,0,300,angle,130);
+	_Wait(130);
+	while(1)
+	{
+		SetX(GetCommonData("SetX")+limit*cos(angle));
+		SetY(GetCommonData("SetY")+limit*sin(angle));
+		angle+=1.4;
+		if(limit>250){
+			DropItem( 1 , 20 );
+			VanishEnemy();
+		}
+		yield;
+	}
+}
+
+	@Initialize
+	{	
+		SetLife(1);
+		MainAction();
+		SubAction();
+		LoadUserShotData(shotAll);
+	}
+	@MainLoop
+	{
+		yield;
+		Deletemine();
+		m_nCount++;
+		limit=GetCommonData("limit");
+	}
+	@DrawLoop
+	{
+		SetTexture(dotCircle6s);
+		SetGraphicRect(0,0,64,64);
+		SetGraphicScale(0.8,0.8);
+		SetColor(255,255,255);
+		SetGraphicAngle(0,0,m_nCount*2);
+		DrawGraphic(GetX,GetY);
+	}
+	@Finalize{DropItem( 1 , 20 );}
+
+}

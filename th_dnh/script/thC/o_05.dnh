@@ -1,0 +1,134 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level=GetCommonData("Level");
+//タスクの作成----------------------------------
+task MainAction()
+{
+	yield;
+	SetShotDirectionType(ABSOLUTE);
+	CreateEnemyFromScript("t_ma_01",GetX(),GetY(),GetSpeed(),GetAngle(),0);
+	PlaySE(seShadow);
+	_Wait(220);
+	loop([2,4,7,12][Level])
+	{
+		let angle_b=rand(0,360);
+		let speed=rand(0.8,2.5);
+		ascent(i in 0..[3,4,6,8][Level])
+		{
+			CreateShotA(0,GetX,GetY,0);
+			SetShotDataA(0,0,speed,angle_b,0,-0.02,0,183);
+			SetShotDirectionType(PLAYER);
+			SetShotDataA(0,70,1+i/2,0,0,0,0,66);
+			SetShotDirectionType(ABSOLUTE);
+			FireShot(0);
+		}
+		let angle=-180;
+		while(angle<180)
+		{
+			CreateShotA(0,GetX,GetY,0);
+			SetShotDataA(0,0,speed,angle_b,0,-0.02,0,183);
+			SetShotDirectionType(PLAYER);
+			SetShotDataA(0,70,[0.6,0.8,1,1.3][Level],angle,0,0,0,69);
+			SetShotDirectionType(ABSOLUTE);
+			FireShot(0);
+			angle+=[20,15,12,8][Level];
+		}
+		PlaySE(seShot2);
+		_Wait(40/[2,4,7,12][Level]);
+	}
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..200)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 200 ));
+		yield;
+	}
+	_Wait(350);
+	DropItem( 2 , 20 );
+	VanishEnemy();
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(25);
+		SetInvincibility( 260 );
+		MainAction();
+		SubAction01();
+		LoadUserShotData(shotAll);
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		yield;
+		if(m_nCount>200){Collision(16 , 12);}
+		m_nCount++;
+	}
+	@DrawLoop
+	{
+		if(m_nCount>200)
+		{
+			DrawYousei(32,m_nCount);
+			DarwZakoBack(m_nCount);
+		}
+	}
+	@Finalize{
+		DropItem( 10 , 50 );
+		DropPowerBig( 1,1 );
+		}
+}
+
+//使い魔--------------------------------------
+
+script_enemy t_ma_01
+{
+
+#include_function ".\INCLUDE\Shadow.dnh"
+
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..200)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 200 ));
+		yield;
+	}
+	VanishEnemy();
+}
+
+	@Initialize
+	{	
+		SetLife(30);
+		SubAction01();
+	}
+	@MainLoop
+	{
+		Deletemine();
+		Gone();
+		m_nCount++;
+		yield;
+	}
+	@DrawLoop
+	{
+		SetTexture(dotCircle6s);
+		SetGraphicRect(0,0,64,64);
+		SetAlpha(127);
+		SetGraphicScale(0.8,0.8);
+		SetColor(255,255,255);
+		SetGraphicAngle(0,0,m_nCount*2);
+		DrawGraphic(GetX,GetY);
+	}
+}

@@ -1,0 +1,103 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level=GetCommonData("Level");
+	let angle_b=GetAngleToPlayer();
+//タスクの作成----------------------------------
+task MainAction()
+{
+	yield;
+	_Wait(50);
+	
+	let angle=-20;
+	while(angle<=20)
+	{
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),1.2,GetAngleToPlayer()+angle,0);
+		angle+=10;
+	}
+	PlaySE(seShadow);
+	_Wait(40);
+	let angle=-[40,70,80,80][Level];
+	while(angle <= [20,40,60,90][Level])
+	{
+		CreateShot01(GetX(),GetY(),[1.3,1.7,2.2,3][Level],angle+angle_b,US_BALL_BS_BLUE,0);
+		if(Level > 1)
+		{
+			CreateShot01(GetX(),GetY(),[0,0,2.4,3.3][Level],-angle+angle_b+[0,0,4,3][Level],US_BALL_BS_RED,0);
+		}
+
+		if(Level==3)
+		{
+			CreateShot01(GetX(),GetY(),[0,0,0,2.8][Level],angle+angle_b,US_BALL_BS_BLUE,0);
+			CreateShot01(GetX(),GetY(),[0,0,0,3.1][Level],-angle+angle_b+[0,0,4,3][Level],US_BALL_BS_RED,0);
+		}
+		angle+=[12,12,10,10][Level];
+		PlaySE(seShot2);
+		loop(2){yield;}
+	}
+	_Wait(60);
+
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..50)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 50 ));
+		yield;
+	}
+	_Wait(110);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,400);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(13);
+		SetInvincibility( 120 );
+		MainAction();
+		SubAction01();
+		LoadUserShotData(shotAll);
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		GetSlowCount();
+		yield;
+		Collision(16 , 12);
+		m_nCount++;
+	}
+	@DrawLoop
+	{
+		DrawYousei(32,m_nCount);
+		DarwZakoBack(m_nCount);
+	}
+	@Finalize{DropItem( 6 , 40 );}
+}
+
+//使い魔----------------------------------------
+
+script_enemy t_ma_01
+{
+
+#include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+	let scale=0;
+
+task MainAction()
+{yield;}
+task SubAction01()
+{yield;}
+
+#include_function ".\INCLUDE\ShadowBody.dnh"
+}

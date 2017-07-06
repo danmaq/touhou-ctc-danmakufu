@@ -1,0 +1,48 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//Å@BGM
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+let dirSoundBgm = GetCurrentScriptDirectory ~ "SOUND\BGM\";
+let bgmList = [
+	dirSoundBgm ~ "Mute.wav",
+	dirSoundBgm ~ "thC01.mp3",
+	dirSoundBgm ~ "thC02.mp3",
+	dirSoundBgm ~ "thC03.mp3",
+	dirSoundBgm ~ "thC04.mp3",
+	dirSoundBgm ~ "thC05.mp3",
+	dirSoundBgm ~ "thC06.mp3",
+	dirSoundBgm ~ "thC07.mp3",
+	dirSoundBgm ~ "thC08.mp3",
+	dirSoundBgm ~ "thC09.mp3",
+	dirSoundBgm ~ "thC10.mp3",
+	dirSoundBgm ~ "thC11.mp3",
+	dirSoundBgm ~ "thC12.mp3",
+	dirSoundBgm ~ "thC13.mp3",
+	dirSoundBgm ~ "thC14.mp3",
+	dirSoundBgm ~ "thC15.mp3",
+	dirSoundBgm ~ "thC16.mp3",
+	dirSoundBgm ~ "thC17.mp3",
+	dirSoundBgm ~ "thC18.mp3",
+	dirSoundBgm ~ "thC19.mp3",
+	dirSoundBgm ~ "thC20.mp3",
+	dirSoundBgm ~ "thC21.mp3",
+	dirSoundBgm ~ "thC22.mp3",
+	dirSoundBgm ~ "thC23.mp3",
+	dirSoundBgm ~ "thC24.mp3",
+	dirSoundBgm ~ "thC25.mp3",
+	dirSoundBgm ~ "thC26.mp3",
+	dirSoundBgm ~ "thC27.mp3",
+	dirSoundBgm ~ "thC28.mp3",
+	dirSoundBgm ~ "thC29.mp3",
+	dirSoundBgm ~ "thC30.mp3",
+	dirSoundBgm ~ "thC31.mp3",
+	dirSoundBgm ~ "thC32.mp3",
+	dirSoundBgm ~ "thC33.mp3",
+	dirSoundBgm ~ "thC34.mp3",
+	dirSoundBgm ~ "thC35.mp3",
+	dirSoundBgm ~ "thC36.mp3",
+	dirSoundBgm ~ "thC37.mp3",
+	dirSoundBgm ~ "thC38.mp3",
+	dirSoundBgm ~ "thC39.mp3"
+];

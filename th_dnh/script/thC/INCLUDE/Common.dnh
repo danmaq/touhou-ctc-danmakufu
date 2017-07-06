@@ -1,0 +1,344 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	全スクリプトで使用できる共通ライブラリ
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定数(CommonData)
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let CD_THC_STAGE			= "thC";	//夢終劇ステージからの呼び出しならtrue、そうでなければ未定義(単体テストのグラフィックロード判定などに使う)
+let CD_DEBUG_SETLEVEL		= "DebugSetLevel";
+let CD_STAGE_LEVEL			= "Level";
+let CD_ITEM_QUEUE_CREATE	= "THC_ITEM_QUEUE_CREATE";	//	アイテムばら撒きキュー
+let CD_ITEM_POWER			= "THC_ITEM_POWER";			//	自機Powerの量
+let CD_ITEM_HAKUREI			= "THC_ITEM_HAKUREI";		//	博麗小符
+let CD_ITEM_COLLECT_UNDER	= "THC_ITEM_COLLECT_UNDER";	//	アイテム収集ライン下端
+let CD_PLAYER_ONMISSED		= "THC_PLAYER_MISSED";		//	OnMissed()の値
+let CD_SPELL_LASTSPELL		= "THC_SPELL_LASTSPELL";	//	ラストスペルかどうか
+let CD_STAGE_KEY_SLOWCOUNT	= "THC_KEY_SLOWCOUNT";		//	SLOWキーを押し/離してからの時間
+let CD_STAGE_KEY_SLOWSTAT	= "THC_KEY_SLOWSTAT";		//	SLOWキーの状態(数フレームの間PUSH/PULLが保持される)
+let CD_STAGE_SCENARIO		= "THC_STAGE_ROUTE";		//	どのルート？
+let CD_STAGE_PRACTICE		= "THC_STAGE_PRACTICE";		//	プラクティスモード
+let CD_STAGE_EVENT			= "THC_STAGE_EVENT";		//	イベント中？
+let CD_ENABLE_HAKUREI		= "THC_ENABLE_HAKUREI";		//	陰陽弾システムのON/OFF
+
+//	カットイン関連
+let CD_CUTIN_START			= "CUTIN_START";
+let CD_CUTIN_PLAYER			= "CUTIN_PLAYER";
+let CD_CUTIN_IMAGE_FILE		= "CUTIN_IMAGE_FILE";
+let CD_CUTIN_IMAGE_WIDTH	= "CUTIN_IMAGE_WIDTH";
+let CD_CUTIN_IMAGE_HEIGHT	= "CUTIN_IMAGE_HEIGHT";
+let CD_CUTIN_SPELL_NAME		= "CUTIN_SPELL_NAME";
+let CD_CUTIN_SPELL_END		= "CUTIN_SPELL_END";
+
+//	リザルト関連
+let CD_RESULT				= "THC_RESULT";
+let CD_RESULT_CLEAR			= "RESULT_CLEAR";
+let CD_RESULT_POINT			= "RESULT_POINT";
+let CD_RESULT_GRAZE			= "RESULT_GRAZE";
+let CD_RESULT_RATE			= "RESULT_RATE";
+let CD_RESULT_TOTAL			= "RESULT_TOTAL";
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	定数(other)
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//　座標簡略記述
+let cenX = GetCenterX();
+let cenY = GetCenterY();
+let minX = GetClipMinX();
+let maxX = GetClipMaxX();
+let minY = GetClipMinY();
+let maxY = GetClipMaxY();
+
+let SHADOW_TIMELAG = 8;
+let KEY_SHADOW_FREE = 0;
+let KEY_SHADOW_PUSH = 1;
+let KEY_SHADOW_HOLD = 2;
+let KEY_SHADOW_PULL = 3;
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	デバッグモード
+let m_bDebug = false;	//	体験版製品版完全版ではfalseにすること
+let m_bNoBoss = false;
+
+
+//////////////////////////////////////////////////////////////////////
+// -------------------------------------------------------------------
+// デバッグ
+// -------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//　難易度設定
+//　主に各スクリプトのInitializeに設定し、単発再生でのデバッグを容易にする
+function Debug_SetLevel{
+
+	if( m_bDebug && !GetCommonDataDefault( CD_DEBUG_SETLEVEL, false ) ){
+		let Lv = GetCommonDataDefault( CD_STAGE_LEVEL, 0 );
+		if( GetKeyState( VK_SKIP ) == KEY_HOLD ){ Lv ++; }
+		if( GetKeyState( VK_USER ) == KEY_HOLD ){ Lv += 2; }
+		SetCommonData( CD_STAGE_LEVEL, Lv );
+		SetCommonData( CD_DEBUG_SETLEVEL, true );
+	}
+
+}
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ロード/セーブ関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	夢終劇ローダを介さず弾幕風標準の機能で直接複数画像を一気に読み出す
+function LoadGraphicList( let aszFileList ){ ascent( let i in 0..length( aszFileList ) ){ LoadGraphic( aszFileList[ i ] ); } }
+
+//	夢終劇ローダを介さず弾幕風標準の機能で直接複数効果音を一気に読み出す
+function LoadSEList( let aszFileList ){ ascent( let i in 0..length( aszFileList ) ){ LoadSE( aszFileList[ i ] ); } }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	算術関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	expr1をexpr2単位で切り捨てる
+function truncEx( let expr1, let expr2 ){ return trunc( expr1 / expr2 ) * expr2; }
+
+//	expr1とexpr2を比較し大きい方を返す
+function Max( let expr1, let expr2 ){ return [ expr2, expr1 ][ expr1 > expr2 ]; }
+
+//	expr1とexpr2を比較し小さい方を返す
+function Min( let expr1, let expr2 ){ return [ expr1, expr2 ][ expr1 > expr2 ]; }
+
+//	(0,0)-(x,0)-(x,y)頂点を持った直角三角形の斜辺の長さを算出する
+function Hypot( let x, let y ){	return ( ( x ^ 2 ) + ( y ^ 2 ) ) ^ 0.5; }
+
+//	exprをnBitビット分だけビットシフトした値を返す
+function Shift( let expr, let nBit ){ return expr * 2 ^ nBit; }
+
+//	exprをリミットの範囲内に補正した値を返す
+function MinMax( let expr, let limit1, let limit2 ){ return Max( Min( expr, Max( limit1, limit2 ) ), Min( limit1, limit2 ) ); }
+
+//	exprをリミットの範囲内に補正した値を返す(範囲から外れた場合逆の限界値にループする)
+//	limit1 <= expr < limit2 なので注意
+function MinMaxLoop( let expr, let limit1, let limit2 ){
+	if( limit1 > limit2 ){
+		let limittemp = limit1;
+		limit1 = limit2;
+		limit2 = limittemp;
+	}
+	while( expr <= limit1 ){ expr += limit2; }
+	while( expr >= limit2 ){ expr = ( expr - limit1 ) % limit2; }
+	return expr;
+}
+
+//	expr1とexpr2の距離がlen以下か否かを返す
+function Near( let expr1, let expr2, let len ){ return absolute( expr1 - expr2 ) < len; }
+
+//　異なる位置の点(x1,y1)(x2,y2)の距離を返す
+function GetGapLength( let x1, let y1, let x2, let y2 ){ return Hypot( x2 - x1, y2 - y1 ); }
+
+//　異なる位置の点(x1,y1)から(x2,y2)への絶対角度を返す
+function GetGapAngle( let x1, let y1, let x2, let y2 ){ return atan2( y2 - y1, x2 - x1 ); }
+
+//　点(x,*)から距離gapLength、絶対角度gapAngleにある点のx座標を返す
+function GetGapX( let x, let gapLength, let gapAngle ){ return x + gapLength * cos( gapAngle ); }
+
+//　点(*,y)から距離gapLength、絶対角度gapAngleにある点のy座標を返す
+function GetGapY( let y, let gapLength, let gapAngle ){ return y + gapLength * sin( gapAngle ); }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	内分カウンタ
+//	0～nowの時間の間start～endの中間値を返します
+//	例)	let r = Smooth( -5, 10, n, 50 );	//	等速変化
+//		n == 0 … r == -5
+//		n == 10 … r == -2
+//		n == 20 … r == 1
+//		n == 30 … r == 4
+//		n == 40 … r == 7
+//		n == 50 … r == 10
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	等速変化
+function Smooth( let start, let end, let now, let limit ){
+	if( now >= limit || start == end ){ return end; }
+	if( now <= 0 ){ return start; }
+	return start + ( end - start ) * MinMax( now, 0, limit ) / limit;
+}
+
+//	加速変化
+function Accelerate( let start, let end, let now, let limit ){
+	if( now >= limit || start == end ){ return end; }
+	if( now <= 0 ){ return start; }
+	return start + ( end - start ) * Shift( ( now + 1 ) * now, -1 ) / Shift( ( limit + 1 ) * limit, -1 );
+}
+
+//	減速変化
+function SlowDown( let start, let end, let now, let limit ){
+	if( now >= limit || start == end ){ return end; }
+	if( now <= 0 ){ return start; }
+	return start + ( end - start ) * Shift( ( Shift( limit, 1 ) - now + 1 ) * now, -1 ) / Shift( ( limit + 1 ) * limit, -1 );
+}
+
+//	スプラインもどき(減速→加速)
+function SplineFakeFSF( let start, let end, let now, let limit ){
+	if( now >= limit || start == end ){ return end; }
+	if( now <= 0 ){ return start; }
+	let center = start + ( end - start ) / 2;
+	return [ SlowDown( start, center, now, limit / 2 ), Accelerate( center, end, now, limit ) ][ now > limit / 2 ];
+}
+
+//	スプラインもどき(加速→減速)
+function SplineFakeSFS( let start, let end, let now, let limit ){
+	if( now >= limit || start == end ){ return end; }
+	if( now <= 0 ){ return start; }
+	let center = start + ( end - start ) / 2;
+	let limithalf = limit / 2;
+	return [ Accelerate( start, center, now, limithalf ), SlowDown( center, end, now - limithalf, limithalf ) ][ now >= limithalf ];
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	配列操作
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	指定要素数の配列を作り、指定値で埋める
+function CreateArray( let nSize, let expr ){
+	if( nSize <= 0 ){ return; }
+	let array = [];
+	ascent( let i in 0 .. nSize ){ array = array ~ [ expr ]; }
+	return array;
+}
+
+//　指定要素数の配列を作り、要素番号で埋める
+function CreateOrderArray( let nSize ){
+	if( nSize <= 0 ){ return; }
+	let array = [];
+	ascent( let i in 0 .. nSize ){ array = array ~ [ i ]; }
+	return array;
+}
+
+//　指定要素数の配列を作り、ランダムに並べ替えた要素番号で埋める
+function CreateMixOrderArray( let nSize ){
+	if( nSize <= 0 ){ return; }
+	let array = CreateOrderArray( nSize );
+	let mArray = MixArray( array );
+	return mArray;
+}
+
+//　配列の要素をランダムに並べ替える(別の変数で受け取ること)
+//　× array = MixArray( array );
+//　○ let array2 = MixArray( array );
+function MixArray( let array ){
+	if( length( array ) <= 0 ){ return; }
+	let mArray = [];
+	while( length( array ) > 0 ){
+		let total = length( array );
+		let pos = rand_int( 0, total - 1 );
+		let char = array[ pos ];
+		mArray = mArray ~ [ char ];
+		array = erase( array, pos );
+	}
+	return mArray;
+}
+
+//	配列array内を数値charで検索し、要素番号を返す
+function SearchArray( let array, let char ){
+	let total = length( array );
+	let pos = 0;
+	while( pos < total && array[ pos ] != char ){ pos++; }
+	return pos;
+}
+
+//	配列の順序を反転する
+function Reverse( let array ){
+	let mArray = [];
+	let total = length( array );
+	descent( let i in 0..total ){ mArray = mArray ~ [ array[ i ] ]; }
+	return mArray;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	文字列操作
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	floatな文字列をint文字列に変換する
+function StringToStringInt( let str ){ return str[ 0 .. SearchArray( str, '.' ) ]; }
+
+//	数値をint文字列に変換する
+function ToStringInt( let num ){ return StringToStringInt( ToString( num ) ); }
+
+//	数字の文字を数値化する
+function CharToInteger( let char ){ return char - 48; }
+
+//	数字の文字列を数値化する
+function StringToInteger( let str ){
+	let strint = StringToStringInt( str );
+	let res = 0;
+	ascent( let grade in 0..length( strint ) ){ res += CharToInteger( strint[ grade ] ) * 10 ^ grade; }
+	return res;
+}
+
+//	数値を16進文字列化する
+function Hex( let num ){
+	let szTable = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F" ];
+	let szHex = "";
+	let i = num;
+	loop{	// do{ ... }while( expr )がほしい・・・
+		szHex = szTable[ i % 16 ] ~ szHex;
+		i = trunc( Shift( i, -4 ) );
+		if( i <= 0 ){ break; }
+	}
+	return "0x" ~ szHex;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	その他
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	CommonDataからデータをPOPする(削除して値を返す)
+function PopCommonData( let szKey, let vDefault ){
+	let vValue = GetCommonDataDefault( szKey, vDefault );
+	DeleteCommonData( szKey );
+	return vValue;
+}
+
+//　効果音ループ（指定時間中、指定間隔で鳴らす）※task
+task LoopPlaySE( let szSeFile, let totalFrame, let playFrame ){
+	while( totalFrame > 0 ){
+		PlaySE( szSeFile );
+		loop( playFrame ){ yield; }
+		totalFrame -= playFrame;
+	}
+}
+

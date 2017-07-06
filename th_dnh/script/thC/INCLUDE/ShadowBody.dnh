@@ -1,0 +1,30 @@
+	@Initialize
+	{	
+		SetLife(5);
+		SetDamageRateExDelay(0,15,10,1,1);
+		LightShadow;
+		MainAction();
+		SubAction01();
+		LoadUserShotData(shotAll);
+
+	}
+	@MainLoop
+	{
+		//—Dæ‡ˆÊ‚
+		GoneEx(40);
+		Deletemine();
+		BehaviorShadow(seShadowHidden,seShadowSudden);
+		//—Dæ‡ˆÊ’†
+		CollisionShadow( 24,18 );
+		m_nCount++;
+		//—Dæ‡ˆÊ’á
+		scale=Smooth( 0,1,m_nCount,40 );
+		PlayDamageSE(seDamage);
+		yield;
+	}
+	@DrawLoop{_DrawShadow(SHADOW_S_WHITE,dotCircle6s,m_nCount*2,0.8*scale,0.5*scale);}
+
+	@Finalize{
+		DestructShadow( 40 );
+		DropPointSmall(1,1);
+	}

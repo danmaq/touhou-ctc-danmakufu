@@ -1,0 +1,253 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossSakuya;
+	let imgCutIn=cutSakuya;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.9;}
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_SAKUYA~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(60);
+		SetLife(450);
+		SetDamageRate(17*DamageRate,17*DamageRate);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+120;
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"剣符「戦慄の伏線－Ｅａｓｙ－」",
+			"剣符「戦慄の伏線」",
+			"剣符「戦慄の伏線－Ｈａｒｄ－」",
+			"剣符「戦慄の伏線－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(125);
+
+		let turn=0;
+
+		loop{
+
+			let num=5;
+			fr=30;
+			let count=150;
+
+			// ランダム狙い弾
+			SetAction(ACT_SHOT_B3,fr*num);
+			loop(num){
+				RandomSearchShot(count,turn);
+				_Wait(fr);
+				count-=fr;
+				turn++;
+				if(count==120){
+					PlaySE(sePower);
+					Concentration01(120);
+				}
+			}
+
+			// 時間停止
+			PlaySE(seKira1);
+			TimeStop(60,1,1,1);
+			_Wait(60);
+
+		}
+
+	}
+
+	// ランダム狙い弾 ----------------------------------------------------------
+	task RandomSearchShot(let count, let turn){
+
+		let gapLength=24;
+		let way=[32,40,36,48];
+		let speed=1.2;
+		let wayAngle=360/way[Lv];
+		let baseAngle=-90+wayAngle*0.45*turn;
+		let graphic=US_KNIFE_KOUMA_PURPLE;
+		let delay=20;
+		let search=trunc(way[Lv]/4);
+		if(Lv>=2){search=trunc(way[Lv]/6);}
+		let sch=CreateMixOrderArray(way[Lv]);
+
+		PlaySE(seShot1);
+		ascent(let i in 0 .. way[Lv]){
+			let angle=baseAngle+wayAngle*i;
+			let x=GetGapX(GetX,gapLength,angle);
+			let y=GetGapY(GetY,gapLength,angle);
+			if(sch[i]<search){SearchShot(x,y,speed,angle,graphic,delay,count);}
+			else{CreateShot01(x,y,speed,angle,graphic,delay);}
+		}
+
+	}
+
+	// 狙い弾 ------------------------------------------------------------------
+	task SearchShot(let x, let y, let speed, let angle, let graphic, let delay, let count){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+
+		Obj_SetX(obj,x);
+		Obj_SetY(obj,y);
+		Obj_SetSpeed(obj,speed);
+		Obj_SetAngle(obj,angle);
+		ObjShot_SetDelay(obj,delay);
+		ObjShot_SetGraphic(obj,graphic);
+
+		// メイン処理 --------------------------------------
+		loop{
+			if(Obj_BeDeleted(obj)){break;}
+			count--;
+			if(count==0){break;}
+			yield;
+		}
+
+		if(!Obj_BeDeleted(obj)){
+			let fr=20;
+			let decAlpha=255/fr;
+			let addScale=0.05;
+			Explosion01(Obj_GetX(obj),Obj_GetY(obj),decAlpha,addScale,fr);
+			ObjShot_SetGraphic(obj,US_KNIFE_KOUMA_GREEN);
+			let fr=45;
+			let addAngle=720/fr;
+			loop(fr){
+				if(Obj_BeDeleted(obj)){break;}
+				angle+=addAngle;
+				Obj_SetAngle(obj,angle);
+				yield;
+			}
+			if(!Obj_BeDeleted(obj)){
+				let speed=[3.2, 4, 3.2, 4];
+				angle=GetAngleToPlayer;
+				if(Lv<2){angle=GetGapAngle(Obj_GetX(obj),Obj_GetY(obj),GetPlayerX,GetPlayerY);}
+				Obj_SetSpeed(obj,speed[Lv]);
+				Obj_SetAngle(obj,angle);
+			}
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(20,40);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){
+			DropItem(8,80);
+			DropBomb;
+		}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+		// 魔法陣座標設定
+		if(THC&&!Practice){
+			SetCommonData("Sakuya_X",GetX); 
+			SetCommonData("Sakuya_Y",GetY);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn( m_nCount );
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGSakuya;
+
+	}
+
+}

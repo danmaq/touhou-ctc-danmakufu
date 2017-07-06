@@ -1,0 +1,411 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossEiki;
+	let imgCutIn=cutEiki;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	let objJ=[];
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_EIKI~imgFontList;
+			seList=seList~seListEnemy~seListShadow;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(65);
+		SetLife(500);
+		SetDamageRate(7,7);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+60;
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"冥罰「十王の裁き－Ｅａｓｙ－」",
+			"冥罰「十王の裁き」",
+			"冥罰「十王の裁き－Ｈａｒｄ－」",
+			"冥罰「十王の裁き－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(125);
+
+		// 霊魂召喚
+		SetAction(ACT_SHOT_B5,180);
+		PlaySE(sePower);
+		Concentration01(120);
+		_Wait(120);
+		SummonSpilit;
+		_Wait(200);
+		SetDamageRate(13,13);
+
+		loop{
+
+			// 扇状V弾
+			WideVShot;
+			_Wait(100);
+
+		}
+
+	}
+
+	// 扇状V弾 -----------------------------------------------------------------
+	task WideVShot{
+
+		let way=3;
+		let wayAngle=65;
+		if(Lv==3){wayAngle+=10;}
+		let baseAngle=GetAngleToPlayer-wayAngle*(way-1)/2;
+		let delay=30;
+
+		SetAction(ACT_SHOT_A3,60);
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i;
+			VShot(angle,delay);
+		}
+		_Wait(delay);
+		PlaySE(seShot1);
+
+	}
+
+	// V弾 ---------------------------------------------------------------------
+	function VShot(let angle, let delay){
+
+		let num=2+Lv;
+		let baseWay=13;
+		if(Lv==3){baseWay+=2;}
+		let numWay=-3;
+		let baseSpeed=2;
+		let numSpeed=0.5;
+		let wayAngle=5;
+		let graphic=US_TABLET;
+
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			let way=baseWay+numWay*i;
+			let wideAngle=wayAngle*(way-1);
+			WideShot01(GetX,GetY,speed,angle,wideAngle,way,graphic,delay);
+		}
+
+
+	}
+
+	// 霊魂召喚 ----------------------------------------------------------------
+	function SummonSpilit{
+
+		let num=7;
+		let numGapLength=52.5;
+		let baseGapLength=65;
+		let gapAngle=[115,65];
+		let baseAngle=[150,30];
+		let numAngle=50;
+		let assign=[-1,1];
+
+		PlaySE(seShadow);
+		ascent(let i in 0 .. num){
+			let gapLength=baseGapLength+numGapLength*i;
+			ascent(let j in 0 .. 2){
+				let x=GetGapX(GetX,gapLength,gapAngle[j]);
+				let y=GetGapY(GetY,gapLength,gapAngle[j]);
+				let angle=baseAngle[j]+numAngle*i*assign[j];
+				CreateEnemyFromScript("Spilit",x,y,0,angle,assign[j]);
+			}
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){DropItem(14,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGEiki;
+
+	}
+
+}
+
+// 霊魂 ------------------------------------------------------------------------
+script_enemy Spilit{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	let x=GetX;
+	let y=GetY;
+	let angle=GetAngle;
+	let assign=GetArgument;
+	SetX(GetEnemyX);
+	SetY(GetEnemyY);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(1);
+
+		// 光
+		Light;
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 移動
+		move;
+		loop(60){yield;}
+
+		// レーザー1（伸び）
+		PlaySE(seLaser1);
+		Laser1(60,true);
+		Laser1(60,false);
+		loop(60){yield;}
+		PlaySE(seLaser1);
+		loop(60){yield;}
+
+		let delay=120-20*Lv;
+
+		// レーザー2（回転）
+		loop{
+			Laser2(delay,true);
+			Laser2(delay,false);
+			loop(delay){yield;}
+			PlaySE(seLaser1);
+			loop(60){yield;}
+		}
+
+	}
+
+	// レーザー1（伸び） -------------------------------------------------------
+	task Laser1(let delay, let rev){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_LASER);
+		let _angle=angle;
+		if(rev){_angle+=180;}
+
+		Obj_SetX(obj,GetX);
+		Obj_SetY(obj,GetY);
+		Obj_SetAngle(obj,_angle);
+		ObjShot_SetDelay(obj,delay);
+		ObjShot_SetGraphic(obj,US_BEAM_BLUE);
+		ObjLaser_SetWidth(obj,24);
+		ObjLaser_SetSource(obj,rev);
+
+		// メイン処理 --------------------------------------
+		// 伸び
+		let fr=60;
+		let Length=0;
+		let addLength=600/fr;
+		loop(fr){
+			Length+=addLength;
+			ObjLaser_SetLength(obj,Length);
+			yield;
+		}
+		loop(delay-fr){yield;}
+
+		// 球レーザー
+		BallLaser(_angle);
+		loop(60){yield;}
+		Obj_Delete(obj);
+
+	}
+
+	// レーザー2（回転） -------------------------------------------------------
+	task Laser2(let delay, let rev){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_LASER);
+		let _angle=angle;
+		if(rev){_angle+=180;}
+
+		Obj_SetX(obj,GetX);
+		Obj_SetY(obj,GetY);
+		ObjShot_SetDelay(obj,delay);
+		ObjShot_SetGraphic(obj,US_BEAM_BLUE);
+		ObjLaser_SetLength(obj,600);
+		ObjLaser_SetWidth(obj,24);
+		ObjLaser_SetSource(obj,rev);
+
+		// メイン処理 --------------------------------------
+		// 回転
+		let fr=trunc(delay*3/4);
+		let addAngle=30/fr*assign;
+		loop(fr){
+			if(rev){angle+=addAngle;}
+			_angle+=addAngle;
+			Obj_SetAngle(obj,_angle);
+			yield;
+		}
+		loop(delay-fr){yield;}
+
+		// 球レーザー
+		BallLaser(_angle);
+		loop(60){yield;}
+		Obj_Delete(obj);
+
+	}
+
+	// 球レーザー --------------------------------------------------------------
+	function BallLaser(let _angle){
+
+		let speed=12;
+		let Length=100;
+		let width=32;
+		let graphic=US_BALL_M_A_BLUE;
+		CreateLaser01(GetX,GetY,speed,_angle,Length,width,graphic,0);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	task move{
+
+		let gapLength=40;
+		let _x=GetEnemyX-(40+gapLength)*assign+RandBlur(gapLength);
+		let _y=minY+120+RandBlur(gapLength);
+		let power1=800;
+		let angle1=rand(0,180);
+		let power2=300;
+		let angle2=rand(0,360);
+		let fr=58;
+		SetMovePositionHermite(x,y,power1,angle1,power2,angle,fr);
+		loop(fr){yield;}
+		fr=2;
+		SetMovePosition02(x,y,fr);
+
+	}
+
+	// 光 ----------------------------------------------------------------------
+	task Light{
+
+		let call=1;
+		let delay=15;
+		loop(60){
+			_Light;
+			loop( call ){ yield; }
+		}
+
+		task _Light{
+			let obj=SetShotObject(GetX,GetY,500,0,US_BALL_SS_BLUE,delay);
+			Obj_SetAlpha(obj,0);
+			Obj_SetCollisionToPlayer(obj,false);
+			ObjShot_SetBombResist(obj,true);
+			ObjShot_ToItem(obj,false);
+			loop(delay){yield;}
+			Obj_Delete(obj);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+	}
+
+}

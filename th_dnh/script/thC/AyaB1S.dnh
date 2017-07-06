@@ -1,0 +1,285 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossAya;
+	let imgCutIn=cutAya;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	let objB=[];
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_AYA~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(66);
+		SetLife(500);
+		SetDamageRate(32,32);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+120+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"疾風「風神少女－Ｅａｓｙ－」",
+			"疾風「風神少女」",
+			"疾風「風神少女－Ｈａｒｄ－」",
+			"疾風「風神少女－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL3,0);
+		_Wait(125);
+
+		// 画面外チェック
+		CheckIsOut;
+
+		loop{
+
+			// 横移動＋全方向直線弾
+			Concentration01(30);
+			_Wait(30);
+			moveH(100);
+			_RoundLineShot(100,0);
+			_Wait(145);
+
+			// 縦移動＋全方向直線弾
+			Concentration01(30);
+			_Wait(30);
+			moveV(110);
+			_RoundLineShot(110,1);
+			_Wait(155);
+
+		}
+
+	}
+
+	// 全方向直線弾 ------------------------------------------------------------
+	task _RoundLineShot(let fr, let gra){
+
+		let way=1+2*Lv;
+		let num=6;
+		let minSpeed=1.6+0.4*Lv;
+		let maxSpeed=3.2+0.4*Lv;
+		let graphic=[US_BUTTERFLY_RED,US_BUTTERFLY_BLUE];
+		let shotFr=2;
+
+		LoopPlaySE(seShot1,fr,6);
+		while(fr>0){
+			let angle=GetAngleToPlayer;
+			RoundLineShot(GetX,GetY,minSpeed,maxSpeed,angle,way,num,graphic[gra],0);
+			_Wait(shotFr);
+			fr-=shotFr;
+		}
+
+	}
+
+	// 画面外チェック ----------------------------------------------------------
+	task CheckIsOut{
+
+		loop{
+			if(IsOut(-40)){SetInvincibility(2);}
+			yield;
+		}
+
+	}
+
+	// 横移動 ------------------------------------------------------------------
+	task moveH(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(20,40);
+		let my=rand(10,30);
+		if(x>=cenX){mx=-mx;}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+
+		let fieldX=maxX-minX+600;
+		let dx=(x-GetX+fieldX)/fr;
+		if(GetX>=cenX){dx=(x-GetX-fieldX)/fr;}
+		let dy=(y-GetY)/fr;
+
+		// 残像付き移動
+		SetAction(ACT_MOVE,fr);
+		SetBlur(fr);
+		loop(fr){
+			SetMovePosition02(GetX+dx,GetY+dy,1);
+			yield;
+			if(dx>0){
+				if(GetX>maxX+300){SetX(GetX-fieldX);}
+			}
+			else{
+				if(GetX<minX-300){SetX(GetX+fieldX);}
+			}
+		}
+
+	}
+
+	// 縦移動 ------------------------------------------------------------------
+	task moveV(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(20,40);
+		let my=rand(10,30);
+		if(x<GetPlayerX){mx=-mx;}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+
+		let dx=(x-GetX)/fr;
+		let fieldY=maxY-minY+600;
+		let dy=(y-GetY+fieldY)/fr;
+
+		// 残像付き移動
+		SetAction(ACT_MOVE,fr);
+		SetBlur(fr);
+		loop(fr){
+			SetMovePosition02(GetX+dx,GetY+dy,1);
+			yield;
+			if(GetY>maxY+300){SetY(GetY-fieldY);}
+		}
+
+	}
+
+	// 残像 --------------------------------------------------------------------
+	task SetBlur(let fr){
+
+		let blurFr=2;
+		while(fr>0){
+			_SetBlur;
+			_Wait(blurFr);
+			fr-=blurFr;
+		}
+
+	}
+
+	task _SetBlur{
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+		objB=objB~[obj];
+
+		Obj_SetX(obj,GetX);
+		Obj_SetY(obj,GetY);
+		Obj_SetAlpha(obj,0);
+		Obj_SetCollisionToPlayer(obj,false);
+		ObjShot_SetBombResist(obj,true);
+		ObjShot_ToItem(obj,false);
+
+		// メイン処理 --------------------------------------
+		let fr=25;
+		let alpha=250;
+		let addAlpha=-alpha/fr;
+		loop(fr){
+			Obj_SetAngle(obj,alpha);
+			alpha+=addAlpha;
+			yield;
+		}
+		objB=erase(objB,0);
+		Obj_Delete(obj);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){DropItem(10,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// 残像描画
+		ascent(let i in 0 .. length(objB)){
+			let obj=objB[i];
+			let rect=[];
+			if(cos(GetAngle)>0){rect=rect~RECT_BOSS_MOVE_R1;}
+			else{rect=rect~RECT_BOSS_MOVE_L1;}
+			let rectX=RECT_BOSS_LENGTH*rect[0];
+			let rectY=RECT_BOSS_LENGTH*rect[1];
+			SetAlpha(Obj_GetAngle(obj));
+			_DrawChrRectSqr(imgBoss,Obj_GetX(obj),Obj_GetY(obj),rectX,rectY,RECT_BOSS_LENGTH);
+		}
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGAya;
+
+	}
+
+}

@@ -1,0 +1,331 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossEiki;
+	let imgCutIn=cutEiki;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	if(Lv==0){Lv=1;}
+	Lv--;
+
+	let objJ=[];
+	let maxLife=500;
+	let Counter=false;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_EIKI~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(66);
+		SetLife(500);
+		SetDamageRate(16,0);
+		SetShotAutoDeleteClip(32,32,32,32);
+		SetX(cenX);
+		SetY(minY+80+RandBlur(0.1));
+		LastSpellEffect(115);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		if(m_nEnemyAlpha>0){Collision(32,24);}
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(242);
+		_Wait(117);
+
+		// スペルカード発動
+		let spellName=[
+			"因果「浄頗梨の鏡」",
+			"因果「浄頗梨の鏡－Ｈａｒｄ－」",
+			"因果「浄頗梨の鏡－Ｌｕｎａｔｉｃ－」"
+		];
+		SetCommonData(CD_SPELL_LASTSPELL,true);
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(125);
+
+		// 回転扇状弾
+		RollWideShot(1);
+		RollWideShot(-1);
+
+		// ライフチェック
+		LifeCheck;
+
+		loop{
+
+			// 移動
+			move(120);
+			_Wait(240);
+
+		}
+
+	}
+
+	// 回転扇状弾 --------------------------------------------------------------
+	task RollWideShot(let assign){
+
+		let shotFr=20;
+		let _shotFr=-7-2*Lv;
+		let way=[4,5,5];
+		let speed0=6.4;
+		let speed1=2;
+		let fr1=15;
+		let wayAngle=34;
+		let baseAngle=-wayAngle*(way[Lv]-1)/2;
+		let addBaseAngle=wayAngle*0.6*assign;
+		let graphic=US_BALL_L_BLUE;
+		if(assign==-1){graphic=US_BALL_L_RED;}
+		let delay=10;
+
+		loop{
+			ascent(let i in 0 .. way[Lv]){
+				let angle=baseAngle+wayAngle*i;
+				CreateShotA(0,GetX,GetY,delay);
+				SetShotDataA(0,0,speed0,angle,0,0,0,graphic);
+				SetShotDataA(0,fr1,speed1,NULL,0,0,0,graphic);
+				FireShot(0);
+			}
+			PlaySE(seShot1);
+			let fr=shotFr+trunc(_shotFr*(maxLife-GetLife)/maxLife);
+			_Wait(fr);
+			baseAngle+=addBaseAngle;
+		}
+
+	}
+
+	// ライフチェック ----------------------------------------------------------
+	task LifeCheck{
+
+		let nextLife=maxLife*0.8;
+		while(GetLife>nextLife){yield;}
+
+		// 反射鏡
+		PlaySE(sePower);
+		Concentration01(120);
+		_Wait(120);
+		CounterMirror(GetLife);
+		PlaySE(seKira1);
+
+	}
+
+	// 反射鏡 ------------------------------------------------------------------
+	task CounterMirror(let beforeLife){
+
+		MirrorLaser;
+		CounterSE;
+		_Wait(30);
+
+		let count=m_nCount;
+		let waitCount=4-Lv;
+		loop{
+			if(beforeLife-GetLife>0){
+				if(count<m_nCount){
+					CounterShot;
+					Counter=true;
+					count=m_nCount+waitCount;
+				}
+			}
+			beforeLife=GetLife;
+			yield;
+		}
+
+	}
+
+	// 反射SE ------------------------------------------------------------------
+	task CounterSE{
+
+		let CounterNum=0;
+		let count=m_nCount;
+		let waitCount=4-Lv;
+		loop{
+			if(Counter){
+				CounterNum++;
+				Counter=false;
+			}
+			if(CounterNum>0){
+				if(count<m_nCount){
+					PlaySE(seKira2);
+					count=m_nCount+waitCount;
+				}
+				CounterNum--;
+			}
+			yield;
+		}
+
+	}
+
+	// 鏡 ----------------------------------------------------------------------
+	task MirrorLaser{
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_LASER);
+
+		ObjShot_SetDelay(obj,10);
+		ObjShot_SetGraphic(obj,US_BALL_M_A_SKY);
+		ObjLaser_SetWidth(obj,18);
+		ObjLaser_SetSource(obj,false);
+		Obj_SetAutoDelete(obj,false);
+
+		// メイン処理 --------------------------------------
+		let Length=0;
+		setLength;
+		setLocation;
+
+		// 位置設定 ----------------------------------------
+		task setLocation{
+
+			let gapLength=40;
+			loop{
+				let angle=GetAngleToPlayer;
+				let x=GetGapX(GetX,gapLength,angle);
+				let y=GetGapY(GetY,gapLength,angle);
+				x=GetGapX(x,Length/2,angle+90);
+				y=GetGapY(y,Length/2,angle+90);
+				Obj_SetX(obj,x);
+				Obj_SetY(obj,y);
+				Obj_SetAngle(obj,angle-90);
+				yield;
+			}
+
+		}
+
+		// 長さ設定 ----------------------------------------
+		task setLength{
+
+			let fr=10;
+			let addLength=500/fr;
+			loop(fr){
+				Length+=addLength;
+				ObjLaser_SetLength(obj,Length);
+				yield;
+			}
+			fr=20;
+			let addLength=-400/fr;
+			loop(fr){
+				Length+=addLength;
+				ObjLaser_SetLength(obj,Length);
+				yield;
+			}
+
+		}
+
+	}
+
+	// カウンター弾 ------------------------------------------------------------
+	function CounterShot{
+
+		let speed=7.4;
+		let maxSpeed=2.8+0.1*Lv;
+		let addSpeed=(maxSpeed-speed)/30;
+		let angle=GetAngleToPlayer;
+		let graphic=US_TABLET;
+		let gapLength=40;
+		let x=GetGapX(GetX,gapLength,angle);
+		let y=GetGapY(GetY,gapLength,angle);
+		gapLength=RandBlur(40);
+		x=GetGapX(x,gapLength,angle+90);
+		y=GetGapY(y,gapLength,angle+90);
+		angle+=+RandBlur(12);
+		CreateShot02(x,y,speed,angle,addSpeed,maxSpeed,graphic,0);
+
+		let fr=15;
+		let subAlpha=255/fr;
+		let spread=0.12;
+		Explosion01(x,y,subAlpha,spread,fr);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(30,60);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+80){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGEiki;
+
+	}
+
+}

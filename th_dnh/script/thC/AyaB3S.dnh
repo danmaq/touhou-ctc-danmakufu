@@ -1,0 +1,378 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossAya;
+	let imgShot=dotShotTengu;
+	let imgCutIn=cutAya;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgShot,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_AYA~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(63);
+		SetLife(500);
+		SetDamageRate(14,14);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+100+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"射符「シュート・ザ・ブリット－Ｅａｓｙ－」",
+			"射符「シュート・ザ・ブリット」",
+			"射符「シュート・ザ・ブリット－Ｈａｒｄ－」",
+			"射符「シュート・ザ・ブリット－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL3,0);
+		_Wait(125);
+
+		// 回転弾
+		RollShot;
+
+		loop{
+
+			_Wait(135);
+
+			// 移動＋天狗弾
+			Concentration01(30);
+			_Wait(30);
+			_TenguShot;
+			_Wait(40);
+			move(30);
+			_Wait(35);
+
+		}
+
+	}
+
+	// 回転弾 ------------------------------------------------------------------
+	task RollShot{
+
+		let way=2+Lv;
+		let baseAngle=90;
+		let wayAngle=360/way;
+		let fr=trunc(20*2*2.5);
+
+		LoopPlaySE(seShot3,6000,6);
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i;
+			_RollShot(angle,1);
+		}
+		_Wait(fr*2);
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i;
+			_RollShot(angle,-1);
+		}
+
+	}
+
+	task _RollShot(let angle, let assign){
+
+		let gapLength=32;
+		let way=20;
+		let speed=1.6;
+		let waySpeed=(3.6+0.2*Lv-speed)/way;
+		let wayAngle=120/way*assign;
+		let graphic=US_SCALE_RED;
+		if(assign==-1){graphic=US_SCALE_ORANGE;}
+		let delay=10;
+		let fr=2;
+
+		loop{
+			loop(way){
+				let x=GetGapX(GetX,gapLength,angle);
+				let y=GetGapY(GetY,gapLength,angle);
+				CreateShot01(x,y,speed,angle,graphic,delay);
+				_Wait(fr);
+				speed+=waySpeed;
+				angle+=wayAngle;
+			}
+			waySpeed*=-1;
+		}
+
+	}
+
+	// 天狗弾 ------------------------------------------------------------------
+	function _TenguShot{
+
+		let speed=1.5+0.5*Lv;
+		let angle=GetAngleToPlayer;
+		SetAction(ACT_SHOT_B5,36);
+		CreateShotFromScript("TenguShot",GetX,GetY,speed,angle,0,0);
+		PlaySE(seShot2);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	task move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(60,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+100){my=-my;}
+		x+=mx;
+		y+=my;
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice&&Lv>0){DropItem(14,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGAya;
+
+	}
+
+}
+
+// 天狗弾 ----------------------------------------------------------------------
+script_shot TenguShot{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shot.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let imgShot=dotShotTengu;
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	let scaleY=0;
+	let draw=true;
+	let alive=true;
+	let objB=[];
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		SetBombResist;
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 画面外で消滅待ち
+		if(IsOut(64)){alive=false;}
+
+		// 当たり判定
+		ascent(let i in 0 .. length(objB)){
+			SetCollisionB(Obj_GetX(objB[i]),Obj_GetY(objB[i]),13);
+		}
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 速度設定
+		setSpeed;
+
+		// 反射チェック
+		reflect;
+
+		// 拡大率設定
+		setScale;
+
+		// 残像
+		while(GetSpeed<0){yield;}
+		draw=false;
+		while(alive){
+			Blur;
+			yield;
+		}
+
+		// 残像消滅待ち
+		loop(15){yield;}
+		End;
+
+	}
+
+	// 速度設定 ----------------------------------------------------------------
+	task setSpeed{
+
+		let speed=GetSpeed;
+		let addSpeed=(10+2*Lv-speed)/60;
+		loop{
+			speed+=addSpeed;
+			SetSpeed(speed);
+			yield;
+		}
+
+	}
+
+	// 反射チェック ------------------------------------------------------------
+	task reflect{
+
+		let angle=GetAngle;
+		loop{
+			if(GetY<=minY){
+				angle=-angle;
+				break;
+			}
+			if(GetX<=minX||GetX>=maxX){
+				angle=180-angle;
+				break;
+			}
+			yield;
+		}
+		SetAngle(angle);
+
+	}
+
+	// 拡大率設定 --------------------------------------------------------------
+	task setScale{
+
+		let fr=15;
+		let addScaleY=1/fr;
+		loop(fr){
+			scaleY+=addScaleY;
+			yield;
+		}
+
+	}
+
+	// 残像 --------------------------------------------------------------------
+	task Blur{
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+		objB=objB~[obj];
+
+		Obj_SetX(obj,GetX);
+		Obj_SetY(obj,GetY);
+		Obj_SetSpeed(obj,0);
+		Obj_SetAngle(obj,GetAngle);
+		ObjShot_SetGraphic(obj,US_TENGU);
+		Obj_SetCollisionToPlayer(obj,false);
+		ObjShot_SetBombResist(obj,true);
+
+		// メイン処理 --------------------------------------
+		loop(12){yield;}
+		objB=erase(objB,0);
+		Obj_Delete(obj);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// 弾描画
+		if(draw){
+			SetGraphicRect(0,0,128,32);
+			SetRenderState(ADD);
+			SetColor(255,255,255);
+			SetGraphicAngle(0,0,GetAngle);
+			SetGraphicScale(1,scaleY);
+			SetTexture(imgShot);
+			DrawGraphic(GetX,GetY);
+		}
+
+	}
+
+}

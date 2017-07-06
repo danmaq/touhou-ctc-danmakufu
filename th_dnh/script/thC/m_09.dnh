@@ -1,0 +1,124 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level=GetCommonData("Level");
+	let angle_b=GetAngleToPlayer();
+//タスクの作成----------------------------------
+task MainAction()
+{
+	yield;
+	_Wait(50);
+	
+	let angle=-37.5;
+	while(angle<=37.5)
+	{
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),[1,1.5,2,3][Level],GetAngleToPlayer()+angle,0);
+		angle+=15;
+	}
+	PlaySE(seShadow);
+	
+	_Wait(15);
+	
+	let angle_b=-30;
+	while(angle_b<=30)
+	{
+		let angle=0;
+		while(angle<=(Level-1)*2)
+		{
+			CreateLaser01(GetX(),GetY(),[1,1.5,2,3][Level],angle_b+GetAngleToPlayer()+angle,150+Level*30,8,US_SCALE_A_GREEN,0);
+			CreateLaser01(GetX(),GetY(),[1,1.5,2,3][Level],angle_b+GetAngleToPlayer()-angle,150+Level*30,8,US_SCALE_A_GREEN,0);
+			angle+=1.5;
+		}
+		angle_b+=15;
+	}
+	PlaySE(seLaser2);
+	if(Level>0)
+	{
+		loop([0,20,50,100][Level])
+		{
+			ReflectShot(GetX(),GetY(),rand(1.5,3),GetAngleToPlayer()+180+rand(-150,150),1,false,true,false,false,US_BALL_BS_RED,0);
+		}
+		loop([0,10,17,40][Level])
+		{
+			CreateShot01(GetX(),GetY(),rand(1.5,3),GetAngleToPlayer()+rand(-30,30),US_BALL_BS_RED,0);
+		}
+		PlaySE(seShot2);
+	}
+
+	_Wait(40);
+	loop(3)
+	{
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),[1,1.5,2,3][Level],GetAngleToPlayer(),1);
+		PlaySE(seShadow);
+		_Wait(60);
+	}
+
+
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..50)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 50 ));
+		yield;
+	}
+	_Wait(250);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,400);
+
+
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(30);
+		SetInvincibility( 100 );
+		MainAction();
+		SubAction01();
+		LoadUserShotData(shotAll);
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		GetSlowCount();
+		yield;
+		Collision(16 , 12);
+		m_nCount++;
+	}
+	@DrawLoop
+	{
+		DrawYousei(32,m_nCount);
+		DarwZakoBack(m_nCount);
+	}
+	@Finalize{
+		DropItem( 6 , 40 );
+	}
+}
+
+//使い魔
+
+script_enemy t_ma_01
+{
+
+#include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+	let scale=0;
+
+task MainAction()
+{yield;}
+task SubAction01()
+{yield;}
+
+#include_function ".\INCLUDE\ShadowBody.dnh"
+}

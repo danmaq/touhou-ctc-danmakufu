@@ -1,0 +1,173 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level=GetCommonData("Level");
+	let angle_b=GetAngleToPlayer();
+//タスクの作成----------------------------------
+task MainAction()
+{
+	yield;
+	_Wait(30);
+
+	if(Level>1)
+	{
+		ascent(i in 0..[0,0,2,5][Level])
+		{
+			CircleShot01( [0,0,12,8][Level], SlowDown( 3 , 1.5 , i , [0,0,2,5][Level] ) , WHITE11 , 20 );
+		}
+	}
+
+	_Wait(30);
+
+	let angle=-180;
+	while(angle<180)
+	{
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),5,GetAngleToPlayer()+angle,1);
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),5,GetAngleToPlayer()+angle,-1);
+		angle+=[180,90,45,36][Level];
+	}
+	
+	loop([20,40,70,100][Level])
+	{
+		let angle=rand(0,360);
+		CreateShotA(0,GetX(),GetY(),0);
+		SetShotDataA(0,0,3,angle,0,-0.07,0,AQUA11);
+		SetShotDataA(0,60,[1,1.3,1.6,2][Level],atan2(GetPlayerY()-(GetY+50*sin(angle)),GetPlayerX()-(GetX+50*cos(angle))),0,0,0,AQUA11);
+		FireShot(0);
+		loop([10,5,3,1][Level]){yield;}
+	}
+	
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop(50)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 50 ));
+		i++;
+		yield;
+	}
+	_Wait(400);
+	VanishEnemy();
+
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(100);
+		SetInvincibility( 120 );
+		MainAction();
+		SubAction01();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		Collision(16 , 12);
+		count++;
+		//敵画像代わり------------------------------------
+		if(int(count/2)==count/2)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+			SetShotKillTime(0,2);
+			FireShot(0);
+		}
+		//------------------------------------------------
+
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		DropItem( 5 , 20 );
+	}
+}
+
+////////////////////////////////////////////////////////////////////////
+//仮の使い魔、使い魔の書式の統一が必要なので雛形の作成をお願いします
+////////////////////////////////////////////////////////////////////////
+
+script_enemy t_ma_01
+{
+
+#include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\index_UserShot.dnh"
+
+	let count=0;
+	let scale=0;
+	let Level=GetCommonData("Level");
+	let seHidden=seShadowHidden;
+	let seSudden=seShadowSudden;
+
+
+task MainAction()
+{
+	yield;
+	_Wait(int(rand(0,15)));
+	while( !IsOut( 32 ) )
+	{
+		if( ((GetPlayerX()-GetX())^2+(GetPlayerY()-GetY())^2)^0.5 >= 20){CreateShot01(GetX(),GetY(),0,0,RED04,0);}
+		_Wait([40,25,20,15][Level]);
+	}
+}
+
+task SubAction()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop(60)
+	{
+		SetSpeed(SlowDown( spmax , spmax/3 , i , 150 ));
+		i++;
+		yield;
+	}
+
+}
+
+	@Initialize
+	{	
+		SetLife(5);
+		SetDamageRateExDelay(0,15,10,1,1);
+		LightShadow;
+		LoadGraphic(dotCircle6s);
+		MainAction();
+		SubAction();
+	}
+	@MainLoop
+	{
+		Deletemine();
+		GoneEx(40);
+		if(!m_bHidden){Collision(24,18);}
+		BehaviorShadow(seHidden,seSudden);
+		m_nCount++;
+		scale=Smooth( 0,1,m_nCount,40 );
+		yield;
+
+		if(count<200){SetAngle(GetAngle()+GetArgument());}
+		if( IsOut( 32 ) ){ SetSpeed(0);AddLife(10); }
+		if(BeParentVanished()){VanishEnemy();}
+
+	}
+	@DrawLoop
+	{
+		DrawShadow(dotCircle6s,0,0,64,m_nCount*2,0.8*scale,0.5*scale);
+	}
+	@Finalize{
+			DestructShadow( 40 );
+			if(BeParentVanished() || BeVanished()){DeleteEnemyShot(CHILD);}
+			else{DeleteEnemyShotToItem(CHILD);}
+		}
+}

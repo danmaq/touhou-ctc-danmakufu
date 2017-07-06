@@ -1,0 +1,67 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+
+	// 画像及び効果音ファイル
+	let imgList=[];
+	let seList=[];
+
+	// 各種設定値
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetLife(1);
+		SetDamageRate(0,0);
+		SetEnemyMarker(false);
+		SetX(minX-128);
+		SetY(minY-128);
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		PlaySE(seBossExplode);
+		VanishEnemy;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+	}
+
+}

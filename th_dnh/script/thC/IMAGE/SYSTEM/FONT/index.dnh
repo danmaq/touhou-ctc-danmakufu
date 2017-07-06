@@ -1,0 +1,14 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//　フォント
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+let dirImageSystemFont = GetCurrentScriptDirectory ~ "IMAGE\SYSTEM\FONT\";
+
+let imgSystemFont = dirImageSystemFont ~ "Font.png";
+let imgSystemFontSmall = dirImageSystemFont ~ "FontSmall.png";
+let imgSystemFontSJIS16 = [
+	dirImageSystemFont ~ "sjis16_1.png",
+	dirImageSystemFont ~ "sjis16_2.png",
+	dirImageSystemFont ~ "sjis16_3.png"
+];

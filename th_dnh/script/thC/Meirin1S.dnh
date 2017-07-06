@@ -1,0 +1,242 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossMeirin;
+	let imgCutIn=cutMeirin;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.75;}
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_MEIRIN~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(63);
+		SetLife(375);
+		SetDamageRate(14*DamageRate,14*DamageRate);
+		SetShotAutoDeleteClip(32,100,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+160+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"虹符「雨招彩虹－Ｅａｓｙ－」",
+			"虹符「雨招彩虹」",
+			"虹符「雨招彩虹－Ｈａｒｄ－」",
+			"虹符「雨招彩虹－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL4,0);
+		_Wait(125);
+
+		let assign=1;
+
+		loop{
+
+			// 虹弾
+			Concentration01(30);
+			_Wait(30);
+			RainbowShot(assign);
+			if(Lv<2){_Wait(60);}
+
+			// ランダム弾
+			RandomShot(assign);
+			_Wait(150);
+
+			// 移動
+			move(60);
+			_Wait(60);
+
+			assign*=-1;
+
+		}
+
+	}
+
+	// ランダム弾 --------------------------------------------------------------
+	task RandomShot(let assign){
+
+		let num=[30,40,60,80];
+		let way=3;
+		let speed=4;
+		let maxSpeed=1.2;
+		let addSpeed=(maxSpeed-speed)/30;
+		let gapLength=1.5*num[Lv];
+		let addGapLength=(10-gapLength)/(num[Lv]-1);
+		let baseGapAngle=rand(0,360);
+		let addBaseGapAngle=9*assign;
+		let wayAngle=360/way;
+		let graphic=US_BALL_S_BLUE;
+		let delay=30;
+		let fr=3;
+
+		LoopPlaySE(seShot3,fr*num[Lv]+delay,10);
+		loop(num[Lv]){
+			ascent(let i in 0 .. way){
+				let gapAngle=baseGapAngle+wayAngle*i;
+				let x=GetGapX(GetX,gapLength,gapAngle);
+				let y=GetGapY(GetY,gapLength,gapAngle);
+				let angle=rand(0,360);
+				CreateShot02(x,y,speed,angle,addSpeed,maxSpeed,graphic,delay);
+			}
+			gapLength+=addGapLength;
+			baseGapAngle+=addBaseGapAngle;
+			_Wait(fr);
+		}
+
+	}
+
+	// 虹弾 --------------------------------------------------------------------
+	task RainbowShot(let assign){
+
+		let way=41;
+		let wideAngle=[140,110,80,60];
+		let baseAngle=-90-wideAngle[Lv]/2*assign;
+		let wayAngle=wideAngle[Lv]/(way-1)*assign;
+		let fr=2;
+
+		SetAction(ACT_SHOT_A3_B,210);
+		PlaySE(seKira1);
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i;
+			_RainbowShot(angle);
+			_Wait(fr);
+		}
+
+	}
+
+	task _RainbowShot(let angle){
+
+		let num=21;
+		let baseGap=0;
+		let numGap=20/(num-1);
+		let speed=4;
+		let gravSpeed=0.04;
+		let gravAngle=90;
+		let delay=5;
+		let graphic=[US_ICE_PURPLE,US_ICE_BLUE,US_ICE_SKY,US_ICE_GREEN,US_ICE_YELLOW,US_ICE_ORANGE,US_ICE_RED];
+		let fr=3;
+
+		ascent(let i in 0 .. num){
+			let gap=baseGap+numGap*i;
+			let x=GetGapX(GetX,gap,angle);
+			let y=GetGapY(GetY,gap,angle);
+			let gra=trunc(i/(num/7));
+			GravityShot(x,y,speed,angle,gravSpeed,gravAngle,graphic[gra],delay);
+			_Wait(fr);
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+160){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){DropItem(8,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn( m_nCount );
+
+	}
+
+	@BackGround{
+
+		// 背景描画
+		OnBGMeirin;
+
+	}
+
+}

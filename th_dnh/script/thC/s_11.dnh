@@ -1,0 +1,75 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level = GetCommonDataDefault( "Level", 1 );
+	let count=int(rand(0,360));
+//タスクの作成----------------------------------
+
+task SubAction01()
+{
+	yield;
+	let SY=GetY();
+	let SX=GetX();
+	let speed=rand(0.8,1.2);
+	while(1)
+	{
+		SetY(SY+30*sin(count*2));
+		SetX(SX+speed*GetArgument()*m_nCount);
+		count++;
+		yield;
+	}
+}
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		LoadUserShotData(shotAll);
+		SetLife(35);
+		SubAction01();
+		LoadUserShotData(shotAll);
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		yield;
+		m_nCount++;
+		Collision( 20, 8 );
+	}
+	@DrawLoop{
+		DrawYousei(0,m_nCount);
+
+		ascent(i in 0..8)
+		{
+			SetTexture(dotCircle6s);
+			SetGraphicRect(192,0,256,64);
+			SetAlpha(180);
+			SetGraphicScale(Smooth(0.3,[1,2,2.5,3][Level],i,8),Smooth(0.3,[1,2,2.5,3][Level],i,8));
+			SetGraphicAngle( 0, 0, m_nCount*Smooth(-10,10,i,8) );
+			DrawGraphic(GetX,GetY);
+			SetGraphicScale(1,1);
+		}
+		SetGraphicAngle( 0, 0, 0 );
+		
+	}
+	@Finalize{
+		if(!BeVanished())
+		{
+			loop([12,20,25,40][Level])
+			{
+				let angle=rand(0,360);
+				GravityShot(GetX()+32*rand(1,[1,2,2.5,3][Level])*cos(angle),GetY()+32*rand(1,[1,2,2.5,3][Level])*sin(angle),rand(0.5,[1.5,2,2,2.5][Level]),angle,0.02,90,[US_BALL_SS_SKY,US_BALL_SS_SKY,US_BALL_S_SKY,US_BALL_M_SKY,US_BALL_S_SKY][int(rand(0,5))],30);
+			}
+		}
+		SetColor(0,0,255);
+		Explosion01(GetX(),GetY(),2,0.2,15);
+		DropItem( 3 , 20 );
+		PlaySE(seShot1);
+	}
+}

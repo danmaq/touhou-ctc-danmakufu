@@ -1,0 +1,108 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	_Wait(150);
+	let speed = [1,2,3,4][Level];
+	while(speed>=1)
+	{
+		CreateShotA(0,GetX(),GetY(),10);
+		SetShotDataA(0,0,speed,GetAngleToPlayer()-40,0.65,0,0,ORANGE21);
+		SetShotDataA(0,100/speed,NULL,NULL,0,-0.02,1.5,ORANGE21);
+		FireShot(0);
+		CreateShotA(0,GetX(),GetY(),10);
+		SetShotDataA(0,0,speed,GetAngleToPlayer()+40,-0.65,0,0,ORANGE21);
+		SetShotDataA(0,100/speed,NULL,NULL,0,-0.02,1.5,ORANGE21);
+		FireShot(0);
+		speed=speed/1.2;
+	}
+
+}
+task SubAction01()
+{
+	yield;
+
+	CreateShotFromScript("ef_zako",GetX,GetY+120,0,0,0,0);
+	loop(150)
+	{SetX(GetX()+0.4*sin(count*4));yield;}
+
+	_Wait(150);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(13);
+		MainAction();
+		SubAction01();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		count++;
+
+		if(count>150)//予告エフェクト以前は描画しない
+		{
+
+			//敵画像代わり------------------------------------
+			if(int(count/2)==count/2)
+			{
+				CreateShotA(0,GetX(),GetY(),0);
+				SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+				SetShotKillTime(0,2);
+				FireShot(0);
+			}
+			//------------------------------------------------
+			Collision( 20, 8 );
+		}
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		if(count>[100,30][GetArgument()]){DropItem( 1 , 20 );}
+	}
+}
+
+
+script_shot ef_zako
+{
+	let count=0;
+	@Initialize
+	{
+		SetLaser(20,100,WHITE01);
+	}
+	@MainLoop
+	{
+		SetBombResist();
+		count++;
+
+		if(count==150){End();}
+
+		SetY(GetY()-1);
+		SetX(GetX()+0.4*sin(count*4));
+
+
+	}
+	@DrawLoop
+	{
+		DrawLaser();
+	}
+}

@@ -1,0 +1,168 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	_Wait(100);
+	let angle=-180;
+	while(angle<180)
+	{
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),2,angle+GetAngleToPlayer(),0);
+		angle+=[120,72,51.5,40][Level];
+	}
+	PlaySE(seShadow);
+	_Wait(100);
+	if(Level != 0)
+	{
+		RoundShot01(GetX(),GetY(),[0,1.5,2,2.5][Level],GetAngleToPlayer(),[0,8,10,18][Level],32,20);
+		RoundShot01(GetX(),GetY(),[0,1.3,1.8,2.3][Level],GetAngleToPlayer()+[0,22.5,18,10][Level],[0,8,10,18][Level],32,20);
+	}
+	PlaySE(seShot1);
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..100)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		yield;
+	}
+	_Wait(440);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		LoadUserShotData(shotAll);
+		SetLife(50);
+		SetInvincibility( 350 );
+		MainAction();
+		SubAction01();
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		GetSlowCount();
+		yield;
+		m_nCount++;
+		Collision( 20, 8 );
+	}
+	@DrawLoop
+	{
+		DrawYousei(0,m_nCount);
+		DarwZakoBack(m_nCount);
+	}
+	@Finalize{
+		DropItem( 8 , 20 );
+		DropPowerBig( 1,1 );
+	}
+}
+
+
+//使い魔--------------------------------------
+
+script_enemy t_ma_01
+{
+
+#include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+	let scale=0;
+	let Level=GetCommonData("Level");
+
+task MainAction()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..100)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		yield;
+	}
+	let angle=-180+GetAngle();
+	while(angle<180+GetAngle())
+	{
+		CreateLaserA(0,GetX(),GetY(),500,12,157,70);
+		SetLaserDataA(0,0,angle,0,0,0,0);
+		SetShotKillTime(0,140);
+		FireShot(0);
+		angle+=90;
+	}
+	PlaySE(seLaser1);
+	_Wait(120);
+	PlaySE(seKira1);
+	let X=0;
+	while(X < 500)
+	{
+		if(rand(0,100)>[0,20,40,60][Level])
+		{
+			let angle=-180+GetAngle();
+			while(angle<180+GetAngle())
+			{
+				CreateShot02(GetX+X*cos(angle),GetY+X*sin(angle),0.5,[angle,angle+180][rand(0,100)<50],0.05,5,53,0);
+				angle+=90;
+			}
+		}
+		else
+		{
+			let angle=-180+GetAngle();
+			while(angle<180+GetAngle())
+			{
+				CreateShot02(GetX+X*cos(angle),GetY+X*sin(angle),0,rand(0,360),0.006,1.2,53,0);
+				angle+=90;
+			}
+		}
+		X+=[20,12,9,5][Level];
+	}
+}
+task SubAction01(){
+	yield;
+	_Wait(250);
+	VanishEnemy();
+}
+
+	@Initialize
+	{	
+		SetLife(40);
+		SetDamageRateExDelay(0,15,10,1,1);
+		LightShadow;
+		MainAction();
+		SubAction01();
+		LoadUserShotData(shotAll);
+
+	}
+	@MainLoop
+	{
+		//優先順位高
+		GoneEx(40);
+		Deletemine();
+		BehaviorShadow(seShadowHidden,seShadowSudden);
+		//優先順位中
+		CollisionShadow( 24,18 );
+		m_nCount++;
+		//優先順位低
+		scale=Smooth( 0,1,m_nCount,40 );
+		PlayDamageSE(seDamage);
+		yield;
+	}
+	@DrawLoop{DrawShadow(dotCircle6s,0,0,64,m_nCount*2,0.8*scale,0.5*scale);}
+
+	@Finalize{
+		DestructShadow( 40 );
+		DropPointSmall(1,1);
+	}
+}

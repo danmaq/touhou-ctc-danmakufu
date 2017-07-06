@@ -1,0 +1,263 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossMeirin;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.75;}
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			seList=seList~seListEnemy;
+			SetX(cenX);
+			SetY(minY+120+RandBlur(0.1));
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(43);
+		SetLife(1875);
+		SetDamageRate(85*DamageRate,85*DamageRate);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(62);
+		_Wait(62);
+
+		loop{
+
+			// ランダム全方向弾
+			SetAction(ACT_SHOT_A3_B,120);
+			loop(3){
+				RandomRoundShot;
+				_Wait(30);
+			}
+			_Wait(60);
+
+			Concentration01(30);
+			_Wait(30);
+
+			// 移動1＋ランダム弾＋キック弾
+			PlaySE(seShot2);
+			move1;
+			RandomShot;
+			_Wait(90);
+			KickShot;
+
+			// 移動2＋全方向弾
+			move2;
+			_RoundShot;
+			_Wait(150);
+
+		}
+
+	}
+
+	// ランダム全方向弾 --------------------------------------------------------
+	task RandomRoundShot{
+
+		let num=[1,2,4,7];
+		let way=20;
+		let baseSpeed=0.8;
+		let maxSpeed=3;
+		let waySpeed=(maxSpeed-baseSpeed)/(way-1);
+		let wayAngle=360/way;
+		let graphic=US_BALL_S_BLUE;
+		let delay=20;
+
+		PlaySE(seShot1);
+		loop(num[Lv]){
+			let baseAngle=rand(0,360);
+			let sort=CreateMixOrderArray(way);
+			ascent(let i in 0 .. way){
+				let speed=baseSpeed+waySpeed*sort[i];
+				let angle=baseAngle+wayAngle*i;
+				CreateShot01(GetX,GetY,speed,angle,graphic,delay);
+			}
+		}
+
+	}
+
+	// ランダム弾 --------------------------------------------------------------
+	task RandomShot{
+
+		let gapLength=30;
+		let gapAngle=GetAngle;
+		let num=[45,45,90,90];
+		let graphic=US_BALL_S_GREEN;
+		let delay=5;
+		let fr=[2,2,1,1];
+
+		loop(num[Lv]){
+			let x=GetGapX(GetX,gapLength,gapAngle);
+			let y=GetGapY(GetY,gapLength,gapAngle);
+			let speed=rand(0.5+0.25*Lv,1+0.5*Lv);
+			let angle=rand(0,360);
+			CreateShot01(x,y,speed,angle,graphic,delay);
+			_Wait(fr[Lv]);
+		}
+
+	}
+
+	// キック弾 ----------------------------------------------------------------
+	task KickShot{
+
+		let num=3;
+		let way=3+2*Lv;
+		let baseSpeed=1+0.2*Lv;
+		let numSpeed=(1.5+0.3*Lv-baseSpeed)/(num-1);
+		let wayAngle=6;
+		let baseAngle=GetAngle-wayAngle*(way-1)/2;
+
+		PlaySE(seShot1);
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			ascent(let j in 0 .. way){
+				let angle=baseAngle+wayAngle*j;
+				_KickShot(speed,angle);
+			}
+		}
+
+	}
+
+	task _KickShot(let speed, let angle){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+
+		Obj_SetX(obj,GetX);
+		Obj_SetY(obj,GetY);
+		Obj_SetSpeed(obj,speed);
+		Obj_SetAngle(obj,angle);
+		ObjShot_SetGraphic(obj,US_NEEDLE_GREEN);
+
+		// メイン処理 --------------------------------------
+		let fr=30+10*Lv;
+		loop(fr){
+			if(Obj_BeDeleted(obj)){break;}
+			yield;
+		}
+		if(!Obj_BeDeleted(obj)){Obj_SetCollisionToPlayer(obj,false);}
+		fr=30;
+		let alpha=255;
+		let addAlpha=-alpha/fr;
+		loop(fr){
+			if(Obj_BeDeleted(obj)){break;}
+			alpha+=addAlpha;
+			Obj_SetAlpha(obj,alpha);
+			yield;
+		}
+
+	}
+
+	// 全方向弾 ----------------------------------------------------------------
+	task _RoundShot{
+
+		let num=[0,2,3,4];
+		let speed=2;
+		let way=22*Lv;
+		let graphic=US_RICE_S_RED;
+		let delay=0;
+		let fr=[60,20,15,12];
+
+		loop(num[Lv]){
+			_Wait(fr[Lv]);
+			let angle=rand(0,360);
+			RoundShot01(GetX,GetY,speed,angle,way,graphic,delay);
+			PlaySE(seKira1);
+		}
+
+	}
+
+	// 移動1 -------------------------------------------------------------------
+	function move1{
+
+		let mx=rand(50,100);
+		let x=GetX;
+		if(x<GetPlayerX){
+			if(x+mx>maxX-80){x-=mx;}
+			else{x+=mx;}
+		}
+		else{
+			if(x-mx<minX+80){x+=mx;}
+			else{x-=mx;}
+		}
+		let y=maxY;
+		let speed=2.5;
+		SetMovePosition01(x,y,speed);
+		let act=ACT_MOVE_L;
+		if(x<GetX){act=ACT_MOVE_R;}
+		SetAction(act,150);
+
+	}
+
+	// 移動2 -------------------------------------------------------------------
+	function move2{
+
+		let x=GetX;
+		let y=minY+120;
+		let power=600;
+		let angle=-90;
+		let fr=60;
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}

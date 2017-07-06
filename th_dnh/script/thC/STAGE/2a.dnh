@@ -1,0 +1,287 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 2a
+//
+//		※ステージライブラリから自動的にインクルードされます
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let m_aszStage2ALoadFileListGraphic = [
+	dotYousei,
+	dotKedama,
+	dotCircle6s,
+	dotCircle6m,
+	dotCircle8s,
+	dotCircle8m,
+	imgMapCarpet,
+	imgMapKouma,
+	imgMapWindowLight,
+	imgDnhItem,
+	imgSystemFont,
+	imgSystemFontSmall,
+	dirImageSystemFont ~ "sjis16_1.png",
+	dirImageSystemFont ~ "sjis16_2.png",
+	dirImageSystemFont ~ "sjis16_3.png",
+] ~ LOADBGLIST_SAKUYA ~ LOADBGLIST_REMILIA;
+let m_aszStage2ALoadFileListEnemy = [
+	z_g_14,
+	z_g_15,
+	z_s_08,
+	z_g_13,
+	z_o_06
+];
+let m_aszStage2ALoadFileListSound = [
+	sePower,
+	seDamage,
+	seBossExplode,
+	seTimeOut,
+	seKira1,
+	seKira2,
+	seKira3,
+	seLaser1,
+	seLaser2,
+	sePower2,
+	seShot1,
+	seShot2,
+	seShot3,
+	seSaku0,
+
+	seShadow,
+	seShadowHidden,
+	seShadowSudden
+];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	内部処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	初期化
+function Stage2AInitialize(){
+	SetCommonData("Level",m_nStageLevel);
+	SetCommonData("DeleteEnemy",0);
+	LoadProgress( m_aszStageDefaultLoadFileListGraphic ~ m_aszStage2ALoadFileListGraphic, m_aszStage2ALoadFileListEnemy, m_aszStageDefaultLoadFileListSE ~ m_aszStage2ALoadFileListSound, imgSystemProgress, imgMapBlack );
+	PlayMusicEx( 4, "" );
+}
+
+//	ここにステージの中身を書く
+task Stage2A(){
+
+	SetShotAutoDeleteClip(32,64,32,32);
+	_Wait(320);
+
+	loop(2)
+	{
+		loop(4)
+		{
+			CreateEnemyFromFile(z_g_14,GetClipMinX()-20,GetCenterY(),rand(2,7),rand(-20,-45),0);
+			_Wait(25);
+		}
+		_Wait(50);
+		loop(4)
+		{
+			CreateEnemyFromFile(z_g_15,GetCenterX*1.5,GetClipMinY()-20,rand(3,7),rand(-10,0)+90,0);
+			_Wait(25);
+		}
+		_Wait(200);
+		loop(4)
+		{
+			CreateEnemyFromFile(z_g_14,GetClipMaxX()+20,GetCenterY(),rand(2,7),rand(200,225),0);
+			_Wait(25);
+		}
+		_Wait(50);
+		loop(4)
+		{
+			CreateEnemyFromFile(z_g_15,GetCenterX/2,GetClipMinY()-20,rand(3,7),rand(0,10)+90,0);
+			_Wait(25);
+		}
+		_Wait(200);
+	}
+	_Wait(80);
+
+
+//---------------------------------------------------------------
+
+	loop(8)
+	{
+		CreateEnemyFromFile(z_s_08,GetCenterX/2,GetClipMinY()-20,0,0,0);
+		_Wait(15);
+	}
+	_Wait(150);
+	loop(8)
+	{
+		CreateEnemyFromFile(z_s_08,GetCenterX*1.5,GetClipMinY()-20,0,0,0);
+		_Wait(15);
+	}
+
+
+	_Wait(250);
+
+//---------------------------------------------------------------
+
+	loop(2)
+	{
+		loop(4)
+		{
+			CreateEnemyFromFile(z_g_13,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,rand(3,9),rand(-10,10)+90,0);
+		}
+		_Wait(200);
+	}
+
+	DeleteEnemyShotToItem(ALL);
+	SetCommonData("DeleteEnemy",1);
+	yield;
+
+///////////////////////////////////////////////////////////////////////
+if( !m_bNoBoss || !m_bDebug ){
+	CreateEnemyBossFromFile(bossSakuya,GetCenterX(),0,0,0,0);
+	WaitZeroEnemy();//敵が消えるまで停止
+	CreateEnemyFromFile(bossSakuya99,GetCenterX(),0,0,0,0);
+	WaitZeroEnemy();//敵が消えるまで停止
+}
+///////////////////////////////////////////////////////////////////////
+
+	SetShotAutoDeleteClip(32,100,50,50);
+	SetCommonData("DeleteEnemy",0);
+
+//---------------------------------------------------------------
+
+	CreateEnemyFromFile(z_o_06,GetCenterX(),GetCenterY(),0,0,0);
+
+	_Wait(600);
+
+//---------------------------------------------------------------
+
+	loop(2)
+	{
+		CreateEnemyFromFile(z_g_14,GetCenterX*1.5+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+100,0);
+		CreateEnemyFromFile(z_g_14,GetCenterX/2+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+80,0);
+		CreateEnemyFromFile(z_g_14,GetCenterX+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+80,0);
+		_Wait(150);
+
+	}
+	_Wait(150);
+	loop(2)
+	{
+		CreateEnemyFromFile(z_g_15,GetCenterX/2+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+80,0);
+		CreateEnemyFromFile(z_g_15,GetCenterX*1.5+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+100,0);
+		CreateEnemyFromFile(z_g_15,GetCenterX+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+100,0);
+		_Wait(150);
+	}
+	_Wait(250);
+
+	loop(2)
+	{
+		CreateEnemyFromFile(z_g_13,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,rand(3,9),rand(-10,+10)+90,0);
+		CreateEnemyFromFile(z_g_13,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,rand(3,9),rand(-10,+10)+90,0);
+		_Wait(200);
+	}
+	_Wait(250);
+
+
+//---------------------------------------------------------------
+
+	loop(25)
+	{
+		CreateEnemyFromFile(z_s_08,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,0,0,0);
+		_Wait(20);
+	}
+	_Wait(200);
+
+
+	SetCommonData("DeleteEnemy",1);
+	yield;
+	DeleteEnemyShotToItem(ALL);
+	SetCommonData("DeleteEnemy",0);
+
+
+///////////////////////////////////////////////////////////////////////
+if( !m_bNoBoss || !m_bDebug ){
+	CreateEnemyBossFromFile(bossRemilia,GetCenterX(),0,0,0,0);
+	WaitZeroEnemy();//敵が消えるまで停止
+	if(GetMissCount == 0 && GetBombCount == 0 ){
+		CreateEnemyBossFromFile(bossRemiliaL,GetCenterX(),GetCenterY/2,0,0,0);
+		WaitZeroEnemy();//敵が消えるまで停止
+	}
+	CreateEnemyBossFromFile(bossRemilia99,GetCenterX(),0,0,0,0);
+	WaitZeroEnemy();//敵が消えるまで停止
+}
+//終了処理
+	yield;
+	DeleteCommonData(CD_SPELL_LASTSPELL);
+///////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////
+	if( !GetCommonDataDefault( CD_STAGE_PRACTICE, false ) ){
+		Stage3();
+	}
+	else{ Clear(); }
+
+////////////////////////////////////////////////////
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メイン部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	@MainLoop()にて毎フレーム呼ばれる部分
+function Stage2AMainLoop(){
+}
+
+//	@BackGround()にて毎回呼ばれる部分
+function Stage2ADrawBackGround(){
+	let nNow = ( m_nCount - m_nPhaseCount );
+	let nSpeed = -nNow * 0.2;
+	let nClipLimit = 1000;
+	SetTexture( imgMapWhite );
+	SetFog( 0, Smooth( 0, 600, nNow, 200 ), Smooth( 32, 128, nNow, 200 ), 0, 0 );
+	SetViewTo( 0, 0, 0 );
+	SetViewFrom( 500, 30, 45 );
+
+	SetTexture( imgMapCarpet );
+	SetGraphicRect( 0, nSpeed, 1024, nSpeed - 1024 );
+	SetGraphicAngle( 90, 0, 0 );
+	DrawGraphic3D( -128, 0, -256 );
+	SetTexture( imgMapWindowLight );
+	SetGraphicRect( 0, nSpeed, 512, nSpeed - 512 );
+	SetGraphicScale( 2, 1 );
+	SetAlpha( 160 );
+	DrawGraphic3D( 128, 1, 96 );
+
+	let nScale = 0.5;
+	SetTexture( imgMapKouma );
+	SetGraphicAngle( 90, 0, 90 );
+	SetGraphicRect( nSpeed / nScale, 0, nSpeed / nScale - 1024, 256 );
+	SetGraphicScale( nScale, nScale );
+	SetAlpha( 255 );
+	ascent( let i in 1..5 ){ DrawGraphic3D( -176, i * 30, i * 60 ); }
+
+	SetGraphicScale( 1, 1 );
+	SetGraphicAngle( 0, 0, 0 );
+}
+
+//	@DrawBottomObject()にて毎回呼ばれる部分
+function Stage2ADrawBottomObject(){
+}
+
+//	@DrawTopObject()にて毎回呼ばれる部分
+function Stage2ADrawTopObject(){
+}

@@ -1,0 +1,41 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//　効果音
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+let dirSoundSe = GetCurrentScriptDirectory() ~ "SOUND\SE\";
+
+//　システム
+let seMute = dirSoundSe ~ "mute.wav";
+let seOk = dirSoundSe ~ "ok00.wav";
+let seCancel = dirSoundSe ~ "cancel00.wav";
+let seSelect = dirSoundSe ~ "select00.wav";
+
+//　弾幕シーン
+let sePower = dirSoundSe ~ "power0.wav";
+let seDamage = dirSoundSe ~ "damage00.wav";
+let seBossExplode = dirSoundSe ~ "enep01.wav";
+let seTimeOut = dirSoundSe ~ "timeout.wav";
+let seTimeOut2 = dirSoundSe ~ "timeout02.wav";
+
+let seShadow = dirSoundSe ~ "Shadow.wav";
+let seShadowHidden = dirSoundSe ~ "Hidden.wav";
+let seShadowSudden = dirSoundSe ~ "Sudden.wav";
+
+let seKira1 = dirSoundSe ~ "kira00.wav";
+let seKira2 = dirSoundSe ~ "kira01.wav";
+let seKira3 = dirSoundSe ~ "kira02.wav";
+let seKira4 = dirSoundSe ~ "kira03.wav";
+let seLaser1 = dirSoundSe ~ "lazer00.wav";
+let seLaser2 = dirSoundSe ~ "lazer01.wav";
+let sePower2 = dirSoundSe ~ "power0.wav";
+let seShot1 = dirSoundSe ~ "tan00.wav";
+let seShot2 = dirSoundSe ~ "tan01.wav";
+let seShot3 = dirSoundSe ~ "tan02.wav";
+let seSaku0 = dirSoundSe ~ "SE_saku.wav";
+
+//　効果音リスト
+let seListSystem = [ seMute, seOk, seCancel, seSelect ];
+let seListEnemy = [ sePower, seDamage, seBossExplode, seTimeOut, seTimeOut2,
+	seKira1, seKira2, seKira3, seKira4, seLaser1, seLaser2, sePower2, seShot1, seShot2, seShot3 ];
+let seListShadow = [ seShadow, seShadowHidden, seShadowSudden ];

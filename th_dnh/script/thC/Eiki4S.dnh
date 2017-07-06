@@ -1,0 +1,353 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossEiki;
+	let imgCutIn=cutEiki;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	let objJ=[];
+	let Judge=false;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_EIKI~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(65);
+		SetLife(500);
+		SetDamageRate(7,7);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+100+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"業符「弾幕裁判－Ｅａｓｙ－」",
+			"業符「弾幕裁判」",
+			"業符「弾幕裁判－Ｈａｒｄ－」",
+			"業符「弾幕裁判－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(125);
+
+		// 弾幕裁判
+		SetAction(ACT_SHOT_B5,180);
+		PlaySE(sePower);
+		Concentration01(120);
+		_Wait(120);
+		JudgmentShot;
+		SetDamageRate(14,14);
+
+		let assign=1;
+
+		loop{
+
+			loop(3){
+
+				// 側面被告弾
+				SetAction(ACT_SHOT_A3,30);
+				SideDefendShot(1,assign);
+				SideDefendShot(-1,assign);
+				_Wait(30);
+
+				// 移動
+				move(60);
+				_Wait(60);
+
+				// 全方向被告弾
+				SetAction(ACT_SHOT_A3,60);
+				RoundDefendShot;
+				_Wait(90);
+
+				assign*=-1;
+
+			}
+
+		}
+
+	}
+
+	// 側面被告弾 --------------------------------------------------------------
+	task SideDefendShot(let sideAssign, let rollAssign){
+
+		let way=1+Lv;
+		let gapLength=16;
+		let addGapLength=5.5;
+		let gapAngle=GetAngleToPlayer+90*sideAssign;
+		let speed=1.8+0.2*Lv;
+		let baseAngle=rand(0,360);
+		let wayAngle=360/way;
+		let addAngle=19*rollAssign;
+		let graphic=US_RICE_S_BLUE;
+		let delay=15;
+
+		PlaySE(seShot1);
+		loop{
+			let x=GetGapX(GetX,gapLength,gapAngle);
+			let y=GetGapY(GetY,gapLength,gapAngle);
+			if(IsOutPos(x,y,20)){break;}
+			ascent(let i in 0 .. way){
+				let angle=baseAngle+wayAngle*i;
+				DefendShot(x,y,speed,angle,graphic,delay);
+			}
+			yield;
+			gapLength+=addGapLength;
+			baseAngle+=addAngle;
+		}
+
+	}
+
+	// 全方向被告弾 ------------------------------------------------------------
+	task RoundDefendShot{
+
+		let num=4;
+		let way=50;
+		let baseSpeed=2.8+0.2*Lv;
+		let numSpeed=(1.5-baseSpeed)/(num-1);
+		let baseAngle=GetAngleToPlayer;
+		let wayAngle=360/way;
+		let graphic=US_BALL_SS_BLUE;
+		let delay=15;
+		let fr=10;
+
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			ascent(let j in 0 .. way){
+				let angle=baseAngle+wayAngle*j;
+				DefendShot(GetX,GetY,speed,angle,graphic,delay);
+			}
+			PlaySE(seShot1);
+			_Wait(fr);
+		}
+
+	}
+
+	// 被告弾 ------------------------------------------------------------------
+	task DefendShot(let x, let y, let speed, let angle, let graphic, let delay){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+
+		Obj_SetX(obj,x);
+		Obj_SetY(obj,y);
+		Obj_SetSpeed(obj,speed);
+		Obj_SetAngle(obj,angle);
+		ObjShot_SetDelay(obj,delay);
+		ObjShot_SetGraphic(obj,graphic);
+
+		// メイン処理 --------------------------------------
+		loop(delay){
+			if(Obj_BeDeleted(obj)){break;}
+			yield;
+		}
+		loop{
+			if(Obj_BeDeleted(obj)){break;}
+			ascent(let i in 0 .. length(objJ)){
+				if(Collision_Obj_Obj(objJ[i],obj)){
+					let _speed=4+0.3*Lv;
+					let _graphic=US_TABLET;
+					CreateShot01(Obj_GetX(obj),Obj_GetY(obj),speed,angle,graphic,0);
+					CreateShot01(Obj_GetX(obj),Obj_GetY(obj),_speed,angle,_graphic,0);
+					Obj_Delete(obj);
+					Judge=true;
+					break;
+				}
+			}
+			yield;
+		}
+
+	}
+
+	// 弾幕裁判 ----------------------------------------------------------------
+	task JudgmentShot{
+
+		JudgeSE;
+
+		let baseX=[cenX,cenX-80,cenX+80];
+		let baseY=[cenY-40,cenY-60,cenY-60];
+		let randLength=40;
+		let fr=120;
+
+		loop{
+			ascent(let i in 0 .. 3){
+				let x=baseX[i]+RandBlur(randLength);
+				let y=baseY[i]+RandBlur(randLength);
+				_JudgmentShot(x,y);
+				PlaySE(sePower);
+				_Wait(fr);
+			}
+		}
+
+	}
+
+	task _JudgmentShot(let x, let y){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+
+		Obj_SetX(obj,x);
+		Obj_SetY(obj,y);
+		Obj_SetAngle(obj,rand(0,360));
+		ObjShot_SetGraphic(obj,US_JUDGMENT);
+		Obj_SetCollisionToPlayer(obj,false);
+		ObjShot_SetBombResist(obj,true);
+		ObjShot_ToItem(obj,false);
+
+		// メイン処理 --------------------------------------
+		// フェードイン
+		let fr=45;
+		let alpha=0;
+		let addAlpha=255/fr;
+		loop(fr){
+			alpha+=addAlpha;
+			Obj_SetAlpha(obj,alpha);
+			yield;
+		}
+
+		// 裁判中
+		objJ=objJ~[obj];
+		let _fr=240+20*Lv;
+		loop(_fr){yield;}
+		objJ=erase(objJ,0);
+
+		// フェードアウト
+		loop(fr){
+			alpha-=addAlpha;
+			Obj_SetAlpha(obj,alpha);
+			yield;
+		}
+		Obj_Delete(obj);
+
+	}
+
+	// 裁判SE ------------------------------------------------------------------
+	task JudgeSE{
+
+		let count=m_nCount;
+		let waitCount=5-Lv;
+		loop{
+			if(Judge){
+				if(count<m_nCount){
+					PlaySE(seShot3);
+					count=m_nCount+waitCount;
+				}
+				Judge=false;
+			}
+			yield;
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+100){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice&&Lv>0){DropItem(18,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGEiki;
+
+	}
+
+}

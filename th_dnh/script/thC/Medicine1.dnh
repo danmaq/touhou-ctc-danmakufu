@@ -1,0 +1,328 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossMedicine;
+	let imgShadow=dotCircle6s;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.75;}
+
+	let dollGapAngle=GetCommonDataDefault("DollGapAngle",-90);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~[imgShadow];
+			seList=seList~seListEnemy~seListShadow;
+			SetX(cenX);
+			SetY(minY+110+RandBlur(0.1));
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(41);
+		SetLife(1875);
+		SetDamageRate(85*DamageRate,85*DamageRate);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		BehaviorSub(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// Slowキー判定
+		GetSlowCount;
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// スーさん角度設定
+		dollGapAngle+=360/240;
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(62);
+		_Wait(62);
+
+		loop{
+
+			loop(2){
+
+				// 使い魔召喚
+				SummonShadow(-1);
+				SummonShadow(1);
+				_Wait(60);
+
+				// 移動
+				move(60);
+				_Wait(60);
+
+			}
+
+			// 隠れ弾
+			SetAction(ACT_SHOT_B5,100);
+			HiddenShot(-1);
+			HiddenShot(1);
+			_Wait(180);
+
+			// 移動
+			move(60);
+			_Wait(60);
+
+		}
+
+	}
+
+	// 使い魔召喚 --------------------------------------------------------------
+	function SummonShadow(let assign){
+
+		let way=1+Lv;
+		let speed=5;
+		let wayAngle=30*assign;
+		let baseAngle=90+90*assign-wayAngle*(way-1)/2;
+
+		PlaySE(seShadow);
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i;
+			CreateEnemyFromScript("Shadow",GetX,GetY,speed,angle,0);
+		}
+
+	}
+
+	// 隠れ弾 ------------------------------------------------------------------
+	task HiddenShot(let assign){
+
+		let gapLength=70;
+		let gapAngle=GetGapAngle(GetX,GetY,cenX,cenY)-90*assign;
+		let x=GetGapX(GetX,gapLength,gapAngle);
+		let y=GetGapY(GetY,gapLength,gapAngle);
+		let way=[19,22,30,32];
+		let num=8;
+		let minSpeed=1.5;
+		let maxSpeed=3.5;
+		let baseAngle=gapAngle-165*assign;
+		let wayAngle=330/(way[Lv]-1)*assign;
+		let graphic=US_BALL_S_A_BLUE;
+		let delay=15;
+		let fr=3;
+
+		LoopPlaySE(seShot1,fr*way[Lv],10);
+		ascent(let i in 0 .. way[Lv]){
+			let angle=baseAngle+wayAngle*i;
+			LineShot(x,y,minSpeed,maxSpeed,angle,num,graphic,delay);
+			_Wait(fr);
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	task move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+110){my=-my;}
+		x+=mx;
+		y+=my;
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+		// スーさん角度設定
+		SetCommonData("DollGapAngle",dollGapAngle);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス＆スーさん描画
+		let dollGapLength=32;
+		let x=GetGapX(GetX,dollGapLength,dollGapAngle);
+		let y=GetGapY(GetY,dollGapLength*0.4,dollGapAngle*2);
+		if(sin(dollGapAngle)>0){
+			DrawBoss(imgBoss);
+			DrawSub(imgBoss,CHAR_DOLL,x,y);
+		}
+		else{
+			DrawSub(imgBoss,CHAR_DOLL,x,y);
+			DrawBoss(imgBoss);
+		}
+
+	}
+
+}
+
+// 使い魔 ----------------------------------------------------------------------
+script_enemy Shadow{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let imgShadow=dotCircle6s;
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.75;}
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(24);
+		SetDamageRateExDelay(20,85*DamageRate,85*DamageRate,50,50);
+
+		// 実体化時の光
+		LightShadow;
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 使い魔基本処理
+		BehaviorShadow(seShadowHidden,seShadowSudden);
+
+		// 画面外で消滅
+		GoneEx(32);
+
+		// 当たり判定（自弾,体当たり）
+		CollisionShadow(24,18);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 速度設定
+		setSpeed;
+		_Wait(60);
+
+		let fr=[120,100,80,40];
+
+		loop{
+
+			// 自機狙い扇状弾
+			SearchWideShot;
+			_Wait(fr[Lv]);
+
+		}
+
+	}
+
+	// 自機狙い扇状弾 ----------------------------------------------------------
+	function SearchWideShot{
+
+		let way=2;
+		let speed=1.2;
+		let angle=GetAngleToPlayer;
+		let wideAngle=2;
+		let graphic=US_RICE_S_RED;
+		let delay=5;
+
+		WideShot01(GetX,GetY,speed*0.97,angle,wideAngle,way,graphic,delay);
+		CreateShot01(GetX,GetY,speed,angle,graphic,delay);
+		PlaySE(seShot1);
+
+	}
+
+	// 速度設定 ----------------------------------------------------------------
+	task setSpeed{
+
+		let fr=30;
+		let speed=GetSpeed;
+		let maxSpeed=0.8;
+		let addSpeed=(maxSpeed-speed)/fr;
+
+		loop(fr){
+			speed+=addSpeed;
+			SetSpeed(speed);
+			yield;
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// 弾消し
+		DestructShadow(40);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// 本体描画
+		let shadow=SHADOW_S_RED;
+		let angle=2*m_nCount;
+		let scale=0.8;
+		_DrawShadow(shadow,imgShadow,angle,scale,scale);
+
+	}
+
+}
