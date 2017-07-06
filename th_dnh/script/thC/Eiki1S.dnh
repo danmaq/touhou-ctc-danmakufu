@@ -1,0 +1,362 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossEiki;
+	let imgCutIn=cutEiki;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	let objJ=[];
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_EIKI~imgFontList;
+			seList=seList~seListEnemy~seListShadow;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(65);
+		SetLife(500);
+		SetDamageRate(7,7);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+100+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"審符「デスレジスター－Ｅａｓｙ－」",
+			"審符「デスレジスター」",
+			"審符「デスレジスター－Ｈａｒｄ－」",
+			"審符「デスレジスター－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(125);
+
+		// 扇状弾
+		_WideShot;
+		_Wait(120);
+		SetDamageRate(15,15);
+
+		// 移動
+		_move;
+
+		let assign=-1;
+
+		loop{
+
+			// 霊魂召喚
+			SummonSpilit(assign);
+			_Wait(300);
+
+			assign*=-1;
+
+		}
+
+	}
+
+	// 霊魂召喚 ----------------------------------------------------------------
+	task SummonSpilit(let assign){
+
+		let num=9+Lv;
+		let baseAngle=90;
+		let numAngle=180/(num-1)*assign;
+		let fr=10;
+
+		ascent(let i in 0 .. num){
+			let angle=baseAngle+numAngle*i;
+			CreateEnemyFromScript("Spilit",GetX,GetY,i,angle,assign);
+			PlaySE(seShadow);
+			_Wait(fr);
+		}
+
+	}
+
+	// 扇状弾 ------------------------------------------------------------------
+	task _WideShot{
+
+		let num=5;
+		let way=6+2*Lv;
+		let speed=2.8+0.2*Lv;
+		let wideAngle=90+12*Lv;
+		let wayAngle=wideAngle/(way-1);
+		let graphic=US_TABLET;
+		let delay=15;
+		let fr=8;
+
+		loop{
+			let angle=GetAngleToPlayer;
+			PlaySE(seShot1);
+			loop(num-1){
+				WideShot01(GetX,GetY,speed,angle,wideAngle,way,graphic,delay);
+				_Wait(fr);
+			}
+			_Wait(fr);
+			PlaySE(seShot1);
+			loop(num-1){
+				WideShot01(GetX,GetY,speed,angle,wideAngle+wayAngle,way+1,graphic,delay);
+				_Wait(fr);
+			}
+			_Wait(fr);
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	task _move{
+
+		loop{
+			move(120);
+			_Wait(150);
+		}
+
+	}
+
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+100){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){DropItem(12,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGEiki;
+
+	}
+
+}
+
+// 霊魂 ------------------------------------------------------------------------
+script_enemy Spilit{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	let n=GetSpeed;
+	let startAngle=GetAngle;
+	let assign=GetArgument;
+	SetSpeed(0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(1);
+
+		// 光
+		Light;
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 移動
+		move;
+		loop(60){yield;}
+
+		// 直線弾
+		_LineShot;
+
+		// 破裂
+		let fr=30;
+		let decAlpha=255/fr;
+		let addScale=0.05;
+		Explosion01(GetX,GetY,decAlpha,addScale,fr);
+		VanishEnemy;
+
+	}
+
+	// 直線弾 ------------------------------------------------------------------
+	function _LineShot{
+
+		let num=10+2*Lv;
+		let minSpeed=1.4;
+		let maxSpeed=3.8+0.3*Lv;
+		let _angle=75;
+		if(GetPlayerY<minY+100){_angle=105;}
+		let angle=90+_angle*assign+RandBlur(5);
+		let graphic=US_FIRE_BLUE;
+		LineShot(GetX,GetY,minSpeed,maxSpeed,angle,num,graphic,0);
+		PlaySE(seShot2);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	task move{
+
+		let gapLength=40;
+		let x=GetEnemyX-(40+gapLength)*assign+RandBlur(gapLength);
+		let y=minY+100+RandBlur(gapLength);
+		let power1=600;
+		let angle1=startAngle;
+		let power2=300;
+		let angle2=rand(0,360);
+		let fr=29;
+		SetMovePositionHermite(x,y,power1,angle1,power2,angle2,fr);
+		loop(fr){yield;}
+
+		x=minX;
+		if(assign==1){x=maxX;}
+		let maxN=9+Lv;
+		let nY=(maxY-minY-30)/(maxN-1);
+		y=minY+10+nY*n+RandBlur(nY*0.15);
+		power1=300;
+		angle1=90-90*assign;
+		SetMovePositionHermite(x,y,power2,angle2,power1,angle1,fr);
+		loop(fr){yield;}
+
+		fr=2;
+		SetMovePosition02(x,y,fr);
+
+	}
+
+	// 光 ----------------------------------------------------------------------
+	task Light{
+
+		let call=1;
+		let delay=15;
+		loop(60){
+			_Light;
+			loop( call ){ yield; }
+		}
+
+		task _Light{
+			let obj=SetShotObject(GetX,GetY,500,0,US_BALL_SS_BLUE,delay);
+			Obj_SetAlpha(obj,0);
+			Obj_SetCollisionToPlayer(obj,false);
+			ObjShot_SetBombResist(obj,true);
+			ObjShot_ToItem(obj,false);
+			loop(delay){yield;}
+			Obj_Delete(obj);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+	}
+
+}

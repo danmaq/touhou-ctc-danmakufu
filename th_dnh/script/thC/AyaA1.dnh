@@ -1,0 +1,196 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossAya;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.9;}
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			seList=seList~seListEnemy;
+			SetX(cenX);
+			SetY(minY+100+RandBlur(0.1));
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(43);
+		SetLife(2000);
+		SetDamageRate(100*DamageRate,100*DamageRate);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(62);
+		_Wait(62);
+
+		// 画面外チェック
+		CheckIsOut;
+
+		let first=true;
+
+		loop{
+
+			// ランダム弾
+			RandomShot(120);
+			_Wait(120);
+
+			// 移動＋直線弾
+			move(60,first);
+			_LineShot(60,first);
+			_Wait(90);
+
+			first=false;
+
+		}
+
+	}
+
+	// ランダム弾 --------------------------------------------------------------
+	task RandomShot(let fr){
+
+		let num=1;
+		if(Lv>=2){num=2;}
+		let minSpeed=2;
+		let maxSpeed=3.4+0.2*Lv;
+		let wideAngle=[140,120,140,120];
+		let delay=8;
+		let graphic=[US_BALL_BS_RED,US_BALL_SS_WHITE];
+		let gra=0;
+
+		SetAction(ACT_SHOT_A3,fr);
+		LoopPlaySE(seShot3,fr,6);
+		while(fr>0){
+			loop(num){
+				let speed=rand(minSpeed,maxSpeed);
+				let angle=GetAngleToPlayer+RandBlur(wideAngle[Lv]);
+				CreateShot01(GetX,GetY,speed,angle,graphic[gra],delay);
+			}
+			yield;
+			gra=1-gra;
+			fr--;
+		}
+
+	}
+
+	// 直線弾 ------------------------------------------------------------------
+	task _LineShot(let fr, let first){
+
+		let num=7;
+		if(Lv==3){num=10;}
+		let maxSpeed=[5, 5.5, 5.5, 6];
+		let graphic=US_BUTTERFLY_RED;
+		let shotFr=4;
+		if(Lv>=2){shotFr=3;}
+		if(first){fr-=shotFr;}
+
+		LoopPlaySE(seShot1,fr,6);
+		while(fr>0){
+			let angle=GetGapAngle(cenX,minX-160,GetX,GetY);
+			LineShot(GetX,GetY,maxSpeed[Lv]/2,maxSpeed[Lv],angle,num,graphic,0);
+			_Wait(shotFr);
+			fr-=shotFr;
+		}
+
+	}
+
+	// 画面外チェック ----------------------------------------------------------
+	task CheckIsOut{
+
+		loop{
+			if(IsOut(0)){SetInvincibility(2);}
+			yield;
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	task move(let fr, let first){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=40;
+		if(first){mx=20;}
+		let my=rand(10,30);
+		if(x>=cenX){mx=-mx;}
+		if(y>=minY+100){my=-my;}
+		x+=mx;
+		y+=my;
+
+		let fieldX=maxX-minX+128;
+		let dx=(x-GetX+fieldX)/fr;
+		if(GetX>=cenX){dx=(x-GetX-fieldX)/fr;}
+		let dy=(y-GetY)/fr;
+
+		SetAction(ACT_MOVE,fr);
+		loop(fr){
+			SetMovePosition02(GetX+dx,GetY+dy,1);
+			yield;
+			if(dx>0){
+				if(GetX>maxX+64){SetX(GetX-fieldX);}
+			}
+			else{
+				if(GetX<minX-64){SetX(GetX+fieldX);}
+			}
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}

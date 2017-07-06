@@ -1,0 +1,351 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossMedicine;
+	let imgCutIn=cutMedicine;
+	let imgShot=dotShotPoison;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn,imgShot];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.75;}
+
+	let dollGapAngle=GetCommonDataDefault("DollGapAngle",-90);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_MEDICINE~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(63);
+		SetLife(375);
+		SetDamageRate(12,12);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		BehaviorSub(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// スーさん角度設定
+		dollGapAngle+=360/240;
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+110+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"毒符「トキシックパウダー－Ｅａｓｙ－」",
+			"毒符「トキシックパウダー」",
+			"毒符「トキシックパウダー－Ｈａｒｄ－」",
+			"毒符「トキシックパウダー－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		SetSubAction(ACT_SPELL3,0);
+		_Wait(125);
+
+		let assign=-1;
+
+		loop{
+
+			// 扇状毒霧
+			SetAction(ACT_SHOT_A5,120);
+			Concentration01(30);
+			_Wait(30);
+			WidePoisonShot(assign);
+			_Wait(90);
+
+			// 隠れ弾
+			SetAction(ACT_SHOT_B5,80);
+			HiddenShot(-1);
+			HiddenShot(1);
+			_Wait(80);
+
+			// ランダム隠れ弾
+			SetAction(ACT_SHOT_A5,100);
+			RandomHiddenShot(assign);
+			_Wait(100);
+
+			// 移動
+			move(60);
+			_Wait(60);
+
+			assign*=-1;
+
+		}
+
+	}
+
+	// 隠れ弾 ------------------------------------------------------------------
+	task HiddenShot(let assign){
+
+		let gapLength=70;
+		let gapAngle=GetGapAngle(GetX,GetY,cenX,cenY)-90*assign;
+		let x=GetGapX(GetX,gapLength,gapAngle);
+		let y=GetGapY(GetY,gapLength,gapAngle);
+		let way=[19,22,30,32];
+		let num=8;
+		let minSpeed=1.5;
+		let maxSpeed=3.5;
+		let baseAngle=gapAngle-165*assign;
+		let wayAngle=330/(way[Lv]-1)*assign;
+		let graphic=US_BALL_S_A_BLUE;
+		let delay=15;
+		let fr=3;
+
+		LoopPlaySE(seShot1,fr*way[Lv],10);
+		ascent(let i in 0 .. way[Lv]){
+			let angle=baseAngle+wayAngle*i;
+			LineShot(x,y,minSpeed,maxSpeed,angle,num,graphic,delay);
+			_Wait(fr);
+		}
+
+	}
+
+	// ランダム隠れ弾 ----------------------------------------------------------
+	task RandomHiddenShot(let assign){
+
+		let num=[15,30,50,100];
+		let way=3;
+		let slowFr=15;
+		let speed=4;
+		let maxSpeed=1.6+0.3*Lv;
+		let addSpeed=(maxSpeed-speed)/10;
+		let baseAngle=-90;
+		let wayAngle=360/way;
+		let numAngle=wayAngle/3*assign;
+		let graphic=US_BALL_S_A_RED;
+		let delay=5;
+		let fr=4-Lv;
+
+		LoopPlaySE(seShot3,fr*num[Lv],6);
+		ascent(let i in 0 .. num[Lv]){
+			let baseAngle_=baseAngle+numAngle*i+RandBlur(numAngle/2);
+			ascent(let j in 0 .. way){
+				let angle=baseAngle_+wayAngle*j;
+				CreateShotA(0,GetX,GetY,delay);
+				SetShotDataA(0,0,speed,angle,0,0,0,graphic);
+				SetShotDataA(0,slowFr,NULL,angle,0,addSpeed,maxSpeed,graphic);
+				FireShot(0);
+			}
+			_Wait(fr);
+		}
+
+	}
+
+	// 扇状毒霧 ----------------------------------------------------------------
+	task WidePoisonShot(let assign){
+
+		let way=31;
+		let gapLength=10;
+		let baseAngle=GetGapAngle(GetX,GetY,cenX,cenY)-90*assign;
+		let wayAngle=180/(way-1)*assign;
+		let fr=2;
+
+		LoopPlaySE(seShot2,fr*way,10);
+		ascent(let i in 0 .. way){
+			let speed=5.2+rand(-2,2);
+			let angle=baseAngle+wayAngle*i;
+			let x=GetGapX(GetX,gapLength,angle);
+			let y=GetGapY(GetY,gapLength,angle);
+			PoisonSeed(x,y,speed,angle);
+			_Wait(fr);
+		}
+
+	}
+
+	// 毒霧弾 ------------------------------------------------------------------
+	task PoisonSeed(let x, let y, let speed, let angle){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+		let delay=15;
+
+		Obj_SetX(obj,x);
+		Obj_SetY(obj,y);
+		Obj_SetSpeed(obj,speed);
+		Obj_SetAngle(obj,angle);
+		ObjShot_SetDelay(obj,delay);
+		ObjShot_SetGraphic(obj,US_BALL_M_BLUE);
+		ObjShot_SetBombResist(obj,true);
+
+		// メイン処理 --------------------------------------
+		loop(delay){yield;}
+		let fr=30;
+		let alpha=63;
+		let addAlpha=(255-alpha)/fr;
+		loop(fr){
+			alpha+=addAlpha;
+			Obj_SetAlpha(obj,alpha);
+			yield;
+		}
+		PoisonMist(Obj_GetX(obj),Obj_GetY(obj));
+		Obj_Delete(obj);
+
+	}
+
+	task PoisonMist(let x, let y){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_EFFECT);
+
+		Obj_SetX(obj,x);
+		Obj_SetY(obj,y);
+		ObjEffect_SetTexture(obj,imgShot);
+		ObjEffect_SetRenderState(obj,ADD);
+		ObjEffect_SetAngle(obj,0,0,rand(0,360));
+		ObjEffect_SetPrimitiveType(obj,PRIMITIVE_TRIANGLEFAN);
+		ObjEffect_CreateVertex(obj,4);
+		ObjEffect_SetVertexXY(obj,0,-128,-128);
+		ObjEffect_SetVertexXY(obj,1,128,-128);
+		ObjEffect_SetVertexXY(obj,2,128,128);
+		ObjEffect_SetVertexXY(obj,3,-128,128);
+		ObjEffect_SetVertexUV(obj,0,0,0);
+		ObjEffect_SetVertexUV(obj,1,256,0);
+		ObjEffect_SetVertexUV(obj,2,256,256);
+		ObjEffect_SetVertexUV(obj,3,0,256);
+		ObjEffect_SetVertexColor(obj,0,255,255,255,255);
+		ObjEffect_SetVertexColor(obj,1,255,255,255,255);
+		ObjEffect_SetVertexColor(obj,2,255,255,255,255);
+		ObjEffect_SetVertexColor(obj,3,255,255,255,255);
+
+		// メイン処理 --------------------------------------
+		// 拡大
+		let fr=180;
+		let scale=0.15;
+		let maxScale=0.7+0.1*Lv;
+		let addScale=(maxScale-scale)/fr;
+		loop(fr){
+			scale+=addScale;
+			ObjEffect_SetScale(obj,scale,scale);
+			yield;
+		}
+		// 消滅
+		fr=20+20*Lv;
+		addScale=-scale/fr;
+		loop(fr){
+			scale+=addScale;
+			ObjEffect_SetScale(obj,scale,scale);
+			yield;
+		}
+		Obj_Delete(obj);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+110){my=-my;}
+		x+=mx;
+		y+=my;
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice&&Lv>0){DropItem(10,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+		// スーさん角度設定
+		SetCommonData("DollGapAngle",dollGapAngle);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス＆スーさん描画
+		let dollGapLength=32;
+		let x=GetGapX(GetX,dollGapLength,dollGapAngle);
+		let y=GetGapY(GetY,dollGapLength*0.4,dollGapAngle*2);
+		if(sin(dollGapAngle)>0){
+			DrawBoss(imgBoss);
+			DrawSub(imgBoss,CHAR_DOLL,x,y);
+		}
+		else{
+			DrawSub(imgBoss,CHAR_DOLL,x,y);
+			DrawBoss(imgBoss);
+		}
+		DrawCutIn( m_nCount );
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGMedicine;
+
+	}
+
+}

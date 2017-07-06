@@ -1,0 +1,59 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	_Wait(30);
+	ascent(i in 0..[1,2,5,10][Level]){
+		WideShot02( GetX(),GetY(),0.5,Smooth(0,[0,0.02,0.5,0.1][Level],i,[1,2,5,10][Level]),4,GetAngleToPlayer,[4,15,10,25][Level],[3,3,5,5][Level],US_BALL_BS_PURPLE,30);
+	}
+	PlaySE(seShot1);
+
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..100)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		yield;
+	}
+	_Wait(240);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		LoadUserShotData(shotAll);
+		SetLife(15);
+		SetInvincibility( 25 );
+		MainAction();
+		SubAction01();
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		yield;
+		m_nCount++;
+		Collision( 20, 8 );
+	}
+	@DrawLoop
+	{
+		DrawYousei(64,m_nCount);
+	}
+	@Finalize{DropItem( 3 , 40 );}
+}

@@ -1,0 +1,119 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+
+	// 画像及び効果音ファイル
+	let imgCutInPlayer=cutMarisa;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgCutInPlayer];
+	let seList=[];
+
+	// 各種設定値
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			imgList=imgList~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetLife(1);
+		SetDamageRate(0,0);
+		SetEnemyMarker(false);
+		SetX(minX-128);
+		SetY(minY-128);
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		PlaySE(seBossExplode);
+
+		// 会話開始
+		CreateEventFromScript("Talk");
+		SetCommonData(CD_STAGE_EVENT,true);
+		while(GetEventStep!=1){yield;}
+
+		// リザルト
+		CreateResult( 2 );
+		while(OnEvent){yield;}
+		DeleteCommonData(CD_STAGE_EVENT);
+
+		VanishEnemy;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+	}
+
+}
+
+// 会話 ------------------------------------------------------------------------
+script_event Talk{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Event.dnh"
+
+	// 画像及び効果音ファイル
+	let imgCutInPlayer=cutMarisa;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		ChrIn(imgCutInPlayer,LEFT,CUT_NORMAL);
+		Player;
+		TextOut("\c[BLUE]ちょろいもんだぜ");
+		SetStep(1);
+		TextOut("\c[BLUE]間違えた、ここは下手クソ…だったっけな？");
+		End;
+
+	}
+
+}

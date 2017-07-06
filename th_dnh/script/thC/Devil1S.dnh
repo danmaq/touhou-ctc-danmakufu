@@ -1,0 +1,254 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossDevil;
+	let imgCutIn=cutDevil;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_LITTLE~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(69);
+		SetShotAutoDeleteClip(32,32,32,32);
+		SetLife(500);
+		SetDamageRate(14,14);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND4);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+120+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"冷符「アイシクルミスト－Ｅａｓｙ－」",
+			"冷符「アイシクルミスト」",
+			"冷符「アイシクルミスト－Ｈａｒｄ－」",
+			"冷符「アイシクルミスト－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetAction(ACT_SPELL3,0);
+		SetScore(100000);
+		_Wait(125);
+
+		let assign=1;
+		let turn=0;
+
+		loop{
+
+			// 分裂弾1
+			SetAction(ACT_SHOT_A3,180);
+			loop(4){
+				SplitShot1(assign,turn);
+				assign*=-1;
+				_Wait(45);
+			}
+
+			// 分裂弾2
+			SetAction(ACT_SHOT_B3,100);
+			Concentration01(52);
+			_Wait(52);
+			SplitShot2(turn);
+			_Wait(60);
+
+			// 移動
+			move(90);
+			_Wait(98);
+
+			if(turn<4){turn++;}
+
+		}
+
+	}
+
+	// 分裂弾1 -----------------------------------------------------------------
+	task SplitShot1(let assign, let turn){
+
+		let num=9;
+		if(Lv==3){num=10;}
+		let way=6+Lv+trunc(turn/2);
+		let baseSpeed=2;
+		let maxSpeed=4;
+		let numSpeed=(maxSpeed-baseSpeed)/(num-1);
+		let baseAngle=rand(0,360);
+		let wayAngle=360/way;
+		let numAngle=wayAngle*1.5/(num-1)*assign;
+		let fr=4;
+
+		LoopPlaySE(seShot3,fr*num,6);
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			ascent(let j in 0 .. way){
+				let angle=baseAngle+numAngle*i+wayAngle*j;
+				SplitShot(speed,angle);
+			}
+			_Wait(fr);
+		}
+
+	}
+
+	// 分裂弾2 -----------------------------------------------------------------
+	task SplitShot2(let turn){
+
+		let num=9;
+		if(Lv==3){num=10;}
+		let way=8+Lv+turn;
+		let baseSpeed=1;
+		let maxSpeed=4;
+		let numSpeed=(maxSpeed-baseSpeed)/(num-1);
+		let wayAngle=360/way;
+		let numAngle=wayAngle*1.5/(num-1);
+		let baseAngle=GetAngleToPlayer-numAngle*(num-1)/2;
+
+		PlaySE(seShot1);
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			ascent(let j in 0 .. way){
+				let angle=baseAngle+numAngle*i+wayAngle*j;
+				SplitShot(speed,angle);
+			}
+		}
+		baseAngle+=wayAngle/2;
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			ascent(let j in 0 .. way){
+				let angle=baseAngle-numAngle*i+wayAngle*j;
+				SplitShot(speed,angle);
+			}
+		}
+		_Wait(65);
+		PlaySE(seKira1);
+
+	}
+
+	// 分裂弾 ------------------------------------------------------------------
+	function SplitShot(let speed, let angle){
+
+		let spFr=50;
+		let spSpeed=1.2;
+		let spAngle=20;
+		let delay=15;
+		let graphic=[US_ICE_BLUE,US_ICE_WHITE];
+
+		CreateShotA(0,GetX,GetY,delay);
+		SetShotDataA(0,0,speed,angle,0,0,0,graphic[0]);
+		SetShotDataA(0,spFr,spSpeed,angle+spAngle,0,0,0,graphic[1]);
+		CreateShotA(1,0,0,0);
+		SetShotDataA(1,0,spSpeed,angle-spAngle,0,0,0,graphic[1]);
+		AddShot(spFr,0,1,0);
+		FireShot(0);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){
+			DropItem(10,80);
+			DropExtend;
+		}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGDevil;
+
+	}
+
+}

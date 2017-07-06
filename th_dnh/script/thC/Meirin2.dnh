@@ -1,0 +1,299 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossMeirin;
+	let imgShadow=dotCircle6s;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.75;}
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~[imgShadow];
+			seList=seList~seListEnemy~seListShadow;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(45);
+		SetLife(1875);
+		SetDamageRate(90*DamageRate,90*DamageRate);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// Slowキー判定
+		GetSlowCount;
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=150;
+		let x=cenX;
+		let y=minY+120+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(180);
+
+		loop{
+
+			// 使い魔召喚
+			Concentration01(30);
+			_Wait(30);
+			SummonShadow;
+			_Wait(120);
+
+			// 移動＋全方向弾
+			let num=[2,3,4,6];
+			let fr1=[130,80,55,30];
+			let fr2=[50,40,35,30];
+
+			loop(num[Lv]){
+				move(fr1[Lv]);
+				_Wait(fr1[Lv]);
+				_RoundShot;
+				_Wait(fr2[Lv]);
+			}
+
+		}
+
+	}
+
+	// 使い魔召喚 --------------------------------------------------------------
+	task SummonShadow{
+
+		let num=4;
+		PlaySE(seShadow);
+		ascent(let i in 0 .. num){
+			CreateEnemyFromScript("Shadow",GetX,GetY,0,0,i);
+		}
+
+	}
+
+	// 全方向弾 ----------------------------------------------------------------
+	task _RoundShot{
+
+		let speed=1.2;
+		let angle=rand(0,360);
+		let way=[56,64,80,88];
+		let graphic=US_BALL_BS_RED;
+		let delay=5;
+
+		SetAction(ACT_SHOT_A3_B,30);
+		RoundShot01(GetX,GetY,speed,angle,way[Lv],graphic,delay);
+		PlaySE(seKira1);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(60,120);
+		let my=rand(10,40);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+80){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-80){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}
+
+// 使い魔 ----------------------------------------------------------------------
+script_enemy Shadow{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let imgShadow=dotCircle6s;
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.75;}
+
+	let n=GetArgument;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(150);
+		SetDamageRateExDelay(60,90*DamageRate,90*DamageRate,50,50);
+
+		// 実体化時の光
+		LightShadow;
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 使い魔基本処理
+		BehaviorShadow(seShadowHidden,seShadowSudden);
+
+		// 画面外で消滅
+		GoneEx(32);
+
+		// 当たり判定（自弾,体当たり）
+		CollisionShadow(24,18);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 初期移動
+		let num=4;
+		let gapX=(maxX-minX-80)/(num-1);
+		let x=minX+40+gapX*n;
+		let y=[minY+100,minY+70,minY+70,minY+100];
+		let power=GetGapLength(GetX,GetY,x,y[n])*3;
+		let angle=GetGapAngle(GetX,GetY,x,y[n]);
+		let fr=60;
+		SetMovePositionHermite(x,y[n],power,angle,0,0,fr);
+		_Wait(60);
+
+		// 扇状弾
+		loop(3){
+			_Wait(60);
+			_WideShot;
+			_Wait(60);
+		}
+
+		// 移動
+		let _x=GetX+rand(-60,60);
+		let _y=maxY+40;
+		let speed=1;
+		fr=trunc(GetGapLength(GetX,GetY,_x,_y)/speed*1.1);
+		SetMovePosition01(_x,_y,speed);
+
+	}
+
+	// 扇状弾 ------------------------------------------------------------------
+	task _WideShot{
+
+		let x=GetX;
+		let y=GetY;
+		let num=8;
+		let way=[1,3,5,7];
+		let speed=[3, 3.4, 3.8, 4];
+		let angle=GetAngleToPlayer;
+		let wideAngle=[0,65,65,45];
+		let graphic=US_KUNAI_BLUE;
+		let delay=5;
+		let fr=5;
+
+		PlaySE(seShot1);
+		ascent(let i in 0 .. num){
+			WideShot01(x,y,speed[Lv],angle,wideAngle[Lv],way[Lv],graphic,delay);
+			_Wait(fr);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// 弾消し
+		DestructShadow(40);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// 本体描画
+		let shadow=SHADOW_S_RED;
+		let angle=2*m_nCount;
+		let scale=0.8;
+		_DrawShadow(shadow,imgShadow,angle,scale,scale);
+
+	}
+
+}

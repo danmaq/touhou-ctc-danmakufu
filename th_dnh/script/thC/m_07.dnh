@@ -1,0 +1,57 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level=GetCommonData("Level");
+//タスクの作成----------------------------------
+task MainAction()
+{
+	yield;
+	_Wait(90);
+	RoundLineShot( GetX(),GetY(),0.8,[1,1,2.5,4][Level],GetAngleToPlayer(),[45,30,30,36][Level],[1,1,4,7][Level],US_RICE_S_ORANGE,30);
+	PlaySE(seShot2);
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..50)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 50 ));
+		yield;
+	}
+	_Wait(40);
+	SetAngle([0,0,180,-90][GetArgument()]);
+	SetSpeed(0.5);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(20);
+		SetInvincibility( 160 );
+		MainAction();
+		SubAction01();
+		LoadUserShotData(shotAll);
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		yield;
+		Collision(16 , 12);
+		m_nCount++;
+	}
+	@DrawLoop
+	{
+		DrawYousei(32,m_nCount);
+		DarwZakoBack(m_nCount);
+	}
+	@Finalize{DropItem( 5 , 40 );}
+}
+

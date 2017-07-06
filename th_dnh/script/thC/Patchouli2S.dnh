@@ -1,0 +1,300 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossPatchouli;
+	let imgCutIn=cutPatchouli;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	let maxLife=500;
+	let maxCount=60*60;
+	let phase2=false;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_PACHOULI~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(63);
+		SetLife(500);
+		SetDamageRate(14,14);
+		SetShotAutoDeleteClip(100,100,100,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+120+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"木＆土符「トリガープランツ－Ｅａｓｙ－」",
+			"木＆土符「トリガープランツ」",
+			"木＆土符「トリガープランツ－Ｈａｒｄ－」",
+			"木＆土符「トリガープランツ－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(125);
+
+		// 回転弾
+		RollShot;
+
+		// 狙い弾
+		SearchShot;
+
+		loop{
+
+			SetAction(ACT_SHOT_A3,90);
+			_Wait(90);
+
+			// 移動
+			move(90);
+			_Wait(90);
+
+		}
+
+	}
+
+	// 回転弾 ------------------------------------------------------------------
+	task RollShot{
+
+		let assign=1;
+		let fr=100;
+		loop{
+			_RollShot(assign);
+			_Wait(fr);
+			assign*=-1;
+		}
+
+	}
+
+	task _RollShot(let assign){
+
+		let fr=60;
+		let num=3+Lv;
+		let way=26;
+		let baseSpeed=3;
+		let numSpeed=1;
+		let baseMaxSpeed=1;
+		let numMaxSpeed=0.2;
+		let baseAngle=rand(0,360);
+		let wayAngle=360/way;
+		let addAngle=180/fr*assign;
+		let graphic=US_SCALE_GREEN;
+		let delay=30;
+
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			let maxSpeed=baseMaxSpeed+numMaxSpeed*i;
+			let addSpeed=(maxSpeed-speed)/fr;
+			ascent(let j in 0 .. way){
+				let angle=baseAngle+wayAngle*j;
+				CreateShotA(0,GetX,GetY,delay);
+				SetShotDataA(0,0,speed,angle,addAngle,addSpeed,maxSpeed,graphic);
+				SetShotDataA(0,fr,NULL,NULL,0,0,0,graphic);
+				FireShot(0);
+			}
+		}
+		_Wait(delay);
+		PlaySE(seShot1);
+
+	}
+
+	// 狙い弾 ------------------------------------------------------------------
+	task SearchShot{
+
+		// フェイズチェック
+		PhaseCheck;
+
+		let num=2;
+		let way=20;
+		let baseSpeed=3.5;
+		let numSpeed=(4-baseSpeed)/(num-1);
+		let wayAngle=(100+20*Lv)/(way-1);
+		let baseAngle=90-wayAngle*(way-1)/2;
+		let delay=30;
+		let fr=100;
+
+		_Wait(fr/2);
+		loop{
+			if(phase2){
+				ascent(let i in 0 .. num){
+					let speed=baseSpeed+numSpeed*i;
+					ascent(let j in 0 .. way){
+						let angle=baseAngle+wayAngle*j;
+						_SearchShot(speed,angle,delay);
+					}
+				}
+				_Wait(delay);
+				PlaySE(seShot1);
+				_Wait(fr-delay);
+			}
+			else{_Wait(fr);}
+		}
+
+	}
+
+	task _SearchShot(let speed, let angle, let delay){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+		let graphic=US_BALL_BS_ORANGE;
+
+		Obj_SetX(obj,GetX);
+		Obj_SetY(obj,GetY);
+		Obj_SetAngle(obj,angle);
+		ObjShot_SetDelay(obj,delay);
+		ObjShot_SetGraphic(obj,graphic);
+
+		// メイン処理 --------------------------------------
+		loop(delay){
+			if(Obj_BeDeleted(obj)){break;}
+			yield;
+		}
+
+		// 減速
+		let fr=60;
+		let addSpeed=-speed/fr;
+		loop(fr){
+			if(Obj_BeDeleted(obj)){break;}
+			speed+=addSpeed;
+			Obj_SetSpeed(obj,speed);
+			yield;
+		}
+
+		// 拡散
+		if(!Obj_BeDeleted(obj)){
+			let way=3;
+			angle=GetAngleToPlayerObject(obj);
+			addSpeed=(3+0.5*Lv)/60;
+			let wideAngle=100-20*Lv;
+			WideShot02(Obj_GetX(obj),Obj_GetY(obj),0,addSpeed,99,angle,wideAngle,way,graphic,0);
+			Obj_Delete(obj);
+		}
+
+	}
+
+	// フェイズチェック --------------------------------------------------------
+	task PhaseCheck{
+
+		loop{
+			let rL=GetLife/maxLife;
+			let rC=(maxCount+3*60-m_nCount)/maxCount;
+			if(Min(rL,rC)<=0.6){break;}
+			yield;
+		}
+		Concentration01(120);
+		PlaySE(sePower);
+		_Wait(120);
+		phase2=true;
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){DropItem(14,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn( m_nCount );
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGPachouli;
+
+	}
+
+}

@@ -1,0 +1,72 @@
+//コメントにしてあるところが使わない雑魚(永ルート、旧ルート含む)
+//永ルート、旧ルートのロードをしないならこれらのファイルは削除対象
+
+//小型+通過型-------------------------------------------------
+
+//let z_s_01 = GetCurrentScriptDirectory~"s_01.dnh";
+//let z_s_02 = GetCurrentScriptDirectory~"s_02.dnh";
+	let z_s_03 = GetCurrentScriptDirectory~"s_03.dnh";
+
+//let z_s_05 = GetCurrentScriptDirectory~"s_05.dnh";
+	let z_s_06 = GetCurrentScriptDirectory~"s_06.dnh";
+	let z_s_07 = GetCurrentScriptDirectory~"s_07.dnh";
+	let z_s_08 = GetCurrentScriptDirectory~"s_08.dnh";
+//let z_s_09 = GetCurrentScriptDirectory~"s_09.dnh";
+	let z_s_10 = GetCurrentScriptDirectory~"s_10.dnh";
+	let z_s_11 = GetCurrentScriptDirectory~"s_11.dnh";
+
+//小型+停止型-------------------------------------------------
+
+//let z_g_01 = GetCurrentScriptDirectory~"g_01.dnh";
+//let z_g_02 = GetCurrentScriptDirectory~"g_02.dnh";
+//let z_g_03 = GetCurrentScriptDirectory~"g_03.dnh";
+	let z_g_04 = GetCurrentScriptDirectory~"g_04.dnh";
+//let z_g_05 = GetCurrentScriptDirectory~"g_05.dnh";
+//let z_g_06 = GetCurrentScriptDirectory~"g_06.dnh";
+	let z_g_07 = GetCurrentScriptDirectory~"g_07.dnh";
+	let z_g_08 = GetCurrentScriptDirectory~"g_08.dnh";
+//let z_g_09 = GetCurrentScriptDirectory~"g_09.dnh";
+//let z_g_10 = GetCurrentScriptDirectory~"g_10.dnh";
+	let z_g_11 = GetCurrentScriptDirectory~"g_11.dnh";
+
+	let z_g_13 = GetCurrentScriptDirectory~"g_13.dnh";
+	let z_g_14 = GetCurrentScriptDirectory~"g_14.dnh";
+	let z_g_15 = GetCurrentScriptDirectory~"g_15.dnh";
+	let z_g_16 = GetCurrentScriptDirectory~"g_16.dnh";
+//let z_g_17 = GetCurrentScriptDirectory~"g_17.dnh";
+	let z_g_18 = GetCurrentScriptDirectory~"g_18.dnh";
+	let z_g_19 = GetCurrentScriptDirectory~"g_19.dnh";
+	let z_g_20 = GetCurrentScriptDirectory~"g_20.dnh";
+
+//中型機-------------------------------------------------
+
+//let z_m_01 = GetCurrentScriptDirectory~"m_01.dnh";
+//let z_m_02 = GetCurrentScriptDirectory~"m_02.dnh";
+//let z_m_03 = GetCurrentScriptDirectory~"m_03.dnh";
+//let z_m_04 = GetCurrentScriptDirectory~"m_04.dnh";
+//let z_m_05 = GetCurrentScriptDirectory~"m_05.dnh";
+//let z_m_06 = GetCurrentScriptDirectory~"m_06.dnh";
+	let z_m_07 = GetCurrentScriptDirectory~"m_07.dnh";
+//let z_m_08 = GetCurrentScriptDirectory~"m_08.dnh";
+	let z_m_09 = GetCurrentScriptDirectory~"m_09.dnh";
+	let z_m_10 = GetCurrentScriptDirectory~"m_10.dnh";
+//let z_m_11 = GetCurrentScriptDirectory~"m_11.dnh";
+	let z_m_12 = GetCurrentScriptDirectory~"m_12.dnh";
+//let z_m_13 = GetCurrentScriptDirectory~"m_13.dnh";
+
+//魔方陣-------------------------------------------------
+
+//let z_j_01 = GetCurrentScriptDirectory~"j_01.dnh";
+//let z_j_02 = GetCurrentScriptDirectory~"j_02.dnh";
+//let z_j_03 = GetCurrentScriptDirectory~"j_03.dnh";
+
+//その他-------------------------------------------------
+
+//let z_o_01 = GetCurrentScriptDirectory~"o_01.dnh";
+	let z_o_02 = GetCurrentScriptDirectory~"o_02.dnh";
+//let z_o_03 = GetCurrentScriptDirectory~"o_03.dnh";
+	let z_o_04 = GetCurrentScriptDirectory~"o_04.dnh";
+	let z_o_05 = GetCurrentScriptDirectory~"o_05.dnh";
+	let z_o_06 = GetCurrentScriptDirectory~"o_06.dnh";
+
+

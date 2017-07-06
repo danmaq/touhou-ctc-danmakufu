@@ -1,0 +1,269 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossPatchouli;
+	let imgCutIn=cutPatchouli;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	if(Lv==0){Lv=1;}
+	Lv--;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_PACHOULI~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(62);
+		SetLife(500);
+		SetDamageRate(7,0);
+		SetShotAutoDeleteClip(32,32,32,32);
+		SetX(cenX);
+		SetY(minY+120);
+		LastSpellEffect(115);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		if(m_nEnemyAlpha>0){Collision(32,24);}
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(302);
+		_Wait(117);
+
+		// スペルカード発動
+		let spellName=[
+			"天符「ヤコブズ・ラダー」",
+			"天符「ヤコブズ・ラダー－Ｈａｒｄ－」",
+			"天符「ヤコブズ・ラダー－Ｌｕｎａｔｉｃ－」"
+		];
+		SetCommonData(CD_SPELL_LASTSPELL,true);
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(125);
+
+		// 回転反射レーザー
+		SetAction(ACT_SHOT_B5,6000);
+		PlaySE(sePower);
+		Concentration01(120);
+		_Wait(120);
+		RollReflectLaser;
+		_Wait(120);
+		SetDamageRate(13,0);
+
+		// 回転弾
+		RollShot;
+		LoopPlaySE(seShot3,6000,10);
+
+	}
+
+	// 回転反射レーザー --------------------------------------------------------
+	task RollReflectLaser{
+
+		let gapLength=20;
+		let speed=14;
+		let angle=-90;
+		let addAngle=365/210;
+		let delay=90;
+		let reflect=1;
+		let fr=4;
+		if(Lv==2){fr=3;}
+
+		loop{
+			let x=GetGapX(GetX,gapLength,angle);
+			let y=GetGapY(GetY,gapLength,angle);
+			ExtendReflectLaser(x,y,speed,angle,delay,reflect,true);
+			_Wait(fr);
+			angle+=addAngle*fr;
+		}
+
+	}
+
+	// 伸びる反射レーザー ------------------------------------------------------
+	task ExtendReflectLaser(let x, let y, let speed, let angle, let delay, let reflect, let first){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_LASER);
+		while(angle<0){angle+=360;}
+		if(angle>=360){angle%=360;}
+
+		Obj_SetX(obj,x);
+		Obj_SetY(obj,y);
+		Obj_SetAngle(obj,angle);
+		ObjLaser_SetWidth(obj,10);
+		ObjShot_SetDelay(obj,90);
+		ObjShot_SetGraphic(obj,US_BALL_M_A_ORANGE);
+		Obj_SetAutoDelete(obj,false);
+		ObjLaser_SetSource(obj,false);
+
+		// メイン処理 --------------------------------------
+		setLength;
+
+		// 反射設定
+		if(reflect>0){
+			let ref=false;
+			let fr=0;
+			let angleLU=atan2(y-minY,x-minX)+180;
+			let angleRU=atan2(y-minY,x-maxX)+180;
+			let angleLD=atan2(y-maxY,x-minX)+180;
+			let angleRD=atan2(y-maxY,x-maxX)+180;
+			if(angleRU==0){angleRU=360;}
+			if(angleRD==360){angleRD=0;}
+			if(angle>=angleRU||angle<angleRD){
+				ref=true;
+				let rLength=(maxX-x)/cos(angle);
+				fr=rLength/speed;
+				x=maxX;
+				y+=rLength*sin(angle);
+				angle=180-angle;
+			}
+			else if(angle>=angleLD&&angle<angleLU){
+				ref=true;
+				let rLength=(minX-x)/cos(angle);
+				fr=rLength/speed;
+				x=minX;
+				y+=rLength*sin(angle);
+				angle=180-angle;
+			}
+			else if(angle>=angleLU&&angle<angleRU){
+				ref=true;
+				let rLength=(minY-y)/sin(angle);
+				fr=rLength/speed;
+				x+=rLength*cos(angle);
+				y=minY;
+				angle=-angle;
+			}
+			if(ref){
+				loop(fr){yield;}
+				x-=10*speed*cos(angle);
+				y-=10*speed*sin(angle);
+				delay-=fr;
+				if(delay<0){delay=0;}
+				ExtendReflectLaser(x,y,speed,angle,delay,reflect-1,false);
+			}
+		}
+
+		// 長さ設定 ----------------------------------------
+		task setLength{
+
+			let Length=0;
+			let fr=120;
+			if(!first){fr-=10;}
+			// 伸びる
+			loop(fr){
+				Length+=speed;
+				ObjLaser_SetLength(obj,Length);
+				yield;
+			}
+			// 縮む
+			let addX=speed*cos(Obj_GetAngle(obj));
+			let addY=speed*sin(Obj_GetAngle(obj));
+			loop(15){
+				x=Obj_GetX(obj)+addX;
+				y=Obj_GetY(obj)+addY;
+				Obj_SetX(obj,x);
+				Obj_SetY(obj,y);
+				yield;
+			}
+			Obj_SetAutoDelete(obj,true);
+			loop(fr-15){
+				x=Obj_GetX(obj)+addX;
+				y=Obj_GetY(obj)+addY;
+				Obj_SetX(obj,x);
+				Obj_SetY(obj,y);
+				yield;
+			}
+
+		}
+
+	}
+
+	// 回転弾 ------------------------------------------------------------------
+	task RollShot{
+
+		let num=2;
+		let minSpeed=1;
+		let maxSpeed=1.2;
+		if(Lv>0){maxSpeed=1.6;}
+		let angle=270;
+		let addAngle=-364/60;
+		let graphic=US_BALL_S_WHITE;
+		let delay=10;
+
+		loop{
+			LineShot(GetX,GetY,minSpeed,maxSpeed,angle,num,graphic,delay);
+			angle+=addAngle;
+			yield;
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn( m_nCount );
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGPachouli;
+
+	}
+
+}

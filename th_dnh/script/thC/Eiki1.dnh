@@ -1,0 +1,394 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossEiki;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			seList=seList~seListEnemy~seListShadow;
+			SetX(cenX);
+			SetY(minY+120+RandBlur(0.1));
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(46);
+		SetLife(2500);
+		SetDamageRate(100,100);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(62);
+		_Wait(62);
+
+		// 霊魂召喚
+		SummonSpilit;
+
+		loop{
+
+			loop(3){
+
+				// 移動
+				move(40);
+				_Wait(40);
+
+				// 扇状弾
+				_WideShot;
+				_Wait(60);
+
+			}
+
+			// レーザー
+			Laser;
+			_Wait(150);
+
+		}
+
+	}
+
+	// 霊魂召喚 ----------------------------------------------------------------
+	task SummonSpilit{
+
+		let assign=1;
+		if(GetX<GetPlayerX){assign=-1;}
+		let fr=120-16*Lv;
+
+		loop{
+			CreateEnemyFromScript("Spilit",GetX,GetY,0,0,assign);
+			PlaySE(seShadow);
+			_Wait(fr);
+			assign*=-1;
+		}
+
+	}
+
+	// 扇状弾 ------------------------------------------------------------------
+	task _WideShot{
+
+		let num=10;
+		let way=6+2*Lv;
+		let speed=4.2+0.3*Lv;
+		let angle=GetAngleToPlayer;
+		let wideAngle=80+10*Lv;
+		let graphic=US_TABLET;
+		let delay=15;
+		let fr=6;
+
+		SetAction(ACT_SHOT_A3,fr*num);
+		LoopPlaySE(seShot1,fr*num,10);
+		loop(num){
+			WideShot01(GetX,GetY,speed,angle,wideAngle,way,graphic,delay);
+			_Wait(fr);
+		}
+
+	}
+
+	// レーザー ----------------------------------------------------------------
+	task Laser{
+
+		SetAction(ACT_SHOT_B5,150);
+
+		// 側面レーザー
+		let assign=[-1,1];
+		let way=4;
+		let baseAngle=GetAngleToPlayer;
+		let baseAngle2=70;
+		let wayAngle=20;
+		let fr=5;
+
+		ascent(let i in 0 .. way){
+			ascent(let j in 0 .. 2){
+				let angle=baseAngle+(baseAngle2+wayAngle*i)*assign[j];
+				SideLaser(angle,j);
+			}
+			_Wait(fr);
+		}
+
+		// 正面レーザー
+		let Length=0;
+		let width=32+6*Lv;
+		let graphic=US_BALL_M_A_PURPLE;
+		let delay=50-4*Lv;
+		let kill=130;
+		let fr=24;
+		let addLength=600/fr;
+
+		CreateLaserA(0,GetX,GetY,Length,width,graphic,delay);
+		SetLaserDataA(0,0,baseAngle,0,addLength,0,0);
+		SetLaserDataA(0,fr,NULL,0,0,0,0);
+		SetShotKillTime(0,kill);
+		FireShot(0);
+		PlaySE(seLaser1);
+
+	}
+
+	// 側面レーザー ------------------------------------------------------------
+	task SideLaser(let angle, let gra){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_LASER);
+		let gapLength=10;
+		let x=GetGapX(GetX,gapLength,angle);
+		let y=GetGapY(GetY,gapLength,angle);
+		let graphic=[US_BALL_M_A_BLUE, US_BALL_M_A_RED];
+
+		Obj_SetX(obj,x);
+		Obj_SetY(obj,y);
+		Obj_SetAngle(obj,angle);
+		ObjShot_SetDelay(obj,20);
+		ObjShot_SetGraphic(obj,graphic[gra]);
+		ObjLaser_SetLength(obj,600);
+		ObjLaser_SetWidth(obj,16);
+		ObjLaser_SetSource(obj,false);
+
+		// メイン処理 --------------------------------------
+		loop(120){yield;}
+		ObjShot_FadeDelete(obj);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}
+
+// 霊魂 ------------------------------------------------------------------------
+script_enemy Spilit{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	let moveAngle=0;
+	let assign=GetArgument;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(1);
+
+		// 光
+		Light;
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 初期移動
+		move1;
+		loop(60){yield;}
+
+		// 移動回転弾
+		let fr=72;
+		MoveRollShot(fr);
+
+		// 破裂
+		let _fr=30;
+		let decAlpha=255/_fr;
+		let addScale=0.05;
+		Explosion01(GetX,GetY,decAlpha,addScale,_fr);
+
+		// 移動
+		move2(fr);
+		loop(fr){yield;}
+
+		VanishEnemy;
+
+	}
+
+	// 移動回転弾 --------------------------------------------------------------
+	task MoveRollShot(let fr){
+
+		let way=fr;
+		let speed1=1.6+0.15*Lv;
+		let speed2=2.4+0.3*Lv;
+		let baseAngle=rand(0,360);
+		let wayAngle=360/36*assign;
+		let graphic1=US_RICE_S_BLUE;
+		let graphic2=US_TABLET;
+
+		LoopPlaySE(seShot3,fr,6);
+		ascent(let i in 0 .. way){
+			let speed=speed1;
+			let angle=baseAngle+wayAngle*i;
+			let graphic=graphic1;
+			if(i%2==1){
+				speed=speed2;
+				graphic=graphic2;
+			}
+			CreateShot01(GetX,GetY,speed,angle,graphic,0);
+			yield;
+		}
+
+	}
+
+	// 初期移動 ----------------------------------------------------------------
+	task move1{
+
+		let gapLength=50;
+		let x=cenX+gapLength*assign+RandBlur(gapLength);
+		let y=minY+100+RandBlur(gapLength);
+		let power1=300;
+		let angle1=rand(0,360);
+		let power2=300;
+		let angle2=rand(0,360);
+		let fr=29;
+		SetMovePositionHermite(x,y,power1,angle1,power2,angle2,fr);
+		loop(fr){yield;}
+
+		gapLength=75;
+		x=cenX+gapLength*assign+RandBlur(gapLength);
+		y=minY+100+RandBlur(gapLength);
+		power1=300;
+		moveAngle=rand(0,360);
+		SetMovePositionHermite(x,y,power2,angle2,power1,moveAngle,fr);
+		loop(fr){yield;}
+
+		fr=2;
+		SetMovePosition02(x,y,fr);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	task move2(let fr){
+
+		let moveLength=40;
+		let x=GetGapX(GetX,moveLength,moveAngle);
+		let y=GetGapY(GetY,moveLength,moveAngle);
+		SetMovePosition02(x,y,fr);
+
+	}
+
+	// 光 ----------------------------------------------------------------------
+	task Light{
+
+		let call=1;
+		let delay=15;
+		loop(60){
+			_Light;
+			loop( call ){ yield; }
+		}
+
+		task _Light{
+			let obj=SetShotObject(GetX,GetY,500,0,US_BALL_SS_BLUE,delay);
+			Obj_SetAlpha(obj,0);
+			Obj_SetCollisionToPlayer(obj,false);
+			ObjShot_SetBombResist(obj,true);
+			ObjShot_ToItem(obj,false);
+			loop(delay){yield;}
+			Obj_Delete(obj);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+	}
+
+}

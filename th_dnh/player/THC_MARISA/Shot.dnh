@@ -1,0 +1,39 @@
+#PlayerShotData
+
+ShotImage = "script\thC\IMAGE\CHAR\DOT\shot_all.png"
+
+ShotData{
+	id = 1
+	rect = ( 257, 478, 275, 512 )
+	render = ALPHA
+	alpha = 128
+}
+
+ShotData{
+	id = 2
+	rect = ( 275, 472, 311, 512 )
+	render = ALPHA
+	alpha = 192
+}
+ShotData{
+	id = 3
+	rect = ( 311, 412, 347, 512 )
+	render = ALPHA
+	alpha = 192
+}
+
+ShotData{
+	id = 172
+	rect = ( 257, 1, 319, 63 )
+	render = ADD
+	delay_color = ( 255, 255, 255 )
+}
+
+// ”ñ•\Ž¦’e(Ž©‹@—p) --------------------
+ShotData{
+	id = 253
+	alpha = 0
+	rect = ( 0, 0, 64, 64 )
+	render = ALPHA
+	delay_color = ( 0, 0, 0 )
+}

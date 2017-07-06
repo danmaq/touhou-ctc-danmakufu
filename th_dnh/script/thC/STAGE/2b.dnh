@@ -1,0 +1,74 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 2b
+//
+//		※ステージライブラリから自動的にインクルードされます
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let m_aszStage2BLoadFileListGraphic = [] ~ LOADBGLIST_REISEN ~ LOADBGLIST_EIRIN;
+let m_aszStage2BLoadFileListEnemy = [];
+let m_aszStage2BLoadFileListSound = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	内部処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	初期化
+function Stage2BInitialize(){
+	SetCommonData("Level",m_nStageLevel);
+	SetCommonData("DeleteEnemy",0);
+	LoadProgress( m_aszStageDefaultLoadFileListGraphic ~ m_aszStage2BLoadFileListGraphic, m_aszStage2BLoadFileListEnemy, m_aszStageDefaultLoadFileListSE ~ m_aszStage2BLoadFileListSound, imgSystemProgress, imgMapBlack );
+	PlayMusicEx( 10, "" );
+}
+
+//	ここにステージの中身を書く
+task Stage2B(){
+
+
+//ショットキーを押すと次のステージへ////////////////
+	if( !GetCommonDataDefault( CD_STAGE_PRACTICE, false ) ){
+		while( GetKeyState( VK_SHOT ) != KEY_PUSH ){ yield; }
+		Stage3();
+	}
+	else{ Clear(); }
+
+////////////////////////////////////////////////////
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メイン部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	@MainLoop()にて毎フレーム呼ばれる部分
+function Stage2BMainLoop(){
+}
+
+//	@BackGround()にて毎回呼ばれる部分
+function Stage2BDrawBackGround(){
+}
+
+//	@DrawBottomObject()にて毎回呼ばれる部分
+function Stage2BDrawBottomObject(){
+}
+
+//	@DrawTopObject()にて毎回呼ばれる部分
+function Stage2BDrawTopObject(){
+}

@@ -1,0 +1,84 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level = GetCommonDataDefault( "Level", 1 );
+
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	SetShotDirectionType(ABSOLUTE);
+	_Wait(125);
+	let angle=GetAngleToPlayer()-90;
+
+	loop([3,6,9,15][Level])
+	{
+
+		let speed=[1.5,2,2.6,3.5][Level];
+
+		let time=70;
+		while(speed>1)
+		{
+			CreateShotA(0,GetX(),GetY(),30);
+			SetShotDataA(0,0,speed,angle,0,-0.06,-speed,US_BUTTERFLY_R_PURPLE);
+			SetShotDataA(0,time,NULL,angle-30,sin(angle)/10,0.05,speed,US_BUTTERFLY_R_PURPLE);
+			FireShot(0);
+			CreateShotA(0,GetX(),GetY(),30);
+			SetShotDataA(0,0,speed,angle,0,-0.06,-speed,US_BUTTERFLY_R_PURPLE);
+			SetShotDataA(0,time,NULL,angle+30,-sin(angle)/10,0.05,speed,US_BUTTERFLY_R_PURPLE);
+			FireShot(0);
+			speed=speed-0.3
+		}
+		angle+=180/([3,6,9,15][Level]-1);
+	}
+	PlaySE(seShot2);
+
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..50)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 50 ));
+		yield;
+	}
+	_Wait(100);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(13);
+		SetInvincibility( 130 );
+		MainAction();
+		SubAction01();
+		LoadUserShotData(shotAll);
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		yield;
+		m_nCount++;
+		Collision( 20, 8 );
+	}
+	@DrawLoop
+	{
+		DrawYousei(0,m_nCount);
+		DarwZakoBack(m_nCount);
+	}
+	@Finalize{
+		DropItem( 4 , 40 );
+		DropPoint( 3 , 40 );
+	}
+}

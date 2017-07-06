@@ -1,0 +1,70 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//　スペルカード背景
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+let dirImageSpell = GetCurrentScriptDirectory ~ "IMAGE\SPELL\";
+
+let imgSpellBamboo = dirImageSpell ~ "Bamboo.png";
+let imgSpellBlood = dirImageSpell ~ "Blood.png";
+let imgSpellP1 = dirImageSpell ~ "p1.png";
+let imgSpellP2 = dirImageSpell ~ "p2.png";
+let imgSpellRedMoon = dirImageSpell ~ "Moon.png";
+let imgSpellRedWall = dirImageSpell ~ "RedWall.png";
+let imgSpellRiverside = dirImageSpell ~ "Riverside.png";
+let imgSpellRotateStone = dirImageSpell ~ "RotateStone.png";
+let imgSpellScrollStone = dirImageSpell ~ "ScrollStone.png";
+let imgSpellAya1 = dirImageSpell ~ "Aya1.png";
+let imgSpellAya2 = dirImageSpell ~ "Aya2.png";
+let imgSpellLittle1 = dirImageSpell ~ "Little1.png";
+let imgSpellLittle2 = dirImageSpell ~ "Little2.png";
+
+
+//////////////////////////////////////////////////////////////////////
+//	読み込みスペル背景画像リスト 紅ルート
+//////////////////////////////////////////////////////////////////////
+
+let LOADBGLIST_FRANDRE = [ imgSpellRedMoon, imgSpellRedWall ];
+let LOADBGLIST_MEIRIN = [ imgSpellRotateStone ];
+let LOADBGLIST_SAKUYA = [ imgSpellRotateStone, imgSpellBlood ];
+let LOADBGLIST_REMILIA = LOADBGLIST_FRANDRE;
+let LOADBGLIST_LITTLE = [ imgSpellLittle1 , imgSpellLittle2 ];
+let LOADBGLIST_PACHOULI = [ imgSpellScrollStone ];
+
+
+//////////////////////////////////////////////////////////////////////
+//	読み込みスペル背景画像リスト 永ルート
+//////////////////////////////////////////////////////////////////////
+
+let LOADBGLIST_KAGUYA = [];
+let LOADBGLIST_MOKOU = [];
+let LOADBGLIST_REISEN = [];
+let LOADBGLIST_EIRIN = [];
+let LOADBGLIST_TEWI = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//	読み込みスペル背景画像リスト 花ルート
+//////////////////////////////////////////////////////////////////////
+
+let LOADBGLIST_LILY = [ imgSpellBamboo ];
+let LOADBGLIST_MEDICINE = [ imgSpellP1, imgSpellP2 ];
+let LOADBGLIST_AYA = [ imgSpellAya1 , imgSpellAya2 ];
+let LOADBGLIST_KOMACHI = [ imgSpellRiverside, imgSpellBlood ];
+let LOADBGLIST_EIKI = [ imgSpellRiverside, imgSpellBlood ];
+
+
+//////////////////////////////////////////////////////////////////////
+//	読み込みスペル背景画像リスト 旧作ルート
+//////////////////////////////////////////////////////////////////////
+
+let LOADBGLIST_MIMA = [];
+let LOADBGLIST_YUKA = [];
+let LOADBGLIST_SHINKI = [];
+let LOADBGLIST_ALICE = [];
+
+
+//////////////////////////////////////////////////////////////////////
+//	読み込みスペル背景画像リスト 後半・EX
+//////////////////////////////////////////////////////////////////////
+

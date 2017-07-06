@@ -1,0 +1,158 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossRemilia;
+	let imgCutInEnemy=cutRemilia;
+	let imgCutInPlayer=cutMarisa;
+	let imgList=[imgBoss,imgCutInEnemy,imgCutInPlayer];
+	let seList=[];
+
+	// 各種設定値
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	Debug_SetLevel;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){seList=seList~seListEnemy;}
+		InitializeBoss(imgList,seList);
+		DeleteEnemyShotToItem(ALL);
+
+		// スペルカード設定
+		SetLife(1);
+		SetDamageRate(0,0);
+		SetX(minX-128);
+		SetY(minY-64);
+
+		// ボス基本処理、メイン処理
+		BehaviorBoss(ACT_STAND4);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 会話開始
+		CreateEventFromScript("Talk");
+		SetCommonData(CD_STAGE_EVENT,true);
+		move(cenX,minY+120+RandBlur(0.1),90);
+		while(GetEventStep!=1){yield;}
+
+		// BGM
+		DeleteMusic( bgmList[ 4 ] );
+		_PlayMusicEx( bgmList[ 5 ], "" );
+		let bgmCount=m_nCount;
+		while(OnEvent||m_nCount-bgmCount<=30){yield;}
+		DeleteCommonData(CD_STAGE_EVENT);
+
+		AddLife(-1);
+
+	}
+
+
+	// 移動 --------------------------------------------------------------------
+	function move(let x, let y, let fr){
+
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}
+
+// 会話 ------------------------------------------------------------------------
+script_event Talk{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Event.dnh"
+
+	// 画像及び効果音ファイル
+	let imgCutInEnemy=cutRemilia;
+	let imgCutInPlayer=cutMarisa;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		TextOutB(90,"\c[RED]あら珍しいわね");
+		ChrIn(imgCutInEnemy,RIGHT,CUT_NORMAL);
+		Enemy;
+		SetNameFromText(RIGHT,TEXT_RED,"レミリア・スカーレット","永遠に紅い幼き月");
+		TextOut("\c[RED]いつもは図書館にしか興味ないくせにこっちに来るなんて");
+		ChrIn(imgCutInPlayer,LEFT,CUT_NORMAL);
+		Player;
+		TextOut("\c[BLUE]あぁ、霊夢を探しててな");
+		TextOut("\c[BLUE]あいつが好きなお前ならなんか知ってることもあるのかな、ってな");
+		Enemy;
+		TextOut("\c[RED]…知らないわ");
+		Player;
+		TextOut("\c[BLUE]そうだな、お前が犯人か");
+		Enemy;
+		TextOut("\c[RED]どうしてそうなるのよ");
+		TextOut("\c[RED]ま、いずれ知ることになるでしょうけどそれは今は気にすることじゃないわ");
+		SetStep(1);
+		TextOut("\c[RED]せっかくあなたからここに来たのだからもうちょっとくつろいでいきましょう？");
+		Player;
+		TextOut("\c[BLUE]そんなに暇じゃないぜ");
+		Enemy;
+		TextOut("\c[RED]帰さないわ");
+		End;
+
+	}
+
+}

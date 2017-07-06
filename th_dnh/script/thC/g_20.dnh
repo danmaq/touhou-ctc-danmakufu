@@ -1,0 +1,74 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level=GetCommonData("Level");
+//タスクの作成----------------------------------
+task MainAction()
+{
+	yield;
+	_Wait(rand(10,40));
+	while( GetY() < GetCenterY()+40 )
+	{
+		if(Level != 0)
+		{
+			loop([0,12,20,30][Level])
+			{
+				CreateShot02(GetX(),GetY(),[0,rand(0.5,1.5),rand(0.5,2.5),rand(0.5,3.5)][Level],rand(0,360),-0.05,0,US_ICE_PURPLE,0);
+			}
+		}
+		PlaySE(seShot3);
+		_Wait([999,100,80,60][Level]+int(rand(-10,10)));
+		DeleteEnemyShot(CHILD);
+	}
+}
+
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..100)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		yield;
+	}
+	_Wait(30);
+	let xx=GetX;
+	let yy=GetY;
+	while(1)
+	{
+		SetMovePositionRandom01(rand(20,80),rand(20,80),rand(1.5,3),Max( xx-80,GetClipMinX()+20 ),Max( yy-80,GetClipMinY()+20 ),Min( xx+80,GetClipMaxX()-20 ),Min( yy+80,GetClipMaxY()-20 ));
+		_Wait([999,100,80,60][Level]+int(rand(-10,10)));
+	}
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(2);
+		SetInvincibility( 10 );
+		MainAction();
+		SubAction01();
+		LoadUserShotData(shotAll);
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		yield;
+		m_nCount++;
+		if(m_nCount==400){
+			if(rand(0,100)>50){DropPointSmall( 1 , 20 );}
+			else{DropPoint( 1 , 20 );}
+			VanishEnemy();
+		}
+		Collision( 13, 8 );
+	}
+	@DrawLoop{DrawYousei(64,m_nCount);}
+	@Finalize{DeleteEnemyShot(CHILD);}
+}

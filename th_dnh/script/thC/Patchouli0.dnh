@@ -1,0 +1,186 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossPatchouli;
+	let imgCutInEnemy=cutPatchouli;
+	let imgCutInPlayer=cutMarisa;
+	let imgList=[imgBoss,imgCutInEnemy,imgCutInPlayer];
+	let seList=[];
+
+	// 各種設定値
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	Debug_SetLevel;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){seList=seList~seListEnemy;}
+		InitializeBoss(imgList,seList);
+		DeleteEnemyShotToItem(ALL);
+
+		// スペルカード設定
+		SetLife(1);
+		SetDamageRate(0,0);
+		SetEnemyMarker(false);
+		SetX(minX-64);
+		SetY(minY-128);
+
+		// ボス基本処理、メイン処理
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 会話開始
+		CreateEventFromScript("Talk");
+		SetCommonData(CD_STAGE_EVENT,true);
+		while(GetEventStep!=1){yield;}
+
+		SetEnemyMarker(true);
+		move(cenX,minY+120+RandBlur(0.1),90);
+		while(GetEventStep!=2){yield;}
+
+		// BGM
+		DeleteMusic( bgmList[ 6 ] );
+		_PlayMusicEx( bgmList[ 7 ], "" );
+		let bgmCount=m_nCount;
+		while(OnEvent||m_nCount-bgmCount<=30){yield;}
+		DeleteCommonData(CD_STAGE_EVENT);
+
+		AddLife(-1);
+
+	}
+
+
+	// 移動 --------------------------------------------------------------------
+	function move(let x, let y, let fr){
+
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}
+
+// 会話 ------------------------------------------------------------------------
+script_event Talk{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Event.dnh"
+
+	// 画像及び効果音ファイル
+	let imgCutInEnemy=cutPatchouli;
+	let imgCutInPlayer=cutMarisa;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		ChrIn(imgCutInPlayer,LEFT,CUT_NORMAL);
+		Player;
+		TextOut("\c[BLUE]そこの引きこもり知識人");
+		Enemy;
+		TextOut("\c[RED]なによまた来たの？そこの初代Ｇ");
+		Player;
+		TextOut("\c[BLUE]グレートウィッチ・マリサの略か？");
+		SetStep(1);
+		ChrIn(imgCutInEnemy,RIGHT,CUT_NORMAL);
+		SetNameFromText(RIGHT,TEXT_RED,"パチュリー・ノーレッジ","知識と日陰の少女");
+		Enemy;
+		TextOutB(90,"\c[RED]９７％不正解");
+		Player;
+		TextOut("\c[BLUE]それはおいといて、だ");
+		Enemy;
+		TextOut("\c[RED]持ってかないでー");
+		Player;
+		TextOut("\c[BLUE]話が飛躍しすぎだぜ");
+		Enemy;
+		TextOut("\c[RED]いいのよ、どうせあんたがここに来て本を万引きしていかなかったためしがないし");
+		TextOut("\c[RED]…で、マジレスするとおおよそ用件は分かるわ");
+		Player;
+		TextOut("\c[BLUE]あぁ、霊夢がいなくなってしまったんだが、お前はなんか心当たりないか？");
+		Enemy;
+		TextOut("\c[RED]紅白は…");
+		Player;
+		TextOut("\c[BLUE]…？　どうしたんだ？");
+		Enemy;
+		TextOut("\c[RED]死んだわ");
+		Player;
+		TextOut("\c[BLUE]は…？なんだよ、彼岸のサボり魔に名前でも書かれたのか？");
+		Enemy;
+		TextOut("\c[RED]親しい人が死んだってのにあなたは平気なの？私はそういう感情知らないけど");
+		Player;
+		TextOut("\c[BLUE]あぁ、お前のおかげで霊夢が何処へ逝ったかもどうすれば解決できるかも全て分かったぜ");
+		TextOut("\c[BLUE]しかしあいつもそこまで賽銭なくて貧乏なら私にでも相談すればよかったのに");
+		Enemy;
+		TextOut("\c[RED]それは私の知ったことじゃないわ、それとさりげなくウチの書物懐に仕舞わない！");
+		SetStep(2);
+		TextOut("\c[RED]丁度いいわ");
+		TextOut("\c[RED]そろそろ今までの本のツケを弾幕で払ってもらおうかしらと思ってた頃なのよね");
+		Player;
+		TextOut("\c[BLUE]悪いがお前の負けだ、お前のおかげで私の不安は全て晴れたからな");
+		TextOut("\c[BLUE]魔理沙１２０％の実力、とくと目に焼き付けるがいい！");
+		Enemy;
+		TextOut("\c[RED]えっと、目の前の黒いのを消極的にバラバラにする方法は…と");
+		End;
+
+	}
+
+}

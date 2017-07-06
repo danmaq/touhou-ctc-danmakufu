@@ -1,0 +1,170 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossEiki;
+	let imgCutInEnemy=cutEiki;
+	let imgCutInPlayer=cutMarisa;
+	let imgList=[imgBoss,imgCutInEnemy,imgCutInPlayer];
+	let seList=[];
+
+	// 各種設定値
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	Debug_SetLevel;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){seList=seList~seListEnemy;}
+		InitializeBoss(imgList,seList);
+		DeleteEnemyShotToItem(ALL);
+
+		// スペルカード設定
+		SetLife(1);
+		SetDamageRate(0,0);
+		SetEnemyMarker(false);
+		SetX(minX-64);
+		SetY(minY-128);
+
+		// ボス基本処理、メイン処理
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 会話開始
+		CreateEventFromScript("Talk");
+		SetCommonData(CD_STAGE_EVENT, true);
+		while(GetEventStep!=1){yield;}
+
+		SetEnemyMarker(true);
+		move(cenX,minY+120+RandBlur(0.1),90);
+		while(GetEventStep!=2){yield;}
+
+		// BGM
+		DeleteMusic( bgmList[ 18 ] );
+		_PlayMusicEx( bgmList[ 19 ], "" );
+		let bgmCount=m_nCount;
+		while(OnEvent||m_nCount-bgmCount<=30){yield;}
+		DeleteCommonData(CD_STAGE_EVENT);
+
+		AddLife(-1);
+
+	}
+
+
+	// 移動 --------------------------------------------------------------------
+	function move(let x, let y, let fr){
+
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}
+
+// 会話 ------------------------------------------------------------------------
+script_event Talk{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Event.dnh"
+
+	// 画像及び効果音ファイル
+	let imgCutInEnemy=cutEiki;
+	let imgCutInPlayer=cutMarisa;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		TextOut("\c[RED]生ける迷い人よ、暫し其処になおりなさい");
+		TextOut("\c[RED]今貴方の探している者はここには居ませんよ？");
+		SetStep(1);
+		ChrIn(imgCutInPlayer,LEFT,CUT_NORMAL);
+		Player;
+		TextOutB(90,"\c[BLUE]やっぱ考えすぎかね");
+		ChrIn(imgCutInEnemy,RIGHT,CUT_NORMAL);
+		SetNameFromText(RIGHT,TEXT_RED,"四季映姫・ヤマザナドゥ","楽園の最高裁判長");
+		Enemy;
+		TextOut("\c[RED]あの者はここに来ること自体が有り得ません");
+		Player;
+		TextOut("\c[BLUE]？　どういうことだ？");
+		Enemy;
+		TextOut("\c[RED]…今私から言えるのは唯一つ、早急に博麗神社の巫女を見つけ");
+		TextOut("\c[RED]そして思いの全てを打ち明けること…それが貴方の出来る善行です");
+		Player;
+		TextOut("\c[BLUE]悪いが言われるまでもないぜ");
+		TextOut("\c[BLUE]そこまで言う位なら霊夢の居場所も判ってるんだろうな");
+		Enemy;
+		TextOut("\c[RED]そうですね、知っては居ますが…");
+		Player;
+		TextOut("\c[BLUE]もったいぶるなよ、さっさと教えてくれ");
+		SetStep(2);
+		Enemy;
+		TextOut("\c[RED]焦る気持ちは分からなくもない…ですが頼み事をするのにあんまりなその態度");
+		TextOut("\c[RED]どうやら貴方には、先んじて少々の改心が必要ですね");
+		Player;
+		TextOut("\c[BLUE]なんだよそれ！…あぁ分かったよ、お前を倒して聞き出せばいいんだろう？");
+		Enemy;
+		TextOut("\c[RED]私の本当の説教はいつぞやの時のように甘くはないですよ？");
+		End;
+
+	}
+
+}

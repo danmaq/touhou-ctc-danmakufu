@@ -1,0 +1,164 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossSakuya;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.9;}
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			seList=seList~seListEnemy;
+			SetX(cenX);
+			SetY(minY+120+RandBlur(0.1));
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(43);
+		SetLife(2250);
+		SetDamageRate(85*DamageRate,85*DamageRate);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(62);
+		_Wait(62);
+
+		let assign=1;
+
+		loop{
+
+			// 側面反射弾
+			SideReflectShot(assign);
+			_Wait(150);
+
+			// 移動
+			move(60);
+			_Wait(60);
+
+			assign*=-1;
+
+		}
+
+	}
+
+	// 側面反射弾 --------------------------------------------------------------
+	task SideReflectShot(let assign){
+
+		let way=[19,25,25,31];
+		let num=[3,3,4,5];
+		let baseSpeed=1;
+		let maxSpeed=3;
+		let numSpeed=(maxSpeed-baseSpeed)/(num[Lv]-1);
+		let baseAngle=90-45*assign;
+		let wayAngle=180/(way[Lv]-1)*assign;
+		let delay=15;
+		let reflect=1;
+		let graphic=US_KNIFE_KOUMA_BLUE;
+		let L=true;
+		let U=false;
+		let R=false;
+		let D=false;
+		if(assign==-1){
+			graphic=US_KNIFE_KOUMA_RED;
+			L=false;
+			R=true;
+		}
+		if(Lv>=2){
+			U=true;
+		}
+
+		SetAction(ACT_SHOT_A4,60);
+		PlaySE(seShot1);
+		ascent(let i in 0 .. way[Lv]){
+			let angle=baseAngle+wayAngle*i;
+			ascent(let j in 0 .. num[Lv]){
+				let speed=baseSpeed+numSpeed*j;
+				ReflectShot(GetX,GetY,speed,angle,reflect,L,U,R,D,graphic,delay);
+			}
+			yield;
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}

@@ -1,0 +1,130 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	敵・使い魔などの共通下位ライブラリ
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//		※敵・子敵スクリプト以外からは使用出来ません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	下位ライブラリをインクルード
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\EnemyShotShadow.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	判定関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	当たり判定を登録(0指定で判定なし)
+//	fCollisionA … 自機被弾判定		fCollisionB … 自機接触判定
+function Collision( let fCollisionA, let fCollisionB ){
+	if( fCollisionA > 0 ){ SetCollisionA( GetX(), GetY(), fCollisionA ); }
+	if( fCollisionB > 0 ){ SetCollisionB( GetX(), GetY(), fCollisionB ); }
+}
+
+//	指定ドット以上画面から外れたら自殺する
+function GoneEx( let nDeadline ){ if( IsOut( nDeadline ) ){ VanishEnemy(); } }
+
+//	32ドット以上画面から外れたら自殺する
+function Gone(){ GoneEx( 32 ); }
+
+
+
+//////////////////////////////////////////////////////
+//追加部分 05/10/25　何か代わりの方法があったら消す
+//////////////////////////////////////////////////////
+
+//	ボス手前の雑魚の消去を検出したら自殺
+//	ステージスクリプト上ではCommonData"DeleteEnemy"=1のとき
+function Deletemine(){
+	if(GetCommonDataDefault("DeleteEnemy",0) == 1){
+		VanishEnemy();
+		Explosion01(GetX(),GetY(),3,0.2,10);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// -------------------------------------------------------------------
+// ダメージ率設定
+// -------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+// 一定時間後、ダメージ率設定 (※注 task)
+task _SetDamageRateExDelay( let frame, let damShot, let damBomb, let damShotB, let damBombB ){
+	loop( frame ){ yield; }
+	SetDamageRateEx( damShot, damBomb, damShotB, damBombB );
+}
+
+// 一定時間無敵（ボスへのダメージもなし）後、ダメージ率設定 (※注 task)
+// 主にボスが出す使い魔のInitializeに設定し、出現時無敵にする
+task SetDamageRateExDelay( let frame, let damShot, let damBomb, let damShotB, let damBombB ){
+	SetDamageRateEx( 0, 0, 0, 0 );
+	_SetDamageRateExDelay( frame, damShot, damBomb, damShotB, damBombB );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	アイテムドロップ関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	アイテムtypeをnum個、width範囲に散りばめてを落とす
+//	※滅多なことがない限り以下のラッパー関数を使ってください
+function _DropItem( let type, let num, let width ){
+	if( BeVanished() ){ return; }
+	let w = width / 2;
+	loop( num ){ SetItemQueue( type, GetX() + [ RandBlur( w ), 0 ][ num == 1 ], GetY() + [ RandBlur( w ), 0 ][ num == 1 ], 2.7, 270 ); }
+}
+
+/*	↓↓↓以下全て_DropItem()のラッパー関数↓↓↓	*/
+
+//	小点アイテムをnum個、width範囲に散りばめて落とす
+function DropPointSmall( let num, let width ){ _DropItem( ITEMEX_SCORE_SMALL, num, width ); }
+
+//	点アイテムをnum個、width範囲に散りばめて落とす
+function DropPoint( let num, let width ){ _DropItem( ITEMEX_SCORE, num, width ); }
+
+//	【機能変更】[点]・[P]・大[P]が一定法則で出現する機能に変わります。
+//	従来の機能はDropPoint()に名称変更しました。各自書き換え願います。
+function DropItem( let num, let width ){ _DropItem( ITEMEX_DEFAULT, num, width ); }
+
+//	[P]アイテムをnum個、width範囲に散りばめて落とす
+function DropPower( let num, let width ){ _DropItem( ITEMEX_POWER, num, width ); }
+
+//	大[P]アイテムをnum個、width範囲に散りばめて落とす
+function DropPowerBig( let num, let width ){ _DropItem( ITEMEX_POWER_BIG, num, width ); }
+
+//	[F]アイテムを落とす
+function DropPowerFull(){ _DropItem( ITEMEX_POWER_FULL, 1, 0 ); }
+
+//	ボムアイテムを落とす
+function DropBomb(){ _DropItem( ITEMEX_BOMB, 1, 0 ); }
+
+//	エクステンドアイテムを落とす
+function DropExtend(){ _DropItem( ITEMEX_EXTEND, 1, 0 ); }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	その他
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//　ダメージ音
+//　※@MainLoopで毎回呼び出すこと、@MainLoopの最後にm_nCount++;を行うこと
+function PlayDamageSE( let szSeFile ){
+	if( GetHitCount > 0 && m_nCount % 3 == 0 ){ PlaySE( szSeFile ); }
+}

@@ -1,0 +1,103 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossDevil;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	Debug_SetLevel;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+		DeleteEnemyShotToItem(ALL);
+		m_nEnemyAlpha=0;
+
+		// スペルカード設定
+		SetLife(1);
+		SetDamageRate(0,0);
+		SetX(cenX);
+		SetY(minY+150);
+
+		// ボス基本処理、メイン処理
+		BehaviorBoss(ACT_STAND4);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		if(m_nEnemyAlpha>200){Collision(32,24);}
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		move(cenX,minY+120+RandBlur(0.1),90);
+		FadeIn(90);
+		_Wait(90);
+
+		AddLife(-1);
+
+	}
+
+	// フェードイン ------------------------------------------------------------
+	task FadeIn(let fr){
+
+		let addAlpha=255/fr;
+		loop(fr){
+			m_nEnemyAlpha+=addAlpha;
+			yield;
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let x, let y, let fr){
+
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}

@@ -1,0 +1,225 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossDevil;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			seList=seList~seListEnemy;
+			SetX(cenX);
+			SetY(minY+120+RandBlur(0.1));
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(44);
+		SetLife(2500);
+		SetDamageRate(85,85);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND4);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(62);
+		_Wait(62);
+
+		// ランダム弾
+		LoopPlaySE(seShot3,6000,6);
+		RandomShot;
+
+		loop{
+
+			// 回転全方向弾
+			RollRoundShot;
+			_Wait(150);
+
+			// 移動
+			move(60);
+			_Wait(135);
+
+			// 回転直線弾
+			SetAction(ACT_SHOT_A3,105);
+			_Wait(15);
+			RollLineShot;
+			_Wait(90);
+
+			// 移動
+			move(60);
+			_Wait(90);
+
+		}
+
+	}
+
+	// 回転全方向弾 ------------------------------------------------------------
+	task RollRoundShot{
+
+		let _num=3;
+		let sNum=4;
+		let wNum=2;
+		let num=sNum+wNum;
+		let way=4;
+		let speed=1.6+0.6*Lv;
+		let numAngle=6;
+		let angle=-45;
+		let delay=20;
+		let graphic=US_BALL_L_BLUE;
+		let fr=15;
+
+		loop(_num){
+			ascent(let i in 0 .. num){
+				if(i<sNum){
+					RoundShot01(GetX,GetY,speed,angle,way,graphic,delay);
+					PlaySE(seShot1);
+				}
+				_Wait(fr);
+				angle+=numAngle;
+			}
+		}
+
+	}
+
+	// 回転直線弾 --------------------------------------------------------------
+	task RollLineShot{
+
+		let way=50+10*Lv;
+		let num=16;
+		let gapLength=40;
+		let minSpeed=1.2;
+		let maxSpeed=3.4+0.4*Lv;
+		let baseAngle=270;
+		let wayAngle=-360/way;
+		let addAngle=-(20+15*Lv);
+		let delay=10;
+		let graphic=US_ICE_WHITE;
+		let baseAngle2=0;
+		let wayAngle2=360/way;
+
+		PlaySE(seKira1);
+		ascent(let i in 0 .. way){
+			let gapAngle=baseAngle+wayAngle*i;
+			let x=GetGapX(GetX,gapLength,gapAngle);
+			let y=GetGapY(GetY,gapLength,gapAngle);
+			let angle=baseAngle2+wayAngle2*i;
+			LineShot(x,y,minSpeed,maxSpeed,angle,num,graphic,delay);
+			yield;
+		}
+
+	}
+
+	// ランダム弾 --------------------------------------------------------------
+	task RandomShot{
+
+		let fr=100-20*Lv;
+		loop{
+			_RandomShot;
+			_Wait(fr);
+		}
+
+	}
+
+	task _RandomShot{
+
+		let num=80;
+		let sort=CreateMixOrderArray(num);
+		let gapLength=40;
+		let speed=5;
+		let maxSpeed=1.2;
+		let addSpeed=(maxSpeed-speed)/40;
+		let baseAngle=90;
+		let numAngle=360/num;
+		let addAngle=20+15*Lv;
+		let delay=10;
+		let graphic=US_KUNAI_BLUE;
+
+		ascent(let i in 0 .. num){
+			let gapAngle=baseAngle+numAngle*sort[i];
+			let x=GetGapX(GetX,gapLength,gapAngle);
+			let y=GetGapY(GetY,gapLength,gapAngle);
+			let angle=gapAngle+addAngle;
+			CreateShot02(x,y,speed,angle,addSpeed,maxSpeed,graphic,delay);
+			yield;
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(20,40);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}

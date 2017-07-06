@@ -1,0 +1,36 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//　3D背景
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+let dirImageMap = GetCurrentScriptDirectory ~ "IMAGE\MAP\";
+
+//　汎用
+let imgMapBlack = dirImageMap ~ "Black.png";
+let imgMapWhite = dirImageMap ~ "White.png";
+
+//	鈴蘭畑ステージ
+let imgMapFlower = dirImageMap ~ "Flower.png";
+
+//	池ステージ
+let imgMapWater = dirImageMap ~ "Water1.png";
+
+//	彼岸ステージ
+let imgMapFlower2 = dirImageMap ~ "Flower2.png";
+
+//	屋外ステージ
+let imgMapGround = dirImageMap ~ "Ground.png";
+let imgMapBamboo = dirImageMap ~ "Bamboo.png";
+
+//	紅魔館回廊ステージ
+let imgMapCarpet = dirImageMap ~ "Carpet.png";
+let imgMapKouma = dirImageMap ~ "Kouma.png";
+let imgMapWindowLight = dirImageMap ~ "WindowLight.png";
+
+//	図書館ステージ
+let imgMapLibrary = dirImageMap ~ "Library.png";
+let imgMapLibraryWood = dirImageMap ~ "Library_Wood.png";
+
+//	川原ステージ
+let imgMapWater2 = dirImageMap ~ "Water2.png";
+let imgMapStonetile = dirImageMap ~ "Stonetile.png";

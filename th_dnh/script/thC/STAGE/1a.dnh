@@ -1,0 +1,273 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 1a
+//
+//		※ステージライブラリから自動的にインクルードされます
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let m_aszStage1ALoadFileListGraphic = [
+	dotYousei,
+	dotKedama,
+	dotCircle6s,
+	dotCircle6m,
+	dotCircle8s,
+	dotCircle8m,
+	imgDnhItem,
+	dotShotAll,
+	imgMapBamboo,
+	imgSystemFont,
+	imgSystemFontSmall,
+	dirImageSystemFont ~ "sjis16_1.png",
+	dirImageSystemFont ~ "sjis16_2.png",
+	dirImageSystemFont ~ "sjis16_3.png",
+] ~ LOADBGLIST_FRANDRE ~ LOADBGLIST_MEIRIN;
+let m_aszStage1ALoadFileListEnemy = [
+	z_s_07,
+	z_g_11,
+	z_s_10
+];
+let m_aszStage1ALoadFileListSound = [
+	sePower,
+	seDamage,
+	seBossExplode,
+	seTimeOut,
+	seKira1,
+	seKira2,
+	seKira3,
+	seLaser1,
+	seLaser2,
+	sePower2,
+	seShot1,
+	seShot2,
+	seShot3,
+
+	seShadow,
+	seShadowHidden,
+	seShadowSudden
+];
+
+let m_anBGZTable = [ 59, 11, 89, 92, 5, 70, 16, 42, 60, 94, 35 ];
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	内部処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+	let m_anBGZTable = [ 59, 11, 89, 92, 5, 70, 16, 42, 60, 94, 35 ];
+//	初期化
+function Stage1AInitialize(){
+	SetCommonData("Level",m_nStageLevel);
+	SetCommonData("DeleteEnemy",0);
+	LoadProgress( m_aszStageDefaultLoadFileListGraphic ~ m_aszStage1ALoadFileListGraphic, m_aszStage1ALoadFileListEnemy, m_aszStageDefaultLoadFileListSE ~ m_aszStage1ALoadFileListSound, imgSystemProgress, imgMapBlack );
+	PlayMusicEx( 2, "" );
+}
+
+//	ここにステージの中身を書く
+task Stage1A(){
+
+	SetShotAutoDeleteClip(32,64,32,32);
+	_Wait(320);
+
+//---------------------------------------------------------------
+
+	loop(2)
+	{
+		loop(7)
+		{
+			CreateEnemyFromFile(z_s_07,GetCenterX()*1.5+rand(-50,+50),GetClipMinY()-20,1.7,90,1);
+			_Wait(20);
+		}
+		_Wait(150);
+		loop(7)
+		{
+			CreateEnemyFromFile(z_s_07,GetCenterX()/2+rand(-50,+50),GetClipMinY()-20,1.7,90,-1);
+			_Wait(20);
+		}
+		_Wait(150);
+	}
+
+//---------------------------------------------------------------
+
+	CreateEnemyFromFile(z_g_11,GetCenterX(),GetClipMinY()-20,5.5,90,0);
+
+	_Wait(550);
+
+//---------------------------------------------------------------
+
+	loop(2)
+	{
+		loop(7)
+		{
+			CreateEnemyFromFile(z_s_10,GetCenterX()*1.5+rand(-50,+50),GetClipMinY()-20,rand(2,0.8),90+rand(10,45),0);
+			_Wait(10);
+		}
+		_Wait(200);
+		loop(7)
+		{
+			CreateEnemyFromFile(z_s_10,GetCenterX()/2+rand(-50,+50),GetClipMinY()-20,rand(2,0.8),90+rand(-45,-10),-0);
+			_Wait(10);
+		}
+		_Wait(200);
+	}
+
+
+	_Wait(100);
+
+	DeleteEnemyShotToItem(ALL);
+	SetCommonData("DeleteEnemy",1);
+
+
+///////////////////////////////////////////////////////////////////////
+
+if( !m_bNoBoss || !m_bDebug ){
+		if(m_nStageLevel<2){CreateEnemyBossFromFile(bossFlandreE,GetCenterX(),0,0,0,0);}
+		if(m_nStageLevel>1){CreateEnemyBossFromFile(bossFlandreH,GetCenterX(),0,0,0,0);}
+		WaitZeroEnemy();//敵が消えるまで停止
+		CreateEnemyFromFile(bossFlandre99,GetCenterX(),0,0,0,0);
+		WaitZeroEnemy();//敵が消えるまで停止
+	}
+
+///////////////////////////////////////////////////////////////////////
+
+	SetShotAutoDeleteClip(32,64,32,32);
+	SetCommonData("DeleteEnemy",0);
+	_Wait(200);
+
+//---------------------------------------------------------------
+
+	loop(2)
+	{
+		loop(9)
+		{
+			CreateEnemyFromFile(z_s_10,GetCenterX()+rand(-30,30),GetClipMinY()-20,rand(2,1),rand(45,135),0);
+			_Wait(5);
+		}
+		_Wait(200);
+	}
+	_Wait(100);
+
+//---------------------------------------------------------------
+
+	loop(2)
+	{
+		loop(10)
+		{
+			let XX=rand(GetClipMinX()+50,GetClipMaxX()-50);
+			CreateEnemyFromFile(z_s_07,XX,GetClipMinY()-20,2.5,90,[1,-1][XX<GetCenterX()]);
+			_Wait(10);
+		}
+		_Wait(150);
+	}
+		_Wait(150);
+
+
+//---------------------------------------------------------------
+
+	CreateEnemyFromFile(z_g_11,GetCenterX()/2,GetClipMinY()-20,5.5,90,0);
+	CreateEnemyFromFile(z_g_11,GetCenterX()*1.5,GetClipMinY()-20,5.5,90,0);
+
+	_Wait(650);
+
+
+	SetCommonData("DeleteEnemy",1);
+	yield;
+	DeleteEnemyShotToItem(ALL);
+	SetCommonData("DeleteEnemy",0);
+
+
+///////////////////////////////////////////////////////////////////////
+if( !m_bNoBoss || !m_bDebug ){
+		CreateEnemyBossFromFile(bossMeirin,GetCenterX(),0,0,0,0);
+		WaitZeroEnemy();//敵が消えるまで停止
+		if(GetMissCount == 0 && GetBombCount == 0 ){
+			CreateEnemyBossFromFile(bossMeirinL,GetCenterX(),GetCenterY/2,0,0,0);
+			WaitZeroEnemy();//敵が消えるまで停止
+		}
+		CreateEnemyFromFile(bossMeirin99,GetCenterX(),0,0,0,0);
+		WaitZeroEnemy();//敵が消えるまで停止
+	}
+//終了処理
+	yield;
+	DeleteCommonData(CD_SPELL_LASTSPELL);
+///////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////
+	if( !GetCommonDataDefault( CD_STAGE_PRACTICE, false ) ){
+		Stage2();
+	}
+	else{ Clear(); }
+
+////////////////////////////////////////////////////
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メイン部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	@MainLoop()にて毎フレーム呼ばれる部分
+function Stage1AMainLoop(){}
+
+//	@BackGround()にて毎回呼ばれる部分
+function Stage1ADrawBackGround(){
+	let nNow = m_nCount - m_nPhaseCount;
+	let nNowLoop = nNow % 1600;
+	let nSpeed = -nNowLoop * 0.25;
+	SetTexture( imgMapWhite );
+	SetFog( SlowDown( 0, 100, nNow, 600 ), SlowDown( 200, 800, nNow, 300 ), Accelerate( 0, 16, nNow, 600 ), 0, 16 );
+	SetViewTo( 0, 200, -nNowLoop );
+	SetViewFrom( 500, 90, -30 );
+	SetGraphicRect( 0, 0, 512, 512 );
+	SetGraphicAngle( 0, 0, 0 );
+	SetGraphicScale( 10, 10 );
+	DrawGraphic3D( 0, 500, -700 - nNowLoop );
+	SetTexture( dotShotAll );
+	SetGraphicAngle( 70, 0, nNow / 5 );
+	SetGraphicRect( 385, 417, 479, 511 );
+	DrawGraphic3D( 0, 500, -50 - nNowLoop );
+	SetGraphicScale( 1, 1 );
+
+	SetTexture( imgMapBamboo );
+	SetGraphicRect( 0, 0, 214, 512 );
+	SetAlpha( 192 );
+	ascent( let z in 0..15 ){
+		ascent( let x in 0..2 ){
+			let nBranch = 4;
+			ascent( let i in 0..nBranch ){
+				SetGraphicAngle( 0, Smooth( 0, 180, i, nBranch ) + 30, 180 );
+				DrawGraphic3D( ( 96 + m_anBGZTable[ ( z + [ 3, 7 ][ x ] ) % 10 ] ) * [ -1, 1 ][ x ], 100 + m_anBGZTable[ ( i + [ 8, 4 ][ ( z + x ) % 2 ] ) % 10 ], -z * 160 - m_anBGZTable[ ( z + [ 0, 5 ][ x ] ) % 10 ] + 256 );
+			}
+		}
+	}
+
+	SetColor( 255, 255, 255 );
+	SetAlpha( 255 );
+	SetGraphicAngle( 0, 0, 0 );
+
+}
+
+//	@DrawBottomObject()にて毎回呼ばれる部分
+function Stage1ADrawBottomObject(){
+}
+
+//	@DrawTopObject()にて毎回呼ばれる部分
+function Stage1ADrawTopObject(){
+}

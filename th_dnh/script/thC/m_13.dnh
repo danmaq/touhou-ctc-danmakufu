@@ -1,0 +1,125 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+
+	_Wait(100);
+
+	loop([3,5,10,20][Level])
+	{
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),rand(2,[2.1,3,4,5][Level]),GetAngleToPlayer()+180+[rand(-15,15),rand(-30,30),rand(-100,100),rand(0,360)][Level],0);
+	}
+
+
+
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop(100)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		i++;
+		yield;
+	}
+	_Wait(200);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(40);
+		SetInvincibility( 230 );
+		MainAction();
+		SubAction01();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		count++;
+		if(count==600){VanishEnemy();}
+		//敵画像代わり------------------------------------
+		if(int(count/2)==count/2)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+			SetShotKillTime(0,2);
+			FireShot(0);
+		}
+		//------------------------------------------------
+		Collision( 20, 8 );
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		DropItem( 1 , 60 );
+		DeleteEnemyShotToItem(ALL);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////
+//仮の使い魔、使い魔の書式の統一が必要なので雛形の作成をお願いします
+////////////////////////////////////////////////////////////////////////
+script_enemy t_ma_01
+{
+
+#include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\index_UserShot.dnh"
+
+	let count=0;
+	let scale=0;
+	let Level = GetCommonDataDefault( "Level", 1 );
+	let seHidden=seShadowHidden;
+	let seSudden=seShadowSudden;
+
+task MainAction()
+{
+	_Wait(100);
+	loop(3)
+	{
+		_Wait(30);
+		loop([1,3,6,12][Level])
+		{
+			CreateShot02(GetX(),GetY(),0.5,GetAngleToPlayer(),0.05,[1.5,1.8,3,4][Level],RED04,0);
+			_Wait([0,15,5,3][Level]);
+		}
+		_Wait(60);
+		CreateItem(ITEM_SCORE,GetX(),GetY());
+	}
+	VanishEnemy();
+
+}
+
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop(100)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		i++;
+		yield;
+	}
+
+}
+#include_function ".\INCLUDE\ShadowBody.dnh"
+}

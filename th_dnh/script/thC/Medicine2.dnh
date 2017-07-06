@@ -1,0 +1,208 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossMedicine;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.75;}
+
+	let dollGapAngle=GetCommonDataDefault("DollGapAngle",-90);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(45);
+		SetLife(1875);
+		SetDamageRate(90*DamageRate,90*DamageRate);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		BehaviorSub(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// スーさん角度設定
+		dollGapAngle+=360/240;
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=150;
+		let x=cenX;
+		let y=minY+120+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(180);
+
+		loop{
+
+			// ワインド直線弾
+			WindLineShot;
+			_Wait(150);
+
+			// 移動＋ランダム直線弾
+			RandomLineShot(150);
+			move(120);
+			_Wait(120);
+			SetAction(ACT_SHOT_A5,60);
+			_Wait(90);
+
+		}
+
+	}
+
+	// ワインド直線弾 ----------------------------------------------------------
+	task WindLineShot{
+
+		let way=36;
+		let num=[1,1,2,2];
+		let minSpeed=[2.6, 3.2, 2.6, 1.4];
+		let maxSpeed=[2.6, 3.2, 4.2, 3.4];
+		let wideAngle=95;
+		let graphic=US_BALL_M_PURPLE;
+		let delay=20;
+		let fr=2;
+		let assign=1;
+		if(GetPlayerX<cenX){assign=-1;}
+
+		SetAction(ACT_SHOT_A5,fr*way*2);
+		LoopPlaySE(seShot3,fr*way*2,6);
+		loop(2){
+			let baseAngle=GetGapAngle(GetX,GetY,cenX,maxY)-90*assign;
+			let wayAngle=wideAngle/(way-1)*assign;
+			ascent(let i in 0 .. way){
+				let angle=baseAngle+wayAngle*i;
+				LineShot(GetX,GetY,minSpeed[Lv],maxSpeed[Lv],angle,num[Lv],graphic,delay);
+				angle=baseAngle-wayAngle*i;
+				LineShot(GetX,GetY,minSpeed[Lv],maxSpeed[Lv],angle,num[Lv],graphic,delay);
+				_Wait(fr);
+			}
+			assign*=-1;
+		}
+
+	}
+
+	// ランダム直線弾 ----------------------------------------------------------
+	task RandomLineShot(let totalFr){
+
+		let fr=[8,6,4,2];
+		let _fr=trunc(fr[Lv]/2);
+		let shotNum=trunc(totalFr/fr[Lv]);
+		let num=[5,3];
+		let minSpeed=[1, 1.4];
+		let maxSpeed=[2.4, 2];
+		let graphic=[US_RICE_S_RED,US_SCALE_RED];
+		let delay=15;
+		let assign=1;
+		if(GetX>cenX){assign=-1;}
+		let assignAngle=45;
+
+		LoopPlaySE(seShot1,totalFr,10);
+		ascent(let i in 0 .. shotNum){
+			ascent(let j in 0 .. 2){
+				let gapLength=rand(0,15);
+				let gapAngle=rand(0,360);
+				let x=GetGapX(GetX,gapLength,gapAngle);
+				let y=GetGapY(GetY,gapLength,gapAngle);
+				let angle=rand(90+assignAngle*i*assign,90+assignAngle*(i+1)*assign)+180*j;
+				LineShot(x,y,minSpeed[j],maxSpeed[j],angle,num[j],graphic[j],delay);
+				_Wait(_fr);
+			}
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	task move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+		// スーさん角度設定
+		SetCommonData("DollGapAngle",dollGapAngle);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス＆スーさん描画
+		let dollGapLength=32;
+		let x=GetGapX(GetX,dollGapLength,dollGapAngle);
+		let y=GetGapY(GetY,dollGapLength*0.4,dollGapAngle*2);
+		if(sin(dollGapAngle)>0){
+			DrawBoss(imgBoss);
+			DrawSub(imgBoss,CHAR_DOLL,x,y);
+		}
+		else{
+			DrawSub(imgBoss,CHAR_DOLL,x,y);
+			DrawBoss(imgBoss);
+		}
+
+	}
+
+}

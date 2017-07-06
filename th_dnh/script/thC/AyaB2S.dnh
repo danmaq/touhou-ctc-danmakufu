@@ -1,0 +1,319 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossAya;
+	let imgCutIn=cutAya;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgShadow=dotCircle6s;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_AYA~imgFontList~[imgShadow];
+			seList=seList~seListEnemy~seListShadow;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(67);
+		SetLife(500);
+		SetDamageRate(7,7);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// Slowキー判定
+		GetSlowCount;
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+80+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"流星「アマキツネ－Ｅａｓｙ－」",
+			"流星「アマキツネ」",
+			"流星「アマキツネ－Ｈａｒｄ－」",
+			"流星「アマキツネ－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL3,0);
+		_Wait(125);
+
+		// 使い魔召喚
+		SetAction(ACT_SHOT_B5,120);
+		PlaySE(sePower);
+		Concentration01(120);
+		_Wait(120);
+		SummonShadow;
+		SetDamageRate(15,15);
+
+		loop{
+
+			_Wait(110);
+
+			// 直線弾
+			_LineShot;
+			_Wait(40);
+
+			// 移動
+			move(30);
+			_Wait(30);
+
+		}
+
+	}
+
+	// 使い魔召喚 --------------------------------------------------------------
+	task SummonShadow{
+
+		let num=3;
+		let baseX=minX;
+		let numX=(maxX-minX)/num;
+		let fr=20;
+
+		loop{
+			PlaySE(seShadow);
+			ascent(let i in 0 .. num){
+				let x=rand(baseX+numX*i,baseX+numX*(i+1));
+				CreateEnemyFromScript("Shadow",GetX,GetY,0,0,x);
+				_Wait(20);
+			}
+		}
+
+	}
+
+	// 扇状直線弾 --------------------------------------------------------------
+	function _LineShot{
+
+		let way=3+2*Lv;
+		let num=10;
+		let minSpeed=1;
+		let maxSpeed=4+0.5*Lv;
+		let angle=GetAngleToPlayer;
+		let wideAngle=3*(way-1);
+		let graphic=US_BUTTERFLY_RED;
+		let delay=15;
+
+		SetAction(ACT_SHOT_A3,40);
+		WideLineShot(GetX,GetY,minSpeed,maxSpeed,angle,wideAngle,way,num,graphic,delay);
+		PlaySE(seShot1);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	task move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+80){my=-my;}
+		x+=mx;
+		y+=my;
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){DropItem(12,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGAya;
+
+	}
+
+}
+
+// 使い魔 ----------------------------------------------------------------------
+script_enemy Shadow{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let imgShadow=dotCircle6s;
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(32);
+		SetDamageRateExDelay(30,100,100,75,75);
+
+		// 実体化時の光
+		LightShadow;
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 使い魔基本処理
+		BehaviorShadow(seShadowHidden,seShadowSudden);
+
+		// 画面外で消滅
+		GoneEx(32);
+
+		// 当たり判定（自弾,体当たり）
+		CollisionShadow(24,18);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 移動
+		SetMovePosition02(GetArgument,GetY,30);
+		loop(30){yield};
+		SetMovePosition01(GetX,maxY+100,3);
+
+		loop{
+
+			let fr=rand_int(20,100-15*Lv);
+			loop(fr){yield;}
+			if(GetY>maxY-64){break;}
+
+			// 直線弾
+			if(GetGapLength(GetX,GetY,GetPlayerX,GetPlayerY)>60){_LineShot;}
+
+		}
+
+	}
+
+	// 直線弾 ------------------------------------------------------------------
+	function _LineShot{
+
+		let way=3;
+		let num=1+Lv;
+		let minSpeed=1.8+0.2*Lv;
+		let maxSpeed=1.8+0.4*Lv;
+		let angle=GetAngleToPlayer;
+		let wideAngle=3+Lv;
+		let graphic=US_BALL_BS_ORANGE;
+		if(Lv>=2){graphic=US_LIGHT_ORANGE;}
+		let delay=10;
+
+		WideLineShot(GetX,GetY,minSpeed,maxSpeed,angle,wideAngle,way,num,graphic,delay);
+		PlaySE(seShot1);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// 弾消し
+		DestructShadow(40);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// 本体描画
+		let shadow=SHADOW_S_RED;
+		let angle=2*m_nCount;
+		let scale=0.8;
+		_DrawShadow(shadow,imgShadow,angle,scale,scale);
+
+	}
+
+}

@@ -1,0 +1,169 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level=GetCommonData("Level");
+	let angle_b=GetAngleToPlayer();
+//タスクの作成----------------------------------
+task MainAction()
+{
+	yield;
+	_Wait(50);
+	
+	while(1)
+	{
+		let angle_b=rand(0,360);
+		let angle=-180;
+		while(angle<180)
+		{
+			CreateEnemyFromScript("t_ma_01",GetX(),GetY(),2.5,GetAngleToPlayer()+angle+angle_b,int(rand(0,6)));
+			angle+=40;
+		}
+		_Wait([80,60,40,30][Level]);
+	}
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop(50)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 50 ));
+		i++;
+		yield;
+	}
+	_Wait(110);
+	SetAngle(-90);
+	SetSpeed(0.3);
+
+
+}
+
+task SubAction02()
+{
+
+	yield;
+	_Wait(50);
+
+	if(Level==1)
+	{
+		let i=0;
+		loop(20)
+		{
+			let angle=-180;
+			while(angle<180)
+			{
+				CreateShot01(GetX(),GetY(),Smooth( 0.8,3,i, 20 ),angle+Smooth(0,55,i,20),WHITE11,10);
+				angle+=60;
+			}
+			i++;
+		}
+	}
+	if(Level>1)
+	{
+		while(1)
+		{
+			let i=0;
+			loop([0,0,25,30][Level])
+			{
+				let angle=-180;
+				while(angle<180)
+				{
+					CreateShot01(GetX(),GetY(),Smooth( 0.8,[0,0,3.5,4][Level],i, [0,0,25,30][Level] ),GetAngleToPlayer()+angle+Smooth(0,55,i,[0,0,25,30][Level]),WHITE11,10);
+					angle+=60;
+				}
+				i++;
+			}
+			_Wait([0,0,80,50][Level]);
+			let i=0;
+			loop([0,0,25,30][Level])
+			{
+				let angle=-180;
+				while(angle<180)
+				{
+					CreateShot01(GetX(),GetY(),Smooth( [0,0,3.5,4][Level],0.8,i, [0,0,25,30][Level] ),GetAngleToPlayer()+angle+Smooth(0,55,i,[0,0,25,30][Level]),WHITE11,10);
+					angle+=60;
+				}
+				i++;
+			}
+			_Wait([0,0,80,50][Level]);
+		}
+	}
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(130);
+		SetInvincibility( 100 );
+		MainAction();
+		SubAction01();
+		SubAction02();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		Collision(16 , 12);
+		count++;
+		//敵画像代わり------------------------------------
+		if(int(count/2)==count/2)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+			SetShotKillTime(0,2);
+			FireShot(0);
+		}
+		//------------------------------------------------
+
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		DropItem( 2 , 20 );
+	}
+}
+
+////////////////////////////////////////////////////////////////////////
+//仮の使い魔、使い魔の書式の統一が必要なので雛形の作成をお願いします
+////////////////////////////////////////////////////////////////////////
+
+script_enemy t_ma_01
+{
+
+#include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\index_UserShot.dnh"
+
+	let count=0;
+	let scale=0;
+	let color=[BLUE04,RED04,GREEN04,YELLOW04,PURPLE04,AQUA04,ORANGE04][GetArgument()];
+	let seHidden=seShadowHidden;
+	let seSudden=seShadowSudden;
+
+task MainAction()
+{
+	yield;
+	while(1)
+	{
+		CreateShotA(0,GetX(),GetY(),0);
+		SetShotDataA(0,0,rand(-1,5),GetAngle+rand(-40,40),0,0,0,color);
+		SetShotDataA(0,9,rand(GetSpeed*0.6,GetSpeed),GetAngle,0,0,0,color);
+		FireShot(0);
+		loop(3){yield;}
+	}
+
+}
+task SubAction01()
+{yield;}
+
+#include_function ".\INCLUDE\ShadowBody.dnh"
+}

@@ -1,0 +1,10 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//Å@âÊëú
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+#include_function ".\IMAGE\CHAR\index.dnh"
+#include_function ".\IMAGE\MAP\index.dnh"
+#include_function ".\IMAGE\SPELL\index.dnh"
+#include_function ".\IMAGE\STAGE\index.dnh"
+#include_function ".\IMAGE\SYSTEM\index.dnh"

@@ -1,0 +1,21 @@
+#include_function ".\IMAGE\GAUGE\index.dnh"
+let imgBlack = GetCurrentScriptDirectory() ~ "IMAGE\Black.png";
+let imgBorder = GetCurrentScriptDirectory() ~ "IMAGE\Border.png";
+let imgCircle = GetCurrentScriptDirectory() ~ "IMAGE\circle6_s.png";
+let imgCutIn = GetCurrentScriptDirectory() ~ "IMAGE\cutin_marisa.png";
+let imgDot = GetCurrentScriptDirectory() ~ "IMAGE\player_marisa.png";
+let imgFlash = GetCurrentScriptDirectory() ~ "IMAGE\Flash2.png";
+let imgShot = GetCurrentScriptDirectory() ~ "IMAGE\UserShot.png";
+let imgWhite = GetCurrentScriptDirectory() ~ "IMAGE\White.png";
+let imgSpellLine = GetCurrentScriptDirectory() ~ "IMAGE\spell_line.png";
+let imgEdge = GetCurrentScriptDirectory() ~ "IMAGE\Edge.png";
+
+let dirImageSystemFont = "script\thC\IMAGE\SYSTEM\FONT\";
+
+let imgFont = dirImageSystemFont ~ "Font.png";
+let imgFontSmall = dirImageSystemFont ~ "FontSmall.png";
+let imgFontSJIS16 = [
+	dirImageSystemFont ~ "sjis16_1.png",
+	dirImageSystemFont ~ "sjis16_2.png",
+	dirImageSystemFont ~ "sjis16_3.png"
+];

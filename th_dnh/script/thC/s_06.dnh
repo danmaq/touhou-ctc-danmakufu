@@ -1,0 +1,43 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+	let Level=GetCommonData("Level");
+
+task SubAction01()
+{
+	yield;
+	_Wait(70);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,1500,atan2(GetCenterY()-GetY(),GetCenterX()-GetX()),300,-90,400);
+}
+
+//é¿çsïîï™---------------------------------------
+
+	@Initialize
+	{
+		SetLife(20);
+		SetInvincibility( 10 );
+		SubAction01();
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		Collision(16 , 12);
+		m_nCount++;
+	}
+	@DrawLoop{DrawRKedama(96,0,m_nCount);}
+	@Finalize
+	{
+		if( !BeVanished() )
+		{
+			DeleteEnemyShotToItemInCircle( SHOT, GetX(), GetY(), 40 );
+			SetColor(0,0,255);
+			Explosion01(GetX(),GetY(),3,0.2,10);
+		}
+	}
+}
+

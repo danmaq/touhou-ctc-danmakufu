@@ -1,0 +1,138 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	弾・敵・使い魔などの共通下位ライブラリ
+//
+//		※各上位ライブラリから間接的にインクルードされます。
+//			直接インクルードすることはありません。
+//		※イベントスクリプト・ステージスクリプトでは使用できません。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	下位ライブラリをインクルード
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\Common.dnh"
+#include_function ".\INCLUDE\withoutEvent.dnh"
+#include_function ".\INCLUDE\CutIn.dnh"
+#include_function ".\INCLUDE\patternShot.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	インデックスをインクルード
+//	※夢終劇以外に流用する場合は必要に応じて削除してください
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\IMAGE\index.dnh"
+#include_function ".\SOUND\index.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	判定関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	自分が画面から出ているかどうか判定する
+function IsOut( let nDeadline ){ return IsOutPos( GetX(), GetY(), nDeadline ); }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	マイクロスレッド制御
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	自分が一定速度以下になるまで待機
+function WaitSpeedDown( let nSpeed ){ yield; while( GetSpeed() > nSpeed ){ yield; } }
+
+//	自分が停止するまで待機
+function WaitZeroSpeed(){ WaitSpeedDown( 0 ); }
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	オブジェクト弾制御
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	オブジェクト弾生成
+function _SetObject( let x, let y, let fSpeed, let fAngle, let nDelay, let bAutoDelete ){
+	let obj = Obj_Create( OBJ_SHOT );
+	Obj_SetX( obj, x );
+	Obj_SetY( obj, y );
+	Obj_SetSpeed( obj, fSpeed );
+	Obj_SetAngle( obj, fAngle );
+	Obj_SetAutoDelete( obj, bAutoDelete );
+	ObjShot_SetDelay( obj, nDelay );
+	return obj;
+}
+
+//	オブジェクト生成
+function SetShotObject( let x, let y, let fSpeed, let fAngle, let Color, let nDelay ){
+	let obj = _SetObject( x, y, fSpeed, fAngle, nDelay, true );
+	ObjShot_SetGraphic( obj, Color );
+	return obj;
+}
+
+//	隠しオブジェクト生成
+function SetHiddenObject( let x, let y, let fSpeed, let fAngle, let nDelay, let bRedist, let bAutoDelete ){
+	let obj = _SetObject( x, y, fSpeed, fAngle, nDelay, bAutoDelete );
+	Obj_SetCollisionToPlayer( obj, false );
+	ObjShot_SetBombResist( obj, bRedist );
+	return obj;
+}
+
+//	GetAngleToPlayer()のオブジェクト弾対応版
+function GetAngleToPlayerObject( let obj ){ return atan2( GetPlayerY() - Obj_GetY( obj ), GetPlayerX() - Obj_GetX( obj ) ); }
+
+//	一定フレーム待機(オブジェクト弾に_Wait()を使ってはいけない)
+function WaitObject( let obj, let frame ){
+	let count = 0;
+	while( !Obj_BeDeleted( obj ) && count < frame ){
+		yield;
+		count++;
+	}
+	return Obj_BeDeleted( obj );
+}
+
+//	反射弾
+function ReflectObject( let object, let bBottom, let bSide, let bTop ){
+	let fAngle = Obj_GetAngle( object ) % 360;
+	if( ( bTop && Obj_GetY( object ) < GetClipMinY() ) || ( bBottom && Obj_GetY( object ) > GetClipMaxY() ) ){
+		Obj_SetAngle( object, -fAngle );
+		return true;
+	}
+	if( bSide && ( Obj_GetX( object ) < GetClipMinX() || Obj_GetX( object ) > GetClipMaxX() ) ){
+		Obj_SetAngle( object, 180 - fAngle );
+		return true;
+	}
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	自分の上にテクスチャ貼り付け(Y座標のずれを指定できる)
+function DrawChrGap( let szTexFile, let nGap ){ _DrawChr( szTexFile, GetX(), GetY() + nGap ); }
+
+//	自分の上にテクスチャ貼り付け(縦に正弦波運動しあたかも浮遊しているかのように見える)
+function DrawChr( let szTexFile, let nCount ){ DrawChrGap( szTexFile, sin( nCount * 2.5 ) * 8 ); }
+
+//	自分の上にテクスチャを回転貼り付け
+function DrawRotate( let szTexFile, let nCount ){
+	SetGraphicAngle( 0, 0, nCount );
+	DrawChrGap( szTexFile, 0 );
+	SetGraphicAngle( 0, 0, 0 );
+}

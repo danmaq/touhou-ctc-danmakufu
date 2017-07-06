@@ -1,0 +1,11 @@
+#ScriptPathData
+#ScriptPath[.\Eiki0.dnh]
+#ScriptPath[.\Eiki1.dnh]
+#ScriptPath[.\Eiki1S.dnh]
+#ScriptPath[.\Eiki2S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Eiki2.dnh]
+#ScriptPath[.\Eiki3S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Eiki4S.dnh]
+#EndScriptPathData

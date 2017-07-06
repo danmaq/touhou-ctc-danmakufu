@@ -1,0 +1,315 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossLily;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.25;}
+
+	let warpSt=0;
+	let warpFr=0;
+	let maxWarpFr=16;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			seList=seList~seListEnemy;
+			SetX(cenX);
+			SetY(minY+80);
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(46);
+		SetLife(625);
+		SetDamageRate(75*DamageRate,75*DamageRate);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		if(warpSt!=2){Collision(32,24);}
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(122);
+		_Wait(62);
+
+		let assign=1;
+
+		loop{
+
+			// ワープ移動
+			let area=1;
+			if(GetPlayerX>GetX){area=2;}
+			warp(maxWarpFr+40,area);
+			_Wait(70);
+
+			// 花弾
+			SetAction(ACT_SHOT_A3_B,60);
+			_Wait(20);
+			FlowerShot(assign);
+			assign*=-1;
+			_Wait(90);
+
+			// ワープ移動
+			warp(maxWarpFr+40,0);
+			_Wait(70);
+
+			// 花弾
+			SetAction(ACT_SHOT_A3_B,60);
+			_Wait(20);
+			FlowerShot(assign);
+			assign*=-1;
+			_Wait(90);
+
+			// ワープ移動
+			area=3-area;
+			warp(maxWarpFr+40,area);
+			_Wait(70);
+
+			// 花弾
+			SetAction(ACT_SHOT_A3_B,60);
+			_Wait(20);
+			FlowerShot(assign);
+			assign*=-1;
+			_Wait(90);
+
+			// ワープ移動
+			warp(maxWarpFr+40,3);
+			_Wait(120);
+
+			// 対称弾＆移動
+			SymmetryShot;
+			let power=300;
+			let angle=90;
+			SetMovePositionHermite(cenX,minY+40,power,angle,power,-angle,120);
+			_Wait(180);
+
+		}
+
+	}
+
+	// 花弾 --------------------------------------------------------------------
+	task FlowerShot(assign){
+
+		let num=[3,5,8,10];
+		let way_=8;
+		let way=way_*6;
+		let baseSpeed0=0.8;
+		let maxSpeed0=2.4+0.6*Lv;
+		let numSpeed0=(maxSpeed0-baseSpeed0)/(num[Lv]-1);
+		let speed1=1.4+0.2*Lv;
+		let baseAngle=rand(0,360);
+		let numAngle=10*assign;
+		let wayAngle=360/way*assign;
+		let graphic=[US_SCALE_PURPLE,US_RICE_S_SKY];
+		let delay=15;
+		let fr1=90;
+
+		PlaySE(seShot1);
+		ascent(let i in 0 .. num[Lv]){
+			let speed0=baseSpeed0+numSpeed0*i;
+			let addSpeed0=-speed0/fr1;
+			ascent(let j in 0 .. way){
+				let angle=baseAngle+numAngle*i+wayAngle*j;
+				CreateShotA(0,GetX,GetY,delay);
+				if(j%way_<way_/2){
+					SetShotDataA(0,0,speed0,angle,0,addSpeed0,0,graphic[0]);
+					SetShotDataA(0,fr1,speed1,angle,0,0,0,graphic[0]);
+				}
+				else{
+					SetShotDataA(0,0,speed0,angle,0,addSpeed0,0,graphic[1]);
+					SetShotDataA(0,fr1,speed1*0.75,angle,0,0,0,graphic[1]);
+				}
+				FireShot(0);
+			}
+		}
+		_Wait(fr1+delay);
+		PlaySE(seKira1);
+
+	}
+
+	// 対称弾 ------------------------------------------------------------------
+	task SymmetryShot{
+
+		let num=30;
+		let way=[1,2,5,9];
+		let symX=[-18,18];
+		let minSpeed=0.8;
+		let maxSpeed=1.6+0.4*Lv;
+		let numSpeed=0.02;
+		let wideAngle=0;
+		let numAngle=(225-wideAngle)/(num-1);
+		let wayAngle=0;
+		if(Lv>0){wayAngle=wideAngle/(way[Lv]-1);}
+		let baseAngle=[0,180];
+		let graphic=[US_BALL_BS_RED,US_BALL_BS_BLUE];
+		let delay=5;
+		let assign=[1,-1];
+		let fr=4;
+
+		SetAction(ACT_SHOT_B3,fr*num+30);
+		LoopPlaySE(seShot3,fr*num,6);
+		ascent(let i in 0 .. num){
+			let y=GetY-18;
+			ascent(let j in 0 .. way[Lv]){
+				let speed=rand(minSpeed,maxSpeed)+numSpeed*i;
+				ascent(let k in 0 .. 2){
+					let x=GetX+symX[k];
+					let angle=baseAngle[k]+(numAngle*i+wayAngle*j)*assign[k];
+					CreateShot01(x,y,speed,angle,graphic[k],delay);
+				}
+			}
+			_Wait(fr);
+		}
+
+	}
+
+	// ワープ移動 --------------------------------------------------------------
+	task warp(let fr, let area){
+
+		// 消滅
+		warpSt=1;
+		warpFr=0;
+		loop(maxWarpFr){
+			yield;
+			warpFr++;
+		}
+
+		// 待ち
+		SetEnemyMarker(false);
+		warpSt=2;
+		SetX(cenX);
+		SetY(minY-400);
+		_Wait(fr-maxWarpFr*2);
+
+		// 出現
+		SetEnemyMarker(true);
+		alternative(area)
+		case(1){
+			SetX(rand(minX+90,cenX-60));
+			SetY(minY+100+rand(-20,20));
+		}
+		case(2){
+			SetX(rand(cenX+60,maxX-90));
+			SetY(minY+100+rand(-20,20));
+		}
+		case(3){
+			SetX(cenX);
+			SetY(cenY-60);
+		}
+		others{
+			SetX(cenX);
+			SetY(minY+100);
+		}
+		warpSt=3;
+		warpFr=0;
+		loop(maxWarpFr){
+			yield;
+			warpFr++;
+		}
+		warpSt=0;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// アイテム放出
+		if(THC&&!Practice&&Lv<2){DropItem(6,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		setDrawData;
+		DrawBoss(imgBoss);
+
+	}
+
+	// 描画倍率 ----------------------------------------------------------------
+	function setDrawData{
+
+		alternative(warpSt)
+		case(1){
+			let scX=1;
+			let scY=1;
+			let halfWarpFr=maxWarpFr/2;
+			if(warpFr<halfWarpFr){
+				scX=1+0.5/halfWarpFr*warpFr;
+				scY=1-0.9/halfWarpFr*warpFr;
+			}
+			else{
+				scX=1.5-1.5/halfWarpFr*(warpFr-halfWarpFr);
+				scY=0.1+2.4/halfWarpFr*(warpFr-halfWarpFr);
+			}
+			SetGraphicScale(scX,scY);
+			SetAlpha(255);
+		}
+		case(2){
+			SetGraphicScale(1,1);
+			SetAlpha(0);
+		}
+		case(3){
+			let scX=1;
+			let scY=1;
+			let halfWarpFr=maxWarpFr/2;
+			if(warpFr<halfWarpFr){
+				scX=1.5/halfWarpFr*warpFr;
+				scY=2.5-2.4/halfWarpFr*warpFr;
+			}
+			else{
+				scX=1.5-0.5/halfWarpFr*(warpFr-halfWarpFr);
+				scY=0.1+0.9/halfWarpFr*(warpFr-halfWarpFr);
+			}
+			SetGraphicScale(scX,scY);
+			SetAlpha(255);
+		}
+		others{
+			SetGraphicScale(1,1);
+			SetAlpha(255);
+		}
+
+	}
+
+}
