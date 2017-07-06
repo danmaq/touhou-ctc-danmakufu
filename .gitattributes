@@ -2,3 +2,5 @@
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.png filter=lfs diff=lfs merge=lfs -text
 *.DAT filter=lfs diff=lfs merge=lfs -text
+*.txt diff=sjis
+*.dnh diff=sjis
