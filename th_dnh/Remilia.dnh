@@ -1,3 +1,17 @@
+#東方弾幕風[Plural]
+#Title[Remilia - Easy/Normal/Hard/Lunatic]
+#Text[ステージ2A ボス
+レミリア・スカーレット
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
 #ScriptPathData
 #ScriptPath[.\Remilia1.dnh]
 #ScriptPath[.\Remilia1S.dnh]

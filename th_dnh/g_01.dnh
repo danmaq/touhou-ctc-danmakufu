@@ -2,6 +2,7 @@ script_enemy_main
 {
 
 #include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\index_UserShot.dnh"
 
 //•Ï”éŒ¾--------------------------------------
 	let count=0;
@@ -17,7 +18,7 @@ task MainAction()
 		let angle=-[0,0,12,36][Level];
 		while(angle<=[0,0,12,36][Level])
 		{
-			CreateShot01(GetX(),GetY(),[0,1.5,2,2][Level]-absolute(angle/60),angle+GetAngleToPlayer(),GREEN05,0);
+			CreateShot01(GetX(),GetY(),[0,1.5,2,2][Level]-absolute(angle/60),angle+GetAngleToPlayer(),44,0);
 			angle+=4;
 		}
 	}
@@ -46,6 +47,7 @@ task SubAction01()
 		SetLife(13);
 		MainAction();
 		SubAction01();
+		LoadUserShotData(shotAll);
 	}
 	@MainLoop
 	{

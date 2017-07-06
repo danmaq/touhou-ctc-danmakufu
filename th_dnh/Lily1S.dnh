@@ -1,22 +1,35 @@
+#東方弾幕風
+#Title[Lily - スペルカード1]
+#Text[ステージ1C 中ボス
+リリー・ホワイト
+
+
+
+下記以外のスタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
 script_enemy_main{
 
-	// 画像及び効果音ファイル
-	#include_function ".\IMAGE\CHAR\index.dnh"
-	let imgBoss=dotBossSample;
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Enemy.dnh"
 
-	// 座標設定
-	let cenX=GetCenterX;
-	let cenY=GetCenterY;
-	let minX=GetClipMinX;
-	let maxX=GetClipMaxX;
-	let minY=GetClipMinY;
-	let maxY=GetClipMaxY;
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossLily;
 
 	// 難易度
 	Debug_SetLevel;
 	let Lv=GetCommonDataDefault("Level",0);
 	if(Lv<3){Lv=0;}
 	else{Lv=1;}
+
+	let warpSt=0;
+	let warpFr=0;
+	let maxWarpFr=16;
+	let objE;
 
 	// -------------------------------------------------------------------------
 	@Initialize{
@@ -25,15 +38,12 @@ script_enemy_main{
 		LoadGraphic(imgBoss);
 
 		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
-		SetText("＊符「＊＊＊」");
-		SetScore(100000);
-		SetTimer(63);
 		SetShotAutoDeleteClip(20,20,20,20);
 		SetEnemyMarker(true);
 
-		// ボスステータス設定（ライフ、ダメージ率Shot%,Bomb%等）
-		SetLife(400);
-		SetDamageRate(7.5,5);
+		// ボスステータス設定（ライフ、ダメージ率等）
+		SetLife(500);
+		SetDamageRate(10,6);
 
 		Main;
 
@@ -42,9 +52,11 @@ script_enemy_main{
 	// -------------------------------------------------------------------------
 	@MainLoop{
 
-		// 当たり判定（A:自弾,B:体当たり）
-		SetCollisionA(GetX,GetY,32);
-		SetCollisionB(GetX,GetY,24);
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// カウンタ加算
+		m_nCount++;
 
 		yield;
 
@@ -54,24 +66,32 @@ script_enemy_main{
 	task Main{
 
 		SetInvincibility(242);
-		wait(2);
+		_Wait(2);
 
 		// 初期移動
-		let fr=180;
+		warp(60);
+		_Wait(60);
+		let fr=120;
 		let x=cenX;
 		let y=cenY;
 		SetMovePosition02(x,y,fr);
-		wait(fr);
 
+		SetText("＊符「＊＊＊」");
+		SetScore(100000);
+		SetTimer(62);
+		_Wait(fr);
+
+		// 木の葉消去弾
+		EraseLeafShot;
 		let turn=0;
 
 		loop{
 
 			// 全方向分岐レーザー
 			Concentration01(60);
-			wait(60);
+			_Wait(60);
 			RoundForkLaser(turn);
-			wait(300);
+			_Wait(300);
 
 			turn++;
 			if(turn>=4){turn=0;}
@@ -83,7 +103,7 @@ script_enemy_main{
 	// 全方向分岐レーザー ------------------------------------------------------
 	task RoundForkLaser(let turn){
 
-		let way=3+1*Lv;
+		let way=3;//+1*Lv;
 		let fork=5;
 		let wayAngle=360/way;
 		let baseAngle=GetAngleToPlayer+wayAngle/2;
@@ -96,14 +116,7 @@ script_enemy_main{
 	}
 
 	// 分岐レーザー ------------------------------------------------------------
-	task ForkLaser(
-		let x,
-		let y,
-		let angle,
-		let fork,
-		let first,
-		let turn
-	){
+	task ForkLaser(let x, let y, let angle, let fork, let first, let turn){
 
 		// 初期設定 ----------------------------------------
 		let obj=Obj_Create(OBJ_LASER);
@@ -174,12 +187,7 @@ script_enemy_main{
 	}
 
 	// 木の葉弾 ----------------------------------------------------------------
-	task LeafShot(
-		let x,
-		let y,
-		let angle,
-		let graphic
-	){
+	task LeafShot(let x, let y, let angle, let graphic){
 
 		// 初期設定 ----------------------------------------
 		let obj=Obj_Create(OBJ_SHOT);
@@ -200,7 +208,7 @@ script_enemy_main{
 
 		let fr=90;
 		let speed=0;
-		let maxSpeed=rand(0.7,1.4);
+		let maxSpeed=1.2;
 		let addSpeed=(maxSpeed-speed)/fr;
 
 		loop(fr){
@@ -210,23 +218,78 @@ script_enemy_main{
 			yield;
 		}
 
-		loop(180){
+		speed=2.4;
+		if(Lv==1){speed=4.8;}
+
+		loop{
 			if(Obj_BeDeleted(obj)){break;}
+			if(Collision_Obj_Obj(obj,objE)){
+				angle=GetGapAngle(Obj_GetX(obj),Obj_GetX(obj),GetPlayerX,GetPlayerY);
+				Obj_SetSpeed(obj,speed);
+				Obj_SetAngle(obj,angle);
+				Obj_SetAutoDelete(obj,true);
+				break;
+			}
 			yield;
 		}
-		Obj_SetAutoDelete(obj,true);
 
 	}
 
-	// 待ち --------------------------------------------------------------------
-	function wait(let fr){
+	// 木の葉消去弾 ------------------------------------------------------------
+	task EraseLeafShot{
 
-		loop(fr){yield;}
+		// 初期設定 ----------------------------------------
+		objE=Obj_Create(OBJ_SHOT);
+
+		Obj_SetX(objE,GetX);
+		Obj_SetY(objE,GetY);
+		Obj_SetSpeed(objE,0);
+		Obj_SetAngle(objE,0);
+		ObjShot_SetGraphic(objE,WHITE02);
+		Obj_SetAlpha(objE,0);
+		Obj_SetCollisionToPlayer(objE,false);
+		ObjShot_SetBombResist(objE,true);
+		ObjShot_ToItem(objE,false);
+
+	}
+
+	// ワープ移動 --------------------------------------------------------------
+	task warp(let fr){
+
+		// 消滅
+		warpSt=1;
+		warpFr=0;
+		loop(maxWarpFr){
+			yield;
+			warpFr++;
+		}
+
+		// 待ち
+		SetEnemyMarker(false);
+		warpSt=2;
+		SetX(cenX);
+		SetY(minY-400);
+		_Wait(fr-maxWarpFr*2);
+
+		// 出現
+		SetEnemyMarker(true);
+		SetX(cenX);
+		SetY(minY+60);
+		warpSt=3;
+		warpFr=0;
+		loop(maxWarpFr){
+			yield;
+			warpFr++;
+		}
+		warpSt=0;
 
 	}
 
 	// -------------------------------------------------------------------------
 	@Finalize{
+
+		// アイテム放出
+		DropItem(16,80);
 
 		// ロードしたファイルを削除
 		DeleteGraphic(imgBoss);
@@ -237,18 +300,59 @@ script_enemy_main{
 	@DrawLoop{
 
 		// ボス描画
-		SetTexture(imgBoss);
-		if(GetSpeed==0){SetGraphicRect(1,1,64,64);}
-		else if(GetAngle>-90&&GetAngle<=90){SetGraphicRect(192,1,255,64);}
-		else {SetGraphicRect(128,1,191,64);}
+		let x=0;
+		let y=0;
+		let sLength=128;
 		SetAlpha(255);
 		SetColor(255,255,255);
-		DrawGraphic(GetX,GetY);
+		setDrawData;
+		_DrawChrRectSqr(imgBoss,GetX,GetY,x,y,sLength);
 
 	}
 
-	// 共通関数読み込み
-	#include_function ".\INCLUDE\patternShot.dnh"
-	#include_function ".\INCLUDE\library_request.dnh"
+	// 描画倍率 ----------------------------------------------------------------
+	function setDrawData{
+
+		alternative(warpSt)
+		case(1){
+			let scX=1;
+			let scY=1;
+			let halfWarpFr=maxWarpFr/2;
+			if(warpFr<halfWarpFr){
+				scX=1+0.5/halfWarpFr*warpFr;
+				scY=1-0.9/halfWarpFr*warpFr;
+			}
+			else{
+				scX=1.5-1.5/halfWarpFr*(warpFr-halfWarpFr);
+				scY=0.1+2.4/halfWarpFr*(warpFr-halfWarpFr);
+			}
+			SetGraphicScale(scX,scY);
+			SetAlpha(255);
+		}
+		case(2){
+			SetGraphicScale(1,1);
+			SetAlpha(0);
+		}
+		case(3){
+			let scX=1;
+			let scY=1;
+			let halfWarpFr=maxWarpFr/2;
+			if(warpFr<halfWarpFr){
+				scX=1.5/halfWarpFr*warpFr;
+				scY=2.5-2.4/halfWarpFr*warpFr;
+			}
+			else{
+				scX=1.5-0.5/halfWarpFr*(warpFr-halfWarpFr);
+				scY=0.1+0.9/halfWarpFr*(warpFr-halfWarpFr);
+			}
+			SetGraphicScale(scX,scY);
+			SetAlpha(255);
+		}
+		others{
+			SetGraphicScale(1,1);
+			SetAlpha(255);
+		}
+
+	}
 
 }

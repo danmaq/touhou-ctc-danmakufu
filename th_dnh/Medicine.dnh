@@ -1,3 +1,17 @@
+#東方弾幕風[Plural]
+#Title[Medicine - Easy/Normal/Hard/Lunatic]
+#Text[ステージ1C ボス
+メディスン・メランコリー
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
 #ScriptPathData
 #ScriptPath[.\Medicine1.dnh]
 #ScriptPath[.\Medicine1S.dnh]

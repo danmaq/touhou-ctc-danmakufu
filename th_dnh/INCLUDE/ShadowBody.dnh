@@ -6,6 +6,7 @@
 		LoadGraphic(dotCircle6s);
 		MainAction();
 		SubAction01();
+		LoadUserShotData(shotAll);
 
 	}
 	@MainLoop

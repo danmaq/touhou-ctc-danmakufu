@@ -1,16 +1,24 @@
+#東方弾幕風
+#Title[Sakuya - 通常攻撃1]
+#Text[ステージ2A 中ボス
+十六夜 咲夜
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
 script_enemy_main{
 
-	// 画像及び効果音ファイル
-	#include_function ".\IMAGE\CHAR\index.dnh"
-	let imgBoss=dotBossSample;
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Enemy.dnh"
 
-	// 座標設定
-	let cenX=GetCenterX;
-	let cenY=GetCenterY;
-	let minX=GetClipMinX;
-	let maxX=GetClipMaxX;
-	let minY=GetClipMinY;
-	let maxY=GetClipMaxY;
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossSakuya;
 
 	// 難易度
 	Debug_SetLevel;
@@ -23,15 +31,15 @@ script_enemy_main{
 		LoadGraphic(imgBoss);
 
 		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
-		SetTimer(37);
+		SetTimer(35);
 		SetShotAutoDeleteClip(64,64,64,20);
 		SetEnemyMarker(true);
 
-		// ボスステータス設定（ライフ、ダメージ率Shot%,Bomb%等）
+		// ボスステータス設定（ライフ、ダメージ率等）
 		SetLife(2500);
 		SetDamageRate(80,40);
-		SetX(maxX+50);
-		SetY(minY+120);
+		SetX(cenX);
+		SetY(minY+120+RandBlur(1));
 
 		Main;
 
@@ -40,9 +48,11 @@ script_enemy_main{
 	// -------------------------------------------------------------------------
 	@MainLoop{
 
-		// 当たり判定（A:自弾,B:体当たり）
-		SetCollisionA(GetX,GetY,32);
-		SetCollisionB(GetX,GetY,24);
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// カウンタ加算
+		m_nCount++;
 
 		yield;
 
@@ -51,21 +61,12 @@ script_enemy_main{
 	// メイン処理 --------------------------------------------------------------
 	task Main{
 
-		SetInvincibility(122);
-		wait(2);
-
-		// 初期移動
-		let fr=60;
-		let x=cenX;
-		let y=minY+120+rand(-1,1);
-		let power=GetGapLength(GetX,GetY,x,y)*2;
-		let angle=GetGapAngle(GetX,GetY,x,y);
-		SetMovePositionHermite(x,y,power,angle,0,0,fr);
-		wait(fr);
+		SetInvincibility(62);
+		_Wait(2);
 
 		// 発動
 		ExplosionBoss;
-		wait(60);
+		_Wait(60);
 
 		let assign=1;
 
@@ -73,11 +74,11 @@ script_enemy_main{
 
 			// 側面反射弾
 			SideReflectShot(assign);
-			wait(150);
+			_Wait(150);
 
 			// 移動
 			move(60);
-			wait(60);
+			_Wait(60);
 
 			assign*=-1;
 
@@ -118,7 +119,7 @@ script_enemy_main{
 				let speed=baseSpeed+numSpeed*j;
 				ReflectShot(GetX,GetY,speed,angle,reflect,L,U,R,D,graphic,delay);
 			}
-			wait(fr);
+			_Wait(fr);
 		}
 
 	}
@@ -145,13 +146,6 @@ script_enemy_main{
 
 	}
 
-	// 待ち --------------------------------------------------------------------
-	function wait(let fr){
-
-		loop(fr){yield;}
-
-	}
-
 	// -------------------------------------------------------------------------
 	@Finalize{
 
@@ -164,18 +158,13 @@ script_enemy_main{
 	@DrawLoop{
 
 		// ボス描画
-		SetTexture(imgBoss);
-		if(GetSpeed==0){SetGraphicRect(1,1,64,64);}
-		else if(GetAngle>-90&&GetAngle<=90){SetGraphicRect(192,1,255,64);}
-		else {SetGraphicRect(128,1,191,64);}
+		let x=0;
+		let y=0;
+		let sLength=128;
 		SetAlpha(255);
 		SetColor(255,255,255);
-		DrawGraphic(GetX,GetY);
+		_DrawChrRectSqr(imgBoss,GetX,GetY,x,y,sLength);
 
 	}
-
-	// 共通関数読み込み
-	#include_function ".\INCLUDE\patternShot.dnh"
-	#include_function ".\INCLUDE\library_request.dnh"
 
 }

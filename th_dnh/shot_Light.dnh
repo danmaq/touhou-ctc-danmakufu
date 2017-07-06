@@ -1,6 +1,6 @@
 #UserShotData
 
-ShotImage=".\IMAGE\CHAR\DOT\shot_add.png"
+ShotImage=".\IMAGE\CHAR\DOT\shot_light.png"
 
 ShotData{
 	id=1

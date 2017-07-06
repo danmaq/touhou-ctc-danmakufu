@@ -1,0 +1,249 @@
+#東方弾幕風
+#Title[Patchouli - ラストスペル]
+#Text[ステージ3A ボス
+パチュリー・ノーレッジ
+（日＆月符）
+
+下記以外のスタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Enemy.dnh"
+
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossPatchouli;
+
+	// 難易度
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault("Level",0);
+	if(Lv==0){Lv=1;}
+	Lv--;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// 画像及び効果音をロード
+		LoadGraphic(imgBoss);
+
+		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
+		SetTimer(62);
+		SetShotAutoDeleteClip(20,20,20,20);
+		SetEnemyMarker(true);
+		LastSpell;
+
+		// ボスステータス設定（ライフ、ダメージ率等）
+		SetLife(500);
+		SetDamageRate(5,0);
+		SetX(cenX);
+		SetY(minY+120);
+		LastSpellEffect(120);
+
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		if(m_nEnemyAlpha>0){Collision(32,24);}
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(302);
+		_Wait(122);
+		SetText("＊符「＊＊＊」");
+		SetScore(100000);
+		_Wait(120);
+
+		// 回転反射レーザー
+		Concentration01(120);
+		_Wait(120);
+		RollReflectLaser;
+		_Wait(120);
+
+		// 回転弾
+		RollShot;
+		_Wait(120);
+		SetDamageRate(15,0);
+
+	}
+
+	// 回転反射レーザー --------------------------------------------------------
+	task RollReflectLaser{
+
+		let gapLength=20;
+		let speed=14;
+		let angle=-90;
+		let accAngle=365/210;
+		let delay=90;
+		let reflect=1;
+		let fr=4;
+		if(Lv==2){fr=3;}
+
+		loop{
+			let x=GetGapX(GetX,gapLength,angle);
+			let y=GetGapY(GetY,gapLength,angle);
+			ExtendReflectLaser(x,y,speed,angle,delay,reflect,true);
+			_Wait(fr);
+			angle+=accAngle*fr;
+		}
+
+	}
+
+	// 伸びる反射レーザー ------------------------------------------------------
+	task ExtendReflectLaser(let x, let y, let speed, let angle, let delay, let reflect, let first){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_LASER);
+		while(angle<0){angle+=360;}
+		if(angle>=360){angle%=360;}
+
+		Obj_SetX(obj,x);
+		Obj_SetY(obj,y);
+		Obj_SetAngle(obj,angle);
+		ObjLaser_SetWidth(obj,10);
+		ObjShot_SetDelay(obj,90);
+		ObjShot_SetGraphic(obj,RED02);
+		Obj_SetAutoDelete(obj,false);
+		ObjLaser_SetSource(obj,false);
+
+		// メイン処理 --------------------------------------
+		setLength;
+
+		// 反射設定
+		if(reflect>0){
+			let ref=false;
+			let fr=0;
+			let angleLU=atan2(y-minY,x-minX)+180;
+			let angleRU=atan2(y-minY,x-maxX)+180;
+			let angleLD=atan2(y-maxY,x-minX)+180;
+			let angleRD=atan2(y-maxY,x-maxX)+180;
+			if(angleRU==0){angleRU=360;}
+			if(angleRD==360){angleRD=0;}
+			if(angle>=angleRU||angle<angleRD){
+				ref=true;
+				let rLength=(maxX-x)/cos(angle);
+				fr=rLength/speed;
+				x=maxX;
+				y+=rLength*sin(angle);
+				angle=180-angle;
+			}
+			else if(angle>=angleLD&&angle<angleLU){
+				ref=true;
+				let rLength=(minX-x)/cos(angle);
+				fr=rLength/speed;
+				x=minX;
+				y+=rLength*sin(angle);
+				angle=180-angle;
+			}
+			else if(angle>=angleLU&&angle<angleRU){
+				ref=true;
+				let rLength=(minY-y)/sin(angle);
+				fr=rLength/speed;
+				x+=rLength*cos(angle);
+				y=minY;
+				angle=-angle;
+			}
+			if(ref){
+				loop(fr){yield;}
+				x-=10*speed*cos(angle);
+				y-=10*speed*sin(angle);
+				delay-=fr;
+				if(delay<0){delay=0;}
+				ExtendReflectLaser(x,y,speed,angle,delay,reflect-1,false);
+			}
+		}
+
+		// 長さ設定
+		task setLength{
+
+			let Length=0;
+			let fr=120;
+			if(!first){fr-=10;}
+			// 伸びる
+			loop(fr){
+				Length+=speed;
+				ObjLaser_SetLength(obj,Length);
+				yield;
+			}
+			// 縮む
+			let accX=speed*cos(Obj_GetAngle(obj));
+			let accY=speed*sin(Obj_GetAngle(obj));
+			loop(15){
+				x=Obj_GetX(obj)+accX;
+				y=Obj_GetY(obj)+accY;
+				Obj_SetX(obj,x);
+				Obj_SetY(obj,y);
+				yield;
+			}
+			Obj_SetAutoDelete(obj,true);
+			loop(fr-15){
+				x=Obj_GetX(obj)+accX;
+				y=Obj_GetY(obj)+accY;
+				Obj_SetX(obj,x);
+				Obj_SetY(obj,y);
+				yield;
+			}
+
+		}
+
+	}
+
+	// 回転弾 ------------------------------------------------------------------
+	task RollShot{
+
+		let num=2;
+		let minSpeed=1;
+		let maxSpeed=1.1;
+		if(Lv>0){maxSpeed=1.6;}
+		let angle=270;
+		let accAngle=-364/60;
+		let graphic=BLUE01;
+		let delay=10;
+
+		loop{
+			LineShot(GetX,GetY,minSpeed,maxSpeed,angle,num,graphic,delay);
+			angle+=accAngle;
+			yield;
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphic(imgBoss);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		let x=0;
+		let y=0;
+		let sLength=128;
+		SetAlpha(m_nEnemyAlpha);
+		SetColor(255,255,255);
+		_DrawChrRectSqr(imgBoss,GetX,GetY,x,y,sLength);
+
+	}
+
+}

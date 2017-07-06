@@ -2,6 +2,7 @@ script_enemy_main
 {
 
 #include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\index_UserShot.dnh"
 
 //•Ï”éŒ¾--------------------------------------
 	let count=0;
@@ -14,7 +15,7 @@ task MainAction()
 	
 	loop([3,6,10,15][Level])
 	{
-		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),[1.7,2.4,3.3,4][Level],rand(0,360),0);
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),[1,2,3,4][Level],rand(0,360),0);
 	}
 	_Wait(100);
 	if(Level != 0)
@@ -22,7 +23,7 @@ task MainAction()
 		let i=0;
 		loop([0,7,12,20][Level])
 		{
-			CreateShot01(GetX(),GetY(),1+i/5,GetAngleToPlayer(),ORANGE02,20);
+			CreateShot01(GetX(),GetY(),1+i/5,GetAngleToPlayer(),71,20);
 			loop(2){yield;}
 			i++;
 		}
@@ -40,8 +41,7 @@ task SubAction01()
 		i++;
 		yield;
 	}
-	_Wait(350);
-	VanishEnemy();
+	SetMovePositionHermite(GetCenterX(),GetClipMinY()-50,200,rand(0,360),200,-90,300);
 
 }
 
@@ -53,6 +53,7 @@ task SubAction01()
 		SetInvincibility( 200 );
 		MainAction();
 		SubAction01();
+		LoadUserShotData(shotAll);
 	}
 	
 	@MainLoop
@@ -90,12 +91,23 @@ script_enemy t_ma_01
 {
 
 #include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\index_UserShot.dnh"
 
 	let count=0;
 	let scale=0;
 	let Level=GetCommonData("Level");
 	let han=0;
 	let spmax=GetSpeed();
+	let seHidden=seShadowHidden;
+	let seSudden=seShadowSudden;
+
+function shot_m_10()
+{
+	loop([5,10,15,20][Level])
+	{
+		CreateShot01(GetX(),GetY(),rand(0.4,2.3),GetAngle()+rand(-50,50),81,0);
+	}
+}
 
 task MainAction()
 {
@@ -106,19 +118,19 @@ task MainAction()
 		{
 			SetAngle(180-GetAngle());
 			han++;
-			CreateLaser01(GetX(),GetY(),GetSpeed(),GetAngle(),[80,120,200,300][Level],7,GREEN21,0);
+			shot_m_10();
 		}
 		if(GetX()>=GetClipMaxX()-5)
 		{
 			SetAngle(180-GetAngle());
 			han++;
-			CreateLaser01(GetX(),GetY(),GetSpeed(),GetAngle(),[80,120,200,300][Level],7,GREEN21,0);
+			shot_m_10();
 		}
 		if(GetY()<=GetClipMinY()+5)
 		{
 			SetAngle(-GetAngle());
 			han++;
-			CreateLaser01(GetX(),GetY(),GetSpeed(),GetAngle(),[80,120,200,300][Level],7,GREEN21,0);
+			shot_m_10();
 		}
 	}
 }
@@ -126,7 +138,6 @@ task MainAction()
 task SubAction()
 {
 	yield;
-	CreateLaser01(GetX(),GetY(),GetSpeed(),GetAngle(),[80,120,200,300][Level],7,GREEN21,0);
 	let i=0;
 	loop(60)
 	{
@@ -162,7 +173,8 @@ task SubAction()
 	}
 	@Finalize{
 			DestructShadow( 40 );
-			if(BeParentVanished() || BeVanished()){DeleteEnemyShot(CHILD);}
-			else{DeleteEnemyShotToItem(CHILD);}
 		}
 }
+
+
+

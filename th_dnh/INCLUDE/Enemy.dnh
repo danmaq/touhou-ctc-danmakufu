@@ -21,6 +21,15 @@
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+let m_nEnemyAlpha = 255;	//　絵画のα値（ラストスペル開始時に使用）
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
 //	アイテムドロップ関数
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
@@ -56,8 +65,30 @@ function ExplosionBoss{
 	Explosion01( GetX, GetY, 255/60, 0.15, 60);
 }
 
+//　ラストスペル開始時の集中エフェクト＆フェードイン (※注 task)
+//　※@InitializeでSetLifeの後に1回呼び出すこと
+//　　@DrawLoopでSetAlpha( m_nEnemyAlpha );すること
+//　　frame時間中(m_nEnemyAlpha==0の間)は当たり判定をなくすこと
+//　　frame+60時間中(m_nEnemyAlpha<255の間)はダメージが通らないようにすること
+task LastSpellEffect( let frame ){
+	m_nEnemyAlpha = 0;
+	let maxLife = GetLife;
+	let disLife = maxLife - 1;
+	if( disLife > 0 ){ AddLife( -disLife ); }
+	Concentration01( frame );
+	loop( frame ){ yield; }
+	frame = 60;
+	let addLife = maxLife / frame;
+	let addAlpha = 255 / frame;
+	loop( frame ){
+		AddLife( addLife );
+		m_nEnemyAlpha += addAlpha;
+		yield;
+	}
+}
+
 /////////////////////////////////////////
-//追加060214 雑魚用の描写 たぶん雑魚は正方形だろう･･･
+//追加060304 雑魚用の描写　つづりの修正
 /////////////////////////////////////////
 function DrawZako( let szTexFile, let srcx1, let srcy1, let sLength, let scale ){
 	SetGraphicScale( scale, scale );

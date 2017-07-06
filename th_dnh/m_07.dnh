@@ -2,6 +2,7 @@ script_enemy_main
 {
 
 #include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\index_UserShot.dnh"
 
 //ïœêîêÈåæ--------------------------------------
 	let count=0;
@@ -26,7 +27,7 @@ task MainAction()
 
 	if(Level != 0)
 	{
-		RoundLineShot( GetX(),GetY(),0.8,[0,1,2.5,4][Level],GetAngleToPlayer(),[0,30,30,36][Level],[0,1,4,7][Level],ORANGE11,30);
+		RoundLineShot( GetX(),GetY(),0.8,[0,1,2.5,4][Level],GetAngleToPlayer(),[0,30,30,36][Level],[0,1,4,7][Level],42,30);
 	}
 
 }
@@ -62,6 +63,7 @@ task SubAction01()
 		SetInvincibility( 160 );
 		MainAction();
 		SubAction01();
+		LoadUserShotData(shotAll);
 	}
 	
 	@MainLoop
@@ -99,10 +101,13 @@ script_enemy t_ma_01
 {
 
 #include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\index_UserShot.dnh"
 
 	let count=0;
 	let scale=0;
 	let Level=GetCommonData("Level");
+	let seHidden=seShadowHidden;
+	let seSudden=seShadowSudden;
 
 task MainAction()
 {
@@ -115,8 +120,8 @@ task MainAction()
 			let angle=GetAngle()+180;
 			ascent(n in 0..[1,1,3,5][Level])
 			{
-				CreateShot02(GetX(),GetY(),Smooth( 1,2.5,i,30 ),GetAngle+180+angle^0.5+360/[1,1,3,5][Level]*n,-0.02,1,PURPLE05,10);
-				CreateShot02(GetX(),GetY(),Smooth( 1,2.5,i,30 ),GetAngle+180-angle^0.5+360/[1,1,3,5][Level]*n,-0.02,1,PURPLE05,10);
+				CreateShot02(GetX(),GetY(),Smooth( 1,2.5,i,30 ),GetAngle+180+angle^0.5+360/[1,1,3,5][Level]*n,-0.02,1,175,10);
+				CreateShot02(GetX(),GetY(),Smooth( 1,2.5,i,30 ),GetAngle+180-angle^0.5+360/[1,1,3,5][Level]*n,-0.02,1,175,10);
 			}
 			angle+=(i+4)*sin(angle);
 			loop(7){yield;}

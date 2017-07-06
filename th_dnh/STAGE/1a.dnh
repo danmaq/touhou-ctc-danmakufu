@@ -66,9 +66,9 @@ task Stage1A(){
 
 	loop(5)
 	{
-		CreateEnemyFromFile(z_g_12,GetCenterX()/3+rand(-20,20),GetClipMinY()-20,5,90,[1,0][rand(0,100)<50]);
+		CreateEnemyFromFile(z_s_10,GetCenterX()/3+rand(-20,20),GetClipMinY()-20,2.5,90,[1,0][rand(0,100)<50]);
 		_Wait(70);
-		CreateEnemyFromFile(z_g_12,GetCenterX()+GetCenterX()/3*2+rand(-20,20),GetClipMinY()-20,5,90,[1,0][rand(0,100)<50]);
+		CreateEnemyFromFile(z_s_10,GetCenterX()+GetCenterX()/3*2+rand(-20,20),GetClipMinY()-20,2.5,90,[1,0][rand(0,100)<50]);
 	}
 
 	_Wait(400);
@@ -97,28 +97,6 @@ task Stage1A(){
 		_Wait(150);
 	}
 		_Wait(150);
-
-//---------------------------------------------------------------
-
-	loop(5)
-	{
-		CreateEnemyFromFile(z_g_12,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,5,90,0);
-	}
-		_Wait(250);
-
-//---------------------------------------------------------------
-
-	loop(5)
-	{
-		CreateEnemyFromFile(z_g_12,GetCenterX()/3+rand(-20,20),GetClipMinY()-20,5,90,1);
-		_Wait(60);
-	}
-		_Wait(100);
-	loop(5)
-	{
-		CreateEnemyFromFile(z_g_12,GetCenterX()+GetCenterX()/3*2+rand(-20,20),GetClipMinY()-20,5,90,1);
-		_Wait(60);
-	}
 
 
 //---------------------------------------------------------------

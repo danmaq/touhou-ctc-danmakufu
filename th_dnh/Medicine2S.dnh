@@ -1,19 +1,27 @@
+#東方弾幕風
+#Title[Medicine - スペルカード2]
+#Text[ステージ1C ボス
+メディスン・メランコリー
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
 script_enemy_main{
 
-	// 画像及び効果音ファイル
-	#include_function ".\IMAGE\CHAR\index.dnh"
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Enemy.dnh"
 	#include_function ".\index_UserShot.dnh"
-	let imgBoss=dotBossSample;
-	let imgShot=dotPoisonShot;
-	let userShot=shotMedicine;
 
-	// 座標設定
-	let cenX=GetCenterX;
-	let cenY=GetCenterY;
-	let minX=GetClipMinX;
-	let maxX=GetClipMaxX;
-	let minY=GetClipMinY;
-	let maxY=GetClipMaxY;
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossMedicine;
+	let imgShot=dotShotPoison;
+	let userShot=shotLight;
 
 	// 難易度
 	Debug_SetLevel;
@@ -34,7 +42,7 @@ script_enemy_main{
 		SetShotAutoDeleteClip(20,20,20,20);
 		SetEnemyMarker(true);
 
-		// ボスステータス設定（ライフ、ダメージ率Shot%,Bomb%等）
+		// ボスステータス設定（ライフ、ダメージ率等）
 		SetLife(500);
 		SetDamageRate(15,10);
 
@@ -45,9 +53,11 @@ script_enemy_main{
 	// -------------------------------------------------------------------------
 	@MainLoop{
 
-		// 当たり判定（A:自弾,B:体当たり）
-		SetCollisionA(GetX,GetY,32);
-		SetCollisionB(GetX,GetY,24);
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// カウンタ加算
+		m_nCount++;
 
 		yield;
 
@@ -57,14 +67,14 @@ script_enemy_main{
 	task Main{
 
 		SetInvincibility(242);
-		wait(2);
+		_Wait(2);
 
 		// 初期移動
 		let fr=180;
 		let x=cenX;
-		let y=minY+110+rand(-1,1);
+		let y=minY+110+RandBlur(1);
 		SetMovePosition02(x,y,fr);
-		wait(fr);
+		_Wait(fr);
 
 		let assign=-1;
 
@@ -72,22 +82,22 @@ script_enemy_main{
 
 			// 扇状毒霧
 			Concentration01(30);
-			wait(30);
+			_Wait(30);
 			WidePoisonShot(assign);
-			wait(90);
+			_Wait(90);
 
 			// 隠れ弾
 			HiddenShot(-1);
 			HiddenShot(1);
-			wait(80);
+			_Wait(80);
 
 			// ランダム隠れ弾
 			RandomHiddenShot(assign);
-			wait(100);
+			_Wait(100);
 
 			// 移動
 			move(60);
-			wait(60);
+			_Wait(60);
 
 			assign*=-1;
 
@@ -116,7 +126,7 @@ script_enemy_main{
 			let angle=baseAngle+wayAngle*i;
 			SetShotDirectionType(ABSOLUTE);
 			LineShot(x,y,minSpeed,maxSpeed,angle,num,graphic,delay);
-			wait(fr);
+			_Wait(fr);
 		}
 
 	}
@@ -138,7 +148,7 @@ script_enemy_main{
 		let shotFr=4-Lv;
 
 		ascent(let i in 0 .. num[Lv]){
-			let baseAngle_=baseAngle+numAngle*i+rand(-numAngle/2,numAngle/2);
+			let baseAngle_=baseAngle+numAngle*i+RandBlur(numAngle/2);
 			SetShotDirectionType(ABSOLUTE);
 			ascent(let j in 0 .. way){
 				let angle=baseAngle_+wayAngle*j;
@@ -147,7 +157,7 @@ script_enemy_main{
 				SetShotDataA(0,accFr,NULL,angle,0,accSpeed,maxSpeed,graphic);
 				FireShot(0);
 			}
-			wait(shotFr);
+			_Wait(shotFr);
 		}
 
 	}
@@ -167,18 +177,13 @@ script_enemy_main{
 			let x=GetGapX(GetX,gapLength,angle);
 			let y=GetGapY(GetY,gapLength,angle);
 			PoisonSeed(x,y,speed,angle);
-			wait(fr);
+			_Wait(fr);
 		}
 
 	}
 
 	// 毒霧弾 ------------------------------------------------------------------
-	task PoisonSeed(
-		let x,
-		let y,
-		let speed,
-		let angle
-	){
+	task PoisonSeed(let x, let y, let speed, let angle){
 
 		// 初期設定 ----------------------------------------
 		let obj=Obj_Create(OBJ_SHOT);
@@ -224,15 +229,11 @@ script_enemy_main{
 
 	}
 
-	// 待ち --------------------------------------------------------------------
-	function wait(let fr){
-
-		loop(fr){yield;}
-
-	}
-
 	// -------------------------------------------------------------------------
 	@Finalize{
+
+		// アイテム放出
+		if(Lv>0){DropItem(16,80);}
 
 		// ロードしたファイルを削除
 		DeleteGraphic(imgBoss);
@@ -244,36 +245,25 @@ script_enemy_main{
 	@DrawLoop{
 
 		// ボス描画
-		SetTexture(imgBoss);
-		if(GetSpeed==0){SetGraphicRect(1,1,64,64);}
-		else if(GetAngle>-90&&GetAngle<=90){SetGraphicRect(192,1,255,64);}
-		else {SetGraphicRect(128,1,191,64);}
+		let x=0;
+		let y=0;
+		let sLength=128;
 		SetAlpha(255);
 		SetColor(255,255,255);
-		DrawGraphic(GetX,GetY);
+		_DrawChrRectSqr(imgBoss,GetX,GetY,x,y,sLength);
 
 	}
-
-	// 共通関数読み込み
-	#include_function ".\INCLUDE\patternShot.dnh"
-	#include_function ".\INCLUDE\library_request.dnh"
 
 }
 
 // 毒霧 ------------------------------------------------------------------------
 script_shot PoisonMist{
 
-	// 画像及び効果音ファイル
-	#include_function ".\IMAGE\CHAR\DOT\index.dnh"
-	let imgShot=dotPoisonShot;
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shot.dnh"
 
-	// 座標設定
-	let cenX=GetCenterX;
-	let cenY=GetCenterY;
-	let minX=GetClipMinX;
-	let maxX=GetClipMaxX;
-	let minY=GetClipMinY;
-	let maxY=GetClipMaxY;
+	// 画像及び効果音ファイル
+	let imgShot=dotShotPoison;
 
 	let scale=0.15;
 	let Lv=GetCommonDataDefault("Level",0);
@@ -318,23 +308,17 @@ script_shot PoisonMist{
 
 	}
 
-	// 待ち --------------------------------------------------------------------
-	function wait(let fr){
-
-		loop(fr){yield;}
-
-	}
-
 	// -------------------------------------------------------------------------
 	@DrawLoop{
 
 		// 弾描画
-		SetTexture(imgShot);
-		SetGraphicRect(0,0,256,256);
+		let x=0;
+		let y=0;
+		let sLength=256;
 		SetRenderState(ADD);
 		SetColor(255,255,255);
 		SetGraphicScale(scale,scale);
-		DrawGraphic(GetX,GetY);
+		_DrawChrRectSqr(imgShot,GetX,GetY,x,y,sLength);
 
 	}
 

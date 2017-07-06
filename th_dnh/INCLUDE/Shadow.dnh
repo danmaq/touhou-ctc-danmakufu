@@ -60,7 +60,7 @@ function DestructShadow( let fRadius ){
 }
 
 //	基本処理
-//	※@MainLoopの最後に毎回呼び出すこと
+//	※@MainLoopの最後にm_nCount++;と共に毎回呼び出すこと
 function BehaviorShadow( let szSEHiddenFile, let szSESuddenFile ){
 	alternative( GetKeyState( VK_SLOWMOVE ) )
 	case( KEY_PUSH ){
@@ -75,11 +75,18 @@ function BehaviorShadow( let szSEHiddenFile, let szSESuddenFile ){
 	case( KEY_FREE ){ if( IsElapsedTimeLag() ){ m_bHidden = false; } }
 }
 
+//　出現時隠蔽チェック
+//　※@Initializeで1回呼び出すこと、但しLightShadowを使う場合は不要
+function InitialBehaviorShadow{
+	if( GetKeyState( VK_SLOWMOVE ) == KEY_HOLD ){ m_bHidden = true; }
+}
+
 //　実体化時の光 (※注 task)
 //　※@Initializeで1回呼び出すこと、基本処理を実施していること
 task LightShadow{
 	let call = 3;		//　何フレーム毎に光が出るか（小さい程光が濃くなる）
 	let delay = 15;		//　1つの光が最大何フレーム残るか（大きい程光が大きくなる）
+	InitialBehaviorShadow;
 	loop{
 		if( !m_bHidden ){ _LightShadow; }
 		loop( call ){ yield; }
@@ -89,6 +96,7 @@ task LightShadow{
 		Obj_SetAlpha( obj, 0 );
 		Obj_SetCollisionToPlayer( obj, false );
 		ObjShot_SetBombResist( obj, true );
+		ObjShot_ToItem( obj, false );
 		loop( delay ){
 			if( m_bHidden ){ break; }
 			yield;
@@ -115,5 +123,42 @@ function DrawShadow( let szTexFile, let srcx, let srcy, let sLength, let angle, 
 	}
 	SetGraphicAngle( 0, 0, angle );
 	_DrawChrRectSqr( szTexFile, GetX, GetY, srcx, srcy, sLength );
+}
+
+///////////////////////////////////
+//追加060214　使い魔のdrowloop
+///////////////////////////////////
+function _DrowShadow( let FileName, let now, let x, let y, let Dxy){
+	SetTexture(FileName);
+	SetGraphicRect(x,y,x+Dxy,y+Dxy);
+	if(GetKeyState(VK_SLOWMOVE)==KEY_PUSH||GetKeyState(VK_SLOWMOVE)==KEY_HOLD){
+		SetAlpha(127);
+		SetGraphicScale(0.8,0.8);
+	}
+	else{
+		SetAlpha(255);
+		SetGraphicScale(0.5,0.5);
+	}
+	SetGraphicAngle(0,0,now);
+	DrawGraphic(GetX,GetY);
+}
+
+function DrowShadowEasy(let now){
+	_DrowShadow( dotCircle6s,now,0,0,64);
+}
+
+//実体化時の光
+function LightOfShadow(let now){
+	if(GetKeyState(VK_SLOWMOVE)==KEY_FREE)
+	{
+		Collision( 16,12 );
+		if(int(now/3)==now/3)
+		{
+			CreateShotA(0,GetX(),GetY(),10);
+			SetShotDataA(0,0,0,0,0,0,0,WHITE05);
+			SetShotKillTime(0,0);
+			FireShot(0);
+		}
+	}
 }
 

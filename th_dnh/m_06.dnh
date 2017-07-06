@@ -141,10 +141,13 @@ script_enemy t_ma_01
 {
 
 #include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\index_UserShot.dnh"
 
 	let count=0;
 	let scale=0;
 	let color=[BLUE04,RED04,GREEN04,YELLOW04,PURPLE04,AQUA04,ORANGE04][GetArgument()];
+	let seHidden=seShadowHidden;
+	let seSudden=seShadowSudden;
 
 task MainAction()
 {

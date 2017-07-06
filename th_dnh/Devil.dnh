@@ -1,0 +1,18 @@
+#東方弾幕風[Plural]
+#Title[Devil - Easy/Normal/Hard/Lunatic]
+#Text[ステージ3A 中ボス
+小悪魔
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+#ScriptPathData
+#ScriptPath[.\Devil1.dnh]
+#ScriptPath[.\Devil1S.dnh]
+#EndScriptPathData

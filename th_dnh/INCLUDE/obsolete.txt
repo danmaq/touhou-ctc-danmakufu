@@ -1,0 +1,14 @@
+ライブラリ 削除候補
+
+library_request.dnh
+　このファイル自体（他のライブラリに全て埋め込んだため）
+　→ENDは利用していません。HAL900氏が利用していなければ削除可能です。
+
+EnemyShotShadow.dnh
+　定型弾発射関数 全部（patternShot.dnh のもので賄えるため）
+　→ENDは利用していません。HAL900氏が利用していなければ削除可能です。
+
+Stage.dnh
+　WaitForZeroEnemy（withoutEvent.dnh に同機能の WaitZeroEnemy があるため）
+　→ENDは利用していません。HAL900氏が利用していなければ削除可能です。
+

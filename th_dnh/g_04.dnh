@@ -2,6 +2,7 @@ script_enemy_main
 {
 
 #include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\index_UserShot.dnh"
 
 
 //ïœêîêÈåæ--------------------------------------
@@ -17,7 +18,7 @@ task MainAction()
 	{
 		loop([0,1,5,12][Level])
 		{
-			GravityShot( GetX(),GetY(),-[0.3,0.7,1,1.5][Level]*rand(0.5,1.5),GetAngleToPlayer()+[0,0,rand(-5,5),rand(-8,8)][Level],[0.3,0.7,1,1.5][Level]/60,GetAngleToPlayer(),BLUE04,0);
+			GravityShot( GetX(),GetY(),-[0.3,0.7,1,1.5][Level]*rand(0.5,1.5),GetAngleToPlayer()+[0,0,rand(-5,5),rand(-8,8)][Level],[0.3,0.7,1,1.5][Level]/60,GetAngleToPlayer(),163,0);
 		}
 	}
 }
@@ -45,6 +46,7 @@ task SubAction01()
 		SetLife(13);
 		MainAction();
 		SubAction01();
+		LoadUserShotData(shotAll);
 	}
 	
 	@MainLoop

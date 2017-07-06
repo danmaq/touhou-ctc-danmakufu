@@ -87,10 +87,13 @@ script_enemy t_ma_01
 {
 
 #include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\index_UserShot.dnh"
 
 	let count=0;
 	let scale=0;
 	let Level=GetCommonData("Level");
+	let seHidden=seShadowHidden;
+	let seSudden=seShadowSudden;
 
 task MainAction()
 {
@@ -122,10 +125,13 @@ script_enemy t_ma_02
 {
 
 #include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\index_UserShot.dnh"
 
 	let count=0;
 	let scale=0;
 	let Level=GetCommonData("Level");
+	let seHidden=seShadowHidden;
+	let seSudden=seShadowSudden;
 
 task MainAction()
 {

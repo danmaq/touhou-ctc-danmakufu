@@ -1,19 +1,27 @@
+#東方弾幕風
+#Title[Medicine - 通常攻撃1]
+#Text[ステージ1C ボス
+メディスン・メランコリー
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
 script_enemy_main{
 
-	// 画像及び効果音ファイル
-	#include_function ".\IMAGE\CHAR\index.dnh"
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Enemy.dnh"
 	#include_function ".\index_UserShot.dnh"
-	let imgBoss=dotBossSample;
-	let imgEnemy=dotCircle6s;
-	let userShot=shotMedicine;
 
-	// 座標設定
-	let cenX=GetCenterX;
-	let cenY=GetCenterY;
-	let minX=GetClipMinX;
-	let maxX=GetClipMaxX;
-	let minY=GetClipMinY;
-	let maxY=GetClipMaxY;
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossMedicine;
+	let imgShadow=dotCircle6s;
+	let userShot=shotLight;
 
 	// 難易度
 	Debug_SetLevel;
@@ -24,7 +32,7 @@ script_enemy_main{
 
 		// 画像及び効果音をロード
 		LoadGraphic(imgBoss);
-		LoadGraphic(imgEnemy);
+		LoadGraphic(imgShadow);
 		LoadUserShotData(userShot);
 
 		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
@@ -32,7 +40,7 @@ script_enemy_main{
 		SetShotAutoDeleteClip(20,20,20,20);
 		SetEnemyMarker(true);
 
-		// ボスステータス設定（ライフ、ダメージ率Shot%,Bomb%等）
+		// ボスステータス設定（ライフ、ダメージ率等）
 		SetLife(2500);
 		SetDamageRate(100,50);
 		SetX(cenX);
@@ -45,9 +53,11 @@ script_enemy_main{
 	// -------------------------------------------------------------------------
 	@MainLoop{
 
-		// 当たり判定（A:自弾,B:体当たり）
-		SetCollisionA(GetX,GetY,32);
-		SetCollisionB(GetX,GetY,24);
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// カウンタ加算
+		m_nCount++;
 
 		yield;
 
@@ -57,42 +67,42 @@ script_enemy_main{
 	task Main{
 
 		SetInvincibility(62);
-		wait(2);
+		_Wait(2);
 
 		// 発動
 		ExplosionBoss;
-		wait(60);
+		_Wait(60);
 
 		loop{
 
 			loop(2){
 
 				// 使い魔召喚
-				SummonEnemy(-1);
-				SummonEnemy(1);
-				wait(60);
+				SummonShadow(-1);
+				SummonShadow(1);
+				_Wait(60);
 
 				// 移動
 				move(60);
-				wait(60);
+				_Wait(60);
 
 			}
 
 			// 隠れ弾
 			HiddenShot(-1);
 			HiddenShot(1);
-			wait(180);
+			_Wait(180);
 
 			// 移動
 			move(60);
-			wait(60);
+			_Wait(60);
 
 		}
 
 	}
 
 	// 使い魔召喚 --------------------------------------------------------------
-	function SummonEnemy(let assign){
+	function SummonShadow(let assign){
 
 		let way=1+Lv;
 		let speed=5;
@@ -101,7 +111,7 @@ script_enemy_main{
 
 		ascent(let i in 0 .. way){
 			let angle=baseAngle+wayAngle*i;
-			CreateEnemyFromScript("Enemy",GetX,GetY,speed,angle,0);
+			CreateEnemyFromScript("Shadow",GetX,GetY,speed,angle,0);
 		}
 
 	}
@@ -127,7 +137,7 @@ script_enemy_main{
 			let angle=baseAngle+wayAngle*i;
 			SetShotDirectionType(ABSOLUTE);
 			LineShot(x,y,minSpeed,maxSpeed,angle,num,graphic,delay);
-			wait(fr);
+			_Wait(fr);
 		}
 
 	}
@@ -152,19 +162,12 @@ script_enemy_main{
 
 	}
 
-	// 待ち --------------------------------------------------------------------
-	function wait(let fr){
-
-		loop(fr){yield;}
-
-	}
-
 	// -------------------------------------------------------------------------
 	@Finalize{
 
 		// ロードしたファイルを削除
 		DeleteGraphic(imgBoss);
-		DeleteGraphic(imgEnemy);
+		DeleteGraphic(imgShadow);
 
 	}
 
@@ -172,49 +175,39 @@ script_enemy_main{
 	@DrawLoop{
 
 		// ボス描画
-		SetTexture(imgBoss);
-		if(GetSpeed==0){SetGraphicRect(1,1,64,64);}
-		else if(GetAngle>-90&&GetAngle<=90){SetGraphicRect(192,1,255,64);}
-		else {SetGraphicRect(128,1,191,64);}
+		let x=0;
+		let y=0;
+		let sLength=128;
 		SetAlpha(255);
 		SetColor(255,255,255);
-		DrawGraphic(GetX,GetY);
+		_DrawChrRectSqr(imgBoss,GetX,GetY,x,y,sLength);
 
 	}
-
-	// 共通関数読み込み
-	#include_function ".\INCLUDE\patternShot.dnh"
-	#include_function ".\INCLUDE\library_request.dnh"
 
 }
 
 // 使い魔 ----------------------------------------------------------------------
-script_enemy Enemy{
+script_enemy Shadow{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shadow.dnh"
 
 	// 画像及び効果音ファイル
-	#include_function ".\IMAGE\CHAR\DOT\index.dnh"
-	let imgEnemy=dotCircle6s;
-
-	// 座標設定
-	let cenX=GetCenterX;
-	let cenY=GetCenterY;
-	let minX=GetClipMinX;
-	let maxX=GetClipMaxX;
-	let minY=GetClipMinY;
-	let maxY=GetClipMaxY;
+	let imgShadow=dotCircle6s;
+	let seHidden=seMute;
+	let seSudden=seMute;
 
 	let Lv=GetCommonDataDefault("Level",0);
-	let drawAngle=0;
 
 	// -------------------------------------------------------------------------
 	@Initialize{
 
-		// ステータス設定（ライフ、自ダメ率Shot%,Bomb%,親ダメ率Shot%,Bomb%等）
+		// ステータス設定（ライフ、ダメージ率等）
 		SetLife(100);
 		SetDamageRateExDelay(30,100,50,33,33);
 
-		// 光
-		Light;
+		// 実体化時の光
+		LightShadow;
 
 		Main;
 
@@ -223,14 +216,17 @@ script_enemy Enemy{
 	// -------------------------------------------------------------------------
 	@MainLoop{
 
-		// 回転
-		drawAngle+=2;
+		// 画面外で消滅
+		GoneEx(40);
 
-		// 当たり判定（A:自弾,B:体当たり）
-		if(GetKeyState(VK_SLOWMOVE)==KEY_PULL||GetKeyState(VK_SLOWMOVE)==KEY_FREE){
-			SetCollisionA(GetX,GetY,24);
-			SetCollisionB(GetX,GetY,18);
-		}
+		// 当たり判定（自弾,体当たり）
+		if(!m_bHidden){Collision(24,18);}
+
+		// 使い魔基本処理
+		BehaviorShadow(seHidden,seSudden);
+
+		// カウンタ加算
+		m_nCount++;
 
 		yield;
 
@@ -241,12 +237,9 @@ script_enemy Enemy{
 
 		yield;
 
-		// 画面外チェック
-		ClipCheck;
-
 		// 速度設定
 		setSpeed;
-		wait(60);
+		_Wait(60);
 
 		let fr=[120,100,80,40];
 
@@ -254,7 +247,7 @@ script_enemy Enemy{
 
 			// 自機狙い扇状弾
 			SearchWideShot;
-			wait(fr[Lv]);
+			_Wait(fr[Lv]);
 
 		}
 
@@ -292,68 +285,11 @@ script_enemy Enemy{
 
 	}
 
-	// 画面外チェック ----------------------------------------------------------
-	task ClipCheck{
-
-		let outLength=GetGapLength(minX,minY,cenX,cenY)+40;
-		loop{
-			let Length=GetGapLength(GetX,GetY,cenX,cenY);
-			if(Length>outLength){VanishEnemy;}
-			yield;
-		}
-
-	}
-
-	// 光 ----------------------------------------------------------------------
-	task Light{
-
-		loop{
-			if(GetKeyState(VK_SLOWMOVE)==KEY_PULL||GetKeyState(VK_SLOWMOVE)==KEY_FREE){
-				Light_(WHITE01);
-			}
-			wait(3);
-		}
-
-	}
-
-	task Light_(let graphic){
-
-		// 初期設定 ----------------------------------------
-		let obj=Obj_Create(OBJ_SHOT);
-		let delay=15;
-
-		Obj_SetX(obj,GetX);
-		Obj_SetY(obj,GetY);
-		ObjShot_SetDelay(obj,delay);
-		ObjShot_SetGraphic(obj,graphic);
-		Obj_SetAlpha(obj,0);
-		Obj_SetCollisionToPlayer(obj,false);
-		ObjShot_SetBombResist(obj,true);
-
-		// メイン処理 --------------------------------------
-		loop(delay){
-			if(GetKeyState(VK_SLOWMOVE)==KEY_PUSH||GetKeyState(VK_SLOWMOVE)==KEY_HOLD){
-				break;
-			}
-			yield;
-		}
-		Obj_Delete(obj);
-
-	}
-
-	// 待ち --------------------------------------------------------------------
-	function wait(let fr){
-
-		loop(fr){yield;}
-
-	}
-
 	// -------------------------------------------------------------------------
 	@Finalize{
 
-		if(GetLife<=0){
-			DeleteEnemyShotToItemInCircle(ALL,GetX,GetY,40);
-		}
+		// 弾消し
+		DestructShadow(40);
 
 	}
 
@@ -361,23 +297,14 @@ script_enemy Enemy{
 	@DrawLoop{
 
 		// 本体描画
-		SetTexture(imgEnemy);
-		SetGraphicRect(64,0,128,64);
-		if(GetKeyState(VK_SLOWMOVE)==KEY_PUSH||GetKeyState(VK_SLOWMOVE)==KEY_HOLD){
-			SetAlpha(127);
-		}
-		else{
-			SetAlpha(255);
-		}
+		let x=64;
+		let y=0;
+		let sLength=64;
+		let angle=2*m_nCount;
+		let scale=0.8;
 		SetColor(255,255,255);
-		SetGraphicScale(0.8,0.8);
-		SetGraphicAngle(0,0,drawAngle);
-		DrawGraphic(GetX,GetY);
+		DrawShadow(imgShadow,x,y,sLength,angle,scale,scale);
 
 	}
-
-	// 共通関数読み込み
-	#include_function ".\INCLUDE\patternShot.dnh"
-	#include_function ".\INCLUDE\library_request.dnh"
 
 }

@@ -2,6 +2,7 @@ script_enemy_main
 {
 
 #include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\index_UserShot.dnh"
 
 //•Ï”éŒ¾--------------------------------------
 	let count=0;
@@ -16,7 +17,7 @@ task MainAction()
 	while(GetY()>GetClipMinY+20 || i<0)
 	{yield;i++;if(i>350){break;}}
 	SetShotDirectionType(PLAYER);
-	WayShot01( [0,10,20,20,][Level], 10,[0.8,1,1.5,2][Level],RED04,20);
+	WayShot01( [0,10,20,20,][Level], 10,[0.8,1,1.5,2][Level],17,20);
 	SetShotDirectionType(ABSOLUTE);
 	yield;
 	DropItem( 2 , 20 );
@@ -52,6 +53,7 @@ task SubAction01()
 		SetInvincibility( 100 );
 		MainAction();
 		SubAction01();
+		LoadUserShotData(shotAll);
 	}
 	
 	@MainLoop
@@ -81,7 +83,7 @@ task SubAction01()
 		{
 			loop([1,3,8,15][Level])
 			{
-				CreateShot02(GetX(),GetY(),rand([1,2,2.5,3.5][Level],[2,3,4,5.5][Level]),GetAngleToPlayer()+rand(-[0,3,5,10][Level],[0,3,5,10][Level]),-0.1,[0.5,1,1.5,2][Level],BLUE04,0);
+				CreateShot02(GetX(),GetY(),rand([1,2,2.5,3.5][Level],[2,3,4,5.5][Level]),GetAngleToPlayer()+rand(-[0,3,5,10][Level],[0,3,5,10][Level]),-0.1,[0.5,1,1.5,2][Level],22,0);
 			}
 		}
 		DropItem( 1 , 20 );

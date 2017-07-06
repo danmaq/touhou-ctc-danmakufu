@@ -1,22 +1,30 @@
+#東方弾幕風
+#Title[Lily - 通常攻撃1]
+#Text[ステージ1C 中ボス
+リリー・ホワイト
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
 script_enemy_main{
 
-	// 画像及び効果音ファイル
-	#include_function ".\IMAGE\CHAR\index.dnh"
-	let imgBoss=dotBossSample;
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Enemy.dnh"
 
-	// 座標設定
-	let cenX=GetCenterX;
-	let cenY=GetCenterY;
-	let minX=GetClipMinX;
-	let maxX=GetClipMaxX;
-	let minY=GetClipMinY;
-	let maxY=GetClipMaxY;
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossLily;
 
 	// 難易度
 	Debug_SetLevel;
 	let Lv=GetCommonDataDefault("Level",0);
 
-	let warpSt=-1;
+	let warpSt=0;
 	let warpFr=0;
 	let maxWarpFr=16;
 
@@ -27,15 +35,15 @@ script_enemy_main{
 		LoadGraphic(imgBoss);
 
 		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
-		SetTimer(39);
+		SetTimer(38);
 		SetShotAutoDeleteClip(64,64,64,20);
 		SetEnemyMarker(true);
 
-		// ボスステータス設定（ライフ、ダメージ率Shot%,Bomb%等）
-		SetLife(2000);
+		// ボスステータス設定（ライフ、ダメージ率）
+		SetLife(2500);
 		SetDamageRate(100,50);
 		SetX(cenX);
-		SetY(maxY+50);
+		SetY(minY+80);
 
 		Main;
 
@@ -44,11 +52,11 @@ script_enemy_main{
 	// -------------------------------------------------------------------------
 	@MainLoop{
 
-		// 当たり判定（A:自弾,B:体当たり）
-		if(warpSt!=2){
-			SetCollisionA(GetX,GetY,32);
-			if(warpSt!=-1){SetCollisionB(GetX,GetY,24);}
-		}
+		// 当たり判定（自弾,体当たり）
+		if(warpSt!=2){Collision(32,24);}
+
+		// カウンタ加算
+		m_nCount++;
 
 		yield;
 
@@ -57,52 +65,57 @@ script_enemy_main{
 	// メイン処理 --------------------------------------------------------------
 	task Main{
 
-		SetInvincibility(302);
-		wait(2);
-
-		// 初期移動＋対称弾
-		SymmetryShot;
-		wait(240);
-		warpSt=0;
+		SetInvincibility(122);
+		_Wait(2);
 
 		// 発動
 		ExplosionBoss;
-		wait(60);
+		_Wait(60);
 
 		let assign=1;
 
 		loop{
 
-			// 花弾
-			FlowerShot(assign);
-			assign*=-1;
-			wait(90);
-
 			// ワープ移動
 			let area=1;
 			if(GetPlayerX>GetX){area=2;}
 			warp(maxWarpFr+40,area);
-			wait(90);
+			_Wait(90);
 
 			// 花弾
 			FlowerShot(assign);
 			assign*=-1;
-			wait(90);
+			_Wait(90);
+
+			// ワープ移動
+			warp(maxWarpFr+40,0);
+			_Wait(90);
+
+			// 花弾
+			FlowerShot(assign);
+			assign*=-1;
+			_Wait(90);
 
 			// ワープ移動
 			area=3-area;
 			warp(maxWarpFr+40,area);
-			wait(90);
+			_Wait(90);
 
 			// 花弾
 			FlowerShot(assign);
 			assign*=-1;
-			wait(90);
+			_Wait(90);
 
 			// ワープ移動
-			area=0;
-			warp(maxWarpFr+40,area);
-			wait(90);
+			warp(maxWarpFr+40,3);
+			_Wait(120);
+
+			// 対称弾＆移動
+			SymmetryShot;
+			let power=300;
+			let angle=90;
+			SetMovePositionHermite(cenX,minY+40,power,angle,power,-angle,120);
+			_Wait(180);
 
 		}
 
@@ -113,13 +126,13 @@ script_enemy_main{
 
 		let num=[3,5,9,12];
 		let way_=8;
-		let way=way_*5;
+		let way=way_*6;
 		let baseSpeed0=0.8;
 		let maxSpeed0=2.4+0.6*Lv;
 		let numSpeed0=(maxSpeed0-baseSpeed0)/(num[Lv]-1);
 		let speed1=1.4+0.2*Lv;
 		let baseAngle=rand(0,360);
-		let numAngle=8*assign;
+		let numAngle=10*assign;
 		let wayAngle=360/way*assign;
 		let graphic=[PURPLE21,AQUA12];
 		let delay=15;
@@ -138,7 +151,7 @@ script_enemy_main{
 				}
 				else{
 					SetShotDataA(0,0,speed0,angle,0,accSpeed0,0,graphic[1]);
-					SetShotDataA(0,fr1,speed1,angle+90*assign,0,0,0,graphic[1]);
+					SetShotDataA(0,fr1,speed1*0.75,angle,0,0,0,graphic[1]);
 				}
 				FireShot(0);
 			}
@@ -146,11 +159,41 @@ script_enemy_main{
 
 	}
 
+	// 対称弾 ------------------------------------------------------------------
+	task SymmetryShot{
+
+		let num=30;
+		let way=[1,2,5,9];
+		let symX=[-15,15];
+		let minSpeed=0.8;
+		let maxSpeed=1.6+0.4*Lv;
+		let numSpeed=0.02;
+		let wideAngle=0;
+		let numAngle=(225-wideAngle)/(num-1);
+		let wayAngle=0;
+		if(Lv>0){wayAngle=wideAngle/(way[Lv]-1);}
+		let baseAngle=[0,180];
+		let graphic=[RED04,BLUE04];
+		let delay=5;
+		let assign=[1,-1];
+		let fr=4;
+
+		ascent(let i in 0 .. num){
+			SetShotDirectionType(ABSOLUTE);
+			ascent(let j in 0 .. way[Lv]){
+				let speed=rand(minSpeed,maxSpeed)+numSpeed*i;
+				ascent(let k in 0 .. 2){
+					let angle=baseAngle[k]+(numAngle*i+wayAngle*j)*assign[k];
+					CreateShot01(GetX+symX[k],GetY,speed,angle,graphic[k],delay);
+				}
+			}
+			_Wait(fr);
+		}
+
+	}
+
 	// ワープ移動 --------------------------------------------------------------
-	task warp(
-		let fr,
-		let area
-	){
+	task warp(let fr, let area){
 
 		// 消滅
 		warpSt=1;
@@ -164,19 +207,23 @@ script_enemy_main{
 		SetEnemyMarker(false);
 		warpSt=2;
 		SetX(cenX);
-		SetY(minY-200);
-		wait(fr-maxWarpFr*2);
+		SetY(minY-400);
+		_Wait(fr-maxWarpFr*2);
 
 		// 出現
 		SetEnemyMarker(true);
 		alternative(area)
 		case(1){
-			SetX(rand(minX+60,cenX-60));
+			SetX(rand(minX+90,cenX-60));
 			SetY(minY+100+rand(-20,20));
 		}
 		case(2){
-			SetX(rand(cenX+60,maxX-60));
+			SetX(rand(cenX+60,maxX-90));
 			SetY(minY+100+rand(-20,20));
+		}
+		case(3){
+			SetX(cenX);
+			SetY(cenY-60);
 		}
 		others{
 			SetX(cenX);
@@ -192,62 +239,6 @@ script_enemy_main{
 
 	}
 
-	// 初期移動＋対称弾 --------------------------------------------------------
-	task SymmetryShot{
-
-		// 移動
-		let x=cenX;
-		let y=maxY+16;
-		let powerA=200;
-		let angleA=-90;
-		let powerB=50;
-		let angleB=90;
-		let fr=30;
-		let subAlpha=255/fr;
-		let accScale=0.1;
-		SetMovePositionHermite(x,y,powerA,angleA,powerB,angleB,fr);
-		Explosion01(x,y,255/30,0.1,fr);
-		wait(90);
-
-		y=minY+80;
-		fr=150;
-		SetMovePosition02(x,y,150);
-
-		// 対称弾
-		let num=30;
-		let way=[2,2,5,9];
-		let minSpeed=0.8;
-		let maxSpeed=1.6+0.4*Lv;
-		let wideAngle=45;
-		let numAngle=(270-wideAngle)/(num-1);
-		let wayAngle=wideAngle/(way[Lv]-1);
-		let baseAngle=[0,180];
-		let graphic=[RED04,BLUE04];
-		let delay=5;
-		let assign=[1,-1];
-		fr=4;
-
-		ascent(let i in 0 .. num){
-			SetShotDirectionType(ABSOLUTE);
-			ascent(let j in 0 .. way[Lv]){
-				let speed=rand(minSpeed,maxSpeed);
-				ascent(let k in 0 .. 2){
-					let angle=baseAngle[k]+(numAngle*i+wayAngle*j)*assign[k];
-					CreateShot01(GetX,GetY,speed,angle,graphic[k],delay);
-				}
-			}
-			wait(fr);
-		}
-
-	}
-
-	// 待ち --------------------------------------------------------------------
-	function wait(let fr){
-
-		loop(fr){yield;}
-
-	}
-
 	// -------------------------------------------------------------------------
 	@Finalize{
 
@@ -260,13 +251,13 @@ script_enemy_main{
 	@DrawLoop{
 
 		// ボス描画
-		SetTexture(imgBoss);
-		if(GetSpeed==0){SetGraphicRect(1,1,64,64);}
-		else if(GetAngle>-90&&GetAngle<=90){SetGraphicRect(192,1,255,64);}
-		else {SetGraphicRect(128,1,191,64);}
-		setDrawData;
+		let x=0;
+		let y=0;
+		let sLength=128;
+		SetAlpha(255);
 		SetColor(255,255,255);
-		DrawGraphic(GetX,GetY);
+		setDrawData;
+		_DrawChrRectSqr(imgBoss,GetX,GetY,x,y,sLength);
 
 	}
 
@@ -314,9 +305,5 @@ script_enemy_main{
 		}
 
 	}
-
-	// 共通関数読み込み
-	#include_function ".\INCLUDE\patternShot.dnh"
-	#include_function ".\INCLUDE\library_request.dnh"
 
 }

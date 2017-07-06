@@ -2,6 +2,7 @@ script_enemy_main
 {
 
 #include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\index_UserShot.dnh"
 
 //ïœêîêÈåæ--------------------------------------
 	let count=0;
@@ -17,7 +18,7 @@ task MainAction()
 		{
 			loop([0,1,4,7][Level])
 			{
-				CreateLaser01(GetX()+rand(-5,5),GetY()+rand(-5,5),[0,1.5,2.3,3.5][Level],GetAngleToPlayer()+[0,0,rand(-2,2),rand(-3,3)][Level],80,5,RED01,0);
+				CreateLaser01(GetX()+rand(-5,5),GetY()+rand(-5,5),[0,1.5,2.3,3.5][Level],GetAngleToPlayer()+[0,0,rand(-2,2),rand(-3,3)][Level],80,5,115,0);
 			}
 			_Wait([0,6500,rand(60,80),rand(40,80)][Level]);
 		}
@@ -52,6 +53,7 @@ task SubAction01()
 		SetLife(60);
 		MainAction();
 		SubAction01();
+		LoadUserShotData(shotAll);
 	}
 	
 	@MainLoop

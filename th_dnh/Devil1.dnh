@@ -1,0 +1,235 @@
+#東方弾幕風
+#Title[Devil - 通常攻撃1]
+#Text[ステージ3A 中ボス
+小悪魔
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Enemy.dnh"
+
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossDevil;
+
+	// 難易度
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault("Level",0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// 画像及び効果音をロード
+		LoadGraphic(imgBoss);
+
+		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
+		SetTimer(36);
+		SetShotAutoDeleteClip(32,32,32,32);
+		SetEnemyMarker(true);
+
+		// ボスステータス設定（ライフ、ダメージ率等）
+		SetLife(2500);
+		SetDamageRate(80,40);
+		SetX(cenX);
+		SetY(minY+120);
+
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(62);
+		_Wait(2);
+
+		// 発動
+		ExplosionBoss;
+		_Wait(60);
+
+		// ランダム弾
+		RandomShot;
+
+		loop{
+
+			// 回転全方向弾
+			RollRoundShot;
+			_Wait(150);
+
+			// 移動
+			move(60);
+			_Wait(150);
+
+			// 回転直線弾
+			RollLineShot;
+			_Wait(90);
+
+			// 移動
+			move(60);
+			_Wait(90);
+
+		}
+
+	}
+
+	// 回転全方向弾 ------------------------------------------------------------
+	task RollRoundShot{
+
+		let _num=3;
+		let sNum=4;
+		let wNum=2;
+		let num=sNum+wNum;
+		let way=4;
+		let speed=[1.6, 1.8, 2.8, 3.4];
+		let numAngle=6;
+		let angle=-45;
+		let delay=20;
+		let graphic=BLUE03;
+		let fr=15;
+
+		loop(_num){
+			ascent(let i in 0 .. num){
+				if(i<sNum){
+					SetShotDirectionType(ABSOLUTE);
+					RoundShot01(GetX,GetY,speed[Lv],angle,way,graphic,delay);
+				}
+				_Wait(fr);
+				angle+=numAngle;
+			}
+		}
+
+	}
+
+	// 回転直線弾 --------------------------------------------------------------
+	task RollLineShot{
+
+		let way=50+10*Lv;
+		let num=16;
+		let gapLength=40;
+		let minSpeed=1.2;
+		let maxSpeed=3+0.4*Lv;
+		let baseAngle=270;
+		let wayAngle=-360/way;
+		let addAngle=-(20+15*Lv);
+		let delay=10;
+		let graphic=BLUE23;
+		let fr=1;
+
+		let baseAngle2=0;
+		let wayAngle2=360/way;
+
+		ascent(let i in 0 .. way){
+			let gapAngle=baseAngle+wayAngle*i;
+			let x=GetGapX(GetX,gapLength,gapAngle);
+			let y=GetGapY(GetY,gapLength,gapAngle);
+			let angle=baseAngle2+wayAngle2*i;//gapAngle+addAngle;
+			SetShotDirectionType(ABSOLUTE);
+			LineShot(x,y,minSpeed,maxSpeed,angle,num,graphic,delay);
+			_Wait(fr);
+		}
+
+	}
+
+	// ランダム弾 --------------------------------------------------------------
+	task RandomShot{
+
+		let fr=100-20*Lv;
+		loop{
+			_RandomShot;
+			_Wait(fr);
+		}
+
+	}
+
+	task _RandomShot{
+
+		let num=80;
+		let sort=CreateMixOrderArray(num);
+		let gapLength=40;
+		let speed=5;
+		let maxSpeed=1;
+		let accSpeed=(maxSpeed-speed)/40;
+		let baseAngle=90;
+		let numAngle=360/num;
+		let addAngle=20+15*Lv;
+		let delay=10;
+		let graphic=BLUE31;
+		let fr=1;
+
+		ascent(let i in 0 .. num){
+			let gapAngle=baseAngle+numAngle*sort[i];
+			let x=GetGapX(GetX,gapLength,gapAngle);
+			let y=GetGapY(GetY,gapLength,gapAngle);
+			let angle=gapAngle+addAngle;
+			SetShotDirectionType(ABSOLUTE);
+			CreateShot02(x,y,speed,angle,accSpeed,maxSpeed,graphic,delay);
+			_Wait(fr);
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(20,40);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphic(imgBoss);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		let x=0;
+		let y=0;
+		let sLength=128;
+		SetAlpha(255);
+		SetColor(255,255,255);
+		_DrawChrRectSqr(imgBoss,GetX,GetY,x,y,sLength);
+
+	}
+
+}

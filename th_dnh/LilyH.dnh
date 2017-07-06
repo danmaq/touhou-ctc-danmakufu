@@ -1,3 +1,15 @@
+#東方弾幕風[Plural]
+#Title[Lily - Hard/Lunatic]
+#Text[ステージ1C 中ボス
+リリー・ホワイト
+
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
 #ScriptPathData
 #ScriptPath[.\Lily1.dnh]
 #ScriptPath[.\Lily1S.dnh]

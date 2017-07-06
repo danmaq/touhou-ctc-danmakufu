@@ -2,6 +2,7 @@ script_enemy_main
 {
 
 #include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\index_UserShot.dnh"
 
 
 //•Ï”éŒ¾--------------------------------------
@@ -23,14 +24,14 @@ task MainAction()
 			{
 				if(Level==1 || Level==2)
 				{
-					CreateShot01(GetX()+5*cos(GetAngleToPlayer()+90),GetY()+5*sin(GetAngleToPlayer()+90),speed,GetAngleToPlayer(),BLUE11,0);
-					CreateShot01(GetX()+5*cos(GetAngleToPlayer()+270),GetY()+5*sin(GetAngleToPlayer()+270),speed,GetAngleToPlayer(),BLUE11,0);
+					CreateShot01(GetX()+5*cos(GetAngleToPlayer()+90),GetY()+5*sin(GetAngleToPlayer()+90),speed,GetAngleToPlayer(),38,0);
+					CreateShot01(GetX()+5*cos(GetAngleToPlayer()+270),GetY()+5*sin(GetAngleToPlayer()+270),speed,GetAngleToPlayer(),38,0);
 				}
 				if(Level==3)
 				{
-					CreateShot01(GetX()+8*cos(GetAngleToPlayer()+90),GetY()+8*sin(GetAngleToPlayer()+90),speed,GetAngleToPlayer(),BLUE11,0);
-					CreateShot01(GetX(),GetY(),speed,GetAngleToPlayer(),BLUE11,0);
-					CreateShot01(GetX()+8*cos(GetAngleToPlayer()+270),GetY()+8*sin(GetAngleToPlayer()+270),speed,GetAngleToPlayer(),BLUE11,0);
+					CreateShot01(GetX()+8*cos(GetAngleToPlayer()+90),GetY()+8*sin(GetAngleToPlayer()+90),speed,GetAngleToPlayer(),38,0);
+					CreateShot01(GetX(),GetY(),speed,GetAngleToPlayer(),38,0);
+					CreateShot01(GetX()+8*cos(GetAngleToPlayer()+270),GetY()+8*sin(GetAngleToPlayer()+270),speed,GetAngleToPlayer(),38,0);
 				}
 				speed=speed/1.3;
 			}
@@ -41,8 +42,8 @@ task MainAction()
 		let speed = [1,2,3,3.5][Level];
 		while(speed>=1)
 		{
-			CreateShot01(GetX()+10*cos(GetAngleToPlayer()+90),GetY()+10*sin(GetAngleToPlayer()+90),speed,GetAngleToPlayer(),BLUE11,0);
-			CreateShot01(GetX()+10*cos(GetAngleToPlayer()+270),GetY()+10*sin(GetAngleToPlayer()+270),speed,GetAngleToPlayer(),BLUE11,0);
+			CreateShot01(GetX()+10*cos(GetAngleToPlayer()+90),GetY()+10*sin(GetAngleToPlayer()+90),speed,GetAngleToPlayer(),38,0);
+			CreateShot01(GetX()+10*cos(GetAngleToPlayer()+270),GetY()+10*sin(GetAngleToPlayer()+270),speed,GetAngleToPlayer(),38,0);
 			speed=speed/1.3;
 		}
 		_Wait(30);
@@ -80,6 +81,7 @@ task SubAction01()
 		SetInvincibility( [1,40][GetArgument()] );
 		MainAction();
 		SubAction01();
+		LoadUserShotData(shotAll);
 	}
 	
 	@MainLoop

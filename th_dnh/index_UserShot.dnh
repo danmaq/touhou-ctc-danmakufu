@@ -1,4 +1,5 @@
 // -----------------------------------------------------------------------------
 // ユーザー定義弾
 // -----------------------------------------------------------------------------
-let shotMedicine = GetCurrentScriptDirectory ~ "shot_Add.dnh";
+let shotAll = GetCurrentScriptDirectory ~ "shot_All.dnh";
+let shotLight = GetCurrentScriptDirectory ~ "shot_Light.dnh";

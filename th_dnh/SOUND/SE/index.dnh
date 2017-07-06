@@ -15,8 +15,5 @@ let seSelect = dirSoundSe ~ "select00.wav";
 let sePower = dirSoundSe ~ "power0.wav";
 let seDamage = dirSoundSe ~ "damage00.wav";
 let seShadow = dirSoundSe ~ "Shadow.wav";
-
-//Žg‚¢–‚
-let seHidden=seMute;
-let seSudden=seMute;
-
+let seShadowHidden = dirSoundSe ~ "mute.wav";
+let seShadowSudden = dirSoundSe ~ "mute.wav";

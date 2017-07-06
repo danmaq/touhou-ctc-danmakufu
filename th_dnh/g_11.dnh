@@ -68,7 +68,7 @@ task SubAction01()
 		SetInvincibility( 130 );
 		MainAction();
 		SubAction01();
-		LoadUserShotData(shotMedicine);
+		LoadUserShotData(shotLight);
 	}
 	
 	@MainLoop

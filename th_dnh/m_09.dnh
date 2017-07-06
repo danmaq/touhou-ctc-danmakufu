@@ -2,6 +2,7 @@ script_enemy_main
 {
 
 #include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\index_UserShot.dnh"
 
 //•Ï”éŒ¾--------------------------------------
 	let count=0;
@@ -28,8 +29,8 @@ task MainAction()
 		let angle=0;
 		while(angle<=(Level-1)*2)
 		{
-			CreateLaser01(GetX(),GetY(),[1,1.5,2,3][Level],angle_b+GetAngleToPlayer()+angle,150+Level*30,8,GREEN21,0);
-			CreateLaser01(GetX(),GetY(),[1,1.5,2,3][Level],angle_b+GetAngleToPlayer()-angle,150+Level*30,8,GREEN21,0);
+			CreateLaser01(GetX(),GetY(),[1,1.5,2,3][Level],angle_b+GetAngleToPlayer()+angle,150+Level*30,8,84,0);
+			CreateLaser01(GetX(),GetY(),[1,1.5,2,3][Level],angle_b+GetAngleToPlayer()-angle,150+Level*30,8,84,0);
 			angle+=1.5;
 		}
 		angle_b+=15;
@@ -38,11 +39,11 @@ task MainAction()
 	{
 		loop([0,20,50,100][Level])
 		{
-			ReflectShot(GetX(),GetY(),rand(1.5,3),GetAngleToPlayer()+180+rand(-150,150),1,false,true,false,false,RED04,0);
+			ReflectShot(GetX(),GetY(),rand(1.5,3),GetAngleToPlayer()+180+rand(-150,150),1,false,true,false,false,17,0);
 		}
 		loop([0,10,17,40][Level])
 		{
-			CreateShot01(GetX(),GetY(),rand(1.5,3),GetAngleToPlayer()+rand(-30,30),RED04,0);
+			CreateShot01(GetX(),GetY(),rand(1.5,3),GetAngleToPlayer()+rand(-30,30),17,0);
 		}
 	}
 
@@ -81,6 +82,7 @@ task SubAction01()
 		SetInvincibility( 100 );
 		MainAction();
 		SubAction01();
+		LoadUserShotData(shotAll);
 	}
 	
 	@MainLoop
@@ -118,11 +120,14 @@ script_enemy t_ma_01
 {
 
 #include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\index_UserShot.dnh"
 
 	let count=0;
 	let scale=0;
 	let Level=GetCommonData("Level");
-	
+	let seHidden=seShadowHidden;
+	let seSudden=seShadowSudden;
+
 task MainAction()
 {yield;}
 task SubAction01()

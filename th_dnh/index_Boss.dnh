@@ -10,6 +10,9 @@ let bossMeirinL = GetCurrentScriptDirectory ~ "MeirinL.dnh";
 let bossSakuya = GetCurrentScriptDirectory ~ "Sakuya.dnh";
 let bossRemilia = GetCurrentScriptDirectory ~ "Remilia.dnh";
 let bossRemiliaL = GetCurrentScriptDirectory ~ "RemiliaL.dnh";
+let bossDevil = GetCurrentScriptDirectory ~ "Devil.dnh";
+let bossPatchouli = GetCurrentScriptDirectory ~ "Patchouli.dnh";
+let bossPatchouliL = GetCurrentScriptDirectory ~ "PatchouliL.dnh";
 
 // -----------------------------------------------------------------------------
 // â‘âfíÀÉãÅ[Ég

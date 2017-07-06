@@ -1,0 +1,62 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	_Wait(10);
+	while(1)
+	{
+		CreateShotA(0,GetX(),GetY(),20);
+		SetShotDataA(0,0,0,0,0,0,0,[RED04,BLUE04][GetArgument()]);
+		SetShotDataA(0,80,0,[GetGapAngle(GetX(),GetY(),GetCenterX(),GetCenterY()),GetAngleToPlayer()][GetArgument()],0,0.05,[0,1.2,1.8,2.5][Level],[RED04,BLUE04][GetArgument()]);
+		FireShot(0);
+		loop([20,15,8,5][Level]){yield;}
+	}
+
+
+
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(40);
+		SetInvincibility( 10 );
+		MainAction();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		count++;
+		//敵画像代わり------------------------------------
+		if(int(count/2)==count/2)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+			SetShotKillTime(0,2);
+			FireShot(0);
+		}
+		//------------------------------------------------
+		Collision( 20, 8 );
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		DropItem( 1 , 20 );
+	}
+}

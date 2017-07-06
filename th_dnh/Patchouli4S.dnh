@@ -1,0 +1,195 @@
+#東方弾幕風
+#Title[Patchouli - スペルカード4]
+#Text[ステージ3A ボス
+パチュリー・ノーレッジ
+（日符）※本番は火炎弾で
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Enemy.dnh"
+	#include_function ".\index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossPatchouli;
+	let userShot=shotAll;
+
+	// 難易度
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault("Level",0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// 画像及び効果音をロード
+		LoadGraphic(imgBoss);
+		LoadUserShotData(userShot);
+
+		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
+		SetText("＊符「＊＊＊」");
+		SetScore(100000);
+		SetTimer(63);
+		SetShotAutoDeleteClip(64,64,64,32);
+		SetEnemyMarker(true);
+
+		// ボスステータス設定（ライフ、ダメージ率等）
+		SetLife(500);
+		SetDamageRate(15,10);
+
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=180;
+		let x=cenX;
+		let y=minY+140+RandBlur(1);
+		SetMovePosition02(x,y,fr);
+		_Wait(fr);
+
+		let turn=0;
+		let assign=1;
+
+		loop{
+
+			// 放射弾
+			Concentration01(30);
+			_Wait(30);
+			RadiateShot(turn,assign);
+			_Wait(90);
+
+			// 移動
+			move(60);
+			_Wait(60);
+
+			turn++;
+			assign*=-1;
+
+		}
+
+	}
+
+	// 放射弾 ------------------------------------------------------------------
+	task RadiateShot(let turn, let assign){
+
+		let way=25+6*Lv;
+		let baseAngle=-90;
+		let wayAngle=360/way*assign;
+		let _way=10;
+
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i*(4-turn%3);
+			_RadiateShot(angle,_way,i,assign);
+			yield;
+		}
+
+	}
+
+	function _RadiateShot(let angle, let way, let count, let assign){
+
+		// 大弾
+		let speed=7.5;
+		let accSpeed=-speed/30;
+		let graphic=RED03;
+		let delay=0;
+		let fr=90;
+
+		// 小弾
+		let _fr=75;
+		let _speed=5.5;
+		let _accSpeed=-_speed/_fr;
+		let _maxSpeed=1.6;
+		let _baseAngle=angle-180;
+		let _wayAngle=360/way;
+		let _accAngle=360/_fr*assign;
+		let _graphic=162;
+
+		SetShotDirectionType(ABSOLUTE);
+		CreateShotA(0,GetX,GetY,delay);
+		SetShotDataA(0,0,speed,angle,0,accSpeed,0,graphic);
+		ascent(let i in 0 .. way){
+			let _angle=_baseAngle+_wayAngle*i;
+			CreateShotA(1,0,0,0);
+			SetShotDataA(1,0,_speed,_angle,_accAngle,_accSpeed,_maxSpeed,_graphic);
+			SetShotDataA(1,_fr,NULL,NULL,0,_accSpeed,_maxSpeed,_graphic);
+			AddShot(fr,0,1,0);
+		}
+		SetShotKillTime(0,fr+1);
+		FireShot(0);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+140){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// アイテム放出
+		if(Lv>0){DropItem(16,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphic(imgBoss);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		let x=0;
+		let y=0;
+		let sLength=128;
+		SetAlpha(m_nEnemyAlpha);
+		SetColor(255,255,255);
+		_DrawChrRectSqr(imgBoss,GetX,GetY,x,y,sLength);
+
+	}
+
+}

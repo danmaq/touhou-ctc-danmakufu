@@ -1,0 +1,24 @@
+#東方弾幕風[Plural]
+#Title[Patchouli - Easy/Normal/Hard/Lunatic]
+#Text[ステージ3A ボス
+パチュリー・ノーレッジ
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+#ScriptPathData
+#ScriptPath[.\Patchouli1.dnh]
+#ScriptPath[.\Patchouli1S.dnh]
+#ScriptPath[.\Patchouli2S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Patchouli2.dnh]
+#ScriptPath[.\Patchouli3S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Patchouli4S.dnh]
+#EndScriptPathData

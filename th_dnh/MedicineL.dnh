@@ -1,27 +1,33 @@
+#東方弾幕風
+#Title[Medicine - ラストスペル]
+#Text[ステージ1C ボス
+メディスン・メランコリー
+
+
+下記以外のスタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
 script_enemy_main{
 
-	// 画像及び効果音ファイル
-	#include_function ".\IMAGE\CHAR\index.dnh"
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Enemy.dnh"
 	#include_function ".\index_UserShot.dnh"
-	let imgBoss=dotBossSample;
-	let imgShot=dotPoisonShot;
-	let userShot=shotMedicine;
 
-	// 座標設定
-	let cenX=GetCenterX;
-	let cenY=GetCenterY;
-	let minX=GetClipMinX;
-	let maxX=GetClipMaxX;
-	let minY=GetClipMinY;
-	let maxY=GetClipMaxY;
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossMedicine;
+	let imgShot=dotShotPoison;
+	let userShot=shotLight;
 
 	// 難易度
 	Debug_SetLevel;
 	let Lv=GetCommonDataDefault("Level",0);
 	if(Lv==0){Lv=1;}
 	Lv--;
-
-	let alpha=0;
 
 	// -------------------------------------------------------------------------
 	@Initialize{
@@ -37,12 +43,12 @@ script_enemy_main{
 		SetEnemyMarker(true);
 		LastSpell;
 
-		// ボスステータス設定（ライフ、ダメージ率Shot%,Bomb%等）
+		// ボスステータス設定（ライフ、ダメージ率等）
 		SetLife(500);
 		SetDamageRate(15,0);
 		SetX(cenX);
-		SetY(minY+120+rand(-1,1));
-		LastSpellEffect(120,500);
+		SetY(minY+120+RandBlur(1));
+		LastSpellEffect(120);
 
 		Main;
 
@@ -51,11 +57,11 @@ script_enemy_main{
 	// -------------------------------------------------------------------------
 	@MainLoop{
 
-		// 当たり判定（A:自弾,B:体当たり）
-		if(alpha>0){
-			SetCollisionA(GetX,GetY,32);
-			SetCollisionB(GetX,GetY,24);
-		}
+		// 当たり判定（自弾,体当たり）
+		if(m_nEnemyAlpha>0){Collision(32,24);}
+
+		// カウンタ加算
+		m_nCount++;
 
 		yield;
 
@@ -65,35 +71,32 @@ script_enemy_main{
 	task Main{
 
 		SetInvincibility(242);
-		wait(122);
-
-		// フェードイン
-		FadeIn(60);
+		_Wait(122);
 		SetText("＊符「＊＊＊」");
 		SetScore(100000);
-		wait(120);
+		_Wait(120);
 
 		// ランダム毒霧
 		RandomPoisonShot;
-		wait(60);
+		_Wait(60);
 
 		loop{
 
-			wait(60);
+			_Wait(60);
 
 			// 隠れ弾
 			HiddenShot(-1);
 			HiddenShot(1);
-			wait(60);
+			_Wait(60);
 
 			// 移動
 			move(120);
-			wait(60);
+			_Wait(60);
 
 			// 隠れ弾
 			HiddenShot(-1);
 			HiddenShot(1);
-			wait(60);
+			_Wait(60);
 
 		}
 
@@ -120,7 +123,7 @@ script_enemy_main{
 			let angle=baseAngle+wayAngle*i;
 			SetShotDirectionType(ABSOLUTE);
 			LineShot(x,y,minSpeed,maxSpeed,angle,num,graphic,delay);
-			wait(fr);
+			_Wait(fr);
 		}
 
 	}
@@ -141,7 +144,7 @@ script_enemy_main{
 				let angle=GetGapAngle(GetX,GetY,x,y);
 				let seedFr=trunc(GetGapLength(GetX,GetY,x,y)/speed);
 				PoisonSeed(GetX,GetY,speed,angle,seedFr);
-				wait(fr);
+				_Wait(fr);
 			}
 		}
 
@@ -200,45 +203,6 @@ script_enemy_main{
 
 	}
 
-	// ラストスペルエフェクト --------------------------------------------------
-	task LastSpellEffect(
-		let fr,
-		let maxLife
-	){
-
-		let disLife=maxLife-1;
-		if(disLife>0){AddLife(-disLife);}
-		Concentration01(fr);
-		wait(fr);
-		if(disLife>0){
-			fr=60;
-			let addLife=maxLife/fr;
-			loop(fr){
-				AddLife(addLife);
-				yield;
-			}
-		}
-
-	}
-
-	// フェードイン ------------------------------------------------------------
-	task FadeIn(let fr){
-
-		let addAlpha=255/fr;
-		loop(fr){
-			alpha+=addAlpha;
-			yield;
-		}
-
-	}
-
-	// 待ち --------------------------------------------------------------------
-	function wait(let fr){
-
-		loop(fr){yield;}
-
-	}
-
 	// -------------------------------------------------------------------------
 	@Finalize{
 
@@ -252,36 +216,25 @@ script_enemy_main{
 	@DrawLoop{
 
 		// ボス描画
-		SetTexture(imgBoss);
-		if(GetSpeed==0){SetGraphicRect(1,1,64,64);}
-		else if(GetAngle>-90&&GetAngle<=90){SetGraphicRect(192,1,255,64);}
-		else {SetGraphicRect(128,1,191,64);}
-		SetAlpha(alpha);
+		let x=0;
+		let y=0;
+		let sLength=128;
+		SetAlpha(m_nEnemyAlpha);
 		SetColor(255,255,255);
-		DrawGraphic(GetX,GetY);
+		_DrawChrRectSqr(imgBoss,GetX,GetY,x,y,sLength);
 
 	}
-
-	// 共通関数読み込み
-	#include_function ".\INCLUDE\patternShot.dnh"
-	#include_function ".\INCLUDE\library_request.dnh"
 
 }
 
 // 毒霧 ------------------------------------------------------------------------
 script_shot PoisonMist{
 
-	// 画像及び効果音ファイル
-	#include_function ".\IMAGE\CHAR\DOT\index.dnh"
-	let imgShot=dotPoisonShot;
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shot.dnh"
 
-	// 座標設定
-	let cenX=GetCenterX;
-	let cenY=GetCenterY;
-	let minX=GetClipMinX;
-	let maxX=GetClipMaxX;
-	let minY=GetClipMinY;
-	let maxY=GetClipMaxY;
+	// 画像及び効果音ファイル
+	let imgShot=dotShotPoison;
 
 	let scale=0.15;
 
@@ -325,23 +278,17 @@ script_shot PoisonMist{
 
 	}
 
-	// 待ち --------------------------------------------------------------------
-	function wait(let fr){
-
-		loop(fr){yield;}
-
-	}
-
 	// -------------------------------------------------------------------------
 	@DrawLoop{
 
 		// 弾描画
-		SetTexture(imgShot);
-		SetGraphicRect(0,0,256,256);
+		let x=0;
+		let y=0;
+		let sLength=256;
 		SetRenderState(ADD);
 		SetColor(255,255,255);
 		SetGraphicScale(scale,scale);
-		DrawGraphic(GetX,GetY);
+		_DrawChrRectSqr(imgShot,GetX,GetY,x,y,sLength);
 
 	}
 

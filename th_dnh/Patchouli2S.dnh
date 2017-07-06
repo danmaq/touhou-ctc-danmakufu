@@ -1,0 +1,256 @@
+#東方弾幕風
+#Title[Patchouli - スペルカード2]
+#Text[ステージ3A 中ボス
+パチュリー・ノーレッジ
+（木＆土符）
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Enemy.dnh"
+
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossPatchouli;
+
+	// 難易度
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault("Level",0);
+	let maxLife=500;
+	let maxCount=60*63;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// 画像及び効果音をロード
+		LoadGraphic(imgBoss);
+
+		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
+		SetText("＊符「＊＊＊」");
+		SetScore(100000);
+		SetTimer(63);
+		SetShotAutoDeleteClip(100,100,100,20);
+		SetEnemyMarker(true);
+
+		// ボスステータス設定（ライフ、ダメージ率等）
+		SetLife(500);
+		SetDamageRate(15,10);
+
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=180;
+		let x=cenX;
+		let y=minY+120+RandBlur(1);
+		SetMovePosition02(x,y,fr);
+		_Wait(fr);
+
+		// 回転弾
+		RollShot;
+
+		// 狙い弾
+		SearchShot;
+
+		loop{
+
+			_Wait(90);
+
+			// 移動
+			move(90);
+			_Wait(90);
+
+		}
+
+	}
+
+	// 回転弾 ------------------------------------------------------------------
+	task RollShot{
+
+		let assign=1;
+		let fr=100;
+		loop{
+			_RollShot(assign);
+			_Wait(fr);
+			assign*=-1;
+		}
+
+	}
+
+	function _RollShot(let assign){
+
+		let fr=60;
+		let num=3+Lv;
+		let way=26;
+		let baseSpeed=3;
+		let numSpeed=1;
+		let baseMaxSpeed=1;
+		let numMaxSpeed=0.2;
+		let baseAngle=rand(0,360);
+		let wayAngle=360/way;
+		let accAngle=180/fr*assign;
+		let delay=30;
+		let graphic=GREEN21;
+
+		SetShotDirectionType(ABSOLUTE);
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			let maxSpeed=baseMaxSpeed+numMaxSpeed*i;
+			let accSpeed=(maxSpeed-speed)/fr;
+			ascent(let j in 0 .. way){
+				let angle=baseAngle+wayAngle*j;
+				CreateShotA(0,GetX,GetY,delay);
+				SetShotDataA(0,0,speed,angle,accAngle,accSpeed,maxSpeed,graphic);
+				SetShotDataA(0,fr,NULL,NULL,0,0,0,graphic);
+				FireShot(0);
+			}
+		}
+
+	}
+
+	// 狙い弾 ------------------------------------------------------------------
+	task SearchShot{
+
+		let num=2;
+		let way=20;
+		let baseSpeed=3.5;
+		let numSpeed=(4-baseSpeed)/(num-1);
+		let wayAngle=(100+20*Lv)/(way-1);
+		let baseAngle=90-wayAngle*(way-1)/2;
+		let fr=100;
+
+		_Wait(fr/2);
+		loop{
+			let rL=GetLife/maxLife;
+			let rC=(maxCount+3*60-m_nCount)/maxCount;
+			let r=Min(rL,rC);
+			if(r<=0.6){
+				ascent(let i in 0 .. num){
+					let speed=baseSpeed+numSpeed*i;
+					ascent(let j in 0 .. way){
+						let angle=baseAngle+wayAngle*j;
+						_SearchShot(speed,angle);
+					}
+				}
+			}
+			_Wait(fr);
+		}
+
+	}
+
+	task _SearchShot(let speed, let angle){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+		let delay=30;
+		let graphic=ORANGE04;
+
+		Obj_SetX(obj,GetX);
+		Obj_SetY(obj,GetY);
+		Obj_SetAngle(obj,angle);
+		ObjShot_SetDelay(obj,delay);
+		ObjShot_SetGraphic(obj,graphic);
+
+		// メイン処理 --------------------------------------
+		loop(delay){
+			if(Obj_BeDeleted(obj)){break;}
+			yield;
+		}
+
+		// 減速
+		let fr=60;
+		let accSpeed=-speed/fr;
+		loop(fr){
+			if(Obj_BeDeleted(obj)){break;}
+			speed+=accSpeed;
+			Obj_SetSpeed(obj,speed);
+			yield;
+		}
+
+		// 拡散
+		if(!Obj_BeDeleted(obj)){
+			let way=3;
+			angle=GetAngleToPlayerObject(obj);
+			accSpeed=(3+0.5*Lv)/60;
+			let wideAngle=100-20*Lv;
+			SetShotDirectionType(ABSOLUTE);
+			WideShot02(Obj_GetX(obj),Obj_GetY(obj),0,accSpeed,99,angle,wideAngle,way,graphic,0);
+			Obj_Delete(obj);
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// アイテム放出
+		DropItem(16,80);
+
+		// ロードしたファイルを削除
+		DeleteGraphic(imgBoss);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		let x=0;
+		let y=0;
+		let sLength=128;
+		SetAlpha(255);
+		SetColor(255,255,255);
+		_DrawChrRectSqr(imgBoss,GetX,GetY,x,y,sLength);
+
+	}
+
+}

@@ -1,0 +1,224 @@
+#東方弾幕風
+#Title[Devil - スペルカード1]
+#Text[ステージ3A 中ボス
+小悪魔
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Enemy.dnh"
+
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossDevil;
+
+	// 難易度
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault("Level",0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// 画像及び効果音をロード
+		LoadGraphic(imgBoss);
+
+		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
+		SetText("＊符「＊＊＊」");
+		SetScore(100000);
+		SetTimer(66);
+		SetShotAutoDeleteClip(20,20,20,20);
+		SetEnemyMarker(true);
+
+		// ボスステータス設定（ライフ、ダメージ率等）
+		SetLife(500);
+		SetDamageRate(15,10);
+
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=180;
+		let x=cenX;
+		let y=minY+120+RandBlur(1);
+		SetMovePosition02(x,y,fr);
+		_Wait(fr);
+
+		let assign=1;
+		let turn=0;
+
+		loop{
+
+			// 分裂弾1
+			loop(4){
+				SplitShot1(assign,turn);
+				assign*=-1;
+				_Wait(45);
+			}
+			_Wait(30);
+
+			// 分裂弾2
+			Concentration01(60);
+			_Wait(60);
+			SplitShot2(turn);
+			_Wait(60);
+
+			// 移動
+			move(90);
+			_Wait(90);
+
+			if(turn<4){turn++;}
+
+		}
+
+	}
+
+	// 分裂弾1 -----------------------------------------------------------------
+	task SplitShot1(let assign, let turn){
+
+		let num=[8,8,9,11];
+		let way=6+Lv+trunc(turn/2);
+		let baseSpeed=2;
+		let maxSpeed=4;
+		let numSpeed=(maxSpeed-baseSpeed)/(num[Lv]-1);
+		let baseAngle=rand(0,360);
+		let wayAngle=360/way;
+		let numAngle=wayAngle*1.5/(num[Lv]-1)*assign;
+		let fr=4;
+
+		ascent(let i in 0 .. num[Lv]){
+			let speed=baseSpeed+numSpeed*i;
+			ascent(let j in 0 .. way){
+				let angle=baseAngle+numAngle*i+wayAngle*j;
+				SetShotDirectionType(ABSOLUTE);
+				SplitShot(speed,angle);
+			}
+			_Wait(fr);
+		}
+
+	}
+
+	// 分裂弾2 -----------------------------------------------------------------
+	task SplitShot2(let turn){
+
+		let num=[8,8,9,11];
+		let way=8+Lv+turn;
+		let baseSpeed=1;
+		let maxSpeed=4;
+		let numSpeed=(maxSpeed-baseSpeed)/(num[Lv]-1);
+		let wayAngle=360/way;
+		let numAngle=wayAngle*1.5/(num[Lv]-1);
+		let baseAngle=GetAngleToPlayer-numAngle*(num[Lv]-1)/2;
+
+		SetShotDirectionType(ABSOLUTE);
+		ascent(let i in 0 .. num[Lv]){
+			let speed=baseSpeed+numSpeed*i;
+			ascent(let j in 0 .. way){
+				let angle=baseAngle+numAngle*i+wayAngle*j;
+				SplitShot(speed,angle);
+			}
+		}
+		baseAngle+=wayAngle/2;
+		ascent(let i in 0 .. num[Lv]){
+			let speed=baseSpeed+numSpeed*i;
+			ascent(let j in 0 .. way){
+				let angle=baseAngle-numAngle*i+wayAngle*j;
+				SplitShot(speed,angle);
+			}
+		}
+
+	}
+
+	// 分裂弾 ------------------------------------------------------------------
+	function SplitShot(let speed, let angle){
+
+		let spFr=50;
+		let spSpeed=1.2;
+		let spAngle=20;
+		let delay=15;
+		let graphic=[BLUE23,WHITE23];
+
+		CreateShotA(0,GetX,GetY,delay);
+		SetShotDataA(0,0,speed,angle,0,0,0,graphic[0]);
+		SetShotDataA(0,spFr,spSpeed,angle+spAngle,0,0,0,graphic[1]);
+		CreateShotA(1,0,0,0);
+		SetShotDataA(1,0,spSpeed,angle-spAngle,0,0,0,graphic[1]);
+		AddShot(spFr,0,1,0);
+		FireShot(0);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// アイテム放出
+		DropItem(16,80);
+
+		// ロードしたファイルを削除
+		DeleteGraphic(imgBoss);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		let x=0;
+		let y=0;
+		let sLength=128;
+		SetAlpha(255);
+		SetColor(255,255,255);
+		_DrawChrRectSqr(imgBoss,GetX,GetY,x,y,sLength);
+
+	}
+
+}
