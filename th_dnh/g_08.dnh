@@ -1,0 +1,92 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	_Wait([140,50][GetArgument()]);
+	while(1)
+	{
+		let angle=rand(0,360);
+		loop([4,6,10,15][Level])
+		{
+			let angle_b=-180;
+			while(angle_b<180)
+			{
+				CreateShotA(0,GetX(),GetY(),20);
+				SetShotDataA(0,0,3,angle_b,0,-0.03,0,GREEN23);
+				SetShotDataA(0,80,1,angle_b+180,0,-0.01,0.3,GREEN23);
+				SetShotDataA(0,150,NULL,angle_b,angle^2,0.02,[0.3,0.5,0.8,1][Level],GREEN23);
+				SetShotDataA(0,153,NULL,NULL,0,0,0,GREEN23);
+				FireShot(0);
+				CreateShotA(0,GetX(),GetY(),20);
+				SetShotDataA(0,0,3,angle_b,0,-0.03,0,RED23);
+				SetShotDataA(0,80,1,angle_b+180,0,-0.01,0.3,RED23);
+				SetShotDataA(0,150,NULL,angle_b,-angle,0.02,[0.3,0.5,0.8,1][Level],GREEN23);
+				SetShotDataA(0,153,NULL,NULL,0,0,0,RED23);
+				FireShot(0);
+				angle_b+=[90,60,45,36][Level];
+			}
+			loop(6){yield;}
+			angle+=4;
+		}
+		_Wait([80,40,30,20][Level]);
+	}
+
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop([100,45][GetArgument()])
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , [100,45][GetArgument()] ));
+		i++;
+		yield;
+	}
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(2000);
+		MainAction();
+		SubAction01();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		count++;
+		if(count==1000){VanishEnemy();}
+		//敵画像代わり------------------------------------
+		if(int(count/2)==count/2)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+			SetShotKillTime(0,2);
+			FireShot(0);
+		}
+		//------------------------------------------------
+		Collision( 20, 8 );
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		DropItem( 20 , 20 );
+	}
+}
