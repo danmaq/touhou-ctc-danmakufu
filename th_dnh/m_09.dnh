@@ -13,68 +13,44 @@ task MainAction()
 	yield;
 	_Wait(50);
 	
-	let angle=-180;
-	while(angle<180)
+	let angle=-30;
+	while(angle<=30)
 	{
-		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),0,GetAngleToPlayer()+angle,0);
-		angle+=60;
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),0.5,GetAngleToPlayer()+180+angle,0);
+		angle+=10;
 	}
-	_Wait(40);
-
-	let angle_b=GetAngleToPlayer()+90;
-	let gap=8.23;
+	_Wait(60);
 	while(1)
 	{
-		let angle=-gap*(Level+2);
-		while(angle<=0)
-		{
-			CreateShot01(GetX(),GetY(),2,angle+angle_b+GetAngleToPlayer(),BLUE02,0);
-			angle+=gap;
-		}
-		let angle=-gap*(Level+2);
-		while(angle<=0)
-		{
-			CreateShot01(GetX(),GetY(),2,180-angle+angle_b+GetAngleToPlayer(),BLUE02,0);
-			angle+=gap;
-		}
-		angle_b+=gap*[2.3,3.3,4.2,5,3][Level];
-		_Wait([30,15,10,7][Level]);
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),[1,1.5,2,3][Level],GetAngleToPlayer(),1);
+		_Wait(60);
 	}
-
-
-
 
 
 }
 task SubAction01()
 {
 	yield;
-		let spmax=GetSpeed();
-		let i=0;
-		loop(50)
-		{
-			SetSpeed(SlowDown( spmax , 0 , i , 50 ));
-			i++;
-			yield;
-		}
-		_Wait(30);
-	if(GetArgument() != 3)
+	let spmax=GetSpeed();
+	let i=0;
+	loop(50)
 	{
-		SetAngle([0,180][GetArgument()]);
-		SetSpeed(0.5);
+		SetSpeed(SlowDown( spmax , 0 , i , 50 ));
+		i++;
+		yield;
 	}
-	if(GetArgument()==3)
-	{
-		SetAngle(-90);
-		SetSpeed(0.3);
-	}
+	_Wait(250);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,400);
+
+
 }
 
 //ŽÀs•”•ª---------------------------------------
 
 	@Initialize
 	{
-		SetLife(100);
+		SetLife(30);
 		SetInvincibility( 100 );
 		SetAngle( GetAngle() );
 		MainAction();
@@ -104,7 +80,7 @@ task SubAction01()
 	}
 	@Finalize
 	{
-		DropItem( 10 , 20 );
+		DropItem( 5 , 20 );
 	}
 }
 
@@ -123,47 +99,33 @@ script_enemy t_ma_01
 task MainAction()
 {
 	yield;
-	_Wait(10);
-	let angle=0;
-	while(1)
+	if(GetArgument()==0)
 	{
-		CreateShotA(0,GetX(),GetY(),0);
-		SetShotDataA(0,0,0.5,count*5,0.5,-0.002,0,RED11);
-		SetShotDataA(0,80,NULL,NULL,0,[0.05,0.05,0.07,0.1][Level],[1.5,1.5,2,3][Level],RED11);
-		FireShot(0);
-		CreateShotA(0,GetX(),GetY(),0);
-		SetShotDataA(0,0,0.5,count*5,-0.5,-0.002,0,RED11);
-		SetShotDataA(0,80,NULL,NULL,0,[0.05,0.05,0.07,0.1][Level],[1.5,1.5,2,3][Level],RED11);
-		FireShot(0);
-		loop(3){yield;}
-	}
-
-}
-
-task SubAction01()
-{
-	yield;
-	SetCoordinateType(COODINATE_TYPE_PARENT);
-	let angle_b=GetAngle();
-	while(1)
-	{
-		SetX(70*cos(angle_b));
-		SetY(70*sin(angle_b));
-		angle_b+=3.1;
-		yield;
+		while(1)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,2,GetAngle()+180,[2,1,0.5,0.3][Level],0,0,RED11);
+			SetShotKillTime(0,250);
+			FireShot(0);
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,2,GetAngle()+180,-1*[2,1,0.5,0.3][Level],0,0,BLUE11);
+			SetShotKillTime(0,250);
+			FireShot(0);
+			loop([30,20,12,8][Level]){yield;}
+		}
 	}
 }
+
+
 
 	@Initialize
 	{	
-		SetLife(70);
+		SetLife(30);
 		LoadGraphic(imgcircle_t);
-		MainAction();
-		SubAction01();
+		MainAction()
 	}
 	@MainLoop
 	{
-		yield;
 		Deletemine();
 		Gone();
 		BehaviorShadow( 0,0 );
@@ -180,6 +142,7 @@ task SubAction01()
 				FireShot(0);
 			}
 		}
+		yield;
 	}
 	@DrawLoop
 	{

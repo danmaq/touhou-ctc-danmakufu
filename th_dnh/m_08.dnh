@@ -1,0 +1,136 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	_Wait([130,50][GetArgument()]);
+
+	let angle_b=-180;
+	while(angle_b<180)
+	{
+		let angle=-32;
+		while(angle<=32)
+		{
+			CreateShot02(GetX(),GetY(),3-absolute(angle/15),angle+angle_b,-0.023,[0.3,0.5,0.5,0.5][Level],ORANGE21,30);
+			angle+=[8,4,4,2][Level];
+		}
+		angle_b+=[60,45,36,15][Level];
+	}
+
+	_Wait(60);
+
+	let angle=-180;
+	while(angle<180)
+	{
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),1.2,angle,0);
+		angle+=[60,45,36,15][Level];
+	}
+
+
+
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop([100,45][GetArgument()])
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , [100,45][GetArgument()] ));
+		i++;
+		yield;
+	}
+	_Wait(200);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(40);
+		SetInvincibility( 180 );
+		MainAction();
+		SubAction01();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		count++;
+		//敵画像代わり------------------------------------
+		if(int(count/2)==count/2)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+			SetShotKillTime(0,2);
+			FireShot(0);
+		}
+		//------------------------------------------------
+		Collision( 20, 8 );
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		DropItem( 12 , 60 );
+	}
+}
+
+////////////////////////////////////////////////////////////////////////
+//仮の使い魔、使い魔の書式の統一が必要なので雛形の作成をお願いします
+////////////////////////////////////////////////////////////////////////
+script_enemy t_ma_01
+{
+
+#include_function ".\INCLUDE\Shadow.dnh"
+
+	let count=0;
+
+	@Initialize
+	{	
+		SetLife(30);
+		LoadGraphic(imgcircle_t);
+	}
+	@MainLoop
+	{
+		Deletemine();
+		Gone();
+		BehaviorShadow( 0,0 );
+		count++;
+	
+		if(GetKeyState(VK_SLOWMOVE)==KEY_FREE)
+		{
+			Collision( 16,12 );
+			if(int(count/3)==count/3)
+			{
+				CreateShotA(0,GetX(),GetY(),15);
+				SetShotDataA(0,0,0,0,0,0,0,WHITE05);
+				SetShotKillTime(0,0);
+				FireShot(0);
+			}
+		}
+	}
+	@DrawLoop
+	{
+		SetGraphicRect( 0,0,50,50 );
+		DrawRotate( imgcircle_t, count*2 );
+	}
+	@Finalize
+	{
+		DestructShadow( 40 );
+	}
+}

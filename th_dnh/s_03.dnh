@@ -10,19 +10,18 @@ script_enemy_main
 task MainAction()
 {
 	yield;
-	_Wait(30);
-	if(Level > 1)
+	_Wait(20);
+	if(Level != 0)
 	{
-		let speed=0.6;
-		loop(20)
+		let angle=-180;
+		while(angle<180)
 		{
-			if( GetY() <= GetCenterY() )
-			{
-				CreateShot01(GetX(),GetY(),speed,GetAngleToPlayer(),ORANGE11,0);
-				speed+=0.3;
-				loop([0,999,20,6][Level]){yield;}
-			}
+			CreateLaserB(0,[30,40,60,80][Level],8,PURPLE01,0);
+			SetLaserDataB(0,0,0,0,0,angle,4,angle,4);
+			FireShot(0);
+			angle+=[180,90,60,45][Level];
 		}
+
 	}
 }
 
@@ -30,7 +29,7 @@ task MainAction()
 
 	@Initialize
 	{
-		SetLife(30);
+		SetLife(100);
 		SetInvincibility( 10 );
 		SetAngle( GetAngle() );
 		MainAction();
@@ -60,12 +59,7 @@ task MainAction()
 	@Finalize
 	{
 		DropItem( 1 , 20 );
-		if(BeVanished() == false && GetY() <= GetCenterY()+80 && rand(0,100)>60 && Level > 1)
-		{
-			SetShotDirectionType(PLAYER);
-			CircleShot01( [180,120,60,45][Level] , 1 , ORANGE11 , 20 );
-			SetShotDirectionType(ABSOLUTE);
-		}
-
+		if(BeParentVanished() || BeVanished()){DeleteEnemyShot(CHILD);}
+		else{DeleteEnemyShotToItem(CHILD);}
 	}
 }

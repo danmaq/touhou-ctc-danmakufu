@@ -190,7 +190,6 @@ _Wait(100);
 
 	CreateEnemyFromFile(z_m_06,GetCenterX()-30,GetClipMinY()-20,4.5,90,0);
 	CreateEnemyFromFile(z_m_06,GetCenterX()+30,GetClipMinY()-20,4.5,90,0);
-	CreateEnemyFromFile(z_m_05,GetCenterX(),GetClipMinY()-20,5,90,3);
 
 	_Wait(350);
 

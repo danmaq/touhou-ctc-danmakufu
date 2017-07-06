@@ -10,19 +10,20 @@ script_enemy_main
 task MainAction()
 {
 	yield;
-	_Wait(30);
-	if(Level > 1)
+	_Wait(rand(10,40));
+	while( GetY() < GetCenterY()+80 )
 	{
-		let speed=0.6;
-		loop(20)
+		if(Level != 0)
 		{
-			if( GetY() <= GetCenterY() )
+			loop([0,15,25,40][Level])
 			{
-				CreateShot01(GetX(),GetY(),speed,GetAngleToPlayer(),ORANGE11,0);
-				speed+=0.3;
-				loop([0,999,20,6][Level]){yield;}
+				CreateShotA(0,GetX(),GetY(),0);
+				SetShotDataA(0,0,rand([0,0.5,0.8,1.5][Level],[0,1.5,2.3,3.7][Level]),rand(0,360),0,-0.03,0,WHITE04);
+				SetShotKillTime(0,150);
+				FireShot(0);
 			}
 		}
+		_Wait([999,80,50,40][Level]);
 	}
 }
 
@@ -60,12 +61,5 @@ task MainAction()
 	@Finalize
 	{
 		DropItem( 1 , 20 );
-		if(BeVanished() == false && GetY() <= GetCenterY()+80 && rand(0,100)>60 && Level > 1)
-		{
-			SetShotDirectionType(PLAYER);
-			CircleShot01( [180,120,60,45][Level] , 1 , ORANGE11 , 20 );
-			SetShotDirectionType(ABSOLUTE);
-		}
-
 	}
 }

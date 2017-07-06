@@ -119,18 +119,41 @@ task Stage1A(){
 
 //---------------------------------------------------------------
 
-	loop(2)
+	let i=0;
+	loop(10)
 	{
-		let i=0;
-		loop(10)
-		{
-			CreateEnemyFromFile(z_g_01,GetClipMinX()+30,GetClipMinY()-20,Smooth(3,8,i,10),90,0);
-			CreateEnemyFromFile(z_g_01,GetClipMaxX()-30,GetClipMinY()-20,Smooth(3,8,i,10),90,0);
-			_Wait(20);
-			i++;
-		}
-		_Wait(200);
+		CreateEnemyFromFile(z_g_01,GetClipMinX()+30,GetClipMinY()-20,Smooth(3,8,i,10),90,0);
+		_Wait(20);
+		i++;
 	}
+	_Wait(50);
+
+	let i=0;
+	loop(10)
+	{
+		CreateEnemyFromFile(z_g_01,GetClipMaxX()-30,GetClipMinY()-20,Smooth(3,8,i,10),90,0);
+		_Wait(20);
+		i++;
+	}
+	_Wait(200);
+	let i=0;
+	loop(10)
+	{
+		CreateEnemyFromFile(z_g_01,GetClipMaxX()-30,GetClipMinY()-20,Smooth(3,8,i,10),90,0);
+		_Wait(20);
+		i++;
+	}
+	_Wait(50);
+
+	let i=0;
+	loop(10)
+	{
+		CreateEnemyFromFile(z_g_01,GetClipMinX()+30,GetClipMinY()-20,Smooth(3,8,i,10),90,0);
+		_Wait(20);
+		i++;
+	}
+	_Wait(200);
+
 
 //---------------------------------------------------------------
 
@@ -141,7 +164,7 @@ task Stage1A(){
 		let i=0;
 		loop(10)
 		{
-			CreateEnemyFromFile(z_s_01,Smooth(GetClipMinX()+20,GetClipMaxX()-20,i,10),GetClipMinY()-20,2.5,90,0);
+			CreateEnemyFromFile(z_s_01,Smooth(GetClipMinX()+20,GetClipMaxX()-20,i,10),GetClipMinY()-20,2,90,0);
 			_Wait(30);
 			i++;
 		}
@@ -151,13 +174,13 @@ task Stage1A(){
 		let i=0;
 		loop(10)
 		{
-			CreateEnemyFromFile(z_s_01,Smooth(GetClipMaxX()-20,GetClipMinX()+20,i,10),GetClipMinY()-20,2.5,90,0);
+			CreateEnemyFromFile(z_s_01,Smooth(GetClipMaxX()-20,GetClipMinX()+20,i,10),GetClipMinY()-20,2,90,0);
 			_Wait(30);
 			i++;
 		}
 	}
 
-	_Wait(300);
+	_Wait(450);
 
 //---------------------------------------------------------------
 
