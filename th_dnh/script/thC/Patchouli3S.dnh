@@ -1,0 +1,346 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossPatchouli;
+	let imgCutIn=cutPatchouli;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	let objP=[];
+	let Prism=false;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_PACHOULI~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(66);
+		SetLife(500);
+		SetDamageRate(7,7);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+120+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"月＆水符「ムーンライトスコール－Ｅａｓｙ－」",
+			"月＆水符「ムーンライトスコール」",
+			"月＆水符「ムーンシャインスコール」",
+			"月＆水符「ムーンシャインスコール－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(125);
+
+		// プリズム弾
+		SetAction(ACT_SHOT_B5,180);
+		PlaySE(sePower);
+		Concentration01(120);
+		_Wait(60);
+		PrismShot;
+		_Wait(120);
+		SetDamageRate(15,15);
+
+		// プリズムシード弾
+		Concentration01(30);
+		_Wait(30);
+		PrismSeedShot;
+		PrismSE;
+
+		loop{
+
+			SetAction(ACT_SHOT_A3,120);
+			_Wait(120);
+
+			// 移動
+			move(60);
+			_Wait(60);
+
+		}
+
+	}
+
+	// プリズム弾 --------------------------------------------------------------
+	task PrismShot{
+
+		let assign=1;
+		let num=[2,4,4,6];
+		let fr=[90,30,30,15];
+		loop(num[Lv]){
+			_PrismShot(assign);
+			PlaySE(seKira4);
+			_Wait(fr[Lv]);
+			assign*=-1;
+		}
+
+	}
+
+	task _PrismShot(let assign){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+		objP=objP~[obj];
+
+		ObjShot_SetGraphic(obj,US_LIGHT_YELLOW);
+		Obj_SetAutoDelete(obj,false);
+		ObjShot_SetBombResist(obj,true);
+
+		// メイン処理 --------------------------------------
+		let xTurnAngle=20;
+		let zTurnAngle=-45*assign;
+		let gapLength=0;
+		let gapAngle=0;
+		setGapLength;
+		setGapAngle;
+		setLocation;
+		setAlpha;
+
+		// 間隔長さ設定 ------------------------------------
+		task setGapLength{
+			let fr=60;
+			let addGapLength=100/fr;
+			loop(fr){
+				gapLength+=addGapLength;
+				yield;
+			}
+		}
+
+		// 間隔角度設定 ------------------------------------
+		task setGapAngle{
+			let addGapAngle=360/120*assign;
+			loop{
+				gapAngle+=addGapAngle;
+				yield;
+			}
+		}
+
+		// 位置設定 ----------------------------------------
+		task setLocation{
+			loop{
+				let x=GetGapX(GetX,gapLength,gapAngle);
+				let y=GetGapY(GetY,gapLength*sin(xTurnAngle),gapAngle);
+				let _gapLength=GetGapLength(GetX,GetY,x,y);
+				let _gapAngle=GetGapAngle(GetX,GetY,x,y)+zTurnAngle;
+				let _x=GetGapX(GetX,_gapLength,_gapAngle);
+				let _y=GetGapY(GetY,_gapLength,_gapAngle);
+				Obj_SetX(obj,_x);
+				Obj_SetY(obj,_y);
+				yield;
+			}
+		}
+
+		// α設定 ------------------------------------------
+		task setAlpha{
+			let fr=60;
+			let alpha=0;
+			let addAlpha=255/fr;
+			loop(fr){
+				alpha+=addAlpha;
+				Obj_SetAlpha(obj,alpha);
+				yield;
+			}
+		}
+
+	}
+
+	// プリズムシード弾 --------------------------------------------------------
+	task PrismSeedShot{
+
+		let way=[40,50,50,60];
+		loop{
+			_PrismSeedShot(way[Lv]);
+			_Wait(way[Lv]);
+		}
+
+	}
+
+	task _PrismSeedShot(let way){
+
+		let sortS=CreateMixOrderArray(way);
+		let sortA=CreateMixOrderArray(way);
+		let baseSpeed=2;
+		let waySpeed=(3.5-baseSpeed)/(way-1);
+		let baseAngle=rand(0,360);
+		let wayAngle=360/way;
+		let gapLength=15;
+
+		ascent(let i in 0 .. way){
+			let speed=baseSpeed+waySpeed*sortS[i];
+			let angle=baseAngle+wayAngle*sortA[i];
+			let x=GetGapX(GetX,gapLength,angle);
+			let y=GetGapY(GetY,gapLength,angle);
+			__PrismSeedShot(x,y,speed,angle);
+			yield;
+		}
+
+	}
+
+	task __PrismSeedShot(let x, let y, let speed, let angle){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+		let delay=5;
+
+		Obj_SetX(obj,x);
+		Obj_SetY(obj,y);
+		Obj_SetSpeed(obj,speed);
+		Obj_SetAngle(obj,angle);
+		ObjShot_SetDelay(obj,delay);
+		ObjShot_SetGraphic(obj,US_ICE_SKY);
+
+		// メイン処理 --------------------------------------
+		loop(delay){
+			if(Obj_BeDeleted(obj)){break;}
+			yield;
+		}
+
+		let fr=trunc(200/speed);
+		loop(fr){
+			if(Obj_BeDeleted(obj)){break;}
+			ascent(let i in 0 .. length(objP)){
+				if(Collision_Obj_Obj(obj,objP[i])){
+					speed=4.5+Lv;
+					let Length=180+20*Lv;
+					let width=8;
+					let graphic=US_BALL_M_A_YELLOW;
+					CreateLaser01(Obj_GetX(obj),Obj_GetY(obj),speed,angle,Length,width,graphic,0);
+					if(Lv>=2){CreateLaser01(Obj_GetX(obj),Obj_GetY(obj),speed,angle+180,Length,width,graphic,0);}
+					Prism=true;
+					Obj_Delete(obj);
+					break;
+				}
+			}
+			yield;
+		}
+
+	}
+
+	// プリズムSE --------------------------------------------------------------
+	task PrismSE{
+
+		let count=m_nCount;
+		let waitCount=8-Lv;
+		loop{
+			if(Prism){
+				if(count<m_nCount){
+					PlaySE(seLaser2);
+					count=m_nCount+waitCount;
+				}
+				Prism=false;
+			}
+			yield;
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(60,80);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){DropItem(16,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn( m_nCount );
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGPachouli;
+
+	}
+
+}

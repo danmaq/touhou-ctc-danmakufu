@@ -1,0 +1,96 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		STAGE 1
+//
+//		※ステージライブラリから自動的にインクルードされます
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メンバ変数
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	内部処理
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	各シナリオ共通の初期化(個別初期化前の動作)
+function Stage1CommonInitializeBefore(){
+	ForbidBomb( true );
+	ForbidShot( true );
+}
+
+//	各シナリオ共通の初期化(個別初期化後の動作)
+function Stage1CommonInitializeAfter(){
+	SetStage( 1 );
+	ForbidBomb( false );
+	ForbidShot( false );
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メイン部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+//	メインタスク
+task Stage1(){
+	Stage1CommonInitializeBefore();
+	alternative( m_nScenario )
+	case( 0 ){ Stage1AInitialize(); }
+	case( 1 ){ Stage1BInitialize(); }
+	case( 2 ){ Stage1CInitialize(); }
+	case( 3 ){ Stage1DInitialize(); }
+	Stage1CommonInitializeAfter();
+	alternative( m_nScenario )
+	case( 0 ){ Stage1A(); }
+	case( 1 ){ Stage1B(); }
+	case( 2 ){ Stage1C(); }
+	case( 3 ){ Stage1D(); }
+}
+
+//	@MainLoop()にて毎フレーム呼ばれる部分
+function Stage1Loop(){
+	alternative( m_nScenario )
+	case( 0 ){ Stage1AMainLoop(); }
+	case( 1 ){ Stage1BMainLoop(); }
+	case( 2 ){ Stage1CMainLoop(); }
+	case( 3 ){ Stage1DMainLoop(); }
+}
+
+//	@BackGround()にて毎回呼ばれる部分
+function Stage1DrawBackGround(){
+	alternative( m_nScenario )
+	case( 0 ){ Stage1ADrawBackGround(); }
+	case( 1 ){ Stage1BDrawBackGround(); }
+	case( 2 ){ Stage1CDrawBackGround(); }
+	case( 3 ){ Stage1DDrawBackGround(); }
+}
+
+//	@DrawBottomObject()にて毎回呼ばれる部分
+function Stage1DrawBottomObject(){
+	alternative( m_nScenario )
+	case( 0 ){ Stage1ADrawBottomObject(); }
+	case( 1 ){ Stage1BDrawBottomObject(); }
+	case( 2 ){ Stage1CDrawBottomObject(); }
+	case( 3 ){ Stage1DDrawBottomObject(); }
+}
+
+//	@DrawTopObject()にて毎回呼ばれる部分
+function Stage1DrawTopObject(){
+	alternative( m_nScenario )
+	case( 0 ){ Stage1ADrawTopObject(); }
+	case( 1 ){ Stage1BDrawTopObject(); }
+	case( 2 ){ Stage1CDrawTopObject(); }
+	case( 3 ){ Stage1DDrawTopObject(); }
+}

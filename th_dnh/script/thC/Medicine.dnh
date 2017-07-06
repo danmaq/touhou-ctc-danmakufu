@@ -1,0 +1,8 @@
+#ScriptPathData
+#ScriptPath[.\Medicine0.dnh]
+#ScriptPath[.\Medicine1.dnh]
+#ScriptPath[.\Medicine1S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Medicine2.dnh]
+#ScriptPath[.\Medicine2S.dnh]
+#EndScriptPathData

@@ -1,0 +1,189 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossFlandre;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.25;}
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			seList=seList~seListEnemy;
+			SetX(cenX);
+			SetY(minY+120);
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(43);
+		SetLife(625);
+		SetDamageRate(75*DamageRate,75*DamageRate);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND4);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(62);
+		_Wait(62);
+
+		let turn=0;
+
+		loop{
+
+			// 全方向直線弾
+			_RoundLineShot(turn);
+			_Wait(90);
+
+			// 移動
+			move(cenX+120,minY+180,90);
+			_Wait(90);
+
+			// 全方向扇状直線弾
+			_RoundWideLineShot;
+			_Wait(90);
+
+			// 移動
+			move(cenX,minY+120,90);
+			_Wait(90);
+
+			if(turn<2){turn++;}
+
+			// 全方向直線弾
+			_RoundLineShot(turn);
+			_Wait(90);
+
+			// 移動
+			move(cenX-120,minY+180,90);
+			_Wait(90);
+
+			// 全方向扇状直線弾
+			_RoundWideLineShot;
+			_Wait(90);
+
+			// 移動
+			move(cenX,minY+120,90);
+			_Wait(90);
+
+			if(turn<2){turn++;}
+
+		}
+
+	}
+
+	// 全方向直線弾 ------------------------------------------------------------
+	task _RoundLineShot(let turn){
+
+		let _num=1+turn;
+		let num=[1,2,3,4];
+		let way=[32,32,38,44];
+		let minSpeed=[1.8, 1.5, 1.2, 0.9];
+		let maxSpeed=1.8;
+		let graphic=US_RICE_S_BLUE;
+		let delay=15;
+		let fr=30;
+
+		SetAction(ACT_SHOT_B5,fr*_num+10);
+		ascent(let i in 0 .. _num){
+			let angle=rand(0,360);
+			RoundLineShot(GetX,GetY,minSpeed[Lv],maxSpeed,angle,way[Lv],num[Lv],graphic,delay);
+			PlaySE(seShot1);
+			_Wait(fr);
+		}
+
+	}
+
+	// 全方向扇状直線弾 --------------------------------------------------------
+	task _RoundWideLineShot{
+
+		let _num=[3,4,5,6];
+		let num=[5,7,9,11];
+		let wideAngle=[0,0,6,12];
+		let wideWay=[1,1,3,5];
+		let roundWay=5;
+		let minSpeed=[1, 1.2, 1.4, 1.6];
+		let maxSpeed=[3.4, 3.6, 4, 5];
+		let graphic=US_RICE_S_RED;
+		let delay=8;
+		let fr=[25,20,15,10];
+
+		SetAction(ACT_SHOT_A5,90);
+		ascent(let i in 0 .. _num[Lv]){
+			let angle=GetAngleToPlayer;
+			RoundWideLineShot(GetX,GetY,minSpeed[Lv],maxSpeed[Lv],angle,wideAngle[Lv],wideWay[Lv],roundWay,num[Lv],graphic,delay);
+			PlaySE(seShot1);
+			_Wait(fr[Lv]);
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let x, let y, let fr){
+
+		x+=RandBlur(15);
+		y+=RandBlur(15);
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// アイテム放出
+		if(THC&&!Practice&&Lv<2){DropItem(6,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}

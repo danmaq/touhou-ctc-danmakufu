@@ -1,0 +1,106 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	let spmax=GetSpeed();
+	_Wait(40);
+	ascent(i in 0..5)
+	{
+		CreateShot01(GetX()-30*cos(GetAngle())+12*i*cos(GetAngle()),GetY()-30*sin(GetAngle())+12*i*sin(GetAngle()),spmax/2,GetAngle(),RED04,0);
+	}
+	ascent(i in 0..5)
+	{
+		CreateShot01(GetX()+12*i*cos(GetAngle()+120),GetY()+12*i*sin(GetAngle()+120),spmax/2,GetAngle(),RED04,0);
+		CreateShot01(GetX()+12*i*cos(GetAngle()-120),GetY()+12*i*sin(GetAngle()-120),spmax/2,GetAngle(),RED04,0);
+	}
+	ascent(i in 3..7)
+	{
+		CreateShot01(GetX()+12*i*cos(GetAngle()+130),GetY()+12*i*sin(GetAngle()+130),spmax/2,GetAngle(),RED04,0);
+		CreateShot01(GetX()+12*i*cos(GetAngle()-130),GetY()+12*i*sin(GetAngle()-130),spmax/2,GetAngle(),RED04,0);
+	}
+	ascent(i in 5..7)
+	{
+		CreateShot01(GetX()+12*i*cos(GetAngle()+140),GetY()+12*i*sin(GetAngle()+140),spmax/2,GetAngle(),RED04,0);
+		CreateShot01(GetX()+12*i*cos(GetAngle()-140),GetY()+12*i*sin(GetAngle()-140),spmax/2,GetAngle(),RED04,0);
+	}
+	CreateShot01(GetX(),GetY(),spmax/2,GetAngle(),RED02,0);
+
+	if(Level==3)
+	{
+		while(1)
+		{
+			CreateShotA(0,GetX()+rand(0,72)*cos(GetAngle()+130),GetY()+rand(0,72)*sin(GetAngle()+130),20);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED11);
+			SetShotDataA(0,60,0,NULL,0,0.05,spmax,RED11);
+			FireShot(0);
+			loop(3){yield;}
+			CreateShotA(0,GetX()+rand(0,72)*cos(GetAngle()-130),GetY()+rand(0,72)*sin(GetAngle()-130),20);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED11);
+			SetShotDataA(0,60,0,NULL,0,0.05,spmax,RED11);
+			FireShot(0);
+			loop(3){yield;}
+
+		}
+	}
+
+
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..40)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 40 ));
+		yield;
+	}
+	SetSpeed(spmax/2);
+
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife([20,40,40,100][Level]);
+		SetInvincibility( 40 );
+		MainAction();
+		SubAction01();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		count++;
+		//敵画像代わり------------------------------------
+		if(int(count/2)==count/2)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+			SetShotKillTime(0,2);
+			FireShot(0);
+		}
+		//------------------------------------------------
+		Collision( 20, 8 );
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		DropItem( 1 , 20 );
+		if(Level<2){DeleteEnemyShotToItem(CHILD);}
+	}
+}

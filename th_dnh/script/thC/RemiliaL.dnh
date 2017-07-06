@@ -1,0 +1,428 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossRemilia;
+	let imgCutIn=cutRemilia;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	if(Lv==0){Lv=1;}
+	Lv--;
+
+	let maxLife=600;
+	let nextPhase=false;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_REMILIA~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(70);
+		SetLife(500);
+		SetDamageRate(5,0);
+		SetShotAutoDeleteClip(32,32,32,32);
+		SetX(cenX);
+		SetY(minY+60);
+		LastSpellEffect(115);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND4);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		if(m_nEnemyAlpha>0){Collision(32,24);}
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(242);
+		_Wait(117);
+
+		// スペルカード発動
+		let spellName=[
+			"「エンジェル・マヌーヴァ」",
+			"「エンジェル・マヌーヴァ－Ｈａｒｄ－」",
+			"「エンジェル・マヌーヴァ－Ｌｕｎａｔｉｃ－」"
+		];
+		SetCommonData(CD_SPELL_LASTSPELL,true);
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(125);
+
+		// ライフチェック
+		CheckLife;
+
+		// 弾幕コンボ
+		ShotCombo;
+
+		// 移動
+		PlaySE(sePower);
+		Concentration01(120);
+		DeleteEnemyShotToItem(ALL);
+		SetDamageRate(5,0);
+		_move(60);
+		_Wait(114);
+
+		// 全方向機雷弾
+		SetAction(ACT_SHOT_B3,66);
+		_Wait(6);
+		RoundMineShot(0);
+		_Wait(30);
+		RoundMineShot(1);
+		_Wait(60);
+
+		// 弾幕コンボ
+		nextPhase=false;
+		ShotCombo;
+
+	}
+
+	// 弾幕コンボ --------------------------------------------------------------
+	function ShotCombo{
+
+		let assign=1;
+
+		loop{
+
+			// クロス直線弾
+			SetAction(ACT_SHOT_A5,90);
+			let ly=rand(20,40);
+			CrossLineShot(ly,assign);
+			loop(18){
+				if(nextPhase){break;}
+				yield;
+			}
+			CrossLineShot(ly,-assign);
+			loop(82){
+				if(nextPhase){break;}
+				yield;
+			}
+			if(nextPhase){break;}
+
+			// 移動
+			move(45,-1);
+			loop(45){
+				if(nextPhase){break;}
+				yield;
+			}
+			if(nextPhase){break;}
+
+			// 全方向レーザー
+			RoundLaser(-1);
+			loop(140){
+				if(nextPhase){break;}
+				yield;
+			}
+			if(nextPhase){break;}
+
+			// 移動
+			move(45,0);
+			loop(45){
+				if(nextPhase){break;}
+				yield;
+			}
+			if(nextPhase){break;}
+
+			// 連続ばらつき弾
+			RapidVariedShot;
+			loop(100){
+				if(nextPhase){break;}
+				yield;
+			}
+			if(nextPhase){break;}
+
+			// 移動
+			move(45,1);
+			loop(45){
+				if(nextPhase){break;}
+				yield;
+			}
+			if(nextPhase){break;}
+
+			// 全方向レーザー
+			RoundLaser(1);
+			loop(140){
+				if(nextPhase){break;}
+				yield;
+			}
+			if(nextPhase){break;}
+
+			// 移動
+			move(45,0);
+			loop(45){
+				if(nextPhase){break;}
+				yield;
+			}
+			if(nextPhase){break;}
+
+			assign*=-1;
+			SetDamageRate(15,0);
+
+		}
+
+	}
+
+	// 全方向機雷弾 ------------------------------------------------------------
+	function RoundMineShot(let assign){
+
+		let way=28+4*Lv;
+		let wayAngle=360/way;
+		let baseAngle=90+wayAngle/2*assign;
+
+		PlaySE(seKira1);
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i;
+			MineShot(GetX,GetY,angle,assign);
+		}
+
+	}
+
+	// 機雷弾 ------------------------------------------------------------------
+	function MineShot(let x, let y, let angle, let assign){
+
+		// 設置弾
+		let speed=5;
+		let graphic=US_BALL_L_PURPLE;
+
+		// 機雷弾
+		let num=16;
+		let _graphic=US_BALL_BS_RED;
+		let delay=5;
+		let numShotFr=7;
+		let shotFr=7;
+		if(assign==1){shotFr-=numShotFr/2;}
+
+		CreateShotA(0,x,y,0);
+		SetShotDataA(0,0,speed,angle,0,0,0,graphic);
+		loop(num){
+			shotFr+=numShotFr;
+			CreateShotA(1,0,0,delay);
+			SetShotDataA(1,0,0,angle,0,0,0,_graphic);
+			AddShot(shotFr,0,1,0);
+		}
+		FireShot(0);
+
+	}
+
+	// 全方向レーザー ----------------------------------------------------------
+	task RoundLaser(let assign){
+
+		let way=42+6*Lv;
+		let wayAngle=360/way*assign;
+		let baseAngle=-90+RandBlur(wayAngle/2);
+
+		SetAction(ACT_SHOT_B3,130);
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i;
+			Laser(angle,wayAngle,i);
+		}
+
+	}
+
+	// レーザー ----------------------------------------------------------------
+	task Laser(let angle, let wayAngle, let n){
+
+		let assign=1;
+		if(n%2==1){assign=-1;}
+		let delay=90;
+		let addLength=600/delay;
+		let gapLength=50;
+		let addAngle=wayAngle*2/(delay-30)*assign;
+		let width=18;
+		let graphic=US_BEAM_RED;
+		let kill=135;
+
+		CreateLaserB(0,0,width,graphic,delay);
+		SetLaserDataB(0,0,addLength,gapLength,0,angle,addAngle,angle,addAngle);
+		SetLaserDataB(0,delay-30,0,NULL,0,NULL,0,NULL,0);
+		SetShotKillTime(0,kill);
+		FireShot(0);
+		if(n==0){PlaySE(seLaser1);}
+
+		loop(delay){yield;}
+
+		if(!nextPhase){
+			angle+=wayAngle*2*assign;
+			let x=GetGapX(GetX,gapLength,angle);
+			let y=GetGapY(GetY,gapLength,angle);
+			let speed=14;
+			let Length=100;
+			width=36;
+			graphic=US_BALL_M_A_RED;
+			CreateLaser01(x,y,speed,angle,Length,width,graphic,0);
+			if(n==0){PlaySE(seLaser2);}
+		}
+
+	}
+
+	// クロス直線弾 ------------------------------------------------------------
+	task CrossLineShot(let ly, let assign){
+
+		let x=GetX;
+		let y=GetY+10;
+		let num=5+Lv;
+		let way=34+4*Lv;
+		let lx=cenX-minX;
+		let lineX1=cenX-lx*assign;
+		let lineX2=cenX+lx*assign;
+		let gapX=(lineX2-lineX1)/(way-1);
+		let lineY1=cenY-40+ly;
+		let lineY2=cenY-40-ly;
+		let gapY=(lineY2-lineY1)/(way-1);
+		let graphic=US_KNIFE_KOUMA_RED;
+		let delay=10;
+
+		LoopPlaySE(seShot3,way,6);
+		ascent(let i in 0 .. way){
+			if(nextPhase){break;}
+			let _x=lineX1+gapX*i;
+			let _y=lineY1+gapY*i;
+			let minSpeed=GetGapLength(x,y,_x,_y)/140;
+			let maxSpeed=minSpeed*(3+0.4*Lv);
+			let angle=GetGapAngle(x,y,_x,_y);
+			LineShot(x,y,minSpeed,maxSpeed,angle,num,graphic,delay);
+			yield;
+		}
+
+	}
+
+	// 連続ばらつき弾 ----------------------------------------------------------
+	task RapidVariedShot{
+
+		let num=5+Lv;
+		let fr=14;
+
+		SetAction(ACT_SHOT_A5,fr*num+15);
+		ascent(let i in 0 .. num){
+			if(nextPhase){break;}
+			let angle=GetAngleToPlayer;
+			VariedShot(angle);
+			_Wait(fr);
+		}
+
+	}
+
+	// ばらつき弾 --------------------------------------------------------------
+	function VariedShot(let baseAngle){
+
+		let num=21;
+		let baseSpeed=1.5;
+		let numSpeed=(4.8+0.4*Lv-baseSpeed)/(num-1);
+		let graphic=[US_BALL_SS_RED,US_BALL_S_RED,US_BALL_M_RED,US_BALL_L_RED];
+		let gra=0;
+		let delay=12;
+
+		PlaySE(seShot1);
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			if(i==7||i==14||i==20){gra++;}
+			let angle=baseAngle+RandBlur(4);
+			if(i==num-1){angle=baseAngle;}
+			CreateShot01(GetX,GetY,speed,angle,graphic[gra],delay);
+		}
+
+	}
+
+	// ライフチェック ----------------------------------------------------------
+	task CheckLife{
+
+		loop{
+			if(GetLife<=maxLife*0.6){break;}
+			yield;
+		}
+		nextPhase=true;
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr, let assign){
+
+		let x=cenX+RandBlur(20);
+		let y=minY+60+RandBlur(10);
+		if(assign!=0){
+			x+=80*assign;
+			y+=60;
+		}
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	function _move(let fr){
+
+		let x=cenX;
+		let y=minY+60;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn( m_nCount );
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGRemilia;
+
+	}
+
+}

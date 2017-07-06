@@ -1,0 +1,180 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+
+	// 画像及び効果音ファイル
+	let imgBoss=dotBossMedicine;
+	let imgCutInEnemy=cutMedicine;
+	let imgCutInPlayer=cutMarisa;
+	let imgList=[imgBoss,imgCutInEnemy,imgCutInPlayer];
+	let seList=[];
+
+	// 各種設定値
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	Debug_SetLevel;
+
+	let dollGapAngle=GetCommonDataDefault("DollGapAngle",-90);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){seList=seList~seListEnemy;}
+		InitializeBoss(imgList,seList);
+		DeleteEnemyShotToItem(ALL);
+
+		// スペルカード設定
+		SetLife(1);
+		SetDamageRate(0,0);
+		SetEnemyMarker(false);
+		SetX(minX-64);
+		SetY(minY-128);
+
+		// ボス基本処理、メイン処理
+		BehaviorBoss(ACT_STAND3);
+		BehaviorSub(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// スーさん角度設定
+		dollGapAngle+=360/240;
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 会話開始
+		CreateEventFromScript("Talk");
+		SetCommonData(CD_STAGE_EVENT,true);
+		while(GetEventStep!=1){yield;}
+
+		SetEnemyMarker(true);
+		move(cenX,minY+110+RandBlur(0.1),90);
+		while(GetEventStep!=2){yield;}
+
+		// BGM
+		DeleteMusic( bgmList[ 14 ] );
+		_PlayMusicEx( bgmList[ 15 ], "" );
+		let bgmCount=m_nCount;
+		while(OnEvent||m_nCount-bgmCount<=30){yield;}
+		DeleteCommonData(CD_STAGE_EVENT);
+
+		AddLife(-1);
+
+	}
+
+
+	// 移動 --------------------------------------------------------------------
+	function move(let x, let y, let fr){
+
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+		// スーさん角度設定
+		SetCommonData("DollGapAngle",dollGapAngle);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス＆スーさん描画
+		let dollGapLength=32;
+		let x=GetGapX(GetX,dollGapLength,dollGapAngle);
+		let y=GetGapY(GetY,dollGapLength*0.4,dollGapAngle*2);
+		if(sin(dollGapAngle)>0){
+			DrawBoss(imgBoss);
+			DrawSub(imgBoss,CHAR_DOLL,x,y);
+		}
+		else{
+			DrawSub(imgBoss,CHAR_DOLL,x,y);
+			DrawBoss(imgBoss);
+		}
+
+	}
+
+}
+
+// 会話 ------------------------------------------------------------------------
+script_event Talk{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Event.dnh"
+
+	// 画像及び効果音ファイル
+	let imgCutInEnemy=cutMedicine;
+	let imgCutInPlayer=cutMarisa;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		ChrIn(imgCutInPlayer,LEFT,CUT_NORMAL);
+		Player;
+		TextOut("\c[BLUE]しかし、もう春だと言うのに花が元気ないなぁ");
+		TextOut("\c[BLUE]まぁあの時が異常だっただけだがな");
+		Enemy;
+		TextOut("\c[RED]コンパロコンパロ、毒よ集ｍ");
+		SetStep(1);
+		Player;
+		TextOutB(90,"\c[BLUE]集まったぜ");
+		ChrIn(imgCutInEnemy,RIGHT,CUT_NORMAL);
+		SetNameFromText(RIGHT,TEXT_RED,"メディスン・メランコリー","小さなスイートポイズン");
+		Enemy;
+		TextOut("\c[RED]あなたは何て言う毒？");
+		Player;
+		TextOut("\c[BLUE]魔理沙って言う毒だぜ");
+		Enemy;
+		TextOut("\c[RED]覚えのない毒ね…まぁいいわ");
+		SetStep(2);
+		TextOut("\c[RED]毒なあなたは私が取り込んであげる");
+		Player;
+		TextOut("\c[BLUE]無理だな、私の毒はお前には少々刺激が強すぎるぜ");
+		End;
+
+	}
+
+}

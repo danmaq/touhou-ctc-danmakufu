@@ -1,0 +1,22 @@
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//　カットイン
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+let dirImageCharCutin = GetCurrentScriptDirectory ~ "IMAGE\CHAR\CUTIN\";
+
+//　プレイヤー
+let cutMarisa = dirImageCharCutin ~ "cutin_marisa.png";
+
+//　ボス（White.pngは仮画像）
+let cutFlandre = dirImageCharCutin ~ "cutin_frandre.png";
+let cutMeirin = dirImageCharCutin ~ "cutin_meirin.png";
+let cutSakuya = dirImageCharCutin ~ "cutin_sakuya.png";
+let cutRemilia = dirImageCharCutin ~ "cutin_remilia.png";
+let cutDevil = dirImageCharCutin ~ "cutin_little.png";
+let cutPatchouli = dirImageCharCutin ~ "cutin_patchouli.png";
+let cutLily = dirImageCharCutin ~ "cutin_lily.png";
+let cutMedicine = dirImageCharCutin ~ "cutin_medicine.png";
+let cutAya = dirImageCharCutin ~ "cutin_aya.png";
+let cutKomachi = dirImageCharCutin ~ "cutin_komachi.png";
+let cutEiki = dirImageCharCutin ~ "cutin_eiki.png";

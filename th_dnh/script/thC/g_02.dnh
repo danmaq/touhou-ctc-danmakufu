@@ -1,0 +1,57 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\index_UserShot.dnh"
+
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	_Wait(10);
+	
+	
+
+
+
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..100)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		yield;
+	}
+	_Wait(60);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		LoadUserShotData(shotAll);
+		SetLife(25);
+		MainAction();
+		SubAction01();
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		yield;
+		m_nCount++;
+		Collision( 20, 8 );
+	}
+	@DrawLoop{DrawYousei(64,m_nCount);}
+	@Finalize{DropItem( 1 , 20 );}
+}

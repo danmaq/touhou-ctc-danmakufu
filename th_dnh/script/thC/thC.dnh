@@ -1,0 +1,236 @@
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//
+//		(c)2005 danmaq All right reserved.
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#東方弾幕風[Stage]
+#Title[東方夢終劇 ～ Concealed the Conclusion]
+#Text[THC_TRIAL_A01]
+#ScriptVersion[2]
+#Player[player\THC_MARISA\1.dnh,player\THC_MARISA\3.dnh]
+#BGM[]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_stage_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\Stage.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	let m_bBenchmark = false;
+	let m_nBenchmarkFPS = 0;
+	let m_nBenchmarkTime = 300;
+
+	let m_nPhaseNow = 0;
+	let m_nStageNow = 0;
+	let m_nScenario = 0;
+	let m_nPrevSlowStat = KEY_FREE;
+	let m_nSlowCount = 9999;
+
+	let m_aszStageDefaultLoadFileListGraphic = [ imgSystemSpellLine, imgSystemFontSmall, imgSystemFont ] ~ imgSystemFontSJIS16;
+	let m_aszStageDefaultLoadFileListSE = [ seDamage, sePower, seShadow, seScore ];
+
+
+//////////////////////////////////////////////////////////////////////
+//	マイクロスレッド
+//////////////////////////////////////////////////////////////////////
+
+	//	メイン
+	task TMain(){
+		yield;
+		SetPlayerDefaultPosition();
+		SetPhase( 0 );
+		MainMenu();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	初期処理
+//////////////////////////////////////////////////////////////////////
+
+	@Initialize{
+//		if( m_bDebug ){ CreateDebugWindow(); }
+//		OutputDebugString( 0, "KEY_PUSH", KEY_PUSH );
+
+		//	ここで読むファイルは必要最低限度で
+		LoadGraphic( imgMapBlack );
+
+		SetRateScoreSystemEnable( false );
+		SetShotAutoDeleteClip( 40, 40, 40, 40 );
+		ClearCommonData();
+		SetCommonData( CD_THC_STAGE, true );
+		SetCommonData( CD_ENABLE_HAKUREI, false );
+		ExpertEx( m_bDebug, 1, 3 );
+		TMain();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	毎フレーム呼ばれるメインループ
+//////////////////////////////////////////////////////////////////////
+
+	@MainLoop{
+		yield;
+		alternative( m_nStage )
+		case( 0 ){ MainMenuLoop(); }
+		case( 1 ){ Stage1Loop(); }
+		case( 2 ){ Stage2Loop(); }
+		case( 3 ){ Stage3Loop(); }
+		case( 4 ){ Stage4Loop(); }
+		case( 5 ){ Stage5Loop(); }
+		case( 6 ){ Stage6Loop(); }
+		if( m_nLoadProgressPercentage != -1 ){
+			MovePlayerDefaultPosition();
+			DrawLoadProgress( imgSystemProgress, imgMapBlack );
+		}
+		if( m_nStage >= 1 ){
+			PopItemQueue();
+			PopCutInQueue( imgSystemSpellLine, imgSystemFont, imgSystemFontSmall, imgSystemFontSJIS16 );
+			let nPower = GetCommonDataDefault( CD_ITEM_POWER, 0 );
+			if( m_nItemPowerPrev != nPower ){
+				if( nPower == 128 ){ DeleteEnemyShotToItem( SHOT ); }
+				m_hTTCachePower = CreateTexText16Cache( "P : " ~ [ ToStringInt( nPower ), "MAX" ][ nPower == 128 ] );
+				m_nItemPowerPrev = nPower;
+			}
+			if( GetCommonDataDefault( CD_ENABLE_HAKUREI, false ) ){
+				let nHakurei = GetCommonDataDefault( CD_ITEM_HAKUREI, 0 );
+				if( m_nItemHakureiPrev != nHakurei ){
+					m_hTTCacheHakurei = CreateTexText16Cache( "H : " ~ ToStringInt( nHakurei ) );
+					m_nItemHakureiPrev = nHakurei;
+				}
+			}
+			let nKey = GetKeyState( VK_SLOWMOVE );
+			if( nKey == KEY_PUSH || nKey == KEY_PULL ){ m_nSlowCount = 0; }
+			SetCommonData( CD_STAGE_KEY_SLOWCOUNT, m_nSlowCount );
+			let nShadowMode;
+			if( m_nPrevSlowStat == nKey ){
+				if( m_nSlowCount > SHADOW_TIMELAG ){ nShadowMode = [ KEY_SHADOW_FREE, KEY_SHADOW_HOLD ][ nKey == KEY_HOLD ]; }
+				else{ nShadowMode = [ KEY_SHADOW_PULL, KEY_SHADOW_PUSH ][ nKey == KEY_HOLD ]; }
+			}
+			else{ nShadowMode = [ KEY_SHADOW_PULL, KEY_SHADOW_PUSH ][ nKey == KEY_PUSH || nKey == KEY_HOLD ]; }
+			SetCommonData( CD_STAGE_KEY_SLOWSTAT, nShadowMode );
+			PopResult();
+			m_nPrevSlowStat = nKey;
+			m_nSlowCount++;
+		}
+
+		//	(デバッグ)ベンチマーク処理
+		if( m_bDebug && m_bBenchmark ){
+			m_nBenchmarkFPS += GetFps();
+			if( m_nCount == m_nBenchmarkTime ){
+				RaiseError( "ベンチ計測結果(50行目のm_bBenchmarkをfalseにすれば解除できます)", "Score:" ~ ToString( Smooth( 0, 100, m_nBenchmarkFPS, m_nBenchmarkTime * 60 ) ) ~ "(100点満点中)" );
+			}
+		}
+
+		m_nCount++;
+		m_nPhaseNow = m_nCount - m_nPhaseCount;
+		m_nStageNow = m_nCount - m_nStageCount;
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	終了処理
+//////////////////////////////////////////////////////////////////////
+
+	@Finalize{}
+
+
+//////////////////////////////////////////////////////////////////////
+//	背景絵画
+//////////////////////////////////////////////////////////////////////
+
+	@BackGround{
+		if( GetPhase == -1 ){ return; }
+		UseZBuffer( true );
+		WriteZBuffer( true );
+
+		//	ステージごとの処理呼び出し
+		alternative( m_nStage )
+		case( 0 ){ MainMenuDrawBackGround(); }
+		case( 1 ){ Stage1DrawBackGround(); }
+		case( 2 ){ Stage2DrawBackGround(); }
+		case( 3 ){ Stage3DrawBackGround(); }
+		case( 4 ){ Stage4DrawBackGround(); }
+		case( 5 ){ Stage5DrawBackGround(); }
+		case( 6 ){ Stage6DrawBackGround(); }
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	下位レイヤ絵画
+//////////////////////////////////////////////////////////////////////
+
+	@DrawBottomObject{
+		if( GetPhase == -1 ){ return; }
+
+		//	ステージごとの処理呼び出し
+		alternative( m_nStage )
+		case( 0 ){ MainMenuDrawBottomObject(); }
+		case( 1 ){ Stage1DrawBottomObject(); }
+		case( 2 ){ Stage2DrawBottomObject(); }
+		case( 3 ){ Stage3DrawBottomObject(); }
+		case( 4 ){ Stage4DrawBottomObject(); }
+		case( 5 ){ Stage5DrawBottomObject(); }
+		case( 6 ){ Stage6DrawBottomObject(); }
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	上位レイヤ絵画
+//////////////////////////////////////////////////////////////////////
+
+	@DrawTopObject{
+		if( GetPhase == -1 ){ return; }
+
+		//	ステージごとの処理呼び出し
+		alternative( m_nStage )
+		case( 0 ){ MainMenuDrawTopObject(); }
+		case( 1 ){ Stage1DrawTopObject(); }
+		case( 2 ){ Stage2DrawTopObject(); }
+		case( 3 ){ Stage3DrawTopObject(); }
+		case( 4 ){ Stage4DrawTopObject(); }
+		case( 5 ){ Stage5DrawTopObject(); }
+		case( 6 ){ Stage6DrawTopObject(); }
+		
+		//	ステージ中の各情報を表示
+		if( m_nStage >= 1 ){ DrawStage(); }
+
+		//	カットインがある場合自動的に絵画する
+		if( m_nCutInStartCount > 0 || m_nSpellNameCacheHandle != -1 ){ DrawCutIn( m_nCount ); }
+
+		DrawStageResult();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スクリプトここまで
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+}

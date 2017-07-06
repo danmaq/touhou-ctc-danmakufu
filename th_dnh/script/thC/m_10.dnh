@@ -1,0 +1,126 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level=GetCommonData("Level");
+//タスクの作成----------------------------------
+task MainAction()
+{
+	yield;
+	_Wait(100);
+	loop([3,5,8,12][Level]){CreateEnemyFromScript("t_ma_01",GetX(),GetY(),[1,2,3,4][Level],rand(0,360),0);}
+	PlaySE(seShadow);
+	_Wait(100);
+	if(Level != 0)
+	{
+		ascent(i in 0..[0,7,12,20][Level])
+		{
+			CreateShot01(GetX(),GetY(),1+i/5,GetAngleToPlayer(),US_RICE_M_PURPLE,20);
+			loop(2){yield;}
+		}
+		PlaySE(seShot1);
+	}
+
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	ascent(i in 0..100)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		yield;
+	}
+	SetMovePositionHermite(GetCenterX(),GetClipMinY()-50,200,rand(0,360),200,-90,300);
+
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(80);
+		SetInvincibility( 200 );
+		MainAction();
+		SubAction01();
+		LoadUserShotData(shotAll);
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		GetSlowCount();
+		yield;
+		Collision(16 , 12);
+		m_nCount++;
+	}
+	@DrawLoop
+	{
+		DrawYousei(64,m_nCount);
+		DarwZakoBack(m_nCount);
+	}
+	@Finalize{DropItem( 7 , 50 );}
+}
+
+//使い魔--------------------------------------
+
+script_enemy t_ma_01
+{
+
+#include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+	let scale=0;
+	let Level=GetCommonData("Level");
+	let han=0;
+	let spmax=GetSpeed();
+
+function shot_m_10()
+{
+	loop(10){CreateShot01(GetX(),GetY(),rand(0.4,2.3),GetAngle()+rand(-23,23),US_SCALE_RED,0);}
+	PlaySE(seShot2);
+}
+
+task MainAction()
+{
+	while(1)
+	{
+		if(han != 3)
+		{
+			if(GetX()<=GetClipMinX()+5)
+			{
+				SetAngle(180-GetAngle());
+				han++;
+				shot_m_10();
+			}
+			if(GetX()>=GetClipMaxX()-5)
+			{
+				SetAngle(180-GetAngle());
+				han++;
+				shot_m_10();
+			}
+			if(GetY()<=GetClipMinY()+5)
+			{
+				SetAngle(-GetAngle());
+				han++;
+				shot_m_10();
+			}
+		}
+		yield;
+	}
+}
+task SubAction01()
+{
+	yield;
+	ascent(i in 0..60)
+	{
+		SetSpeed(SlowDown( spmax , spmax/3*2 , i , 150 ));
+		yield;
+	}
+}
+#include_function ".\INCLUDE\ShadowBody.dnh"
+}

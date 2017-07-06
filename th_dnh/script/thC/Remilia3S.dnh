@@ -1,0 +1,249 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossRemilia;
+	let imgCutIn=cutRemilia;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_REMILIA~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(67);
+		SetLife(500);
+		SetDamageRate(7,7);
+		SetShotAutoDeleteClip(64,64,64,64);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND4);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+120+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"赫符「ブラッディ・サーキュレイション－Ｅａｓｙ－」",
+			"赫符「ブラッディ・サーキュレイション」",
+			"赫符「ブラッディ・ヴォルテクス」",
+			"赫符「ブラッディ・ヴォルテクス－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(125);
+
+		let assign=1;
+
+		loop{
+
+			// 扇状トラップ弾
+			PlaySE(sePower);
+			Concentration01(120);
+			_Wait(110);
+			SetAction(ACT_SHOT_A5,100);
+			_Wait(10);
+			WideTrapShot(assign);
+			_Wait(300);
+
+			// 移動
+			move(90);
+			_Wait(60);
+
+			assign*=-1;
+			SetDamageRate(15,15);
+
+		}
+
+	}
+
+	// 扇状トラップ弾 ----------------------------------------------------------
+	function WideTrapShot(let assign){
+
+		let way=5+2*Lv;
+		let wayAngle=(165+15*Lv)/(way-1);
+		let baseAngle=GetAngleToPlayer-wayAngle*(way-1)/2;
+
+		PlaySE(seShot1);
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i;
+			TrapShot(angle,assign);
+		}
+
+	}
+
+	// トラップ弾 --------------------------------------------------------------
+	task TrapShot(let angle, let assign){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+
+		Obj_SetX(obj,GetX);
+		Obj_SetY(obj,GetY);
+		Obj_SetAngle(obj,angle);
+		ObjShot_SetGraphic(obj,US_BALL_L_RED);
+		Obj_SetAutoDelete(obj,false);
+
+		// メイン処理 --------------------------------------
+		// 減速
+		let fr=105;
+		let speed=5.8;
+		let addSpeed=-speed/fr;
+		loop(fr){
+			if(Obj_BeDeleted(obj)){break;}
+			speed+=addSpeed;
+			Obj_SetSpeed(obj,speed);
+			yield;
+		}
+
+		// 方向転換
+		if(!Obj_BeDeleted(obj)){
+			Obj_SetSpeed(obj,3);
+			Obj_SetAngle(obj,angle+172*assign);
+		}
+
+		// 消滅設定
+		setAutoDelete;
+
+		// トラップ設置
+		let way=8;
+		let gapLength=25;
+		speed=0;
+		let maxSpeed=1.2;
+		let addSpeed=maxSpeed/120;
+		let baseAngle=angle;
+		let wayAngle=360/way;
+		let graphic=US_SCALE_RED;
+		let delay=20;
+		fr=20;
+
+		loop{
+			if(Obj_BeDeleted(obj)){break;}
+			ascent(let i in 0 .. way){
+				angle=baseAngle+wayAngle*i;
+				let x=GetGapX(Obj_GetX(obj),gapLength,angle);
+				let y=GetGapY(Obj_GetY(obj),gapLength,angle);
+				if(Lv>=2){angle+=155*assign;}
+				CreateShot02(x,y,speed,angle,addSpeed,maxSpeed,graphic,delay);
+			}
+			PlaySE(seKira1);
+			loop(fr){yield;}
+		}
+
+		// 消滅設定 ----------------------------------------
+		task setAutoDelete{
+
+			loop(180){yield;}
+			Obj_SetAutoDelete(obj,true);
+
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice&&Lv>0){DropItem(14,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn( m_nCount );
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGRemilia;
+
+	}
+
+}

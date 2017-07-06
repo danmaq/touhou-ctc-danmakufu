@@ -1,0 +1,56 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level=GetCommonData("Level");
+//タスクの作成----------------------------------
+task MainAction()
+{
+	yield;
+	_Wait(5);
+	let speed=0.6;
+	loop(20)
+	{
+		if( GetY() <= GetCenterY() )
+		{
+			CreateShot01(GetX(),GetY(),speed,GetAngleToPlayer(),US_SCALE_ORANGE,0);
+			speed+=0.3;
+			PlaySE(seShot3);
+			loop([999,999,20,6][Level]){yield;}
+		}
+	}
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(8);
+		SetInvincibility( 10 );
+		MainAction();
+		LoadUserShotData(shotAll);
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		yield;
+		Collision(16 , 12);
+		m_nCount++;
+	}
+	@DrawLoop{DrawRKedama(64,0,m_nCount);}
+	@Finalize
+	{
+		DropItem( 2 , 20 );
+		if(BeVanished() == false && GetY() <= GetCenterY()+80 && rand(0,100)>60 && Level > 0)
+		{
+			SetShotDirectionType(PLAYER);
+			RoundShot01(GetX(),GetY(),1,0,[3,5,15,30][Level],US_SCALE_ORANGE,20);
+			SetShotDirectionType(ABSOLUTE);
+		}
+	}
+}

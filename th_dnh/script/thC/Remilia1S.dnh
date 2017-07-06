@@ -1,0 +1,239 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossRemilia;
+	let imgCutIn=cutRemilia;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_REMILIA~imgFontList;
+			seList=seList~seListEnemy;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(63);
+		SetLife(500);
+		SetDamageRate(7,7);
+		SetShotAutoDeleteClip(100,32,100,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND4);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+120+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"呪符「ツェペシュ・ヴィジョン－Ｅａｓｙ－」",
+			"呪符「ツェペシュ・ヴィジョン」",
+			"呪符「ツェペシュ・ヴィジョン－Ｈａｒｄ－」",
+			"呪符「ツェペシュ・ヴィジョン－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		_Wait(125);
+
+		let assign=-1;
+		let turn=0;
+
+		loop{
+
+			// 扇状機雷弾
+			SetAction(ACT_SHOT_B3,50);
+			Concentration01(30);
+			_Wait(30);
+			WideMineShot(assign);
+			_Wait(90);
+
+			// 移動
+			move(90);
+			_Wait(120);
+
+			if(Lv<2||turn==1){SetDamageRate(14,14);}
+			turn++;
+			assign*=-1;
+
+		}
+
+	}
+
+	// 扇状機雷弾 --------------------------------------------------------------
+	task WideMineShot(let assign){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+		let fr=15;
+		let speed=(GetY-minY)/fr;
+
+		Obj_SetX(obj,GetX);
+		Obj_SetY(obj,GetY);
+		Obj_SetSpeed(obj,speed);
+		Obj_SetAngle(obj,-90);
+		ObjShot_SetGraphic(obj,US_BALL_L_PURPLE);
+
+		// メイン処理 --------------------------------------
+		PlaySE(seShot1);
+		loop(fr){
+			if(Obj_BeDeleted(obj)){break;}
+			yield;
+		}
+		if(!Obj_BeDeleted(obj)){
+			let way=12+2*Lv;
+			let wayAngle=180/(way-1);
+			way+=2;
+			let baseAngle=90-wayAngle*(way-1)/2+RandBlur(wayAngle);
+			ascent(let i in 0 .. way){
+				let angle=baseAngle+wayAngle*i;
+				MineShot(Obj_GetX(obj),Obj_GetY(obj),angle,assign);
+			}
+			Obj_Delete(obj);
+			PlaySE(seKira1);
+			let waitFr=180;
+			if(Lv>=2){waitFr+=240;}
+			loop(waitFr){yield;}
+			PlaySE(sePower);
+		}
+
+	}
+
+	// 機雷弾 ------------------------------------------------------------------
+	function MineShot(let x, let y, let angle, let assign){
+
+		// 設置弾
+		let speed=5;
+		let graphic=171;
+
+		// 機雷弾
+		let num=18;
+		let _speed=1.5;
+		let _angle=angle;
+		let numAngle=180/(num-1)*assign;
+		let _graphic=US_BALL_BS_RED;
+		let delay=5;
+		let waitFr=240;
+		if(Lv>=2){waitFr*=2;}
+		let shotFr=0;
+		let numShotFr=5;
+
+		CreateShotA(0,x,y,0);
+		SetShotDataA(0,0,speed,angle,0,0,0,graphic);
+		loop(num){
+			waitFr-=numShotFr;
+			shotFr+=numShotFr;
+			CreateShotA(1,0,0,delay);
+			SetShotDataA(1,0,0,_angle,0,0,0,_graphic);
+			SetShotDataA(1,waitFr,_speed,NULL,0,0,0,_graphic);
+			AddShot(shotFr,0,1,0);
+			_angle+=numAngle;
+		}
+		FireShot(0);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){DropItem(10,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn( m_nCount );
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGRemilia;
+
+	}
+
+}

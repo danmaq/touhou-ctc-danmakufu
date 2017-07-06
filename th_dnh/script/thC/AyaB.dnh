@@ -1,0 +1,10 @@
+#ScriptPathData
+#ScriptPath[.\AyaB0.dnh]
+#ScriptPath[.\AyaB1.dnh]
+#ScriptPath[.\AyaB1S.dnh]
+#ScriptNextStep
+#ScriptPath[.\AyaB2.dnh]
+#ScriptPath[.\AyaB2S.dnh]
+#ScriptNextStep
+#ScriptPath[.\AyaB3S.dnh]
+#EndScriptPathData

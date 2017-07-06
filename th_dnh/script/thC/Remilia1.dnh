@@ -1,0 +1,199 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossRemilia;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			seList=seList~seListEnemy;
+			SetX(cenX);
+			SetY(minY+120+RandBlur(0.1));
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(46);
+		SetLife(2500);
+		SetDamageRate(85,85);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND4);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(62);
+		_Wait(62);
+
+		loop{
+
+			// 破裂弾
+			SetAction(ACT_SHOT_B3,50);
+			Concentration01(30);
+			_Wait(30);
+			CrackShot;
+			_Wait(45);
+
+			// クロス直線弾
+			SetAction(ACT_SHOT_A5,90);
+			let assign=1;
+			let ly=rand(20,40);
+			if(GetX<cenX){assign=-1;}
+			CrossLineShot(ly,assign);
+			_Wait(30);
+			CrossLineShot(ly,-assign);
+			_Wait(75);
+
+			// 移動
+			move(90);
+			_Wait(90);
+
+		}
+
+	}
+
+	// 破裂弾 ------------------------------------------------------------------
+	task CrackShot{
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+		let fr=15;
+		let speed=(GetY-minY)/fr;
+		let graphic=US_BALL_L_RED;
+
+		Obj_SetX(obj,GetX);
+		Obj_SetY(obj,GetY);
+		Obj_SetSpeed(obj,speed);
+		Obj_SetAngle(obj,-90);
+		ObjShot_SetGraphic(obj,graphic);
+
+		// メイン処理 --------------------------------------
+		PlaySE(seShot1);
+		loop(fr){
+			if(Obj_BeDeleted(obj)){break;}
+			yield;
+		}
+		if(!Obj_BeDeleted(obj)){
+			let way=11+2*Lv;
+			let num=6;
+			let minSpeed=2.5;
+			let maxSpeed=5;
+			let wayAngle=180/(way-1);
+			way+=2;
+			let wideAngle=180+wayAngle*2;
+			let angle=90+RandBlur(wayAngle);
+			WideLineShot(Obj_GetX(obj),Obj_GetY(obj),minSpeed,maxSpeed,angle,wideAngle,way,num,graphic,0);
+			Obj_Delete(obj);
+			PlaySE(seKira1);
+		}
+
+	}
+
+	// クロス直線弾 ------------------------------------------------------------
+	task CrossLineShot(let ly, let assign){
+
+		let num=3+Lv;
+		let way=32+4*Lv;
+		let x=GetX;
+		let y=GetY+10;
+		let lx=cenX-minX;
+		let lineX1=cenX-lx*assign;
+		let lineX2=cenX+lx*assign;
+		let gapX=(lineX2-lineX1)/(way-1);
+		let lineY1=cenY+ly;
+		let lineY2=cenY-ly;
+		let gapY=(lineY2-lineY1)/(way-1);
+		let graphic=US_KNIFE_KOUMA_RED;
+		let delay=10;
+
+		LoopPlaySE(seShot3,way,6);
+		ascent(let i in 0 .. way){
+			let _x=lineX1+gapX*i;
+			let _y=lineY1+gapY*i;
+			let minSpeed=GetGapLength(x,y,_x,_y)/120;
+			let maxSpeed=minSpeed*(2.4+0.4*Lv);
+			let angle=GetGapAngle(x,y,_x,_y);
+			LineShot(x,y,minSpeed,maxSpeed,angle,num,graphic,delay);
+			yield;
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(30,60);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}

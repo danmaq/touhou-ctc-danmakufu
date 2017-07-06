@@ -1,0 +1,342 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossRemilia;
+	let imgShadow=dotCircle6s;
+	let imgList=[imgBoss];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~[imgShadow];
+			seList=seList~seListEnemy~seListShadow;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(45);
+		SetLife(2500);
+		SetDamageRate(85,85);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND4);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// Slowキー判定
+		GetSlowCount;
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=150;
+		let x=cenX;
+		let y=minY+120+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(180);
+
+		let assign=-1;
+
+		loop{
+
+			// 使い魔召喚
+			SummonShadow(assign);
+			_Wait(60);
+
+			loop(2){
+
+				// 移動
+				move(60);
+				_Wait(60);
+
+				// 扇状ばらつき弾
+				WideVariedShot(assign);
+				_Wait(60);
+
+			}
+
+			// 移動
+			move(90);
+			_Wait(120);
+
+			assign*=-1;
+
+		}
+
+	}
+
+	// 使い魔召喚 --------------------------------------------------------------
+	task SummonShadow(let assign){
+
+		let way=4+2*Lv;
+		let gapLength=80;
+		let wideAngle=160;
+		let wayAngle=wideAngle/(way-1)*assign;
+		let baseAngle=90-wayAngle*(way-1)/2;
+		let fr=5;
+
+		SetAction(ACT_SHOT_A5,60);
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i;
+			let x=GetGapX(GetX,gapLength,angle);
+			let y=GetGapY(GetY,gapLength,angle);
+			CreateEnemyFromScript("Shadow",x,y,0,angle,0);
+			PlaySE(seShadow);
+			_Wait(fr);
+		}
+
+	}
+
+	// 扇状ばらつき弾 ----------------------------------------------------------
+	task WideVariedShot(let assign){
+
+		let way=5+2*Lv;
+		let wideAngle=160;
+		let wayAngle=-wideAngle/(way-1)*assign;
+		let baseAngle=GetAngleToPlayer-wayAngle*(way-1)/2;
+		let fr=5;
+
+		SetAction(ACT_SHOT_A5,60);
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i;
+			VariedShot(angle);
+			_Wait(fr);
+		}
+
+	}
+
+	// ばらつき弾 --------------------------------------------------------------
+	function VariedShot(let baseAngle){
+
+		let num=21;
+		let baseSpeed=1;
+		let numSpeed=(4.2-baseSpeed)/(num-1);
+		let graphic=[US_BALL_SS_RED,US_BALL_S_RED,US_BALL_M_RED,US_BALL_L_RED];
+		let gra=0;
+		let delay=15;
+
+		PlaySE(seShot1);
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			if(i==7||i==14||i==20){gra++;}
+			let angle=baseAngle+RandBlur(4);
+			if(i==num-1){angle=baseAngle;}
+			CreateShot01(GetX,GetY,speed,angle,graphic[gra],delay);
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+
+	}
+
+}
+
+// 使い魔 ----------------------------------------------------------------------
+script_enemy Shadow{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let imgShadow=dotCircle6s;
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	let _x=GetX;
+	let _y=GetY;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(150);
+		SetDamageRateExDelay(30,85,85,50,50);
+		SetX(GetEnemyX);
+		SetY(GetEnemyY);
+
+		// 実体化時の光
+		LightShadow;
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 使い魔基本処理
+		BehaviorShadow(seShadowHidden,seShadowSudden);
+
+		// 画面外で消滅
+		GoneEx(32);
+
+		// 当たり判定（自弾,体当たり）
+		CollisionShadow(24,18);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 移動
+		SetColor(255,31,31);
+		Concentration01(30);
+		SetColor(255,255,255);
+		move(40);
+		loop(60){yield;}
+
+		// ばらまき弾
+		let angle=GetAngle;
+		if(GetPlayerY<GetY){angle=GetGapAngle(GetX,GetY,GetPlayerX,GetPlayerY);}
+		VariedShot(angle);
+		loop(120){yield;}
+		angle=GetAngle;
+		if(GetPlayerY<GetY){angle=GetGapAngle(GetX,GetY,GetPlayerX,GetPlayerY);}
+		VariedShot(angle);
+		loop(60){yield;}
+
+		// 移動
+		SetSpeed(2);
+
+	}
+
+	// ばらまき弾 --------------------------------------------------------------
+	function VariedShot(let baseAngle){
+
+		let num=21;
+		let baseSpeed=1;
+		let numSpeed=(4-baseSpeed)/(num-1);
+		let graphic=[US_BALL_SS_RED,US_BALL_S_RED,US_BALL_M_RED,US_BALL_L_RED];
+		let gra=0;
+		let delay=15;
+
+		PlaySE(seShot1);
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			if(i==7||i==15||i==20){gra++;}
+			let angle=baseAngle+RandBlur(3.5);
+			if(i==num-1){angle=baseAngle;}
+			CreateShot01(GetX,GetY,speed,angle,graphic[gra],delay);
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	task move(let fr){
+
+		let power=GetGapLength(GetX,GetY,_x,_y)*2;
+		let angle=GetGapAngle(GetX,GetY,_x,_y);
+		SetMovePositionHermite(_x,_y,power,angle,0,0,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// 弾消し
+		DestructShadow(40);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// 本体描画
+		let shadow=SHADOW_S_RED;
+		let angle=2*m_nCount;
+		let scale=0.8;
+		_DrawShadow(shadow,imgShadow,angle,scale,scale);
+
+	}
+
+}

@@ -1,0 +1,50 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	_Wait(int(rand(1,20)));
+	while(Level !=0)
+	{
+		WideShot02(GetX(),GetY(),3.8,-0.03,-2,GetAngleToPlayer(),[0,0,15,90][Level],[0,1,3,5][Level],US_BALL_BS_GREEN,0);
+		PlaySE(seShot1);
+		loop(int([0,rand(20,100),rand(20,60),rand(10,30)][Level])){yield;}
+	}
+}
+task SubAction01()
+{
+	yield;
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,1500,atan2(GetCenterY()-GetY(),GetCenterX()-GetX()),300,-90,250);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		LoadUserShotData(shotAll);
+		SetLife(20);
+		MainAction();
+		SubAction01();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		yield;
+		m_nCount++;
+		Collision( 20, 8 );
+	}
+	@DrawLoop{DrawRKedama(0,32,m_nCount);}
+	@Finalize{DropItem( 1 , 20 );}
+}

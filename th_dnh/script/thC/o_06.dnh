@@ -1,0 +1,260 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+
+//変数宣言--------------------------------------
+	let Level = GetCommonDataDefault( "Level", 1 );
+	let x=0;
+	let y=0;
+
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	SetShotDirectionType(ABSOLUTE);
+	_Wait(100);
+	Concentration01(80);
+	PlaySE(sePower2);
+	_Wait(80);
+	ascent(i in 0..10)
+	{
+		CreateShotFromScript("t_ma_01",GetX(),GetY(),0,0,0,i*250);
+		yield;
+	}
+	PlaySE(seShadow);
+
+}
+task SubAction()
+{
+	yield;
+	SetX(GetCommonDataDefault( "Sakuya_X",GetCenterX() ));
+	SetY(GetCommonDataDefault( "Sakuya_Y",GetCenterY()/2 ));
+	_Wait(150);
+	SetMovePositionHermite(GetCenterX/2,GetClipMinY-50,200,45,300,-90,80);
+	_Wait(90);
+	SetX(-65535);
+	SetY(-65535);
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		LoadGraphic(dotBossSakuya);
+		SetLife(1);
+		MainAction();
+		SubAction();
+	}
+	@MainLoop
+	{
+		Deletemine();
+		yield;
+		m_nCount++;
+
+	}
+	@DrawLoop
+	{
+		if(m_nCount<150){
+			x=0;y=0;
+		}
+		else{
+			x=256;y=128;
+		}
+		let sLength=128;
+		SetAlpha(255);
+		SetColor(255,255,255);
+		_DrawChrRectSqr(dotBossSakuya,GetX,GetY,x,y,sLength);
+	}
+	@Finalize{DeleteGraphic(dotBossSakuya);}
+}
+
+
+
+
+script_shot t_ma_01
+{
+
+#include_function ".\INCLUDE\Shot.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+	let Level=GetCommonData("Level");
+	let angle=GetAngle();
+	let ShotType=[int(rand(0,100))%3,1][GetArgument()==0];
+
+
+task shotobjA (let x, let y, let speed, let angle, let hikisu, let delay)
+{
+	//弾タスク初期化
+	let obj = Obj_Create(OBJ_SHOT);//弾オブジェクトを作成
+	Obj_SetX(obj, x);//x座標設定
+	Obj_SetY(obj, y);//y座標設定;
+	Obj_SetSpeed(obj, speed);//速度設定
+	Obj_SetAngle(obj, angle);//移動角度設定
+	ObjShot_SetGraphic(obj, 152 );//画像設定
+	ObjShot_SetDelay(obj, delay);//遅延時間設定
+
+	//変数宣言
+	
+
+	task MainLoop()
+	{
+		yield;
+		WaitObject( obj,30 );
+		Obj_SetSpeed(obj,0);
+		ascent(i in 0..40)
+		{
+			Obj_SetAngle(obj,Smooth(angle,GetAngleToPlayerObject( obj ),i, 40 ));
+			yield;
+		}
+		CreateLaser01(Obj_GetX(obj),Obj_GetY(obj),[4,4.5,5,6][Level],GetAngleToPlayerObject( obj ),300,6,152,0);
+		Obj_Delete(obj);
+	}
+
+	MainLoop();
+	
+	while( !Obj_BeDeleted(obj) )
+	{//削除されるまでループを実行
+		yield;
+	}
+}
+task shotobjB (let x, let y, let speed, let angle, let hikisu, let delay)
+{
+	//弾タスク初期化
+	let obj = Obj_Create(OBJ_SHOT);//弾オブジェクトを作成
+	Obj_SetX(obj, x);//x座標設定
+	Obj_SetY(obj, y);//y座標設定;
+	Obj_SetSpeed(obj, speed);//速度設定
+	Obj_SetAngle(obj, angle);//移動角度設定
+	ObjShot_SetGraphic(obj, 152 );//画像設定
+	ObjShot_SetDelay(obj, delay);//遅延時間設定
+
+	//変数宣言
+	
+	while( !Obj_BeDeleted(obj) )
+	{//削除されるまでループを実行
+		yield;
+		if(
+			Obj_GetX(obj) < GetClipMinX()+7 ||
+			Obj_GetX(obj) > GetClipMaxX()-7
+		)
+		{
+			LineShot(Obj_GetX(obj),Obj_GetY(obj),1,2,180-Obj_GetAngle(obj),[1,1,3,3][Level],152,0);
+			Obj_Delete(obj);
+		}
+		if(Obj_GetY(obj) < GetClipMinY()+7)
+		{
+			LineShot(Obj_GetX(obj),Obj_GetY(obj),1,2,-Obj_GetAngle(obj),[1,1,3,3][Level],152,0);
+			Obj_Delete(obj);
+		}
+	}
+}
+task shotobjC (let x, let y, let speed, let angle, let hikisu, let delay)
+{
+	//弾タスク初期化
+	let obj = Obj_Create(OBJ_SHOT);//弾オブジェクトを作成
+	Obj_SetX(obj, x);//x座標設定
+	Obj_SetY(obj, y);//y座標設定;
+	Obj_SetSpeed(obj, speed);//速度設定
+	Obj_SetAngle(obj, angle);//移動角度設定
+	ObjShot_SetGraphic(obj, 152 );//画像設定
+	ObjShot_SetDelay(obj, delay);//遅延時間設定
+
+	//変数宣言
+	
+
+	task MainLoop()
+	{
+		yield;
+		WaitObject( obj,30 );
+		Obj_SetSpeed(obj,0);
+		ascent(i in 0..40)
+		{
+			Obj_SetAngle(obj,Smooth(angle,angle+360,i, 40 ));
+			yield;
+		}
+		CreateLaser01(Obj_GetX(obj),Obj_GetY(obj),[4,4.5,5,6][Level],Obj_GetAngle(obj),300,6,152,0);
+		Obj_Delete(obj);
+	}
+
+	MainLoop();
+	
+	while( !Obj_BeDeleted(obj) )
+	{//削除されるまでループを実行
+		yield;
+	}
+}
+
+task MainAction()
+{
+	yield;
+	_Wait(GetArgument()+150);
+	if(ShotType==0)
+	{
+		ascent(i in 0..[8,16,32,45][Level])
+		{
+			shotobjA(GetX,GetY,[1.5,1.5,2,2.5][Level],i*360/[8,16,32,45][Level],0,0);
+			PlaySE(seSaku0);
+			loop([20,60,70,80][Level]/[8,16,32,45][Level]){yield;}
+		}
+	}
+	if(ShotType==1)
+	{
+		let angle=GetAngleToPlayer();
+		ascent(i in 0..[15,20,30,30][Level])
+		{
+			shotobjB(GetX,GetY,7,angle+200-i*(180/[15,20,30,30][Level]),0,0);
+			if(Level==1 || Level==3)
+			{shotobjB(GetX,GetY,7,angle-200+i*(180/[15,20,30,30][Level]),0,0);}
+			PlaySE(seShot1);
+			loop(60/[15,20,35,60][Level]){yield;}
+		}
+
+	}
+	if(ShotType==2)
+	{
+		ascent(i in 0..[8,16,32,45][Level])
+		{
+			shotobjC(GetX,GetY,[1.5,1.5,2,2.5][Level],i*360/[8,16,32,45][Level],0,0);
+			PlaySE(seSaku0);
+			loop([20,60,70,80][Level]/[8,16,32,45][Level]){yield;}
+		}
+	}
+	_Wait(70);
+	ascent(i in 0..70){
+		yield;
+		SetAlpha(255-255/70*i);
+	}
+	End();
+}
+
+task SubAction()
+{
+	yield;
+	SetMovePositionHermite(rand(GetClipMinX()+50,GetClipMaxX()-50),rand(GetClipMinY()+50,GetCenterY()-30),200,0,300,angle,130);
+}
+
+	@Initialize
+	{	
+		MainAction();
+		SubAction();
+		LoadUserShotData(shotAll);
+	}
+	@MainLoop
+	{
+		yield;
+		m_nCount++;
+		SetBombResist();
+	}
+	@DrawLoop
+	{
+		SetTexture(dotCircle6s);
+		SetGraphicRect(0,0,64,64);
+		SetGraphicScale(0.8,0.8);
+		SetColor(255,255,255);
+		SetGraphicAngle(0,0,m_nCount*2);
+		DrawGraphic(GetX,GetY);
+	}
+}

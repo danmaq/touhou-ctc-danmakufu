@@ -1,0 +1,44 @@
+// -----------------------------------------------------------------------------
+// ボススクリプト
+// -----------------------------------------------------------------------------
+// 紅魔郷ルート
+// -----------------------------------------------------------------------------
+let bossFlandreE = GetCurrentScriptDirectory ~ "FlandreE.dnh";
+let bossFlandreH = GetCurrentScriptDirectory ~ "FlandreH.dnh";
+let bossFlandre99 = GetCurrentScriptDirectory ~ "Flandre99.dnh";
+let bossMeirin = GetCurrentScriptDirectory ~ "Meirin.dnh";
+let bossMeirinL = GetCurrentScriptDirectory ~ "MeirinL.dnh";
+let bossMeirin99 = GetCurrentScriptDirectory ~ "Meirin99.dnh";
+let bossSakuya = GetCurrentScriptDirectory ~ "Sakuya.dnh";
+let bossSakuya99 = GetCurrentScriptDirectory ~ "Sakuya99.dnh";
+let bossRemilia = GetCurrentScriptDirectory ~ "Remilia.dnh";
+let bossRemiliaL = GetCurrentScriptDirectory ~ "RemiliaL.dnh";
+let bossRemilia99 = GetCurrentScriptDirectory ~ "Remilia99.dnh";
+let bossDevil = GetCurrentScriptDirectory ~ "Devil.dnh";
+let bossDevil99 = GetCurrentScriptDirectory ~ "Devil99.dnh";
+let bossPatchouli = GetCurrentScriptDirectory ~ "Patchouli.dnh";
+let bossPatchouliL = GetCurrentScriptDirectory ~ "PatchouliL.dnh";
+let bossPatchouli99 = GetCurrentScriptDirectory ~ "Patchouli99.dnh";
+
+// -----------------------------------------------------------------------------
+// 花映塚ルート
+// -----------------------------------------------------------------------------
+let bossLilyE = GetCurrentScriptDirectory ~ "LilyE.dnh";
+let bossLilyH = GetCurrentScriptDirectory ~ "LilyH.dnh";
+let bossLily99 = GetCurrentScriptDirectory ~ "Lily99.dnh";
+let bossMedicine = GetCurrentScriptDirectory ~ "Medicine.dnh";
+let bossMedicineL = GetCurrentScriptDirectory ~ "MedicineL.dnh";
+let bossMedicine99 = GetCurrentScriptDirectory ~ "Medicine99.dnh";
+let bossAyaA = GetCurrentScriptDirectory ~ "AyaA.dnh";
+let bossAyaA99 = GetCurrentScriptDirectory ~ "AyaA99.dnh";
+let bossAyaB = GetCurrentScriptDirectory ~ "AyaB.dnh";
+let bossAyaBL = GetCurrentScriptDirectory ~ "AyaBL.dnh";
+let bossAyaB99 = GetCurrentScriptDirectory ~ "AyaB99.dnh";
+let bossKomachi = GetCurrentScriptDirectory ~ "Komachi.dnh";
+let bossKomachi99 = GetCurrentScriptDirectory ~ "Komachi99.dnh";
+let bossEiki = GetCurrentScriptDirectory ~ "Eiki.dnh";
+let bossEikiL = GetCurrentScriptDirectory ~ "EikiL.dnh";
+let bossEiki99 = GetCurrentScriptDirectory ~ "Eiki99.dnh";
+
+
+

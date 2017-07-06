@@ -1,0 +1,97 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//変数宣言--------------------------------------
+	let Level = GetCommonDataDefault( "Level", 1 );
+//タスクの作成----------------------------------
+
+task MainAction()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop(50)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 50 ));
+		i++;
+		yield;
+	}
+	let angle=-180;
+	while(angle<=180)
+	{
+		ascent(speed in 0..3){
+			CreateEnemyFromScript("t_ma_01",GetX(),GetY(),1.5+speed,GetAngleToPlayer()+angle,0);
+		}
+		angle+=72;
+	}
+	PlaySE(seShadow);
+	let xx=GetX;
+	let yy=GetY;
+	loop(150/[50,30,20,15][Level])
+	{
+		SetMovePositionRandom01(rand(20,80),rand(20,80),rand(5,7),Max( xx-80,GetClipMinX()+20 ),Max( yy-80,GetClipMinY()+20 ),Min( xx+80,GetClipMaxX()-20 ),Min( yy+80,GetClipMaxY()-20 ));
+		_Wait([50,30,20,15][Level]+int(rand(-10,10)));
+		loop([15,25,35,50][Level])
+		{
+			CreateShot02(GetX(),GetY(),rand(3,5),rand(0,360),-0.05,[0.4,0.5,1,0.7][Level],US_FIRE_BLUE,10);
+		}
+		PlaySE(seShot2);
+	}
+
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
+
+
+
+}
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(50);
+		SetInvincibility( 150 );
+		MainAction();
+		LoadUserShotData(shotAll);
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		GetSlowCount();
+		yield;
+		m_nCount++;
+		Collision( 20, 8 );
+	}
+	@DrawLoop
+	{
+		DrawRKedama(64,32,m_nCount);
+		DarwZakoBack(m_nCount);
+	}
+	@Finalize
+	{
+		DropItem( 6 , 20 );
+		DropPowerBig( 1,1 );
+	}
+}
+
+//使い魔----------------------------------------
+
+script_enemy t_ma_01
+{
+
+#include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+	let scale=0;
+
+task MainAction()
+{yield;}
+task SubAction01()
+{yield;}
+
+#include_function ".\INCLUDE\ShadowBody.dnh"
+}

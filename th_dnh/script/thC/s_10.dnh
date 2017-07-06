@@ -1,0 +1,42 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+#include_function ".\_index_UserShot.dnh"
+
+//•Ï”éŒ¾--------------------------------------
+	let Level = GetCommonDataDefault( "Level", 1 );
+//ŽÀs•”•ª---------------------------------------
+
+	@Initialize
+	{
+		SetLife(2);
+		SetInvincibility( 10 );
+		LoadUserShotData(shotAll);
+	}
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		PlayDamageSE(seDamage);
+		Collision( 20, 8 );
+		m_nCount++;
+	}
+	@DrawLoop
+	{DrawRKedama(32,32,m_nCount);}
+	@Finalize
+	{
+		DropItem( 1 , 20 );
+		if(Level>0 && GetY()<GetCenterY && !BeVanished())
+		{
+			RoundLineShot(GetX(),GetY(),[1.7,2.5,2,2.5][Level],[3,3,3,3.5][Level],GetAngleToPlayer(),[6,10,30,45][Level],[1,1,4,6][Level],US_BALL_BS_WHITE,0);
+		}
+		if(Level==3 && GetY()<GetCenterY && !BeVanished())
+		{
+			loop(30)
+			{
+				CreateShot02(GetX(),GetY(),rand(4,7),rand(0,360),-0.5,2,US_BALL_BS_GREEN,0);
+			}
+		}
+	}
+}

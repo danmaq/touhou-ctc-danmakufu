@@ -1,0 +1,333 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossKomachi;
+	let imgCutIn=cutKomachi;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_KOMACHI~imgFontList;
+			seList=seList~seListEnemy~seListShadow;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(63);
+		SetLife(500);
+		SetDamageRate(7,7);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+120;
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"葬符「江深淵クルーズ－Ｅａｓｙ－」",
+			"葬符「江深淵クルーズ」",
+			"葬符「江深淵クルーズ－Ｈａｒｄ－」",
+			"葬符「江深淵クルーズ－Ｌｕｎａｔｉｃ－」"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL3,0);
+		_Wait(125);
+
+		// 霊魂召喚
+		SetAction(ACT_SHOT_B3,200);
+		PlaySE(sePower);
+		Concentration01(120);
+		_Wait(120);
+		SetAction(ACT_SHOT_B3_B,60);
+		PlaySE(seShadow);
+		CreateEnemyFromScript("Spilit",GetX,GetY,0,0,0);
+		_Wait(120);
+		SetDamageRate(13,13);
+
+		// 銭弾
+		loop{
+			CoinShot;
+			_Wait(90);
+		}
+
+	}
+
+	// 銭弾 --------------------------------------------------------------------
+	function CoinShot{
+
+		let num=[3,6,6,9];
+		let way=22+2*Lv;
+		let baseSpeed=2;
+		let numSpeed=0.35;
+		let angle=GetAngleToPlayer;
+		let graphic=[US_COIN_ORANGE,US_COIN_WHITE,US_COIN_YELLOW];
+		let delay=10;
+
+		SetAction(ACT_SHOT_A3,45);
+		PlaySE(seShot1);
+		ascent(let i in 0 .. num[Lv]){
+			let speed=baseSpeed+numSpeed*i;
+			RoundShot01(GetX,GetY,speed,angle,way,graphic[i%3],delay);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){
+			DropItem(10,80);
+			DropExtend;
+		}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		DrawBoss(imgBoss);
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGKomachi;
+
+	}
+
+}
+
+// 霊魂 ------------------------------------------------------------------------
+script_enemy Spilit{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+
+	let n=GetArgument;
+	let gapLength=60;
+	let gapAngle=-90;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(1);
+
+		// 光
+		Light;
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		yield;
+
+		// 初期移動
+		move;
+		loop(60){yield;}
+
+		// 回転移動
+		rollMove;
+
+		// 全方向扇状弾
+		_RoundWideShot;
+
+	}
+
+	// 全方向扇状弾 ------------------------------------------------------------
+	task _RoundWideShot{
+
+		let way=1;
+		if(Lv>=2){way=2;}
+		let baseSpeed=1.7;
+		let waySpeed=-0.3;
+		let baseAngle=gapAngle;
+		let addBaseAngle=-345/60;
+		let wayAngle=1.5;
+		let graphic=US_FIRE_BLUE;
+		let fr=2;
+
+		LoopPlaySE(seShot3,6000,6);
+		loop{
+			let _baseAngle=baseAngle-wayAngle*(way-1)/2;
+			ascent(let i in 0 .. way){
+				let speed=baseSpeed+waySpeed*i;
+				let angle=baseAngle+wayAngle*i;
+				RoundShot01(GetX,GetY,speed,angle,2,graphic,0);
+			}
+			loop(fr){yield;}
+			baseAngle+=addBaseAngle*fr;
+		}
+
+	}
+
+	// 回転移動 ----------------------------------------------------------------
+	task rollMove{
+
+		setAngle;
+		setLocation;
+
+		// 位置設定 ----------------------------------------
+		task setLocation{
+			loop{
+				let x=GetGapX(GetEnemyX,gapLength,gapAngle);
+				let y=GetGapY(GetEnemyY,gapLength,gapAngle);
+				SetX(x);
+				SetY(y);
+				yield;
+			}
+		}
+
+		// 間隔角度設定 ------------------------------------
+		task setAngle{
+			let addAngle=360/60;
+			loop{
+				gapAngle+=addAngle;
+				yield;
+			}
+		}
+
+	}
+
+	// 初期移動 ----------------------------------------------------------------
+	task move{
+
+		let _gapLength=rand(100,120);
+		let _gapAngle=rand(0,90);
+		let x=GetGapX(GetEnemyX,_gapLength,_gapAngle);
+		let y=GetGapY(GetEnemyY,_gapLength,_gapAngle);
+		let power1=300;
+		let angle1=gapAngle;
+		let power2=300;
+		let angle2=rand(90,180);
+		let fr=29;
+		SetMovePositionHermite(x,y,power1,angle1,power2,angle2,fr);
+		loop(fr){yield;}
+
+		x=GetGapX(GetEnemyX,gapLength,gapAngle);
+		y=GetGapY(GetEnemyY,gapLength,gapAngle);
+		angle1=gapAngle+90;
+		SetMovePositionHermite(x,y,power2,angle2,power1,angle1,fr);
+		loop(fr){yield;}
+
+		fr=2;
+		SetMovePosition02(x,y,fr);
+
+	}
+
+	// 光 ----------------------------------------------------------------------
+	task Light{
+
+		let call=1;
+		let delay=15;
+		loop(90){
+			_Light;
+			loop( call ){ yield; }
+		}
+
+		task _Light{
+			let obj=SetShotObject(GetX,GetY,500,0,US_BALL_SS_BLUE,delay);
+			Obj_SetAlpha(obj,0);
+			Obj_SetCollisionToPlayer(obj,false);
+			ObjShot_SetBombResist(obj,true);
+			ObjShot_ToItem(obj,false);
+			loop(delay){yield;}
+			Obj_Delete(obj);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+	}
+
+}

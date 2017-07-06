@@ -1,0 +1,420 @@
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		専用魔理沙スクリプト
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#東方弾幕風[Player]
+#ScriptVersion[2]
+#ReplayName[THC_MA]
+#Menu[魔理沙 星符]
+#Image[.\IMAGE\Select.png]
+#Text[ホーミングタイプ]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_player_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\player.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	マイクロスレッド
+//////////////////////////////////////////////////////////////////////
+
+	//	メイン
+	task Main(){
+		yield;
+		KeyCheck();
+	}
+	
+	//	サブショット(ビットタスクより呼ばれる)
+	function SubShot( let obj, let bLeft ){
+		if( !BeCanFire( trunc( SlowDown( 50, 5, m_nPowerPhase, 5 ) ) ) ){ return; }
+		let nX = Obj_GetX( obj );
+		let nY = Obj_GetY( obj );
+		if( m_nPowerPhase == 0 ){
+			SearchShot( nX, nY, 0 );
+			return;
+		}
+		let nLimit = 12;
+		let nAngle = -nLimit;
+		while( nAngle <= nLimit ){
+			loop( [ 1, 2 ][ m_nPowerPhase >= 3 ] ){
+				SearchShot( nX, nY, nAngle );
+				nAngle += nLimit / [ 0.5, 1, 2, 2, 2.5 ][ m_nPowerPhase ];
+			}
+		}
+	}
+
+	//	サーチショット
+	task SearchShot( let nX, let nY, let nAngle ){
+		let nObjCount = 0;
+		let nStartSpeed = 5;
+		let nMaxSpeed = 30;
+		let nSpeedLimitTime = 100;
+		let obj = Obj_Create( OBJ_SHOT );
+		Obj_SetPosition( obj, nX, nY );
+		let nID = EnumEnemyGetIDInScreen();
+		if( nID != -1 && !m_bSlow ){ Obj_SetAngle( obj, nAngle + atan2( GetEnemyInfo( nID, ENEMY_Y ) - Obj_GetY( obj ), GetEnemyInfo( nID, ENEMY_X ) - Obj_GetX( obj ) ) ); }
+		else{ Obj_SetAngle( obj, nAngle - 90 ); }
+		ObjShot_SetGraphic( obj, US_SUBSHOT );
+		ObjShot_SetDamage( obj, 1 );
+		ObjShot_SetPenetration( obj, 2 );
+		let nSpeedCache = nStartSpeed + ( nMaxSpeed - nStartSpeed );
+		let nLimitCache = ( ( nSpeedLimitTime + 1 ) * nSpeedLimitTime ) * 2 ^ ( -1 );
+		while( !Obj_BeDeleted( obj ) ){
+			Obj_SetAlpha( obj, Smooth( 0, 32, nObjCount, 20 ) );
+			if( nObjCount % 3 == 0 ){
+				if( BeEnemyInScreen() && m_bSlow ){
+					let nX;
+					let nY;
+					ascent( let i in EnumEnemyBegin()..EnumEnemyEnd() ){
+						let nID = EnumEnemyGetID( i );
+						nX = GetEnemyInfoDefault( nID, ENEMY_X, 65536 );
+						nY = GetEnemyInfoDefault( nID, ENEMY_Y, 65536 );
+						if( !IsOutPos( nX, nY, 48 ) ){ break; }
+					}
+					if( IsOutPos( nX, nY, 48 ) ){
+						nX = GetCenterX();
+						nY = 0;
+					}
+					let nAngle = Obj_GetAngle( obj );
+					Obj_SetAngle( obj, nAngle + 6 * [ -1, 1 ][ MinMaxLoop( atan2( nY - Obj_GetY( obj ), nX - Obj_GetX( obj ) ) - nAngle, 0, 360 ) < 180 ] );
+				}
+				if( nObjCount < 100 ){ Obj_SetSpeed( obj, nSpeedCache * ( ( ( nObjCount + 1 ) * nObjCount ) * 2 ^ ( -1 ) ) / nLimitCache ); }
+			}
+			yield;
+			nObjCount++;
+		}	// 大量生成されるのでなるべく処理の低レベル化をする
+	}
+
+
+
+//////////////////////////////////////////////////////////////////////
+//	初期処理
+//////////////////////////////////////////////////////////////////////
+
+	@Initialize{
+		OnInitialize( 188, 4, 1.6, 1, 32, 15, 12, 9, 0.2, "SpellMarisaA2", "SpellMarisaA1", "星符「スーパーノヴァ」", "星符「メテオライト」" );
+		Main();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	毎フレーム呼ばれるメインループ
+//////////////////////////////////////////////////////////////////////
+
+	@MainLoop{
+		OnMainLoop();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	撃墜中のみ毎フレーム呼ばれるループ
+//////////////////////////////////////////////////////////////////////
+
+	@Missed{
+		OnMissedLoop();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	スペルカード処理
+//////////////////////////////////////////////////////////////////////
+
+	@SpellCard{
+		OnSpellCard();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	絵画処理
+//////////////////////////////////////////////////////////////////////
+
+	@DrawLoop{
+		OnDrawLoop();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	終了処理
+//////////////////////////////////////////////////////////////////////
+
+	@Finalize{
+		OnFinalize();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部ここまで
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スペルカードスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_spell SpellMarisaA1{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\spell.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数
+//////////////////////////////////////////////////////////////////////
+
+let SPELL_STAR_SCALE				= 64;
+let SPELL_STAR_NUMS					= 10;
+let SPELL_STAR_BLURTIME				= 3;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	マイクロスレッド
+//////////////////////////////////////////////////////////////////////
+
+	//	メイン
+	task Main(){
+		yield;
+		ascent( let i in 0..SPELL_STAR_NUMS ){
+			ascent( let j in 0..2 ){
+			let n = i % SPELL_STAR_COLORTABLE_LENGTH;
+				Star( Smooth( 0, 180, i, SPELL_STAR_NUMS ) + j * 180, SPELL_STAR_COLORTABLE_RED[ n ], SPELL_STAR_COLORTABLE_GREEN[ n ], SPELL_STAR_COLORTABLE_BLUE[ n ] );
+			}
+			_Wait( 8 );
+		}
+		_Wait( 200 );
+		End();
+	}
+
+	task Star( let nAngle, let nColorR, let nColorG, let nColorB ){
+		let nObjCount = 0;
+		let nFirstPhase = 80;
+		let obj = CreateStar( imgEdge, SPELL_STAR_SCALE, nColorR, nColorG, nColorB );
+		Obj_SetAngle( obj, nAngle );
+		Obj_SetPosition( obj, GetPlayerX(), GetPlayerY() );
+		while( !Obj_BeDeleted( obj ) && nObjCount < nFirstPhase ){
+			Obj_SetSpeed( obj, SlowDown( 3, 0, nObjCount,  nFirstPhase ) );
+			StarLoop( obj, nObjCount, 3, SPELL_STAR_SCALE, 1.5 );
+			yield;
+			nObjCount++;
+		}
+		let nX = 65536;
+		let nY = 65536;
+		ascent( let i in EnumEnemyBegin()..EnumEnemyEnd() ){
+			let nID = EnumEnemyGetID( i );
+			nX = GetEnemyInfoDefault( nID, ENEMY_X, 65536 );
+			nY = GetEnemyInfoDefault( nID, ENEMY_Y, 65536 );
+			if( !IsOutPos( nX, nY, 48 ) ){ break; }
+		}
+		if( IsOutPos( nX, nY, 48 ) ){
+			nX = GetCenterX();
+			nY = 0;
+		}
+		let nAngle = Obj_GetAngle( obj );
+		Obj_SetAngle( obj, GetGapAngle( Obj_GetX( obj ), Obj_GetY( obj ), nX, nY ) );
+		while( !Obj_BeDeleted( obj ) && nObjCount < 300 ){
+			Obj_SetSpeed( obj, 10 + ( nObjCount - nFirstPhase ) / 10 );
+			StarLoop( obj, nObjCount, 3, SPELL_STAR_SCALE, 5 );
+			yield;
+			nObjCount++;
+		}
+		Obj_Delete( obj );
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	初期処理
+//////////////////////////////////////////////////////////////////////
+
+	@Initialize{
+		OnInitialize( 360 );
+		Main();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	毎フレーム呼ばれるメインループ
+//////////////////////////////////////////////////////////////////////
+
+	@MainLoop{
+		OnMainLoop();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	終了処理
+//////////////////////////////////////////////////////////////////////
+
+	@Finalize{
+		OnFinalize();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スペルカードスクリプト部ここまで
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スペルカードスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_spell SpellMarisaA2{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+#include_function ".\INCLUDE\spell.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数
+//////////////////////////////////////////////////////////////////////
+
+let SPELL_STAR_SCALE				= 64;
+let SPELL_STAR_NUMS					= 20;
+let SPELL_STAR_BLURTIME				= 3;
+let SPELL_STAR_FIRSTPHASE			= 100;
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+let m_nFirstX = GetPlayerX();
+let m_nFirstY = GetPlayerY();
+let m_nCenterX;
+let m_nCenterY;
+
+
+//////////////////////////////////////////////////////////////////////
+//	マイクロスレッド
+//////////////////////////////////////////////////////////////////////
+
+	//	メイン
+	task Main(){
+		yield;
+		ascent( let i in 0..SPELL_STAR_NUMS ){
+			let n = i % SPELL_STAR_COLORTABLE_LENGTH;
+			Star( i, Smooth( 0, 180, i, SPELL_STAR_NUMS ), SPELL_STAR_COLORTABLE_RED[ n ], SPELL_STAR_COLORTABLE_GREEN[ n ], SPELL_STAR_COLORTABLE_BLUE[ n ] );
+		}
+		_Wait( 200 );
+		End();
+	}
+
+	task Star( let nGap, let nAngle, let nColorR, let nColorG, let nColorB ){
+		let nGapAngle = Smooth( 0, 360, nGap, SPELL_STAR_NUMS );
+		let nObjCount = 0;
+		let nFirstPhase = SPELL_STAR_FIRSTPHASE;
+		let obj = CreateStar( imgEdge, SPELL_STAR_SCALE, nColorR, nColorG, nColorB );
+		while( !Obj_BeDeleted( obj ) && nObjCount < nFirstPhase ){
+			let nSpeed = SlowDown( 6, 0, nObjCount, nFirstPhase );
+			let nDiam = sin( Smooth( 0, 180, nObjCount, nFirstPhase ) ) * 128;
+			StarLoop( obj, nObjCount, 3, SPELL_STAR_SCALE, 1 );
+			Obj_SetPosition( obj, m_nCenterX - cos( nObjCount * nSpeed + nGapAngle ) * nDiam, m_nCenterY + sin( nObjCount * nSpeed + nGapAngle ) * nDiam );
+			yield;
+			nObjCount++;
+		}
+		_Wait( nGap * 3 );
+		if( BeEnemyInScreen() ){
+			let nID = EnumEnemyGetID( MinMaxLoop( nGap, EnumEnemyBegin(), EnumEnemyEnd() ) );
+			Obj_SetAngle( obj, GetGapAngle( Obj_GetX( obj ), Obj_GetY( obj ), GetEnemyInfoDefault( nID, ENEMY_X, GetCenterX() ), GetEnemyInfoDefault( nID, ENEMY_Y, 0 ) ) );
+		}
+		else{ Obj_SetAngle( obj, GetGapAngle( Obj_GetX( obj ), Obj_GetY( obj ), GetCenterX(), 0 ) ); }
+		let nObjPhaseTime = nObjCount;
+		while( !Obj_BeDeleted( obj ) && nObjCount < 400 ){
+			Obj_SetSpeed( obj, 10 + ( nObjCount - nObjPhaseTime ) / 10 );
+			StarLoop( obj, nObjCount, 3, SPELL_STAR_SCALE, 4 );
+			yield;
+			nObjCount++;
+		}
+		Obj_Delete( obj );
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	初期処理
+//////////////////////////////////////////////////////////////////////
+
+	@Initialize{
+		OnInitialize( 300 );
+		Main();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	毎フレーム呼ばれるメインループ
+//////////////////////////////////////////////////////////////////////
+
+	@MainLoop{
+		m_nCenterX = SplineFakeSFS( m_nFirstX, GetCenterX(), m_nCount, SPELL_STAR_FIRSTPHASE );
+		m_nCenterY = SplineFakeSFS( m_nFirstY, GetCenterY(), m_nCount, SPELL_STAR_FIRSTPHASE );
+		OnMainLoop();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	終了処理
+//////////////////////////////////////////////////////////////////////
+
+	@Finalize{
+		OnFinalize();
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	スペルカードスクリプト部ここまで
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+}

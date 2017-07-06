@@ -1,0 +1,123 @@
+script_enemy_main
+{
+
+#include_function ".\INCLUDE\Enemy.dnh"
+
+//変数宣言--------------------------------------
+	let count=0;
+	let Level=GetCommonData("Level");
+	let angle_b=GetAngleToPlayer();
+//タスクの作成----------------------------------
+task MainAction()
+{
+	yield;
+	_Wait(50);
+	
+	let angle=-180;
+	while(angle<180)
+	{
+		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),5,GetAngleToPlayer()+angle,0);
+		angle+=60;
+	}
+}
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop(50)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 50 ));
+		i++;
+		yield;
+	}
+	_Wait(200);
+	let XX=GetX+rand(-100,100);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,400);
+
+
+}
+
+//実行部分---------------------------------------
+
+	@Initialize
+	{
+		SetLife(40);
+		SetInvincibility( 120 );
+		MainAction();
+		SubAction01();
+	}
+	
+	@MainLoop
+	{
+		Gone();
+		Deletemine();
+		yield;
+		Collision(16 , 12);
+		count++;
+		//敵画像代わり------------------------------------
+		if(int(count/2)==count/2)
+		{
+			CreateShotA(0,GetX(),GetY(),0);
+			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
+			SetShotKillTime(0,2);
+			FireShot(0);
+		}
+		//------------------------------------------------
+
+	}
+	@DrawLoop
+	{
+	}
+	@Finalize
+	{
+		DropItem( 2 , 20 );
+	}
+}
+
+////////////////////////////////////////////////////////////////////////
+//仮の使い魔、使い魔の書式の統一が必要なので雛形の作成をお願いします
+////////////////////////////////////////////////////////////////////////
+
+script_enemy t_ma_01
+{
+
+#include_function ".\INCLUDE\Shadow.dnh"
+#include_function ".\index_UserShot.dnh"
+
+	let count=0;
+	let scale=0;
+	let Level=GetCommonData("Level");
+	let seHidden=seShadowHidden;
+	let seSudden=seShadowSudden;
+
+task MainAction()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop(30)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 30 ));
+		i++;
+		yield;
+	}
+	let i=0;
+	let angle=rand(0,360);
+	loop([20,40,50,70][Level])
+	{
+		CreateShot01(GetX(),GetY(),Smooth( [0.5,0.5,0.8,1][Level], [2,2.5,3,3.5][Level], i, [15,30,40,60][Level] ),angle,BLUE11,0);
+		CreateShot01(GetX(),GetY(),Smooth( [0.5,0.5,0.8,1][Level], [2,2.5,3,3.5][Level], i, [15,30,40,60][Level] ),180-angle,BLUE11,0);
+		angle+=[12,10,8,6][Level];
+		i++;
+		yield;
+	}
+	_Wait(60);
+	VanishEnemy();
+}
+task SubAction01()
+{yield;}
+
+
+#include_function ".\INCLUDE\ShadowBody.dnh"
+}

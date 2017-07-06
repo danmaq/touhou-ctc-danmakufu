@@ -1,0 +1,369 @@
+script_enemy_main{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let userShot=shotAll;
+	let imgBoss=dotBossMedicine;
+	let imgCutIn=cutMedicine;
+	let imgFontList=[imgSystemFontSmall,imgSystemFont]~imgSystemFontSJIS16;
+	let imgShadow=dotCircle6s;
+	let imgList=[imgBoss,imgCutIn];
+	let seList=[];
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.75;}
+
+	let dollGapAngle=GetCommonDataDefault("DollGapAngle",-90);
+	let phase=0;
+	let nextLife=[375,300,225,150];
+	let nextTime=[59,44,29,14];
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ボス初期設定（ファイルのロード他）
+		if(!THC){
+			LoadUserShotData(userShot);
+			imgList=imgList~LOADBGLIST_MEDICINE~imgFontList~[imgShadow];
+			seList=seList~seListEnemy~seListShadow;
+		}
+		InitializeBoss(imgList,seList);
+
+		// スペルカード設定
+		SetTimer(66);
+		SetLife(375);
+		SetDamageRate(7*DamageRate,7*DamageRate);
+		SetShotAutoDeleteClip(32,32,32,32);
+
+		// ボス基本処理、メイン処理
+		CountTimer(seTimeOut);
+		BehaviorBoss(ACT_STAND3);
+		BehaviorSub(ACT_STAND3);
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+		m_nSpellBonus = GetSpellCardBonusScore();
+
+		// Slowキー判定
+		GetSlowCount;
+
+		// 当たり判定（自弾,体当たり）
+		Collision(32,24);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// スーさん角度設定
+		dollGapAngle+=360/240;
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		_Wait(2);
+
+		// 初期移動
+		let fr=45;
+		let x=cenX;
+		let y=minY+120+RandBlur(0.1);
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+		_Wait(55);
+
+		// スペルカード発動
+		let spellName=[
+			"露符「スイートレイン」－Ｅａｓｙ－",
+			"露符「スイートレイン」",
+			"露符「スイートレイン」－Ｈａｒｄ－",
+			"露符「スイートレイン」－Ｌｕｎａｔｉｃ－"
+		];
+		CutInEnemy(spellName[Lv],imgCutIn,192,256);
+		SetScore(100000);
+		SetAction(ACT_SPELL5,0);
+		SetSubAction(ACT_SPELL3,0);
+		_Wait(125);
+
+		// 発動
+		SetAction(ACT_SHOT_B5,150);
+		PlaySE(sePower);
+		Concentration01(120);
+		_Wait(120);
+		SetDamageRate(15*DamageRate,15*DamageRate);
+
+		// 使い魔召喚
+		SummonShadow;
+		_Wait(60);
+
+		let assign=1;
+
+		loop{
+
+			// 移動
+			loop(2){
+				_Wait(60);
+				move(60);
+				_Wait(60);
+			}
+
+			// 全方向弾
+			_RoundShot(assign);
+			_Wait(60);
+
+			assign*=-1;
+
+		}
+
+	}
+
+	// 使い魔召喚 --------------------------------------------------------------
+	task SummonShadow{
+
+		let angle=-90;
+		CreateEnemyFromScript("Shadow",GetX,GetY,0,angle,0);
+		PlaySE(seShadow);
+		while(phase<Lv){
+			if(GetLife<=nextLife[phase+1]||GetTimer<=nextTime[phase+1]){
+				phase++;
+				CreateEnemyFromScript("Shadow",GetX,GetY,0,angle,phase);
+				PlaySE(seShadow);
+			}
+			angle+=3;
+			yield;
+		}
+
+	}
+
+	// 全方向弾 ----------------------------------------------------------------
+	task _RoundShot(let assign){
+
+		let num=1+Lv;
+		let way=[32,36,44,56];
+		let baseSpeed=1.2;
+		let numSpeed=0.3;
+		let baseAngle=GetAngleToPlayer;
+		let numAngle=360/way[Lv]/(1+Lv)*assign;
+		let graphic=US_BALL_S_RED;
+		let delay=30;
+
+		SetAction(ACT_SHOT_A5,60);
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			let angle=baseAngle+numAngle*i;
+			RoundShot01(GetX,GetY,speed,angle,way[Lv],graphic,delay);
+		}
+		_Wait(delay);
+		PlaySE(seShot1);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		SetMovePosition02(x,y,fr);
+		SetAction(ACT_MOVE,fr);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// カットイン消去
+		SetCommonData(CD_CUTIN_SPELL_END,true);
+
+		// アイテム放出
+		if(THC&&!Practice){DropItem(8,80);}
+
+		// ロードしたファイルを削除
+		DeleteGraphicList(imgList,seList);
+
+		// スーさん角度設定
+		SetCommonData("DollGapAngle",dollGapAngle);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス＆スーさん描画
+		let dollGapLength=32;
+		let x=GetGapX(GetX,dollGapLength,dollGapAngle);
+		let y=GetGapY(GetY,dollGapLength*0.4,dollGapAngle*2);
+		if(sin(dollGapAngle)>0){
+			DrawBoss(imgBoss);
+			DrawSub(imgBoss,CHAR_DOLL,x,y);
+		}
+		else{
+			DrawSub(imgBoss,CHAR_DOLL,x,y);
+			DrawBoss(imgBoss);
+		}
+		DrawCutIn(m_nCount);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@BackGround{
+
+		// 背景描画
+		OnBGMedicine;
+
+	}
+
+}
+
+// 使い魔 ----------------------------------------------------------------------
+script_enemy Shadow{
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\Shadow.dnh"
+	#include_function ".\_index_UserShot.dnh"
+
+	// 画像及び効果音ファイル
+	let imgShadow=dotCircle6s;
+
+	// 各種設定値（難易度等）
+	let THC=GetCommonDataDefault(CD_THC_STAGE,false);
+	let Practice=GetCommonDataDefault(CD_STAGE_PRACTICE,false); 
+	let Lv=GetCommonDataDefault(CD_STAGE_LEVEL,0);
+	let DamageRate=1;
+	if(!THC||Practice){DamageRate=0.75;}
+
+	let assign=GetArgument;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// ステータス設定（ライフ、ダメージ率等）
+		SetLife(240);
+		SetDamageRateExDelay(30,85*DamageRate,85*DamageRate,50,50);
+
+		// 実体化時の光
+		LightShadow;
+
+		// メイン処理
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 使い魔基本処理
+		BehaviorShadow(seShadowHidden,seShadowSudden);
+
+		// 当たり判定（自弾,体当たり）
+		CollisionShadow(24,18);
+
+		// ダメージ音
+		PlayDamageSE(seDamage);
+
+		// カウンタ加算
+		m_nCount++;
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		let gapLength=150;
+		let compY=0.4;
+		let baseAngle=GetAngle+360/(Lv+1)*assign;
+		let x=GetGapX(GetEnemyX,gapLength,baseAngle);
+		let y=GetGapY(GetEnemyY,gapLength*compY,baseAngle);
+		SetX(x);
+		SetY(y);
+
+		yield;
+
+		// 平行狙い弾
+		Concentration01(30);
+		ParallelShot;
+
+		// 移動
+		loop{
+			let angle=baseAngle+3*m_nCount;
+			x=GetGapX(GetEnemyX,gapLength,angle);
+			y=GetGapY(GetEnemyY,gapLength*compY,angle);
+			SetX(x);
+			SetY(y);
+			yield;
+		}
+
+	}
+
+	// 平行狙い弾 --------------------------------------------------------------
+	task ParallelShot{
+
+		let graphic=US_RICE_S_BLUE;
+		let fr=7;
+		if(Lv>=2){fr=6;}
+
+		loop{
+
+			let speed=rand(1.5,2.5);
+			let angle=90;
+			if(Lv<2){
+				if(GetPlayerY<GetY){angle=-90;}
+			}
+			else{angle=GetGapAngle(GetEnemyX,GetEnemyY,GetPlayerX,GetPlayerY);}
+
+			CreateShot01(GetX,GetY,speed,angle,graphic,5);
+			PlaySE(seShot3);
+			_Wait(fr);
+
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// 弾消し
+		DestructShadow(40);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// 本体描画
+		let shadow=SHADOW_S_RED;
+		let angle=2*m_nCount;
+		let scale=0.8;
+		_DrawShadow(shadow,imgShadow,angle,scale,scale);
+
+	}
+
+}
