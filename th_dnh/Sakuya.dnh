@@ -1,0 +1,18 @@
+#東方弾幕風[Plural]
+#Title[Sakuya - Easy/Normal/Hard/Lunatic]
+#Text[ステージ2A 中ボス
+十六夜 咲夜
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+#ScriptPathData
+#ScriptPath[.\Sakuya1.dnh]
+#ScriptPath[.\Sakuya1S.dnh]
+#EndScriptPathData

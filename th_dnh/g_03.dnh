@@ -102,40 +102,13 @@ script_enemy t_ma_01
 #include_function ".\INCLUDE\Shadow.dnh"
 
 	let count=0;
+	let scale=0;
 	let Level=GetCommonData("Level");
 
-	@Initialize
-	{	
-		SetLife(80);
-		LoadGraphic(imgcircle_t);
-	}
-	@MainLoop
-	{
-		yield;
-		Deletemine();
-		BehaviorShadow( 0,0 );
-		count++;
-	
-	if(BeParentVanished()){VanishEnemy();}
+task MainAction()
+{yield;}
+task SubAction01()
+{yield;}
 
-		if(GetKeyState(VK_SLOWMOVE)==KEY_FREE)
-		{
-			Collision( 16,0 );
-			if(int(count/3)==count/3)
-			{
-				CreateShotA(0,GetX(),GetY(),15);
-				SetShotDataA(0,0,0,0,0,0,0,WHITE05);
-				SetShotKillTime(0,0);
-				FireShot(0);
-			}
-		}
-	}
-	@DrawLoop
-	{
-		SetGraphicRect( 0,0,50,50 );
-		DrawRotate( imgcircle_t, count*2 );
-	}
-	@Finalize{
-			DestructShadow( 40 );
-		}
+#include_function ".\INCLUDE\ShadowBody.dnh"
 }

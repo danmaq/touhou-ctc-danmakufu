@@ -17,7 +17,7 @@ task MainAction()
 		{
 			loop([0,12,20,30][Level])
 			{
-				CreateShot02(GetX(),GetY(),[0,rand(0.5,1.5),rand(0.5,3.5),rand(0.5,4.5)][Level],rand(0,360),-0.05,0,PURPLE23,0);
+				CreateShot02(GetX(),GetY(),[0,rand(0.5,1.5),rand(0.5,2.5),rand(0.5,3.5)][Level],rand(0,360),-0.05,0,PURPLE23,0);
 			}
 		}
 		_Wait([999,100,80,60][Level]+int(rand(-10,10)));
@@ -25,14 +25,36 @@ task MainAction()
 	}
 }
 
+task SubAction01()
+{
+	yield;
+	let spmax=GetSpeed();
+	let i=0;
+	loop(100)
+	{
+		SetSpeed(SlowDown( spmax , 0 , i , 100 ));
+		i++;
+		yield;
+	}
+	_Wait(30);
+	let xx=GetX;
+	let yy=GetY;
+	while(1)
+	{
+		SetMovePositionRandom01(rand(0,80),rand(0,80),rand(1.5,3),xx-80,yy-80,xx+80,yy+80);
+		_Wait([999,100,80,60][Level]+int(rand(-10,10)));
+	}
+}
+
 //é¿çsïîï™---------------------------------------
 
 	@Initialize
 	{
-		SetLife(30);
+		SetLife(12);
 		SetInvincibility( 10 );
 		SetAngle( GetAngle() );
 		MainAction();
+		SubAction01();
 	}
 	
 	@MainLoop
@@ -40,25 +62,16 @@ task MainAction()
 		Gone();
 		Deletemine();
 		yield;
-		Collision(16 , 12);
 		count++;
-		//ìGâÊëúë„ÇÌÇË------------------------------------
-		if(int(count/2)==count/2)
-		{
-			CreateShotA(0,GetX(),GetY(),0);
-			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
-			SetShotKillTime(0,2);
-			FireShot(0);
-		}
-		//------------------------------------------------
-
+		if(count==400){DropItem( 3 , 20 );VanishEnemy();}
+		Collision( 13, 8 );
 	}
 	@DrawLoop
 	{
+		DrowZako( dotKedama,0,0,32,0.8 );
 	}
 	@Finalize
 	{
-		DropItem( 1 , 20 );
 		DeleteEnemyShot(CHILD);
 	}
 

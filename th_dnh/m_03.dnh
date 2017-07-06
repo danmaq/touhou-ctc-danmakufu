@@ -105,6 +105,7 @@ script_enemy t_ma_01
 #include_function ".\INCLUDE\Shadow.dnh"
 
 	let count=0;
+	let scale=0;
 	let Level=GetCommonData("Level");
 
 task MainAction()
@@ -135,38 +136,28 @@ task SubAction()
 	@Initialize
 	{	
 		SetLife(80);
-		LoadGraphic(imgcircle_t);
+		LoadGraphic(dotCircle6s);
 		MainAction();
 		SubAction();
 	}
 	@MainLoop
 	{
-		yield;
 		Deletemine();
 		BehaviorShadow( 0,0 );
 		if(count<200){SetAngle(GetAngle()+GetArgument());}
 		count++;
-	
+		scale=Smooth( 0,1,count,40 );
+
 	if( IsOut( 32 ) ){ SetSpeed(0);AddLife(10); }
 
 	if(BeParentVanished()){VanishEnemy();}
 
-		if(GetKeyState(VK_SLOWMOVE)==KEY_FREE)
-		{
-			Collision( 16,0 );
-			if(int(count/3)==count/3)
-			{
-				CreateShotA(0,GetX(),GetY(),15);
-				SetShotDataA(0,0,0,0,0,0,0,WHITE05);
-				SetShotKillTime(0,0);
-				FireShot(0);
-			}
-		}
+		LightOfShadow(count);
+		yield;
 	}
 	@DrawLoop
 	{
-		SetGraphicRect( 0,0,50,50 );
-		DrawRotate( imgcircle_t, count*2 );
+		DrowShadowEasy(count*2);
 	}
 	@Finalize{
 			DestructShadow( 40 );

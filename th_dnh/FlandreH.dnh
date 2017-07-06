@@ -1,0 +1,16 @@
+#東方弾幕風[Plural]
+#Title[Frandre - Hard/Lunatic]
+#Text[ステージ1A 中ボス
+フランドール・スカーレット
+
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+#ScriptPathData
+#ScriptPath[.\Flandre1.dnh]
+#ScriptPath[.\Flandre1S.dnh]
+#EndScriptPathData

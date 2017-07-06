@@ -37,50 +37,69 @@ function Stage3CInitialize(){
 //	ここにステージの中身を書く
 task Stage3C(){
 
-	_Wait(100);
+	_Wait(200);
 
 //---------------------------------------------------------------
 
-	loop(3)
-	{
-		loop(2)
-		{
-			CreateEnemyFromFile(z_g_16,GetClipMaxX()+20,GetCenterY()/3+rand(-10,10),rand(2,10),180,0);
-			CreateEnemyFromFile(z_g_16,GetClipMinX()-20,GetCenterY()/3+rand(-10,10),rand(2,10),0,0);
-		}
-		_Wait(230);
-	}
-	_Wait(100);
-
-//---------------------------------------------------------------
-
-	CreateEnemyFromFile(z_m_12,GetCenterX(),GetClipMinY()-20,4,90,3);
-
-	_Wait(350);
-
-//---------------------------------------------------------------
+	CreateEnemyFromFile(z_g_07,GetCenterX(),GetClipMinY()-20,3,90,0);
+	_Wait(500);
 
 	loop(2)
 	{
-		loop(4)
+		loop([8,5,4,3][m_nStageLevel])
 		{
-			CreateEnemyFromFile(z_g_17,GetCenterX*1.5+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+100,0);
-			_Wait(25);
+			CreateEnemyFromFile(z_s_06,GetClipMinX()-20,GetCenterY()/2,2.5,0,0);
+			_Wait(int(130/[8,5,4,3][m_nStageLevel]));
 		}
-		_Wait(150);
-		loop(4)
+		loop([8,5,4,3][m_nStageLevel])
 		{
-			CreateEnemyFromFile(z_g_17,GetCenterX/2+rand(-60,60),GetClipMinY()-20,rand(3,7),rand(-10,+10)+80,0);
-			_Wait(25);
+			CreateEnemyFromFile(z_s_06,GetClipMaxX()+20,GetCenterY()/2,2.5,180,0);
+			_Wait(int(130/[8,5,4,3][m_nStageLevel]));
 		}
-		_Wait(150);
 	}
+	_Wait(100);
 
 //---------------------------------------------------------------
 
-	CreateEnemyFromFile(z_g_18,GetCenterX(),GetClipMinY()-20,3.5,90,3);
+	CreateEnemyFromFile(z_g_08,GetCenterX(),GetClipMinY()-20,3,90,0);
+	_Wait(300);
 
-	_Wait(550);
+	loop(2)
+	{
+		loop([8,5,4,3][m_nStageLevel])
+		{
+			CreateEnemyFromFile(z_s_06,GetCenterX()*1.5,GetClipMinY()-20,2.5,90,0);
+			_Wait(int(130/[8,5,4,3][m_nStageLevel]));
+		}
+		loop([8,5,4,3][m_nStageLevel])
+		{
+			CreateEnemyFromFile(z_s_06,GetCenterX()/2,GetClipMinY()-20,2.5,90,0);
+			_Wait(int(130/[8,5,4,3][m_nStageLevel]));
+		}
+	}
+	_Wait(100);
+
+//---------------------------------------------------------------
+
+	CreateEnemyFromFile(z_g_19,GetCenterX(),GetClipMinY()-20,3,90,0);
+	_Wait(300);
+
+	loop(2)
+	{
+		loop([8,5,4,3][m_nStageLevel])
+		{
+			CreateEnemyFromFile(z_s_06,GetCenterX()*1.5,GetClipMinY()-20,2.5,90,0);
+			_Wait(int(130/[8,5,4,3][m_nStageLevel]));
+		}
+		loop([8,5,4,3][m_nStageLevel])
+		{
+			CreateEnemyFromFile(z_s_06,GetCenterX()/2,GetClipMinY()-20,2.5,90,0);
+			_Wait(int(130/[8,5,4,3][m_nStageLevel]));
+		}
+	}
+	_Wait(100);
+
+//---------------------------------------------------------------
 
 	DeleteEnemyShotToItem(ALL);
 	SetCommonData("DeleteEnemy",1);
@@ -94,54 +113,31 @@ task Stage3C(){
 	SetCommonData("DeleteEnemy",0);
 	_Wait(200);
 
-	CreateEnemyFromFile(z_g_16,GetCenterX,GetClipMinY()-20,3,90,0);
-	CreateEnemyFromFile(z_g_16,GetCenterX/2,GetClipMinY()-20,3,90,0);
-	CreateEnemyFromFile(z_g_16,GetCenterX*1.5,GetClipMinY()-20,3,90,0);
-	_Wait(150);
+//---------------------------------------------------------------
 
-	let i=0;
-	loop(5)
+	CreateEnemyFromFile(z_m_11,GetCenterX(),GetClipMinY()-20,3.5,90,0);
+	_Wait(300);
+
+	loop(2)
 	{
-		CreateEnemyFromFile(z_g_17,Smooth(GetClipMinX()+20,GetClipMaxX()-20,i,5),GetClipMinY()-20,2,90,0);
-		_Wait(14);
-		i++;
+		loop([8,5,4,3][m_nStageLevel])
+		{
+			CreateEnemyFromFile(z_s_06,GetCenterX()*1.5,GetClipMinY()-20,2.5,90,0);
+			_Wait(int(130/[8,5,4,3][m_nStageLevel]));
+		}
+		loop([8,5,4,3][m_nStageLevel])
+		{
+			CreateEnemyFromFile(z_s_06,GetCenterX()/2,GetClipMinY()-20,2.5,90,0);
+			_Wait(int(130/[8,5,4,3][m_nStageLevel]));
+		}
 	}
-
-	CreateEnemyFromFile(z_g_16,GetCenterX,GetClipMinY()-20,3,90,0);
-	CreateEnemyFromFile(z_g_16,GetCenterX/2,GetClipMinY()-20,3,90,0);
-	CreateEnemyFromFile(z_g_16,GetCenterX*1.5,GetClipMinY()-20,3,90,0);
-	_Wait(150);
-
-	let i=0;
-	loop(5)
-	{
-		CreateEnemyFromFile(z_g_17,Smooth(GetClipMaxX()-20,GetClipMinX()+20,i,5),GetClipMinY()-20,2,90,0);
-		_Wait(14);
-		i++;
-	}
-	_Wait(250);
+	_Wait(100);
 
 //---------------------------------------------------------------
 
-	CreateEnemyFromFile(z_m_12,GetCenterX(),GetClipMinY()-20,4,90,3);
-
-	_Wait(250);
-
-	CreateEnemyFromFile(z_g_18,GetCenterX()/2,GetClipMinY()-20,3,90,3);
-	CreateEnemyFromFile(z_g_18,GetCenterX()*1.5,GetClipMinY()-20,3,90,3);
-
-	_Wait(400);
-
-//---------------------------------------------------------------
-
-	let i=0;
-	loop(5)
-	{
-		CreateEnemyFromFile(z_g_17,Smooth(GetClipMaxX()-20,GetClipMinX()+20,i,5),GetClipMinY()-20,2,90,0);
-		i++;
-	}
-
-	_Wait(350);
+	CreateEnemyFromFile(z_g_10,GetCenterX()/2,GetClipMinY()-20,3.5,90,0);
+	CreateEnemyFromFile(z_g_10,GetCenterX()*1.5,GetClipMinY()-20,3.5,90,0);
+	_Wait(1000);
 
 	SetCommonData("DeleteEnemy",1);
 	yield;
@@ -162,6 +158,9 @@ task Stage3C(){
 		yield;
 	}
 ////////////////////////////////////////////////////
+
+
+
 
 	Stage4();
 }

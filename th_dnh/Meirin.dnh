@@ -1,0 +1,21 @@
+#東方弾幕風[Plural]
+#Title[Meirin - Easy/Normal/Hard/Lunatic]
+#Text[ステージ1A ボス
+紅 美鈴
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+#ScriptPathData
+#ScriptPath[.\Meirin1.dnh]
+#ScriptPath[.\Meirin1S.dnh]
+#ScriptNextStep
+#ScriptPath[.\Meirin2.dnh]
+#ScriptPath[.\Meirin2S.dnh]
+#EndScriptPathData

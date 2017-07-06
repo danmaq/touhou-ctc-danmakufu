@@ -43,89 +43,137 @@ task Stage1C(){
 
 	loop(2)
 	{
-		ascent(i in 0..7)
+		loop(8)
 		{
-			CreateEnemyFromFile(z_s_07,Smooth( GetClipMinX()+40,GetClipMaxX()-40,i,7 ),GetClipMinY()-20,0,0,GetCenterX/3);
-			_Wait(20);
+			CreateEnemyFromFile(z_g_04,GetCenterX()*1.5+rand(-50,+50),GetClipMinY()-20,rand(1.8,4.5),90+rand(0,30),0);
+			_Wait(16);
 		}
-		_Wait(150);
-		ascent(i in 0..7)
-		{
-			CreateEnemyFromFile(z_s_07,Smooth( GetClipMaxX()-40,GetClipMinX()+40,i,7 ),GetClipMinY()-20,0,0,GetCenterX()+GetCenterX/3*2);
-			_Wait(20);
-		}
-		_Wait(150);
+		_Wait(100);
 	}
+
+	_Wait(150);
+
+	loop(2)
+	{
+		loop(8)
+		{
+			CreateEnemyFromFile(z_g_04,GetCenterX()/2+rand(-50,+50),GetClipMinY()-20,rand(1.8,4.5),90+rand(-30,0),0);
+			_Wait(16);
+		}
+		_Wait(100);
+	}
+
 
 //---------------------------------------------------------------
 
-	CreateEnemyFromFile(z_g_11,GetCenterX(),GetClipMinY()-20,6.5,90,0);
+	CreateEnemyFromFile(z_m_07,GetCenterX()*1.5,GetClipMinY()-20,5,90,13);
+	_Wait(250);
+	CreateEnemyFromFile(z_m_09,GetCenterX()/2,GetClipMinY()-20,6,90,3);
+	_Wait(400);
 
+	CreateEnemyFromFile(z_m_09,GetCenterX()*1.5,GetClipMinY()-20,6,90,3);
+	_Wait(250);
+	CreateEnemyFromFile(z_m_07,GetCenterX()/2,GetClipMinY()-20,5,90,13);
 	_Wait(400);
 
 //---------------------------------------------------------------
 
 	loop(5)
 	{
-		CreateEnemyFromFile(z_g_12,GetCenterX()/3+rand(-20,20),GetClipMinY()-20,5,90,[1,0][rand(0,100)<50]);
-		_Wait(70);
-		CreateEnemyFromFile(z_g_12,GetCenterX()+GetCenterX()/3*2+rand(-20,20),GetClipMinY()-20,5,90,[1,0][rand(0,100)<50]);
+		CreateEnemyFromFile(z_g_20,GetCenterX()*1.5+rand(-50,+50),GetClipMinY()-20,rand(2,4),90+rand(0,30),0);
+	}
+	_Wait(100);
+
+	loop(5)
+	{
+		CreateEnemyFromFile(z_g_20,GetCenterX()/2+rand(-50,+50),GetClipMinY()-20,rand(2,4),90-rand(0,30),0);
+	}
+	_Wait(300);
+
+//---------------------------------------------------------------
+
+	loop(8)
+	{
+		CreateEnemyFromFile(z_g_04,GetCenterX()*1.5+rand(-50,+50),GetClipMinY()-20,rand(2,5),90+rand(0,30),0);
+		_Wait(16);
 	}
 
-	_Wait(400);
+	_Wait(100);
+
+	loop(8)
+	{
+		CreateEnemyFromFile(z_g_04,GetCenterX()/2+rand(-50,+50),GetClipMinY()-20,rand(2,5),90+rand(-30,0),0);
+		_Wait(16);
+	}
+
+	_Wait(300);
+
+//---------------------------------------------------------------
+
+	CreateEnemyFromFile(z_m_07,GetCenterX()*1.5,GetClipMinY()-20,5,90,13);
+	CreateEnemyFromFile(z_m_07,GetCenterX()/2,GetClipMinY()-20,5,90,13);
+
+	loop(20)
+	{
+		CreateEnemyFromFile(z_g_20,GetCenterX()+rand(-150,+150),GetClipMinY()-20,rand(2,4),90+rand(-10,10),0);
+		_Wait(20);
+	}
+
 
 	DeleteEnemyShotToItem(ALL);
 	SetCommonData("DeleteEnemy",1);
 
 
 ///////////////////////////////////////////////////////////////////////
-//ここに中ボスが入る
-	_Wait(100);
+	if(m_nStageLevel<2){CreateEnemyBossFromFile(bossLilyE,GetCenterX(),0,0,0,0);}
+	if(m_nStageLevel>1){CreateEnemyBossFromFile(bossLilyH,GetCenterX(),0,0,0,0);}
+	WaitForZeroEnemy();//敵が消えるまで停止
 ///////////////////////////////////////////////////////////////////////
 
 	SetCommonData("DeleteEnemy",0);
-	_Wait(200);
+	_Wait(100);
+
+//---------------------------------------------------------------
+
+	loop(8)
+	{
+		CreateEnemyFromFile(z_g_04,GetCenterX()*1.5+rand(-50,+50),GetClipMinY()-20,rand(2,5),90+rand(0,30),0);
+		CreateEnemyFromFile(z_g_04,GetCenterX()/2+rand(-50,+50),GetClipMinY()-20,rand(2,5),90+rand(-30,0),0);
+		_Wait(16);
+	}
+
+	_Wait(300);
+
+//---------------------------------------------------------------
 
 	loop(2)
 	{
-		loop(10)
+		CreateEnemyFromFile(z_m_07,GetCenterX()*1.5,GetClipMinY()-20,5,90,11);
+	
+		ascent(i in 0..10)
 		{
-			CreateEnemyFromFile(z_s_07,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,0,0,rand(GetClipMinX()+30,GetClipMaxX()-30));
-			_Wait(10);
+			CreateEnemyFromFile(z_g_20,Smooth(GetClipMinX()+20,GetClipMaxX()-20,i,10),GetClipMinY()-20,5,90,0);
+			_Wait(30);
 		}
-		_Wait(150);
-	}
-		_Wait(150);
-
-//---------------------------------------------------------------
-
-	loop(5)
-	{
-		CreateEnemyFromFile(z_g_12,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,5,90,0);
-	}
-		_Wait(250);
-
-//---------------------------------------------------------------
-
-	loop(5)
-	{
-		CreateEnemyFromFile(z_g_12,GetCenterX()/3+rand(-20,20),GetClipMinY()-20,5,90,1);
-		_Wait(60);
-	}
-		_Wait(100);
-	loop(5)
-	{
-		CreateEnemyFromFile(z_g_12,GetCenterX()+GetCenterX()/3*2+rand(-20,20),GetClipMinY()-20,5,90,1);
-		_Wait(60);
+	
+		CreateEnemyFromFile(z_m_07,GetCenterX()/2,GetClipMinY()-20,5,90,10);
+	
+		ascent(i in 0..10)
+		{
+			CreateEnemyFromFile(z_g_20,Smooth(GetClipMaxX()-20,GetClipMinX()+20,i,10),GetClipMinY()-20,5,90,0);
+			_Wait(30);
+		}
 	}
 
+	_Wait(450);
 
-//---------------------------------------------------------------
+//----------------------------------------------------------------
 
-	CreateEnemyFromFile(z_g_11,GetCenterX()/2,GetClipMinY()-20,6.5,90,0);
-	CreateEnemyFromFile(z_g_11,GetCenterX()*1.5,GetClipMinY()-20,6.5,90,0);
+	CreateEnemyFromFile(z_m_09,GetCenterX()/2,GetClipMinY()-20,5,90,0);
+	CreateEnemyFromFile(z_m_09,GetCenterX()*1.5,GetClipMinY()-20,5,90,1);
 
-	_Wait(650);
+	_Wait(350);
+
 
 
 	SetCommonData("DeleteEnemy",1);
@@ -135,10 +183,15 @@ task Stage1C(){
 
 
 ///////////////////////////////////////////////////////////////////////
-//ここにボスが入る
-	_Wait(100);
-///////////////////////////////////////////////////////////////////////
+	CreateEnemyBossFromFile(bossMedicine,GetCenterX(),0,0,0,0);
+	WaitForZeroEnemy();//敵が消えるまで停止
 
+//if(条件){
+	CreateEnemyBossFromFile(bossMedicineL,GetCenterX(),GetCenterY/2,0,0,0);
+	WaitForZeroEnemy();//敵が消えるまで停止
+//}
+
+///////////////////////////////////////////////////////////////////////
 
 
 //ショットキーを押すと次のステージへ////////////////

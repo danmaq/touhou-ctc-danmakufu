@@ -1,0 +1,268 @@
+#東方弾幕風
+#Title[Lily - スペルカード1]
+#Text[ステージ1C 中ボス
+リリー・ホワイト
+
+
+
+下記以外のスタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+script_enemy_main{
+
+	// 画像及び効果音ファイル
+	#include_function ".\IMAGE\CHAR\index.dnh"
+	let imgBoss=dotBossSample;
+
+	// 座標設定
+	let cenX=GetCenterX;
+	let cenY=GetCenterY;
+	let minX=GetClipMinX;
+	let maxX=GetClipMaxX;
+	let minY=GetClipMinY;
+	let maxY=GetClipMaxY;
+
+	// 難易度
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault("Level",0);
+	if(Lv<3){Lv=0;}
+	else{Lv=1;}
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// 画像及び効果音をロード
+		LoadGraphic(imgBoss);
+
+		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
+		SetText("＊符「＊＊＊」");
+		SetScore(100000);
+		SetTimer(63);
+		SetShotAutoDeleteClip(20,20,20,20);
+		SetEnemyMarker(true);
+
+		// ボスステータス設定（ライフ、ダメージ率Shot%,Bomb%等）
+		SetLife(400);
+		SetDamageRate(7.5,5);
+
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（A:自弾,B:体当たり）
+		SetCollisionA(GetX,GetY,32);
+		SetCollisionB(GetX,GetY,24);
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(242);
+		wait(2);
+
+		// 初期移動
+		let fr=180;
+		let x=cenX;
+		let y=cenY;
+		SetMovePosition02(x,y,fr);
+		wait(fr);
+
+		let turn=0;
+
+		loop{
+
+			// 全方向分岐レーザー
+			Concentration01(60);
+			wait(60);
+			RoundForkLaser(turn);
+			wait(300);
+
+			turn++;
+			if(turn>=4){turn=0;}
+
+		}
+
+	}
+
+	// 全方向分岐レーザー ------------------------------------------------------
+	task RoundForkLaser(let turn){
+
+		let way=3+1*Lv;
+		let fork=5;
+		let wayAngle=360/way;
+		let baseAngle=GetAngleToPlayer+wayAngle/2;
+
+		ascent(let i in 0 .. way){
+			let angle=baseAngle+wayAngle*i;
+			ForkLaser(GetX,GetY,angle,fork,true,turn);
+		}
+
+	}
+
+	// 分岐レーザー ------------------------------------------------------------
+	task ForkLaser(
+		let x,
+		let y,
+		let angle,
+		let fork,
+		let first,
+		let turn
+	){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_LASER);
+		let delay=60;
+
+		Obj_SetX(obj,x);
+		Obj_SetY(obj,y);
+		Obj_SetAngle(obj,angle);
+		ObjLaser_SetWidth(obj,6+fork*2);
+		ObjShot_SetDelay(obj,delay);
+		ObjShot_SetGraphic(obj,ORANGE21);
+		Obj_SetAutoDelete(obj,false);
+		Obj_SetCollisionToPlayer(obj,false);
+		ObjLaser_SetSource(obj,false);
+
+		// メイン処理 --------------------------------------
+		// 長さ設定
+		let Length=0;
+		let maxLength=100+10*fork;
+		setLength;
+
+		// 分岐
+		let num=2;
+		let numAngle=45;
+		let randAngle=10;
+		let baseAngle=angle-numAngle*(num-1)/2;
+		let waitFr=trunc(delay/4/(num+1));
+		fork--;
+
+		ascent(let i in 0 .. num){
+			loop(waitFr){yield;}
+			if(fork>=0){
+				let gapLength=maxLength/2+rand(-maxLength/5,-maxLength/5);
+				let xF=GetGapX(x,gapLength,angle);
+				let yF=GetGapY(y,gapLength,angle);
+				let angleF=baseAngle+numAngle*i+rand(-randAngle,randAngle);
+				ForkLaser(xF,yF,angleF,fork,false,turn);
+			}
+		}
+		loop(100){yield;}
+
+		// 木の葉弾
+		if(!first){
+			let xL=GetGapX(x,maxLength,angle);
+			let yL=GetGapY(y,maxLength,angle);
+			let angleL=GetGapAngle(xL,yL,GetX,GetY);
+			let graphic=[PURPLE12,GREEN12,ORANGE12,WHITE12];
+			LeafShot(xL,yL,angleL,graphic[turn]);
+		}
+		loop(140){yield};
+
+		// 消滅
+		ObjShot_FadeDelete(obj);
+
+		// 長さ設定 ----------------------------------------
+		task setLength{
+			let fr=trunc(delay/4);
+			let addLength=maxLength/fr;
+			loop(fr){
+				Length+=addLength;
+				ObjLaser_SetLength(obj,Length);
+				yield;
+			}
+			loop(fr*5){yield;}
+			Obj_SetCollisionToPlayer(obj,true);
+		}
+
+	}
+
+	// 木の葉弾 ----------------------------------------------------------------
+	task LeafShot(
+		let x,
+		let y,
+		let angle,
+		let graphic
+	){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+
+		Obj_SetX(obj,x);
+		Obj_SetY(obj,y);
+		Obj_SetSpeed(obj,0);
+		Obj_SetAngle(obj,angle);
+		ObjShot_SetDelay(obj,30);
+		ObjShot_SetGraphic(obj,graphic);
+		Obj_SetAutoDelete(obj,false);
+
+		// メイン処理 --------------------------------------
+		loop(75){
+			if(Obj_BeDeleted(obj)){break;}
+			yield;
+		}
+
+		let fr=90;
+		let speed=0;
+		let maxSpeed=rand(0.7,1.4);
+		let addSpeed=(maxSpeed-speed)/fr;
+
+		loop(fr){
+			if(Obj_BeDeleted(obj)){break;}
+			speed+=addSpeed;
+			Obj_SetSpeed(obj,speed);
+			yield;
+		}
+
+		loop(180){
+			if(Obj_BeDeleted(obj)){break;}
+			yield;
+		}
+		Obj_SetAutoDelete(obj,true);
+
+	}
+
+	// 待ち --------------------------------------------------------------------
+	function wait(let fr){
+
+		loop(fr){yield;}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphic(imgBoss);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		SetTexture(imgBoss);
+		if(GetSpeed==0){SetGraphicRect(1,1,64,64);}
+		else if(GetAngle>-90&&GetAngle<=90){SetGraphicRect(192,1,255,64);}
+		else {SetGraphicRect(128,1,191,64);}
+		SetAlpha(255);
+		SetColor(255,255,255);
+		DrawGraphic(GetX,GetY);
+
+	}
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\patternShot.dnh"
+	#include_function ".\INCLUDE\library_request.dnh"
+
+}

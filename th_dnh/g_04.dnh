@@ -12,7 +12,7 @@ script_enemy_main
 task MainAction()
 {
 	yield;
-	_Wait([140,50][GetArgument()]);
+	_Wait(140);
 	if(Level !=0)
 	{
 		loop([0,1,5,12][Level])
@@ -26,7 +26,7 @@ task SubAction01()
 	yield;
 	let spmax=GetSpeed();
 	let i=0;
-	loop([100,45][GetArgument()])
+	loop(100)
 	{
 		SetSpeed(SlowDown( spmax , 0 , i , [100,45][GetArgument()] ));
 		i++;
@@ -34,13 +34,14 @@ task SubAction01()
 	}
 	_Wait(40);
 	let XX=GetX+rand(-100,100);
-	SetMovePositionHermite(XX,GetClipMaxY()+50,6*(XX-GetX()),0,100,-90,200);
+	SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,300);
 }
 
 //ŽÀs•”•ª---------------------------------------
 
 	@Initialize
 	{
+		LoadGraphic(dotKedama);
 		SetLife(13);
 		MainAction();
 		SubAction01();
@@ -52,22 +53,14 @@ task SubAction01()
 		Deletemine();
 		yield;
 		count++;
-		//“G‰æ‘œ‘ã‚í‚è------------------------------------
-		if(int(count/2)==count/2)
-		{
-			CreateShotA(0,GetX(),GetY(),0);
-			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
-			SetShotKillTime(0,2);
-			FireShot(0);
-		}
-		//------------------------------------------------
-		Collision( 20, 8 );
+		Collision( 13, 8 );
 	}
 	@DrawLoop
 	{
+		DrowZako( dotKedama,0,0,32,0.8 );
 	}
 	@Finalize
 	{
-		if(count>[100,30][GetArgument()]){DropItem( 1 , 20 );}
+		DropItem( 1 , 20 );
 	}
 }

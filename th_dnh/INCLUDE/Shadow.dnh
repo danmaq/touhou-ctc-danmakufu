@@ -74,3 +74,41 @@ function BehaviorShadow( let szSEHiddenFile, let szSESuddenFile ){
 	case( KEY_HOLD ){ if( IsElapsedTimeLag() ){ m_bHidden = true; } }
 	case( KEY_FREE ){ if( IsElapsedTimeLag() ){ m_bHidden = false; } }
 }
+
+///////////////////////////////////
+//í«â¡060214Å@égÇ¢ñÇÇÃdrowloop
+///////////////////////////////////
+function _DrowShadow( let FileName, let now, let x, let y, let Dxy){
+	SetTexture(FileName);
+	SetGraphicRect(x,y,x+Dxy,y+Dxy);
+	if(GetKeyState(VK_SLOWMOVE)==KEY_PUSH||GetKeyState(VK_SLOWMOVE)==KEY_HOLD){
+		SetAlpha(127);
+		SetGraphicScale(0.8,0.8);
+	}
+	else{
+		SetAlpha(255);
+		SetGraphicScale(0.5,0.5);
+	}
+	SetGraphicAngle(0,0,now);
+	DrawGraphic(GetX,GetY);
+}
+
+function DrowShadowEasy(let now){
+	_DrowShadow( dotCircle6s,now,0,0,64);
+}
+
+//é¿ëÃâªéûÇÃåı
+function LightOfShadow(let now){
+	if(GetKeyState(VK_SLOWMOVE)==KEY_FREE)
+	{
+		Collision( 16,12 );
+		if(int(now/3)==now/3)
+		{
+			CreateShotA(0,GetX(),GetY(),10);
+			SetShotDataA(0,0,0,0,0,0,0,WHITE05);
+			SetShotKillTime(0,0);
+			FireShot(0);
+		}
+	}
+}
+

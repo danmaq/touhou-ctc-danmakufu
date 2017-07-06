@@ -1,0 +1,195 @@
+#東方弾幕風
+#Title[Sakuya - 通常攻撃1]
+#Text[ステージ2A 中ボス
+十六夜 咲夜
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+script_enemy_main{
+
+	// 画像及び効果音ファイル
+	#include_function ".\IMAGE\CHAR\index.dnh"
+	let imgBoss=dotBossSample;
+
+	// 座標設定
+	let cenX=GetCenterX;
+	let cenY=GetCenterY;
+	let minX=GetClipMinX;
+	let maxX=GetClipMaxX;
+	let minY=GetClipMinY;
+	let maxY=GetClipMaxY;
+
+	// 難易度
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault("Level",0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// 画像及び効果音をロード
+		LoadGraphic(imgBoss);
+
+		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
+		SetTimer(37);
+		SetShotAutoDeleteClip(64,64,64,20);
+		SetEnemyMarker(true);
+
+		// ボスステータス設定（ライフ、ダメージ率Shot%,Bomb%等）
+		SetLife(2500);
+		SetDamageRate(80,40);
+		SetX(maxX+50);
+		SetY(minY+120);
+
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（A:自弾,B:体当たり）
+		SetCollisionA(GetX,GetY,32);
+		SetCollisionB(GetX,GetY,24);
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(122);
+		wait(2);
+
+		// 初期移動
+		let fr=60;
+		let x=cenX;
+		let y=minY+120+rand(-1,1);
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		wait(fr);
+
+		// 発動
+		ExplosionBoss;
+		wait(60);
+
+		let assign=1;
+
+		loop{
+
+			// 側面反射弾
+			SideReflectShot(assign);
+			wait(150);
+
+			// 移動
+			move(60);
+			wait(60);
+
+			assign*=-1;
+
+		}
+
+	}
+
+	// 側面反射弾 --------------------------------------------------------------
+	task SideReflectShot(let assign){
+
+		let way=[21,29,29,37];
+		let num=[3,3,4,5];
+		let baseSpeed=1;
+		let maxSpeed=3;
+		let numSpeed=(maxSpeed-baseSpeed)/(num[Lv]-1);
+		let baseAngle=90-45*assign;
+		let wayAngle=180/(way[Lv]-1)*assign;
+		let delay=15;
+		let reflect=1;
+		let graphic=BLUE32;
+		let L=true;
+		let U=false;
+		let R=false;
+		let D=false;
+		if(assign==-1){
+			graphic=RED32;
+			L=false;
+			R=true;
+		}
+		if(Lv>=2){
+			U=true;
+		}
+		let fr=1;
+
+		ascent(let i in 0 .. way[Lv]){
+			let angle=baseAngle+wayAngle*i;
+			ascent(let j in 0 .. num[Lv]){
+				let speed=baseSpeed+numSpeed*j;
+				ReflectShot(GetX,GetY,speed,angle,reflect,L,U,R,D,graphic,delay);
+			}
+			wait(fr);
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,20);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+
+	}
+
+	// 待ち --------------------------------------------------------------------
+	function wait(let fr){
+
+		loop(fr){yield;}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphic(imgBoss);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		SetTexture(imgBoss);
+		if(GetSpeed==0){SetGraphicRect(1,1,64,64);}
+		else if(GetAngle>-90&&GetAngle<=90){SetGraphicRect(192,1,255,64);}
+		else {SetGraphicRect(128,1,191,64);}
+		SetAlpha(255);
+		SetColor(255,255,255);
+		DrawGraphic(GetX,GetY);
+
+	}
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\patternShot.dnh"
+	#include_function ".\INCLUDE\library_request.dnh"
+
+}

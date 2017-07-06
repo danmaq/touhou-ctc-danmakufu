@@ -49,3 +49,15 @@ function Gone(){ GoneEx( 32 ); }
 //	ステージスクリプト上ではCommonData"DeleteEnemy"=1のとき
 function Deletemine(){if(GetCommonDataDefault("DeleteEnemy",0) == 1){VanishEnemy();}}
 
+
+// -----------------------------------------------------------------------------
+// 一定時間無敵（ボスへのダメージもなし）後、ダメージ率再設定　(Enemy&Shadow)
+// ※主にボスが出す使い魔のInitializeに設定し、出現時無敵にする
+// -----------------------------------------------------------------------------
+task SetDamageRateExDelay( let frame, let damageS, let damageB, let bossDamageS, let bossDamageB ){
+
+	SetDamageRateEx( 0, 0, 0, 0 );
+	loop( frame ){ yield; }
+	SetDamageRateEx( damageS, damageB, bossDamageS, bossDamageB );
+
+}

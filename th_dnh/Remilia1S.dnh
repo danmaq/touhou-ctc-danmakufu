@@ -1,0 +1,230 @@
+#東方弾幕風
+#Title[Remilia - スペルカード1]
+#Text[ステージ2A ボス
+レミリア・スカーレット
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+script_enemy_main{
+
+	// 画像及び効果音ファイル
+	#include_function ".\IMAGE\CHAR\index.dnh"
+	let imgBoss=dotBossSample;
+
+	// 座標設定
+	let cenX=GetCenterX;
+	let cenY=GetCenterY;
+	let minX=GetClipMinX;
+	let maxX=GetClipMaxX;
+	let minY=GetClipMinY;
+	let maxY=GetClipMaxY;
+
+	// 難易度
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault("Level",0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// 画像及び効果音をロード
+		LoadGraphic(imgBoss);
+
+		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
+		SetText("＊符「＊＊＊」");
+		SetScore(100000);
+		SetTimer(63);
+		SetShotAutoDeleteClip(100,32,100,100);
+		SetEnemyMarker(true);
+
+		// ボスステータス設定（ライフ、ダメージ率Shot%,Bomb%等）
+		SetLife(500);
+		SetDamageRate(5,3);
+
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（A:自弾,B:体当たり）
+		SetCollisionA(GetX,GetY,32);
+		SetCollisionB(GetX,GetY,24);
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(242);
+		wait(2);
+
+		// 初期移動
+		let fr=180;
+		let x=cenX;
+		let y=minY+120+rand(-1,1);
+		SetMovePosition02(x,y,fr);
+		wait(fr);
+
+		let assign=-1;
+		let turn=0;
+
+		loop{
+
+			// 扇状機雷弾
+			Concentration01(30);
+			wait(30);
+			WideMineShot(assign);
+			wait(90);
+
+			// 移動
+			move(90);
+			wait(120);
+
+			if(Lv<2||turn==1){SetDamageRate(15,10);}
+			turn++;
+			assign*=-1;
+
+		}
+
+	}
+
+	// 扇状機雷弾 --------------------------------------------------------------
+	task WideMineShot(let assign){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+		let fr=15;
+		let speed=(GetY-minY)/fr;
+
+		Obj_SetX(obj,GetX);
+		Obj_SetY(obj,GetY);
+		Obj_SetSpeed(obj,speed);
+		Obj_SetAngle(obj,-90);
+		ObjShot_SetGraphic(obj,PURPLE03);
+
+		// メイン処理 --------------------------------------
+		loop(fr){
+			if(Obj_BeDeleted(obj)){break;}
+			yield;
+		}
+		if(!Obj_BeDeleted(obj)){
+			let way=11+2*Lv;
+			let wayAngle=180/(way-1);
+			way+=2;
+			let baseAngle=90-wayAngle*(way-1)/2+rand(-wayAngle,wayAngle);
+			SetShotDirectionType(ABSOLUTE);
+			ascent(let i in 0 .. way){
+				let angle=baseAngle+wayAngle*i;
+				MineShot(Obj_GetX(obj),Obj_GetY(obj),angle,assign);
+			}
+			Obj_Delete(obj);
+		}
+
+	}
+
+	// 機雷弾 ------------------------------------------------------------------
+	function MineShot(
+		let x,
+		let y,
+		let angle,
+		let assign
+	){
+
+		// 設置弾
+		let speed=5;
+		let graphic=PURPLE03;
+
+		// 機雷弾
+		let num=13;
+		let speed_=1.5;
+		let angle_=angle;
+		let numAngle=180/(num-1)*assign;
+		let graphic_=RED04;
+		let delay=5;
+		let waitFr=240;
+		if(Lv>=2){waitFr*=2;}
+		let shotFr=0;
+		let numShotFr=7;
+
+		SetShotDirectionType(ABSOLUTE);
+		CreateShotA(0,x,y,0);
+		SetShotDataA(0,0,speed,angle,0,0,0,graphic);
+		loop(num){
+			waitFr-=numShotFr;
+			shotFr+=numShotFr;
+			CreateShotA(1,0,0,delay);
+			SetShotDataA(1,0,0,angle_,0,0,0,graphic_);
+			SetShotDataA(1,waitFr,speed_,NULL,0,0,0,graphic_);
+			AddShot(shotFr,0,1,0);
+			angle_+=numAngle;
+		}
+		FireShot(0);
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(let fr){
+
+		let x=GetX;
+		let y=GetY;
+		let mx=rand(40,80);
+		let my=rand(0,10);
+		if(x>=GetPlayerX){
+			if(x-mx>=minX+100){mx=-mx;}
+		}
+		else{
+			if(x+mx>=maxX-100){mx=-mx;}
+		}
+		if(y>=minY+120){my=-my;}
+		x+=mx;
+		y+=my;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+
+	}
+
+	// 待ち --------------------------------------------------------------------
+	function wait(let fr){
+
+		loop(fr){yield;}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphic(imgBoss);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		SetTexture(imgBoss);
+		if(GetSpeed==0){SetGraphicRect(1,1,64,64);}
+		else if(GetAngle>-90&&GetAngle<=90){SetGraphicRect(192,1,255,64);}
+		else {SetGraphicRect(128,1,191,64);}
+		SetAlpha(255);
+		SetColor(255,255,255);
+		DrawGraphic(GetX,GetY);
+
+	}
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\patternShot.dnh"
+	#include_function ".\INCLUDE\library_request.dnh"
+
+}

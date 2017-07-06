@@ -1,0 +1,27 @@
+	@Initialize
+	{	
+		SetLife(30);
+		LoadGraphic(dotCircle6s);
+		MainAction();
+		SubAction01();
+
+	}
+	@MainLoop
+	{
+		Deletemine();
+		Gone();
+		BehaviorShadow( 0,0 );
+		count++;
+		scale=Smooth( 0,1,count,40 );
+
+		LightOfShadow(count);
+		yield;
+	}
+	@DrawLoop
+	{
+		DrowShadowEasy(count*2);
+	}
+	@Finalize
+	{
+		DestructShadow( 40 );
+	}

@@ -29,3 +29,5 @@ function GoneEx( let nDeadline ){ if( IsOut( nDeadline ) ){ End(); } }
 
 //	32ドット以上画面から外れたら自殺する
 function Gone(){ GoneEx( 32 ); }
+
+

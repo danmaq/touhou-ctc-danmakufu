@@ -1,0 +1,60 @@
+// -----------------------------------------------------------------------------
+// 異なる位置の点(x1,y1)(x2,y2)の距離を求める　(Common)
+// -----------------------------------------------------------------------------
+function GetGapLength( let x1, let y1, let x2, let y2 ){
+	return ( ( x2 - x1 ) ^ 2 + ( y2 - y1 ) ^ 2 ) ^ 0.5;
+}
+
+// -----------------------------------------------------------------------------
+// 異なる位置の点(x1,y1)から(x2,y2)への絶対角度を求める　(Common)
+// -----------------------------------------------------------------------------
+function GetGapAngle( let x1, let y1, let x2, let y2 ){
+	return atan2( y2 - y1, x2 - x1 );
+}
+
+// -----------------------------------------------------------------------------
+// 点(x,*)から距離gapLength、絶対角度gapAngleにある点のx座標を求める　(Common)
+// -----------------------------------------------------------------------------
+function GetGapX( let x, let gapLength, let gapAngle ){
+	return x + gapLength * cos( gapAngle );
+}
+
+// -----------------------------------------------------------------------------
+// 点(*,y)から距離gapLength、絶対角度gapAngleにある点のy座標を求める　(Common)
+// -----------------------------------------------------------------------------
+function GetGapY( let y, let gapLength, let gapAngle ){
+	return y + gapLength * sin( gapAngle );
+}
+
+// -----------------------------------------------------------------------------
+// ボス戦開始時の爆発エフェクト　(Enemy)
+// -----------------------------------------------------------------------------
+function ExplosionBoss{
+	Explosion01( GetX, GetY, 255/60, 0.15, 60);
+}
+
+// -----------------------------------------------------------------------------
+// デバッグ用難易度設定　(Stage&Shot&Enemy&Shadow)
+// ※主に各スクリプトのInitializeに設定し、単発再生でのデバッグを容易にする
+// -----------------------------------------------------------------------------
+function Debug_SetLevel{
+	if(!GetCommonDataDefault("DebugSetLevel",false)){
+		let Lv=GetCommonDataDefault("Level",0);
+		if(GetKeyState(VK_SKIP)==KEY_HOLD){Lv++;}
+		if(GetKeyState(VK_USER)==KEY_HOLD){Lv+=2;}
+		SetCommonData("Level",Lv);
+		SetCommonData("DebugSetLevel",true);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// 一定時間無敵（ボスへのダメージもなし）後、ダメージ率再設定　(Enemy&Shadow)
+// ※主にボスが出す使い魔のInitializeに設定し、出現時無敵にする
+// -----------------------------------------------------------------------------
+task SetDamageRateExDelay( let frame, let damageS, let damageB, let bossDamageS, let bossDamageB ){
+
+	SetDamageRateEx( 0, 0, 0, 0 );
+	loop( frame ){ yield; }
+	SetDamageRateEx( damageS, damageB, bossDamageS, bossDamageB );
+
+}

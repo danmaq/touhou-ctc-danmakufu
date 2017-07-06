@@ -42,6 +42,7 @@ task SubAction01()
 
 	@Initialize
 	{
+		LoadGraphic(dotKedama);
 		SetLife(13);
 		MainAction();
 		SubAction01();
@@ -52,19 +53,12 @@ task SubAction01()
 		Deletemine();
 		yield;
 		count++;
-		//“G‰æ‘œ‘ã‚í‚è------------------------------------
-		if(int(count/2)==count/2)
-		{
-			CreateShotA(0,GetX(),GetY(),0);
-			SetShotDataA(0,0,0,GetAngle(),0,0,0,RED22);
-			SetShotKillTime(0,2);
-			FireShot(0);
-		}
-		//------------------------------------------------
-		Collision( 20, 8 );
+		Collision( 13, 8 );
 	}
 	@DrawLoop
-	{}
+	{
+		DrowZako( dotKedama,0,0,32,0.8 );
+	}
 	@Finalize
 	{
 		if(count>[100,30][GetArgument()]){DropItem( 1 , 20 );}

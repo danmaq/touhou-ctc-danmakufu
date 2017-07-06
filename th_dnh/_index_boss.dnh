@@ -1,0 +1,20 @@
+// -----------------------------------------------------------------------------
+// ボススクリプト
+// -----------------------------------------------------------------------------
+// 紅魔郷ルート
+// -----------------------------------------------------------------------------
+let bossFlandreE = GetCurrentScriptDirectory ~ "FlandreE.dnh";
+let bossFlandreH = GetCurrentScriptDirectory ~ "FlandreH.dnh";
+let bossMeirin = GetCurrentScriptDirectory ~ "Meirin.dnh";
+let bossMeirinL = GetCurrentScriptDirectory ~ "MeirinL.dnh";
+let bossSakuya = GetCurrentScriptDirectory ~ "Sakuya.dnh";
+let bossRemilia = GetCurrentScriptDirectory ~ "Remilia.dnh";
+let bossRemiliaL = GetCurrentScriptDirectory ~ "RemiliaL.dnh";
+
+// -----------------------------------------------------------------------------
+// 花映塚ルート
+// -----------------------------------------------------------------------------
+let bossLilyE = GetCurrentScriptDirectory ~ "LilyE.dnh";
+let bossLilyH = GetCurrentScriptDirectory ~ "LilyH.dnh";
+let bossMedicine = GetCurrentScriptDirectory ~ "Medicine.dnh";
+let bossMedicineL = GetCurrentScriptDirectory ~ "MedicineL.dnh";

@@ -1,0 +1,346 @@
+#東方弾幕風
+#Title[Remilia - ラストスペル]
+#Text[ステージ2A ボス
+レミリア・スカーレット
+
+
+下記以外のスタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+script_enemy_main{
+
+	// 画像及び効果音ファイル
+	#include_function ".\IMAGE\CHAR\index.dnh"
+	let imgBoss=dotBossSample;
+
+	// 座標設定
+	let cenX=GetCenterX;
+	let cenY=GetCenterY;
+	let minX=GetClipMinX;
+	let maxX=GetClipMaxX;
+	let minY=GetClipMinY;
+	let maxY=GetClipMaxY;
+
+	// 難易度
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault("Level",0);
+	if(Lv==0){Lv=1;}
+	Lv--;
+
+	let alpha=0;
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// 画像及び効果音をロード
+		LoadGraphic(imgBoss);
+
+		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
+		SetTimer(67);
+		SetShotAutoDeleteClip(32,32,32,32);
+		SetEnemyMarker(true);
+		LastSpell;
+
+		// ボスステータス設定（ライフ、ダメージ率Shot%,Bomb%等）
+		SetLife(500);
+		SetDamageRate(5,0);
+		SetX(cenX);
+		SetY(minY+140);
+		LastSpellEffect(120,500);
+
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（A:自弾,B:体当たり）
+		if(alpha>0){
+			SetCollisionA(GetX,GetY,32);
+			SetCollisionB(GetX,GetY,24);
+		}
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(242);
+		wait(122);
+
+		// フェードイン
+		FadeIn(60);
+		SetText("＊符「＊＊＊」");
+		SetScore(100000);
+		wait(120);
+
+		// 扇状機雷弾
+		ascent(let i in 0 .. 2){
+			Concentration01(30);
+			wait(30);
+			WideMineShot(i);
+			wait(15);
+		}
+		SetDamageRate(15,0);
+		// 移動
+		move(60,0);
+		wait(90);
+
+		let assign=-1;
+
+		loop{
+
+			// クロス直線弾
+			let ly=rand(20,40);
+			CrossLineShot(ly,assign);
+			CrossLineShot(ly,-assign);
+			wait(90);
+
+			// 移動
+			move(45,assign);
+			wait(45);
+
+			// 連続ばらつき弾
+			Concentration01(30);
+			wait(30);
+			RapidVariedShot;
+			wait(90);
+
+			// 移動
+			move(45,0);
+			wait(45);
+
+			assign*=-1;
+
+		}
+
+	}
+
+	// 機雷弾 ------------------------------------------------------------------
+	task WideMineShot(let assign){
+
+		// 初期設定 ----------------------------------------
+		let obj=Obj_Create(OBJ_SHOT);
+		let fr=15;
+		let speed=(GetY-minY)/fr;
+
+		Obj_SetX(obj,GetX);
+		Obj_SetY(obj,GetY);
+		Obj_SetSpeed(obj,speed);
+		Obj_SetAngle(obj,-90);
+		ObjShot_SetGraphic(obj,PURPLE03);
+
+		// メイン処理 --------------------------------------
+		loop(fr){
+			if(Obj_BeDeleted(obj)){break;}
+			yield;
+		}
+		if(!Obj_BeDeleted(obj)){
+			let way=13+2*Lv;
+			let wayAngle=180/(way-1);
+			let baseAngle=90-wayAngle*(way-1)/2;
+			if(assign==1){
+				baseAngle+=wayAngle/2;
+				way--;
+			}
+			ascent(let i in 0 .. way){
+				let angle=baseAngle+wayAngle*i;
+				MineShot(Obj_GetX(obj),Obj_GetY(obj),angle,assign);
+			}
+			Obj_Delete(obj);
+		}
+
+	}
+
+	// 機雷弾 ------------------------------------------------------------------
+	function MineShot(
+		let x,
+		let y,
+		let angle,
+		let assign
+	){
+
+		// 設置弾
+		let speed=5;
+		let graphic=PURPLE03;
+
+		// 機雷弾
+		let num=16;
+		let graphic_=RED04;
+		let delay=5;
+		let numShotFr=6;
+		let shotFr=1;
+		if(assign==1){shotFr-=numShotFr/2;}
+
+		SetShotDirectionType(ABSOLUTE);
+		CreateShotA(0,x,y,0);
+		SetShotDataA(0,0,speed,angle,0,0,0,graphic);
+		loop(num){
+			shotFr+=numShotFr;
+			CreateShotA(1,0,0,delay);
+			SetShotDataA(1,0,0,angle,0,0,0,graphic_);
+			AddShot(shotFr,0,1,0);
+		}
+		FireShot(0);
+
+	}
+
+	// 連続ばらつき弾 ----------------------------------------------------------
+	task RapidVariedShot{
+
+		let num=5;
+		let fr=16;
+
+		ascent(let i in 0 .. num){
+			let angle=GetAngleToPlayer;
+			VariedShot(angle);
+			wait(fr);
+		}
+
+	}
+
+	// ばらつき弾 --------------------------------------------------------------
+	function VariedShot(let baseAngle){
+
+		let num=21;
+		let baseSpeed=1.5;
+		let numSpeed=(4.8+0.3*Lv-baseSpeed)/(num-1);
+		let graphic=[RED05,RED01,RED02,RED03];
+		let gra=0;
+		let delay=15;
+
+		SetShotDirectionType(ABSOLUTE);
+		ascent(let i in 0 .. num){
+			let speed=baseSpeed+numSpeed*i;
+			if(i==7||i==14||i==20){gra++;}
+			let angle=baseAngle+rand(-4,4);
+			if(i==num-1){angle=baseAngle;}
+			CreateShot01(GetX,GetY,speed,angle,graphic[gra],delay);
+		}
+
+	}
+
+	// クロス直線弾 ------------------------------------------------------------
+	task CrossLineShot(
+		let ly,
+		let assign
+	){
+
+		let num=4+Lv;
+		let way=36+4*Lv;
+		let lx=cenX-minX;
+		let lineX1=cenX-lx*assign;
+		let lineX2=cenX+lx*assign;
+		let gapX=(lineX2-lineX1)/(way-1);
+		let lineY1=cenY-40+ly;
+		let lineY2=cenY-40-ly;
+		let gapY=(lineY2-lineY1)/(way-1);
+		let graphic=RED32;
+		let delay=10;
+		let fr=1;
+
+		ascent(let i in 0 .. way){
+			let x=lineX1+gapX*i;
+			let y=lineY1+gapY*i;
+			let minSpeed=GetGapLength(GetX,GetY,x,y)/140;
+			let maxSpeed=minSpeed*(3+0.4*Lv);
+			let angle=GetGapAngle(GetX,GetY,x,y);
+			SetShotDirectionType(ABSOLUTE);
+			LineShot(GetX,GetY,minSpeed,maxSpeed,angle,num,graphic,delay);
+			wait(fr);
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(
+		let fr,
+		let assign
+	){
+
+		let x=cenX+rand(-15,15);
+		let y=minY+60+rand(-10,10);
+		if(assign!=0){
+			x+=80*assign;
+			y+=60;
+		}
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+
+	}
+
+	// ラストスペルエフェクト --------------------------------------------------
+	task LastSpellEffect(
+		let fr,
+		let maxLife
+	){
+
+		let disLife=maxLife-1;
+		if(disLife>0){AddLife(-disLife);}
+		Concentration01(fr);
+		wait(fr);
+		if(disLife>0){
+			fr=60;
+			let addLife=maxLife/fr;
+			loop(fr){
+				AddLife(addLife);
+				yield;
+			}
+		}
+
+	}
+
+	// フェードイン ------------------------------------------------------------
+	task FadeIn(let fr){
+
+		let addAlpha=255/fr;
+		loop(fr){
+			alpha+=addAlpha;
+			yield;
+		}
+
+	}
+
+	// 待ち --------------------------------------------------------------------
+	function wait(let fr){
+
+		loop(fr){yield;}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphic(imgBoss);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		SetTexture(imgBoss);
+		if(GetSpeed==0){SetGraphicRect(1,1,64,64);}
+		else if(GetAngle>-90&&GetAngle<=90){SetGraphicRect(192,1,255,64);}
+		else {SetGraphicRect(128,1,191,64);}
+		SetAlpha(alpha);
+		SetColor(255,255,255);
+		DrawGraphic(GetX,GetY);
+
+	}
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\patternShot.dnh"
+	#include_function ".\INCLUDE\library_request.dnh"
+
+}

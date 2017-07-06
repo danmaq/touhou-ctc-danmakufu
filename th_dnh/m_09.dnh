@@ -13,32 +13,41 @@ task MainAction()
 	yield;
 	_Wait(50);
 	
-	let angle=-30;
-	while(angle<=30)
+	let angle=-37.5;
+	while(angle<=37.5)
 	{
 		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),[1,1.5,2,3][Level],GetAngleToPlayer()+angle,0);
 		angle+=15;
 	}
-	_Wait(20);
 	
+	_Wait(15);
+	
+	let angle_b=-30;
+	while(angle_b<=30)
+	{
+		let angle=0;
+		while(angle<=(Level-1)*2)
+		{
+			CreateLaser01(GetX(),GetY(),[1,1.5,2,3][Level],angle_b+GetAngleToPlayer()+angle,150+Level*30,8,GREEN21,0);
+			CreateLaser01(GetX(),GetY(),[1,1.5,2,3][Level],angle_b+GetAngleToPlayer()-angle,150+Level*30,8,GREEN21,0);
+			angle+=1.5;
+		}
+		angle_b+=15;
+	}
 	if(Level>0)
 	{
-		let angle_b=-30;
-		while(angle_b<=30)
+		loop([0,20,50,100][Level])
 		{
-			let angle=0;
-			while(angle<=(Level-1)*2)
-			{
-				CreateLaser01(GetX(),GetY(),[1,1.5,2,3][Level],angle_b+GetAngleToPlayer()+angle,150+Level*30,8,GREEN21,0);
-				CreateLaser01(GetX(),GetY(),[1,1.5,2,3][Level],angle_b+GetAngleToPlayer()-angle,150+Level*30,8,GREEN21,0);
-				angle+=1.5;
-			}
-			angle_b+=15;
+			ReflectShot(GetX(),GetY(),rand(1.5,3),GetAngleToPlayer()+180+rand(-150,150),1,false,true,false,false,RED04,0);
+		}
+		loop([0,10,17,40][Level])
+		{
+			CreateShot01(GetX(),GetY(),rand(1.5,3),GetAngleToPlayer()+rand(-30,30),RED04,0);
 		}
 	}
 
-	_Wait(20);
-	while(1)
+	_Wait(40);
+	loop(3)
 	{
 		CreateEnemyFromScript("t_ma_01",GetX(),GetY(),[1,1.5,2,3][Level],GetAngleToPlayer(),1);
 		_Wait(60);
@@ -111,67 +120,13 @@ script_enemy t_ma_01
 #include_function ".\INCLUDE\Shadow.dnh"
 
 	let count=0;
+	let scale=0;
 	let Level=GetCommonData("Level");
-
-task MainAction()
-{
-	yield;
-	if(GetArgument()==0)
-	{
-		while(GetY()<GetCenterY()*1.5)
-		{
-			CreateLaserC(0,GetX(),GetY(),6,60,GREEN21,0);
-			SetLaserDataC(0,0,3,GetAngle+180+rand(-8,8),0,0,0);
-			let time_=1;
-			let i=0;
-			loop(5)
-			{
-				SetLaserDataC(0,time_,3,NULL,[rand(-1,-0.5),rand(0.5,1)][i%2],0,0);
-				time_+=rand(15,40);
-				i++;
-			}
-			FireShot(0);
-			_Wait(rand(50,140)/(Level+1));
-
-		}
-	}
-}
-
-
-
-	@Initialize
-	{	
-		SetLife(30);
-		LoadGraphic(imgcircle_t);
-		MainAction()
-	}
-	@MainLoop
-	{
-		Deletemine();
-		Gone();
-		BehaviorShadow( 0,0 );
-		count++;
 	
-		if(GetKeyState(VK_SLOWMOVE)==KEY_FREE)
-		{
-			Collision( 16,12 );
-			if(int(count/3)==count/3)
-			{
-				CreateShotA(0,GetX(),GetY(),15);
-				SetShotDataA(0,0,0,0,0,0,0,WHITE05);
-				SetShotKillTime(0,0);
-				FireShot(0);
-			}
-		}
-		yield;
-	}
-	@DrawLoop
-	{
-		SetGraphicRect( 0,0,50,50 );
-		DrawRotate( imgcircle_t, count*2 );
-	}
-	@Finalize
-	{
-		DestructShadow( 40 );
-	}
+task MainAction()
+{yield;}
+task SubAction01()
+{yield;}
+
+#include_function ".\INCLUDE\ShadowBody.dnh"
 }

@@ -5,6 +5,7 @@ script_enemy_main
 
 //ïœêîêÈåæ--------------------------------------
 	let count=0;
+	let alpha=0;
 	let Level=GetCommonData("Level");
 	let angle_b=GetAngleToPlayer();
 //É^ÉXÉNÇÃçÏê¨----------------------------------
@@ -32,7 +33,7 @@ task MainAction()
 
 	@Initialize
 	{
-		LoadGraphic(imgcircle_t);
+		LoadGraphic(dotCircle6s);
 		SetLife(20);
 		SetAngle( GetAngle() );
 		MainAction();
@@ -46,11 +47,18 @@ task MainAction()
 		count++;
 		if(count==130)
 		{VanishEnemy();}
+		if(count<50){alpha=Smooth( 10,255,count,30 );}
+		if(count>100){alpha=Smooth( 255,0,count-100,30 );}
 	}
 	@DrawLoop
 	{
-		SetGraphicRect( 0,0,50,50 );
-		DrawRotate( imgcircle_t,0 );
+		SetTexture(dotCircle6s);
+		SetGraphicRect(0,0,64,64);
+		SetGraphicScale(0.8,0.8);
+		SetColor(255,255,255);
+		SetAlpha(alpha);
+		SetGraphicAngle(0,0,GetAngle());
+		DrawGraphic(GetX,GetY);
 	}
 	@Finalize
 	{}

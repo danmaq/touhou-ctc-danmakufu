@@ -1,0 +1,16 @@
+#UserShotData
+
+ShotImage=".\IMAGE\CHAR\DOT\shot_add.png"
+
+ShotData{
+	id=1
+	rect=(0,0,20,20)
+	render=ADD
+	delay_color=(255,63,63)
+}
+ShotData{
+	id=2
+	rect=(20,0,40,20)
+	render=ADD
+	delay_color=(63,63,255)
+}

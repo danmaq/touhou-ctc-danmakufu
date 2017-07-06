@@ -42,138 +42,91 @@ task Stage1A(){
 
 	loop(2)
 	{
-		loop(4)
+		ascent(i in 0..7)
 		{
-			CreateEnemyFromFile(z_g_01,GetCenterX()*1.5+15,GetClipMinY()-20,4,90+20,0);
-			CreateEnemyFromFile(z_g_01,GetCenterX()*1.5-15,GetClipMinY()-20,4,90+20,0);
-			_Wait(25);
+			CreateEnemyFromFile(z_s_07,Smooth( GetClipMinX()+40,GetClipMaxX()-40,i,7 ),GetClipMinY()-20,0,0,GetCenterX/3);
+			_Wait(20);
 		}
 		_Wait(150);
-		loop(4)
+		ascent(i in 0..7)
 		{
-			CreateEnemyFromFile(z_g_01,GetCenterX()/2+15,GetClipMinY()-20,4,90-20,0);
-			CreateEnemyFromFile(z_g_01,GetCenterX()/2-15,GetClipMinY()-20,4,90-20,0);
-			_Wait(25);
+			CreateEnemyFromFile(z_s_07,Smooth( GetClipMaxX()-40,GetClipMinX()+40,i,7 ),GetClipMinY()-20,0,0,GetCenterX()+GetCenterX/3*2);
+			_Wait(20);
 		}
 		_Wait(150);
 	}
 
+//---------------------------------------------------------------
 
-	_Wait(100);
+	CreateEnemyFromFile(z_g_11,GetCenterX(),GetClipMinY()-20,6.5,90,0);
+
+	_Wait(400);
 
 //---------------------------------------------------------------
 
-	CreateEnemyFromFile(z_m_01,GetCenterX(),GetClipMinY()-20,5,90,0);
-
-	_Wait(300);
-
-//---------------------------------------------------------------
-
-	ascent(i in 0..4)
+	loop(5)
 	{
-		CreateEnemyFromFile(z_g_01,GetClipMinX(),GetClipMinY()+50+i*20,i+3,0,0);
-		CreateEnemyFromFile(z_g_01,GetClipMaxX(),GetClipMinY()+50+i*20,i+3,180,0);
-		CreateEnemyFromFile(z_g_01,GetClipMinX(),GetClipMinY()+50+i*20,6-(i+3),0,0);
-		CreateEnemyFromFile(z_g_01,GetClipMaxX(),GetClipMinY()+50+i*20,6-(i+3),180,0);
-		_Wait(25);
+		CreateEnemyFromFile(z_g_12,GetCenterX()/3+rand(-20,20),GetClipMinY()-20,5,90,[1,0][rand(0,100)<50]);
+		_Wait(70);
+		CreateEnemyFromFile(z_g_12,GetCenterX()+GetCenterX()/3*2+rand(-20,20),GetClipMinY()-20,5,90,[1,0][rand(0,100)<50]);
 	}
 
-	_Wait(300);
+	_Wait(400);
 
-//---------------------------------------------------------------
-
-	loop(3)
-	{
-		loop(7)
-		{
-			CreateEnemyFromFile(z_s_01,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,rand(0.8,1.7),rand(-10,+10)+90,0);
-			CreateEnemyFromFile(z_g_01,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,rand(2,3.5),rand(-10,+10)+90,0);
-			_Wait(5)
-		}
-		_Wait(300);
-	}
-
-//---------------------------------------------------------------
-
-	CreateEnemyFromFile(z_m_01,GetCenterX()/2,GetClipMinY()-20,5,90,0);
-	CreateEnemyFromFile(z_m_01,GetCenterX()*1.5,GetClipMinY()-20,5,90,0);
-
-
-
-	_Wait(500);
 	DeleteEnemyShotToItem(ALL);
 	SetCommonData("DeleteEnemy",1);
 
 
 ///////////////////////////////////////////////////////////////////////
-//Ç±Ç±Ç…íÜÉ{ÉXÇ™ì¸ÇÈ
-	_Wait(100);
+	if(m_nStageLevel<2){CreateEnemyBossFromFile(bossFlandreE,GetCenterX(),0,0,0,0);}
+	if(m_nStageLevel>1){CreateEnemyBossFromFile(bossFlandreH,GetCenterX(),0,0,0,0);}
+	WaitForZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
 ///////////////////////////////////////////////////////////////////////
-
-
 
 	SetCommonData("DeleteEnemy",0);
 	_Wait(200);
 
-//---------------------------------------------------------------
-
 	loop(2)
 	{
-		ascent(i in 0..10)
+		loop(10)
 		{
-			CreateEnemyFromFile(z_g_01,GetClipMinX()+30,GetClipMinY()-20,Smooth(3,8,i,10),90,0);
-			_Wait(20);
+			CreateEnemyFromFile(z_s_07,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,0,0,rand(GetClipMinX()+30,GetClipMaxX()-30));
+			_Wait(10);
 		}
-		_Wait(50);
-		ascent(i in 0..10)
-		{
-			CreateEnemyFromFile(z_g_01,GetClipMaxX()-30,GetClipMinY()-20,Smooth(3,8,i,10),90,0);
-			_Wait(20);
-		}
-		_Wait(200);
+		_Wait(150);
 	}
+		_Wait(150);
 
 //---------------------------------------------------------------
 
-	loop(2)
+	loop(5)
 	{
-		CreateEnemyFromFile(z_m_01,GetCenterX()*1.5,GetClipMinY()-20,4,90,0);
-	
-		ascent(i in 0..10)
-		{
-			CreateEnemyFromFile(z_s_01,Smooth(GetClipMinX()+20,GetClipMaxX()-20,i,10),GetClipMinY()-20,3,90,0);
-			_Wait(30);
-		}
-	
-		CreateEnemyFromFile(z_m_01,GetCenterX()/2,GetClipMinY()-20,4,90,0);
-	
-		ascent(i in 0..10)
-		{
-			CreateEnemyFromFile(z_s_01,Smooth(GetClipMaxX()-20,GetClipMinX()+20,i,10),GetClipMinY()-20,3,90,0);
-			_Wait(30);
-		}
+		CreateEnemyFromFile(z_g_12,rand(GetClipMinX()+30,GetClipMaxX()-30),GetClipMinY()-20,5,90,0);
+	}
+		_Wait(250);
+
+//---------------------------------------------------------------
+
+	loop(5)
+	{
+		CreateEnemyFromFile(z_g_12,GetCenterX()/3+rand(-20,20),GetClipMinY()-20,5,90,1);
+		_Wait(60);
+	}
+		_Wait(100);
+	loop(5)
+	{
+		CreateEnemyFromFile(z_g_12,GetCenterX()+GetCenterX()/3*2+rand(-20,20),GetClipMinY()-20,5,90,1);
+		_Wait(60);
 	}
 
-	_Wait(350);
 
-//ñÇï˚êw-------------------------------------
+//---------------------------------------------------------------
 
-	SetCommonData("DeleteEnemy",1);
-	yield;
-	DeleteEnemyShotToItem(ALL);
-	SetCommonData("DeleteEnemy",0);
+	CreateEnemyFromFile(z_g_11,GetCenterX()/2,GetClipMinY()-20,6.5,90,0);
+	CreateEnemyFromFile(z_g_11,GetCenterX()*1.5,GetClipMinY()-20,6.5,90,0);
 
-	loop([5,8,10,12][m_nStageLevel])
-	{
-		CreateEnemyFromFile(z_j_01,rand(GetClipMinX()+30,GetClipMaxX()-30),rand(GetClipMinY()+30,GetCenterY()*[0.8,1,1.2,1.5][m_nStageLevel]),0,rand(0,360),0);
-		_Wait(300/[3,6,10,15][m_nStageLevel]);
-	}
-	_Wait(30);
-	ascent(i in 0..5)
-	{
-		CreateEnemyFromFile(z_j_01,Smooth(GetClipMaxX()-30,GetClipMinX()+30,i,4),GetCenterY()/2,0,rand(0,360),0);
-	}
-	_Wait(450);
+	_Wait(650);
+
 
 	SetCommonData("DeleteEnemy",1);
 	yield;
@@ -182,8 +135,14 @@ task Stage1A(){
 
 
 ///////////////////////////////////////////////////////////////////////
-//Ç±Ç±Ç…É{ÉXÇ™ì¸ÇÈ
-	_Wait(100);
+	CreateEnemyBossFromFile(bossMeirin,GetCenterX(),0,0,0,0);
+	WaitForZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
+
+//if(èåè){
+	CreateEnemyBossFromFile(bossMeirinL,GetCenterX(),GetCenterY/2,0,0,0);
+	WaitForZeroEnemy();//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
+//}
+
 ///////////////////////////////////////////////////////////////////////
 
 
@@ -194,7 +153,6 @@ task Stage1A(){
 		yield;
 	}
 ////////////////////////////////////////////////////
-
 
 	Stage2();
 }
@@ -207,11 +165,7 @@ task Stage1A(){
 //////////////////////////////////////////////////////////////////////
 
 //	@MainLoop()Ç…ÇƒñàÉtÉåÅ[ÉÄåƒÇŒÇÍÇÈïîï™
-function Stage1AMainLoop(){
-
-	yield;
-
-}
+function Stage1AMainLoop(){}
 
 //	@BackGround()Ç…ÇƒñàâÒåƒÇŒÇÍÇÈïîï™
 function Stage1ADrawBackGround(){

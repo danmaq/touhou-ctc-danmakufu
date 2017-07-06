@@ -106,11 +106,12 @@ script_enemy t_ma_01
 #include_function ".\INCLUDE\Shadow.dnh"
 
 	let count=0;
+	let scale=0;
 
 	@Initialize
 	{	
 		SetLife(30);
-		LoadGraphic(imgcircle_t);
+		LoadGraphic(dotCircle6s);
 	}
 	@MainLoop
 	{
@@ -118,13 +119,14 @@ script_enemy t_ma_01
 		Gone();
 		BehaviorShadow( 0,0 );
 		count++;
+		scale=Smooth( 0,1,count,40 );
 	
 		if(GetKeyState(VK_SLOWMOVE)==KEY_FREE)
 		{
 			Collision( 16,12 );
 			if(int(count/3)==count/3)
 			{
-				CreateShotA(0,GetX(),GetY(),15);
+				CreateShotA(0,GetX(),GetY(),10);
 				SetShotDataA(0,0,0,0,0,0,0,WHITE05);
 				SetShotKillTime(0,0);
 				FireShot(0);
@@ -133,8 +135,22 @@ script_enemy t_ma_01
 	}
 	@DrawLoop
 	{
-		SetGraphicRect( 0,0,50,50 );
-		DrawRotate( imgcircle_t, count*2 );
+
+		SetTexture(dotCircle6s);
+		SetGraphicRect(0,0,64,64);
+		if(GetKeyState(VK_SLOWMOVE)==KEY_PUSH||GetKeyState(VK_SLOWMOVE)==KEY_HOLD){
+			SetAlpha(127);
+			SetGraphicScale(0.8,0.8);
+		}
+		else{
+			SetAlpha(255);
+			SetGraphicScale(0.5,0.5);
+		}
+		SetColor(255,255,255);
+		SetGraphicAngle(0,0,count*2);
+		DrawGraphic(GetX,GetY);
+
+
 	}
 	@Finalize
 	{

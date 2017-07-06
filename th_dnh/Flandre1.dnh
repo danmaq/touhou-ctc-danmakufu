@@ -1,0 +1,220 @@
+#東方弾幕風
+#Title[Frandre - 通常攻撃1]
+#Text[ステージ1A 中ボス
+フランドール・スカーレット
+
+下記以外のスタート＝Easy
+スキップ＋スタート＝Normal
+ユーザー＋スタート＝Hard
+ｽｷｯﾌﾟ＋ﾕｰｻﾞｰ＋ｽﾀｰﾄ＝Lunatic]
+#Image[]
+#BackGround[Default]
+#Player[FREE]
+#ScriptVersion[2]
+
+script_enemy_main{
+
+	// 画像及び効果音ファイル
+	#include_function ".\IMAGE\CHAR\index.dnh"
+	let imgBoss=dotBossSample;
+
+	// 座標設定
+	let cenX=GetCenterX;
+	let cenY=GetCenterY;
+	let minX=GetClipMinX;
+	let maxX=GetClipMaxX;
+	let minY=GetClipMinY;
+	let maxY=GetClipMaxY;
+
+	// 難易度
+	Debug_SetLevel;
+	let Lv=GetCommonDataDefault("Level",0);
+
+	// -------------------------------------------------------------------------
+	@Initialize{
+
+		// 画像及び効果音をロード
+		LoadGraphic(imgBoss);
+
+		// スペルカード設定（カード名、スコア、制限時間、弾削除範囲等）
+		SetTimer(39);
+		SetShotAutoDeleteClip(20,20,20,20);
+		SetEnemyMarker(true);
+
+		// ボスステータス設定（ライフ、ダメージ率Shot%,Bomb%等）
+		SetLife(2500);
+		SetDamageRate(80,40);
+		SetX(minX-50);
+		SetY(minY);
+
+		Main;
+
+	}
+
+	// -------------------------------------------------------------------------
+	@MainLoop{
+
+		// 当たり判定（A:自弾,B:体当たり）
+		SetCollisionA(GetX,GetY,32);
+		SetCollisionB(GetX,GetY,24);
+
+		yield;
+
+	}
+
+	// メイン処理 --------------------------------------------------------------
+	task Main{
+
+		SetInvincibility(182);
+		wait(2);
+
+		// 初期移動
+		let fr=120;
+		let x=cenX;
+		let y=minY+120;
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+		wait(fr);
+
+		// 発動
+		ExplosionBoss;
+		wait(60);
+
+		let turn=0;
+
+		loop{
+
+			// 全方向直線弾1
+			RoundLineShot1(turn);
+			wait(90);
+
+			// 移動
+			move(cenX+120,minY+180,90);
+			wait(90);
+
+			// 全方向扇状直線弾1
+			RoundWideLineShot1;
+			wait(90);
+
+			// 移動
+			move(cenX,minY+120,90);
+			wait(90);
+
+			if(turn<2){turn++;}
+
+			// 全方向直線弾1
+			RoundLineShot1(turn);
+			wait(90);
+
+			// 移動
+			move(cenX-120,minY+180,90);
+			wait(90);
+
+			// 全方向扇状直線弾1
+			RoundWideLineShot1;
+			wait(90);
+
+			// 移動
+			move(cenX,minY+120,90);
+			wait(90);
+
+			if(turn<2){turn++;}
+
+		}
+
+	}
+
+	// 全方向直線弾1 -----------------------------------------------------------
+	task RoundLineShot1(let turn){
+
+		let num_=1+turn;
+		let num=[1,2,3,4];
+		let way=[34,34,40,46];
+		let minSpeed=[1.8, 1.5, 1.2, 0.9];
+		let maxSpeed=1.8;
+		let graphic=BLUE12;
+		let delay=15;
+		let fr=30;
+
+		ascent(let i in 0 .. num_){
+			let angle=rand(0,360);
+			SetShotDirectionType(ABSOLUTE);
+			RoundLineShot(GetX,GetY,minSpeed[Lv],maxSpeed,angle,way[Lv],num[Lv],graphic,delay);
+			wait(fr);
+		}
+
+	}
+
+	// 全方向扇状直線弾1 -------------------------------------------------------
+	task RoundWideLineShot1{
+
+		let num_=[3,4,5,6];
+		let num=[5,7,9,11];
+		let wideAngle=[0,0,6,12];
+		let wideWay=[1,1,3,5];
+		let roundWay=5;
+		let minSpeed=[1, 1.2, 1.4, 1.6];
+		let maxSpeed=[3.4, 3.6, 4, 5];
+		let angle=0;
+		let graphic=RED12;
+		let delay=10;
+		let fr=[25,20,15,10];
+
+		ascent(let i in 0 .. num_[Lv]){
+			SetShotDirectionType(PLAYER);
+			RoundWideLineShot(GetX,GetY,minSpeed[Lv],maxSpeed[Lv],angle,wideAngle[Lv],wideWay[Lv],roundWay,num[Lv],graphic,delay);
+			wait(fr[Lv]);
+		}
+
+	}
+
+	// 移動 --------------------------------------------------------------------
+	function move(
+		let x,
+		let y,
+		let fr
+	){
+
+		x+=rand(-15,15);
+		y+=rand(-15,15);
+		let power=GetGapLength(GetX,GetY,x,y)*2;
+		let angle=GetGapAngle(GetX,GetY,x,y);
+		SetMovePositionHermite(x,y,power,angle,0,0,fr);
+
+	}
+
+	// 待ち --------------------------------------------------------------------
+	function wait(let fr){
+
+		loop(fr){yield;}
+
+	}
+
+	// -------------------------------------------------------------------------
+	@Finalize{
+
+		// ロードしたファイルを削除
+		DeleteGraphic(imgBoss);
+
+	}
+
+	// -------------------------------------------------------------------------
+	@DrawLoop{
+
+		// ボス描画
+		SetTexture(imgBoss);
+		if(GetSpeed==0){SetGraphicRect(1,1,64,64);}
+		else if(GetAngle>-90&&GetAngle<=90){SetGraphicRect(192,1,255,64);}
+		else {SetGraphicRect(128,1,191,64);}
+		SetAlpha(255);
+		SetColor(255,255,255);
+		DrawGraphic(GetX,GetY);
+
+	}
+
+	// 共通関数読み込み
+	#include_function ".\INCLUDE\patternShot.dnh"
+	#include_function ".\INCLUDE\library_request.dnh"
+
+}

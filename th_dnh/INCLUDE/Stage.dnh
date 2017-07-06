@@ -296,3 +296,11 @@ function DrawMenu( let nTargetPhase, let nX, let nY, let nGapX, let nGapY, let a
 	SetGraphicAngle( 0, 0, 0 );
 	SetAlpha( 255 );
 }
+
+/////////////////////////////////////////////////
+//’Ç‰Á060214 “G‚Ì”‚ª0‚É‚È‚é‚Ü‚Å‘Ò‚Â
+/////////////////////////////////////////////////
+function WaitForZeroEnemy(){
+	while(GetEnemyNum() != 0){yield;}
+}
+
