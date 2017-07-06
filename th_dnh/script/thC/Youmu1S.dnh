@@ -202,22 +202,23 @@ script_enemy_main{
 			__Wait( nFrame );
 			if( GetTimer() < 3 ){ break; }
 
-			/** âçéa */
+			/** â°éa */
 			Slow( 1 );
 			m_bSlow = true;
 			nFrame = 60;
+			let nY = GetPlayerY();
 			MotionBlur( SHOT, nFrame + 30, 60 );
 			SetAction( ACT_SHOT_A3_B, nFrame );
 			PlaySEEx( sePower );
 			Concentration01( nFrame );
 			__Wait( nFrame );
-			SideSlash( nAssign );
-			__Wait( 15 );
+			SideSlash( nY, nAssign );
+			__Wait( 30 );
 			Slow( 0 );
 			m_bSlow = false;
-			__Wait( 105 );
+			__Wait( 90 );
 
-			SetDamageRate( 20, 10 );
+			SetDamageRate( 22, 11 );
 			nAssign = - nAssign;
 			m_bFirst = false;
 
@@ -227,26 +228,27 @@ script_enemy_main{
 
 	/**
 	*	â°éa
+	*	@param nY		éaÇËäÓñ{yç¿ïW
 	*	@param nAssign	äÑÇËêUÇËåWêî
 	*/
-	task SideSlash( let nAssign ){
+	task SideSlash( let nY, let nAssign ){
 
 		/** à⁄ìÆ */
 		let nCollosionB = FLAN_ENEMY_COLLISION_B;
-		if( m_bFirst ){ FLAN_ENEMY_COLLISION_B = 0; }
 		let nNum = [ 5, 5, 7, 9 ][ m_nLevel ];
 		let nNumY = 18;
 		let nMinY = CL_MIN_Y + nNumY * ( nNum - 1 ) / 2;
 		let nMaxY = CL_MAX_Y - nNumY * ( nNum - 1 ) / 2;
 		let _nX = GetX();
 		let nX = CL_CEN_X - 164 * nAssign;
-		let nY = GetPlayerY();
 		if( nY < nMinY ){ nY = nMinY; }
 		else if( nY > nMaxY ){ nY = nMaxY; }
 		let nFrame = 15;
-		SetAction( ACT_MOVE, nFrame );
+		SetAction( [ ACT_MOVE_R, ACT_MOVE_L ][ _nX > CL_CEN_X ], nFrame );
 		SlowMove( _nX, nY, nFrame );
 		__Wait( nFrame );
+		SetAction( ACT_SHOT_A3_B, 15 );
+		__Wait( 15 );
 
 		/** éaåÇ */
 		let nAdjustLength = 48;
@@ -262,7 +264,7 @@ script_enemy_main{
 		PlaySEDelay( seKira1, 120 );
 
 		/** ì•Ç›çûÇ› */
-		FLAN_ENEMY_COLLISION_B = 0;
+		FLAN_ENEMY_COLLISION_B = 8;
 		let nAppearLength = nLength * 0.8;
 		SetPosition( _nX - nAppearLength * nAssign, nY );
 		StepCollision( _nX, nY, nAngle, nAppearLength );
@@ -302,8 +304,7 @@ script_enemy_main{
 		loop( 120 ){ yield; }
 
 		/** ÉâÉìÉ_ÉÄíe */
-		let nNum = 44;
-		if( m_nLevel == 0 ){ nNum = 40; }
+		let nNum = [ 36, 40, 40, 44 ][ m_nLevel ];
 		let nNumLength = _nLength / ( nNum - 1 );
 		let nNumX = nNumLength * cos( nAngle );
 		let nGraphic = US_ICE_PURPLE;
@@ -351,7 +352,7 @@ script_enemy_main{
 	}
 
 	/**
-	*	ì•Ç›çûÇ›éûÇÃé©íeìñÇΩÇËîªíË
+	*	ì•Ç›çûÇ›éûÇÃìñÇΩÇËîªíË
 	*	@param nX			ì•Ç›çûÇ›ëOxç¿ïW
 	*	@param nY			ì•Ç›çûÇ›ëOyç¿ïW
 	*	@param nAngle		äpìx
@@ -359,14 +360,25 @@ script_enemy_main{
 	*/
 	function StepCollision( let nX, let nY, let nAngle, let nMaxLength ){
 
+		/** CollisionA */
 		let nLength = 0;
 		nMaxLength *= 0.75;
-		let nCollisionA = 32;
+		let nCollision = 32;
 		while( nLength < nMaxLength ){
 			let _nX = GetGapX( nX, nLength, nAngle );
 			let _nY = GetGapY( nY, nLength, nAngle );
-			SetCollisionA( _nX, _nY, nCollisionA );
-			nLength += nCollisionA;
+			SetCollisionA( _nX, _nY, nCollision );
+			nLength += nCollision;
+		}
+
+		/** CollisionB */
+		nLength = 0;
+		nCollision = 8;
+		while( nLength < nMaxLength ){
+			let _nX = GetGapX( nX, nLength, nAngle );
+			let _nY = GetGapY( nY, nLength, nAngle );
+			SetCollisionB( _nX, _nY, nCollision );
+			nLength += nCollision;
 		}
 
 	}

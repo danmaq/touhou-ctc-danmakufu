@@ -41,10 +41,24 @@ let m_aszSeFileList = [];
 *	îwåiÇï`âÊÇµÇ‹Ç∑ÅB
 */
 function DrawSpellBG{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG_Light();
+		return;
+	}
+
 	SetGraphicRect( 0, 0, 384, 448 );
 	DrawCenter( imgSpellYamada02 );
 	SetGraphicRect( 0, - m_nFlanCount, 512, 512 - m_nFlanCount );
 	DrawCenter( imgSpellYamada01 );
+
+}
+
+function DrawSpellBG_Light{
+
+	SetGraphicRect( 0, - m_nFlanCount, 512, 512 - m_nFlanCount );
+	DrawCenter( imgSpellYamada01 );
+
 }
 
 

@@ -48,6 +48,12 @@ let m_nMaxWarpCount = 20;
 *	”wŒi‚ð•`‰æ‚µ‚Ü‚·B
 */
 function DrawSpellBG{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG_Light();
+		return;
+	}
+
 	SetGraphicScale( 1.2, 1.2 );
 	SetGraphicRect( 0, 0, 512, 512 );
 	let nLightMax = 255;
@@ -62,6 +68,21 @@ function DrawSpellBG{
 	DrawCenter( imgSpellYukari02 );
 	SetRenderState( ALPHA );
 	SetColor( 255, 255, 255 );
+
+}
+
+function DrawSpellBG_Light{
+
+	SetGraphicScale( 1.2, 1.2 );
+	SetGraphicRect( 0, 0, 512, 512 );
+	let nLightMax = 255;
+	let nLightMin = 180;
+	let i = m_nFlanCount % 180;
+	let j = [ Accelerate( nLightMin, nLightMax, i, 180 ), SlowDown( nLightMax, nLightMin, i, 180 ) ][ m_nFlanCount % 360 >= 180 ];
+	SetColor( j, j, j );
+	DrawRotateCenter( imgSpellYukari01, 0.5 );
+	SetColor( 255, 255, 255 );
+
 }
 
 

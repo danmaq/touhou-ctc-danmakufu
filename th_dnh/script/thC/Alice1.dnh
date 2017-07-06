@@ -371,7 +371,7 @@ script_enemy Shadow{
 	FLAN_SHADOW_DELETE_SHOT = 32;
 	FLAN_ENEMY_COLLISION_A = 24;
 	FLAN_ENEMY_COLLISION_B = 18;
-	FLAN_ESS_NOCALL_MAINLOOP = true;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -388,6 +388,10 @@ script_enemy Shadow{
 //	メンバ変数
 //////////////////////////////////////////////////////////////////////
 
+	/** 使い魔描画角度 */
+	let m_nDrawAngle = 0;
+
+	/** 使い魔番号 */
 	let m_nNumber;
 
 
@@ -421,6 +425,11 @@ script_enemy Shadow{
 	*	@param bIsAppear 具現化中かどうか
 	*/
 	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase, let bIsAppear ){
+
+		/** 使い魔描画角度設定 */
+		m_nDrawAngle += 30 * sin( m_nFlanCount );
+
+
 	}
 
 	/**
@@ -454,7 +463,7 @@ script_enemy Shadow{
 		let nAngle = 2 * m_nFlanCount;
 		let nScale = 0.8;
 		DrawShadow( nShadowImage, nShadowColor, nAngle, nScale, nScale );
-		DrawShadowCharRollEx( nAngle * 5, nScale );
+		DrawShadowCharRollEx( m_nDrawAngle, nScale );
 
 	}
 

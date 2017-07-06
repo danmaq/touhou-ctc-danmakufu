@@ -42,6 +42,12 @@ let m_aszSeFileList = [];
 *	îwåiÇï`âÊÇµÇ‹Ç∑ÅB
 */
 function DrawSpellBG{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG_Light();
+		return;
+	}
+
 	let j = m_nFlanCount * 0.2;
 	SetGraphicRect( 0, j, 512, 512 + j );
 	SetAlpha( 255 );
@@ -59,6 +65,16 @@ function DrawSpellBG{
 	SetAlpha( 180 );
 	DrawCenter( imgSpellAya2 );
 	SetGraphicScale( 1, 1 );
+
+}
+
+function DrawSpellBG_Light{
+
+	let j = m_nFlanCount * 0.2;
+	SetGraphicRect( 0, j, 512, 512 + j );
+	SetAlpha( 255 );
+	DrawCenter( imgSpellAya1 );
+
 }
 
 

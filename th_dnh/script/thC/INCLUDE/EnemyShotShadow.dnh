@@ -54,6 +54,9 @@ let ENEMY_ITEMEX_ENABLE_EXTEND		= false;
 //	メンバ変数
 //////////////////////////////////////////////////////////////////////
 
+/** 軽量版スペル背景を使用するか */
+let m_bDrawSpellBGLight = false;
+
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------
@@ -493,13 +496,13 @@ function DropItemPowerFullTHC( let nNum ){ __DropItemTHC( ITEMEX_POWER_FULL, nNu
 *	注意 : 内部から自動的に呼び出されますので直接呼び出すことはありません。
 */
 function DropAllItemTHC(){
-	if( ENEMY_ITEMEX_NUM_DEFAULT		> 0 ){ __DropItemTHC( ITEMEX_DEFAULT,		ENEMY_ITEMEX_NUM_DEFAULT		); }
-	if( ENEMY_ITEMEX_NUM_POWER			> 0 ){ __DropItemTHC( ITEMEX_POWER,			ENEMY_ITEMEX_NUM_POWER			); }
-	if( ENEMY_ITEMEX_NUM_POWER_BIG		> 0 ){ __DropItemTHC( ITEMEX_POWER_BIG,		ENEMY_ITEMEX_NUM_POWER_BIG		); }
-	if( ENEMY_ITEMEX_NUM_POINT			> 0 ){ __DropItemTHC( ITEMEX_SCORE,			ENEMY_ITEMEX_NUM_POINT			); }
-	if( ENEMY_ITEMEX_NUM_POINT_SMALL	> 0 ){ __DropItemTHC( ITEMEX_SCORE_SMALL,	ENEMY_ITEMEX_NUM_POINT_SMALL	); }
-	if( ENEMY_ITEMEX_ENABLE_BOMB			){ __DropItemTHC( ITEMEX_BOMB,			1								); }
 	if( ENEMY_ITEMEX_ENABLE_EXTEND			){ __DropItemTHC( ITEMEX_EXTEND,		1								); }
+	if( ENEMY_ITEMEX_ENABLE_BOMB			){ __DropItemTHC( ITEMEX_BOMB,			1								); }
+	if( ENEMY_ITEMEX_NUM_DEFAULT		> 0 ){ __DropItemTHC( ITEMEX_DEFAULT,		ENEMY_ITEMEX_NUM_DEFAULT		); }
+	if( ENEMY_ITEMEX_NUM_POWER_BIG		> 0 ){ __DropItemTHC( ITEMEX_POWER_BIG,		ENEMY_ITEMEX_NUM_POWER_BIG		); }
+	if( ENEMY_ITEMEX_NUM_POWER			> 0 ){ __DropItemTHC( ITEMEX_POWER,			ENEMY_ITEMEX_NUM_POWER			); }
+	if( ENEMY_ITEMEX_NUM_POINT_SMALL	> 0 ){ __DropItemTHC( ITEMEX_SCORE_SMALL,	ENEMY_ITEMEX_NUM_POINT_SMALL	); }
+	if( ENEMY_ITEMEX_NUM_POINT			> 0 ){ __DropItemTHC( ITEMEX_SCORE,			ENEMY_ITEMEX_NUM_POINT			); }
 }
 
 

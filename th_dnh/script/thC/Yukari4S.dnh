@@ -241,14 +241,14 @@ script_enemy_main{
 	*/
 	task RoundTurnShot( let nAssign ){
 
-		let nNum=10;
+		let nNum = 10;
 		let nShotFrame = 2;
 		let nWay = 30 + 10 * m_nLevel;
 		let nX = GetX();
 		let nY = GetY();
 		let nSpeed = 2.5;
 		let nNumSpeed = ( 10 - nSpeed ) / ( nNum - 1);
-		let _nSpeed = 4.2;
+		let _nSpeed = 3.8;
 		let nAngle = rand( 0, 360 );
 		let nWayAngle = 360 / nWay;
 		let nNumAngle = 6.8 * nAssign;
@@ -543,9 +543,9 @@ script_enemy ChenRan{
 		let nY = GetY();
 		Obj_SetPosition( obj, nX, nY );
 		Obj_SetAngle( obj, nAngle );
-		ObjShot_SetGraphic( obj, US_BALL_M_A_WHITE );
+		ObjShot_SetGraphic( obj, [ US_BALL_M_A_ORANGE, US_BALL_M_A_GREEN ][ m_nNumber ] );
 		ObjLaser_SetWidth( obj, 10 );
-		Obj_SetAlpha( obj, 160 );
+		Obj_SetAlpha( obj, 180 );
 		Obj_SetCollisionToPlayer( obj, false );
 		ObjShot_ToItem( obj, false );
 		ObjLaser_SetSource( obj, false );

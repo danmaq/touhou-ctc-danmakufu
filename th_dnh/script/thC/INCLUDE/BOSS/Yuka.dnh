@@ -41,6 +41,12 @@ let m_aszSeFileList = [];
 *	”wŒi‚ð•`‰æ‚µ‚Ü‚·B
 */
 function DrawSpellBG{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG_Light();
+		return;
+	}
+
 	let i = m_nFlanCount * 4;
 	SetGraphicRect( 0, 0, 512, 512 );
 	DrawCenter( imgSpellBlack );
@@ -56,6 +62,23 @@ function DrawSpellBG{
 	SetAlpha( 60 );
 	DrawCenter( imgSpellYuka02 );
 	SetAlpha( 255 );
+
+}
+
+function DrawSpellBG_Light{
+
+	let i = m_nFlanCount * 4;
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawCenter( imgSpellBlack );
+	SetGraphicRect( 0, i, 512, 512 + i );
+	i = m_nFlanCount % 300;
+	SetColor( [ Smooth( 0, 70, i, 300 ), Smooth( 70, 0, i, 300 ) ][ m_nFlanCount % 600 >= 300 ], 0, 100 );
+	i = m_nFlanCount % 170;
+	SetAlpha( [ Smooth( 100, 200, i, 170 ), Smooth( 200, 100, i, 170 ) ][ m_nFlanCount % 340 >= 170 ] );
+	DrawCenter( imgSpellYuka01 );
+	SetColor( 255, 255, 255 );
+	SetAlpha( 255 );
+
 }
 
 
@@ -188,7 +211,7 @@ function TwinShot( let nX, let nY, let nSpeed, let nAccelSpeed, let nMaxSpeed, l
 	let nGapAngle = nAngle - 90;
 	let nGraphic = US_NEEDLE_BLUE;
 
-	loop(2){
+	loop( 2 ){
 		let _nX = GetGapX( nX, nGapLength, nGapAngle );
 		let _nY = GetGapY( nY, nGapLength, nGapAngle );
 		CreateShot02( _nX, _nY, nSpeed, nAngle, nAccelSpeed, nMaxSpeed, nGraphic, nDelay );

@@ -80,7 +80,7 @@ let MENU_SIZE_LEVEL					= 4;
 let MENU_SIZE_LEVEL_EX				= 2;
 let MENU_SIZE_PRACTICE				= 2;
 let MENU_SIZE_STAGE					= 6;
-let MENU_SIZE_CONFIG				= 4;
+let MENU_SIZE_CONFIG				= 5;
 let MENU_SIZE_SPELL_SORT			= 5;
 let MENU_SIZE_MUSIC					= 38;
 let MENU_SIZE_CONFIG_GRAPHIC		= 5;
@@ -99,7 +99,7 @@ let MENU_LOCK_LEVEL					= [];
 let MENU_LOCK_LEVEL_EX				= [];
 let MENU_LOCK_PRACTICE				= [];
 let MENU_LOCK_STAGE					= [];
-let MENU_LOCK_CONFIG				= [ 4 ];
+let MENU_LOCK_CONFIG				= [];
 let MENU_LOCK_SPELL_SORT			= [ 1, 2, 3, 4 ];
 let MENU_LOCK_MUSIC					= [];
 let MENU_LOCK_CONFIG_GRAPHIC		= [];
@@ -231,6 +231,7 @@ function LoadProgressMenu( let aszGraphicFileList, let aszEnemyFileList, let asz
 *	メインメニューの初期化処理をします。
 */
 function MainMenuInitialize(){
+//	RaiseError( GetClearHistory( [ 3 ], [], [ 6 ], [], 0, 0, 0 ), "Clear" );
 	LoadProgressMenu( MENU_RESOURCE_LOAD_GRAPHIC, [], MENU_RESOURCE_LOAD_SOUND );
 	ForbidShot( true );
 	SetStage( 0 );
@@ -347,7 +348,10 @@ function DoMenuSelectPhase(){
 						if( i != nPlayerID && GetTryHistory( [ nPlayerID, PLAYER_OTHER ], [ i ], [ m_nMenuCursorStage ], [ m_nMenuCursorLevel ], 0 ) == 0 ){ MENU_LOCK_SCENARIO = MENU_LOCK_SCENARIO ~ [ i ]; }
 					}
 				}
-				GosubPhase( [ MENU_PHASE_LAUNCH, MENU_PHASE_SCENARIO ][ length( MENU_LOCK_SCENARIO ) < 3 || ( IsDebugMode() && m_bFlanKeySlow ) ] );
+				GosubPhase(
+					[ MENU_PHASE_LAUNCH, MENU_PHASE_SCENARIO ][
+					( length( MENU_LOCK_SCENARIO ) < 3 && GetClearHistory( [], [ nPlayerID ], [ 6 ], [ m_nMenuCursorLevel ], 0, 0, 0 ) ) ]
+				);
 			}
 		}
 		else{ ReturnPhase(); }
@@ -472,7 +476,15 @@ function DoMenuSelectPhase(){
 		ClearCommonDataEx( CL_CDNS_CONFIG );
 		SaveCommonDataEx( CL_CDNS_CONFIG, CL_CDFILE_CONFIG );
 		__Wait( MENU_FADE_INTERVAL + 10 );
-		ReturnPhase();
+		Retry();
+	}
+	case( MENU_PHASE_RESET_ALL ){	// ◆設定-全リセット
+		ClearCommonDataEx( CL_CDNS_CONFIG );
+		ClearCommonDataEx( CL_CDNS_RESULT );
+		SaveCommonDataEx( CL_CDNS_CONFIG, CL_CDFILE_CONFIG );
+		SaveCommonDataEx( CL_CDNS_RESULT, CL_CDFILE_RESULT );
+		__Wait( MENU_FADE_INTERVAL + 10 );
+		Retry();
 	}
 	case( MENU_PHASE_SCENARIO ){	// ◆シナリオ選択
 		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
@@ -483,12 +495,9 @@ function DoMenuSelectPhase(){
 		else{ ReturnPhase(); }
 	}
 	case( MENU_PHASE_PRACTICE_SPELL_ALL ){	// ◆スペルプラクティス全検索
-		let anLockList;
-		if( IsDebugMode() ){ anLockList = []; }
-		else{ anLockList = MENU_LOCK_PRACTICE_SPELL_ALL; }
 		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
 			yield;
-			m_nMenuCursorSpellAll = MoveMenuCursorTHC( m_nMenuCursorSpellAll, MENU_SIZE_PRACTICE_SPELL_ALL, anLockList );
+			m_nMenuCursorSpellAll = MoveMenuCursorTHC( m_nMenuCursorSpellAll, MENU_SIZE_PRACTICE_SPELL_ALL, MENU_LOCK_PRACTICE_SPELL_ALL );
 		}
 		if( IsSubmitMenuTHC() ){ SetPhase( MENU_PHASE_LAUNCH_SPELL ); }
 		else{ ReturnPhase(); }
@@ -529,16 +538,16 @@ function DrawMenu( let nPhase, let nPhaseCount, let nCount ){
 	let anStackData = m_anFlanStackCacheData[ m_nFlanPhaseHandle ];
 	let nNowPhase = anStackData[ 0 ];
 	alternative( nPhase )
-	case( MENU_PHASE_MAIN				){ __DrawMenu( MENU_PHASE_MAIN,					8, 30, 96,	208, 80, 384, -1, -3,	CL_TTHBASE_MENU_MAIN,					CL_TTHBASE_DESCRIPTION_MAIN,				MENU_SIZE_MAIN,					m_nMenuCursorMain,			MENU_LOCK_MAIN			); }
-	case( MENU_PHASE_LEVEL				){ __DrawMenu( MENU_PHASE_LEVEL,				8, 30, 96,	208, 80, 384, -1, -3,	CL_TTHBASE_MENU_LEVEL,					CL_TTHBASE_DESCRIPTION_LEVEL,				MENU_SIZE_LEVEL,				m_nMenuCursorLevel,			MENU_LOCK_LEVEL			); }
-	case( MENU_PHASE_LEVEL_EX			){ __DrawMenu( MENU_PHASE_LEVEL_EX,				8, 30, 96,	208, 80, 384, -1, -3,	CL_TTHBASE_MENU_LEVEL_EX,				CL_TTHBASE_DESCRIPTION_LEVEL_EX,			MENU_SIZE_LEVEL_EX,				m_nMenuCursorLevelEx,		MENU_LOCK_LEVEL_EX		); }
-	case( MENU_PHASE_PRACTICE			){ __DrawMenu( MENU_PHASE_PRACTICE,				8, 30, 96,	208, 80, 384, -1, -3,	CL_TTHBASE_MENU_PRACTICE,				CL_TTHBASE_DESCRIPTION_PRACTICE,			MENU_SIZE_PRACTICE,				m_nMenuCursorPractice,		MENU_LOCK_PRACTICE		); }
-	case( MENU_PHASE_CONFIG				){ __DrawMenu( MENU_PHASE_CONFIG,				0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG,					CL_TTHBASE_DESCRIPTION_CONFIG,				MENU_SIZE_CONFIG,				m_nMenuCursorConfig,		MENU_LOCK_CONFIG		); }
-	case( MENU_PHASE_PRACTICE_STAGE		){ __DrawMenu( MENU_PHASE_PRACTICE_STAGE,		8, 30, 96,	208, 48, 384, -1, -2,	CL_TTHBASE_STAGE,						CL_TT_INVALID,								MENU_SIZE_STAGE,				m_nMenuCursorStage,			MENU_LOCK_STAGE			); }
-	case( MENU_PHASE_PRACTICE_SPELL		){ __DrawMenu( MENU_PHASE_PRACTICE_SPELL,		8, 30, 96,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_PRACTICE_SPELL_SORT,	CL_TTHBASE_DESCRIPTION_PRACTICE_SPELL_SORT,	MENU_SIZE_SPELL_SORT,			m_nMenuCursorSpellSort,		MENU_LOCK_SPELL_SORT	); }
-	case( MENU_PHASE_SCENARIO			){ __DrawMenu( MENU_PHASE_SCENARIO,				8, 30, 96,	208, 48, 384, -1, -3,	CL_TTHBASE_SCENARIO,					CL_TT_INVALID,								MENU_SIZE_SCENARIO,				m_nMenuCursorScenario,		MENU_LOCK_SCENARIO		); }
+	case( MENU_PHASE_MAIN				){ __DrawMenu( MENU_PHASE_MAIN,					8, 30, 96,	208, 80, 384, -1, -3,	CL_TTHBASE_MENU_MAIN,					CL_TTHBASE_DESCRIPTION_MAIN,				MENU_SIZE_MAIN,					m_nMenuCursorMain,			MENU_LOCK_MAIN,			true ); }
+	case( MENU_PHASE_LEVEL				){ __DrawMenu( MENU_PHASE_LEVEL,				8, 30, 96,	208, 80, 384, -1, -3,	CL_TTHBASE_MENU_LEVEL,					CL_TTHBASE_DESCRIPTION_LEVEL,				MENU_SIZE_LEVEL,				m_nMenuCursorLevel,			MENU_LOCK_LEVEL,		true ); }
+	case( MENU_PHASE_LEVEL_EX			){ __DrawMenu( MENU_PHASE_LEVEL_EX,				8, 30, 96,	208, 80, 384, -1, -3,	CL_TTHBASE_MENU_LEVEL_EX,				CL_TTHBASE_DESCRIPTION_LEVEL_EX,			MENU_SIZE_LEVEL_EX,				m_nMenuCursorLevelEx,		MENU_LOCK_LEVEL_EX,		false ); }
+	case( MENU_PHASE_PRACTICE			){ __DrawMenu( MENU_PHASE_PRACTICE,				8, 30, 96,	208, 80, 384, -1, -3,	CL_TTHBASE_MENU_PRACTICE,				CL_TTHBASE_DESCRIPTION_PRACTICE,			MENU_SIZE_PRACTICE,				m_nMenuCursorPractice,		MENU_LOCK_PRACTICE,		true ); }
+	case( MENU_PHASE_CONFIG				){ __DrawMenu( MENU_PHASE_CONFIG,				0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG,					CL_TTHBASE_DESCRIPTION_CONFIG,				MENU_SIZE_CONFIG,				m_nMenuCursorConfig,		MENU_LOCK_CONFIG,		true ); }
+	case( MENU_PHASE_PRACTICE_STAGE		){ __DrawMenu( MENU_PHASE_PRACTICE_STAGE,		8, 30, 96,	208, 48, 384, -1, -2,	CL_TTHBASE_STAGE,						CL_TT_INVALID,								MENU_SIZE_STAGE,				m_nMenuCursorStage,			MENU_LOCK_STAGE,		true ); }
+	case( MENU_PHASE_PRACTICE_SPELL		){ __DrawMenu( MENU_PHASE_PRACTICE_SPELL,		8, 30, 96,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_PRACTICE_SPELL_SORT,	CL_TTHBASE_DESCRIPTION_PRACTICE_SPELL_SORT,	MENU_SIZE_SPELL_SORT,			m_nMenuCursorSpellSort,		MENU_LOCK_SPELL_SORT,	true ); }
+	case( MENU_PHASE_SCENARIO			){ __DrawMenu( MENU_PHASE_SCENARIO,				8, 30, 96,	208, 48, 384, -1, -3,	CL_TTHBASE_SCENARIO,					CL_TT_INVALID,								MENU_SIZE_SCENARIO,				m_nMenuCursorScenario,		MENU_LOCK_SCENARIO,		true ); }
 	case( MENU_PHASE_PRACTICE_SPELL_ALL	){
-		__DrawMenu( MENU_PHASE_PRACTICE_SPELL_ALL, 0, 20, 80, 208, 48, 384, -1, -2, CL_TTHBASE_SPELL_NAME, CL_TT_INVALID, MENU_SIZE_PRACTICE_SPELL_ALL, m_nMenuCursorSpellAll, MENU_LOCK_PRACTICE_SPELL_ALL );
+		__DrawMenu( MENU_PHASE_PRACTICE_SPELL_ALL, 0, 20, 80, 208, 48, 384, -1, -2, CL_TTHBASE_SPELL_NAME, CL_TT_INVALID, MENU_SIZE_PRACTICE_SPELL_ALL, m_nMenuCursorSpellAll, MENU_LOCK_PRACTICE_SPELL_ALL, true );
 		let nBaseX = 64;
 		let nBaseY = 176;
 		if( nNowPhase == nPhase ){
@@ -555,7 +564,7 @@ function DrawMenu( let nPhase, let nPhaseCount, let nCount ){
 		}
 	}
 	case( MENU_PHASE_MUSIC				){
-		__DrawMenu( MENU_PHASE_MUSIC, 0, 20, 80, 144, 48, 300, -2, -2, CL_TTHBASE_BGM_TITLE, CL_TTHBASE_BGM_DESCRIPTION, MENU_SIZE_MUSIC, m_nMenuCursorMusic, MENU_LOCK_MUSIC );
+		__DrawMenu( MENU_PHASE_MUSIC, 0, 20, 80, 144, 48, 300, -2, -2, CL_TTHBASE_BGM_TITLE, CL_TTHBASE_BGM_DESCRIPTION, MENU_SIZE_MUSIC, m_nMenuCursorMusic, MENU_LOCK_MUSIC, true );
 		if( nNowPhase == nPhase ){
 			SetAlpha( Accelerate( 0, 255, m_nFlanPhaseCount, MENU_FADE_INTERVAL ) );
 			let nNowTime = GetTime() - m_nStageStartMusicSystemTime;
@@ -567,15 +576,15 @@ function DrawMenu( let nPhase, let nPhaseCount, let nCount ){
 		}
 	}
 	case( MENU_PHASE_CONFIG_GRAPHIC		){
-		__DrawMenu( MENU_PHASE_CONFIG_GRAPHIC,	0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG_GRAPHIC,	CL_TTHBASE_DESCRIPTION_CONFIG_GRAPHIC,	MENU_SIZE_CONFIG_GRAPHIC,	m_nMenuCursorConfigGraphic,	MENU_LOCK_CONFIG_GRAPHIC	);
+		__DrawMenu( MENU_PHASE_CONFIG_GRAPHIC,	0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG_GRAPHIC,	CL_TTHBASE_DESCRIPTION_CONFIG_GRAPHIC,	MENU_SIZE_CONFIG_GRAPHIC,	m_nMenuCursorConfigGraphic,	MENU_LOCK_CONFIG_GRAPHIC,	true );
 		if( nNowPhase == nPhase ){ __DrawMenuConfigBoolean( MENU_CONFIG_KEY_GRAPHIC, MENU_CONFIG_VALUE_GRAPHIC, 30, 352, 208, m_nMenuCursorConfigGraphic, MENU_LOCK_CONFIG_GRAPHIC ); }
 	}
 	case( MENU_PHASE_CONFIG_SOUND		){
-		__DrawMenu( MENU_PHASE_CONFIG_SOUND,	0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG_SOUND,	CL_TTHBASE_DESCRIPTION_CONFIG_SOUND,	MENU_SIZE_CONFIG_SOUND,		m_nMenuCursorConfigSound,	MENU_LOCK_CONFIG_SOUND		);
+		__DrawMenu( MENU_PHASE_CONFIG_SOUND,	0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG_SOUND,	CL_TTHBASE_DESCRIPTION_CONFIG_SOUND,	MENU_SIZE_CONFIG_SOUND,		m_nMenuCursorConfigSound,	MENU_LOCK_CONFIG_SOUND,		true );
 		if( nNowPhase == nPhase ){ __DrawMenuConfigBoolean( MENU_CONFIG_KEY_SOUND, MENU_CONFIG_VALUE_SOUND, 30, 352, 208, m_nMenuCursorConfigSound, MENU_LOCK_CONFIG_SOUND ); }
 	}
 	case( MENU_PHASE_CONFIG_GAME		){
-		__DrawMenu( MENU_PHASE_CONFIG_GAME,		0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG_GAME,	CL_TTHBASE_DESCRIPTION_CONFIG_GAME,		MENU_SIZE_CONFIG_GAME,		m_nMenuCursorConfigGame,	MENU_LOCK_CONFIG_GAME		);
+		__DrawMenu( MENU_PHASE_CONFIG_GAME,		0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG_GAME,	CL_TTHBASE_DESCRIPTION_CONFIG_GAME,		MENU_SIZE_CONFIG_GAME,		m_nMenuCursorConfigGame,	MENU_LOCK_CONFIG_GAME,		true );
 		if( nNowPhase == nPhase ){ __DrawMenuConfigReal( MENU_CONFIG_KEY_GAME, MENU_CONFIG_VALUE_GAME, 30, 352, 208, m_nMenuCursorConfigGame, MENU_LOCK_CONFIG_GAME ); }
 	}
 }

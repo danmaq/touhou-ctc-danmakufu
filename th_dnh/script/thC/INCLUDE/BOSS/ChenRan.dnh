@@ -46,6 +46,12 @@ let m_nEnemyAngle = 0;
 *	背景を描画します。
 */
 function DrawSpellBG{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG_Light();
+		return;
+	}
+
 	let i = - m_nFlanCount * 0.2;
 	let j = - m_nFlanCount * 0.8;
 	SetColor( 60, 50, 30 );
@@ -56,6 +62,16 @@ function DrawSpellBG{
 	SetColor( 255, 255, 255 );
 	SetGraphicRect( i, j, 512 + i, 512 + j );
 	DrawCenter( imgSpellLeaf );
+
+}
+
+function DrawSpellBG_Light{
+
+	let i = m_nFlanCount * 0.21;
+	let j = m_nFlanCount * 1.5;
+	SetGraphicRect( i, j, 512 + i, 512 + j );
+	DrawCenter( imgSpellLeaf );
+
 }
 
 
@@ -71,9 +87,11 @@ function DrawSpellBG{
 *	@param szImageFile	ボス画像ファイル
 */
 function DrawChenRan( let szImageFile ){
+
 	SetGraphicAngle( 0, 0, m_nEnemyAngle );
 	_DrawBoss( szImageFile, GetX(), GetY() );
 	SetGraphicAngle( 0, 0, 0 );
+
 }
 
 
@@ -90,6 +108,7 @@ function DrawChenRan( let szImageFile ){
 *	@param nFrame	回転（移動）完了までのフレーム数
 */
 task SetRoll( let nFrame ){
+
 	let nCount = m_nFlanCount;
 	loop( nFrame ){
 		if( GetSpeed() > 0.1 ){ break; }
@@ -119,6 +138,7 @@ task SetRoll( let nFrame ){
 		yield;
 	}
 	m_nEnemyAngle = 0;
+
 }
 
 /**
@@ -128,6 +148,7 @@ task SetRoll( let nFrame ){
 *	@param nFrame	回転（移動）完了までのフレーム数
 */
 task SetRollConstant( let nFrame ){
+
 	let nCount = m_nFlanCount;
 	loop( nFrame ){
 		if( GetSpeed() > 0.1 ){ break; }
@@ -148,6 +169,7 @@ task SetRollConstant( let nFrame ){
 		yield;
 	}
 	m_nEnemyAngle = 0;
+
 }
 
 /**
@@ -155,6 +177,7 @@ task SetRollConstant( let nFrame ){
 *	@param nFrame	当たり判定が無くなるフレーム数
 */
 task SetCollisionDelay( let nFrame ){
+
 	let nCollisionA = FLAN_ENEMY_COLLISION_A;
 	let nCollisionB = FLAN_ENEMY_COLLISION_B;
 	FLAN_ENEMY_COLLISION_A = 0;
@@ -162,4 +185,5 @@ task SetCollisionDelay( let nFrame ){
 	loop( nFrame ){ yield; }
 	FLAN_ENEMY_COLLISION_A = nCollisionA;
 	FLAN_ENEMY_COLLISION_B = nCollisionB;
+
 }

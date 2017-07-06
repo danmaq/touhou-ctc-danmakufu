@@ -169,8 +169,8 @@ task StageEx2MainTask(){
 	__Wait( 120 );
 	loop( 3 ){
 		loop( 3 ){
-			CreateEnemyFromFile( z_g_06, rand( GetClipMinX() + 30, GetClipMaxX() - 30 ), GetClipMinY() - 20, rand( 6, 12 ), 90, 1 );
-			CreateEnemyFromFile( z_g_06, rand( GetClipMinX() + 30, GetClipMaxX() - 30 ), GetClipMaxY() + 20, rand( 3, 6 ), -90, 1 );
+			CreateEnemyFromFile( z_g_06, rand( GetClipMinX() + 30, GetClipMaxX() - 30 ), GetClipMinY() - 20, rand( 4, 9 ), 90, 1 );
+			CreateEnemyFromFile( z_g_06, rand( GetClipMinX() + 30, GetClipMaxX() - 30 ), GetClipMaxY() + 20, rand( 2, 5 ), -90, 1 );
 			__Wait( 6 );
 		}
 		__Wait( 40 );

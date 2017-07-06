@@ -41,6 +41,13 @@ let m_aszSeFileList = [];
 *	îwåiÇï`âÊÇµÇ‹Ç∑ÅB
 */
 function DrawSpellBG{
+
+	/** åyó î≈îwåiÇ»Çµ */
+	//if( m_bDrawSpellBGLight ){
+	//	DrawSpellBG_Light();
+	//	return;
+	//}
+
 	let nColor = [ 255, 48 ][ IsBGStopping() ];
 	SetColor( 255, nColor, nColor );
 	SetGraphicRect( 0, 0, 1024, 1024 );
@@ -53,6 +60,7 @@ function DrawSpellBG{
 		DrawCenter( imgSpellBlood );
 		SetAlpha( 255 );
 	}
+
 }
 
 

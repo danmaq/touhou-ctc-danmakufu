@@ -90,7 +90,8 @@ task PlaySEDelayLoop( let szSeFile, let nDelayFrame, let nTotalFrame, let nPlayF
 *	@return ラストスペル突入条件を満たしていればtrue
 */
 function IsTryLastSpell(){
-	return	( IsDebugMode() || !UsedDebugKey() ) && m_nFlanLevel >= 1 &&
+	return	!UsedDebugKey() && 
+			( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) >= 10 || m_nFlanLevel >= 1 ) &&
 			GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN_GAUGE, 255 ) > 254 &&
 			GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 ) >= GetHakureiNorm();
 }
@@ -104,7 +105,7 @@ function GetHakureiNorm(){
 	let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
 	let nLevel = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 0 );
 	if( nStage < 6 ){ return CL_LASTSPELL_HAKUREI_NORM * nStage * [ 0, 1, 2, 2.5 ][ nLevel ]; }
-	if( nStage >= 10 ){ return CL_LASTSPELL_HAKUREI_NORM * nStage * ( nLevel + 1 ); }
+	if( nStage >= 10 ){ return CL_LASTSPELL_HAKUREI_NORM * 10 * [ 1, 1.4 ][ nLevel ]; }
 	return 0;
 }
 
@@ -130,9 +131,9 @@ function GetClearHistory( let anPlayerID, let anScenarioID, let anStage, let anL
 	let bRefineScenario	= length( anScenarioID	) != 0;
 	let bRefineStage	= length( anStage		) != 0;
 	let bRefineLevel	= length( anLevel		) != 0;
-	let bRefineScore	= nScore == 0;
-	let bRefineContinue	= !( nContinue == 0 || nContinue == 1 );
-	let bRefinePractice	= !( nPractice == 0 || nPractice == 1 );
+	let bRefineScore	= nScore != 0;
+	let bRefineContinue	= ( nContinue == 0 || nContinue == 1 );
+	let bRefinePractice	= ( nPractice == 0 || nPractice == 1 );
 
 	if( !( bRefinePlayer || bRefineScenario || bRefineStage || bRefineLevel || bRefineScore || bRefineContinue || bRefinePractice ) ){ return nHistorySize; }
 	ascent( let i in 0..nHistorySize ){
@@ -173,7 +174,7 @@ function GetTryHistory( let anPlayerID, let anScenarioID, let anStage, let anLev
 	let bRefineScenario	= length( anScenarioID	) != 0;
 	let bRefineStage	= length( anStage		) != 0;
 	let bRefineLevel	= length( anLevel		) != 0;
-	let bRefinePractice	= !( nPractice == 0 || nPractice == 1 );
+	let bRefinePractice	= ( nPractice == 0 || nPractice == 1 );
 
 	if( !( bRefinePlayer || bRefineScenario || bRefineStage || bRefineLevel || bRefinePractice ) ){ return nHistorySize; }
 	ascent( let i in 0..nHistorySize ){

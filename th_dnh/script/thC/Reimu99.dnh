@@ -227,7 +227,8 @@ script_event Talk{
 		InCharEnemy( CUT_ENEMY_CRY );
 		TextOutEnemy( "うーん、悔しい" );
 		TextOutPlayer( "慣れてないだけなら私だって一緒だぜ？" );
-		TextOutEnemy( "んー、たぶんあれよ\nもう幻想郷は私のものじゃなくなったから" );
+		TextOutEnemy( "んー、たぶんあれよ" );
+		TextOutEnemy( "もう幻想郷は私のものじゃなくなったから" );
 		TextOutEnemy( "私も幻想郷の皆と\n同格になったってことじゃないかな？" );
 		InCharPlayer( CUT_PLAYER_SURPRISE );
 		TextOutPlayer( "あー、なるほどな" );
@@ -245,7 +246,7 @@ script_event Talk{
 		TextOutEnemy( "な…ななな何の話かしら？" );
 		TextOutPlayer( "さーてお前の次は文でも探すかなー" );
 		SetStep( 1 );
-		TextOutEnemy( "やっぱ魔理沙は昨日も今日も魔理沙なのね" );
+		TextOutEnemy( "やっぱ魔理沙は昨日も今日も魔理沙ね" );
 		End();
 
 	}

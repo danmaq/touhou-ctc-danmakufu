@@ -59,10 +59,12 @@ script_enemy_main{
 	*/
 	task DoMove( let nLevel ){
 		let spmax=GetSpeed();
-		ascent(i in 0..70){
-			SetSpeed(SlowDown( spmax , -spmax/3 , i , 100 ));
+		ascent(i in 0..50){
+			SetSpeed(SlowDown( spmax , 0 , i , 50 ));
 			yield;
 		}
+		let XX=GetX+rand(-100,100);
+		SetMovePositionHermite(XX,GetClipMinY()-50,6*(XX-GetX()),0,100,-90,200);
 	}
 
 

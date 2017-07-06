@@ -23,6 +23,7 @@ let STAGE_6_LOAD_LIST_GRAPHIC_BG = [
 	imgMapTree3,
 	imgMapWhite,
 	imgMapCircle,
+	imgMapChip2,
 	imgSpellNoize01,
 	imgSpellNoize02,
 	imgSpellNoize03,
@@ -83,6 +84,7 @@ function Stage6Initialize(){
 task Stage6MainTask(){
 	let bGoodEnding = true;
 	SetShotAutoDeleteClip( 32, 64, 32, 32 );
+//	/*
 	__Wait( 150 );
 	StageLogo();
 	__Wait( 400 );
@@ -157,6 +159,7 @@ task Stage6MainTask(){
 		nFSDTimer = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, -1 );
 		yield;
 	}
+//	WaitZeroEnemy(); // “G‚ªÁ‚¦‚é‚Ü‚Å’âŽ~
 	bGoodEnding = nFSDTimer != 0;
 	if( bGoodEnding ){
 		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, -32767 );
@@ -183,6 +186,7 @@ task Stage6MainTask(){
 /////////////////////////////////////////////////////////////////////// 
 		SetClearHistory( 6 );
 	}
+//	*/
 
 	FadeOutMusic( bgmList[ [ 31, 32 ][ bGoodEnding ] ], 6 );
 	ScreenFade( true, 600 );
@@ -190,11 +194,11 @@ task Stage6MainTask(){
 	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, false );
 	ForbidShot( true );
 
-	if( !m_bStagePractice ){
+	if( IsReplay() || m_bStagePractice ){ Clear(); }
+	else{
 		DeleteResource( STAGE_6_LOAD_LIST_GRAPHIC_BG, STAGE_6_LOAD_LIST_SOUND );
 		Ending( bGoodEnding );
 	}
-	else{ Clear(); }
 }
 
 /**
@@ -206,15 +210,16 @@ task SetFSDTimeLoop(){
 		yield;
 		nTime = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, -1 );
 	}
-	let nRate = [ 20, 15, 12, 8 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 ) ];
+	let nRate = [ 26, 11, 7, 5 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 ) ];
 	let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 );
 	let nHakureiPrev = nHakurei;
 	nTime = 2000 + nHakurei * nRate;
 	while( nTime >= 0 ){
 		nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 );
 		let nHakureiGap = nHakurei - nHakureiPrev;
-		if( nHakureiGap > 0 ){ nTime += nHakureiGap * nRate; }
+		nTime += nHakureiGap * nRate;
 		nHakureiPrev = nHakurei;
+		nTime = Max( nTime, 0 );
 		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, nTime );
 		yield;
 		if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, -1 ) == -32767 ){ return; }
@@ -251,12 +256,31 @@ task Stage6(){
 */
 function Stage6Loop( let nScenario, let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	if( !GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG, true ) ){ return; }
-	let nSpeedTable = [ 0.3, 1, 0.6, 0, 0.1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ];
+	let nSpeedTable = [ 0.3, 1, 0.6, 0, 0.05, 1, 1, 1, 1, 1, 1, 1, 1, 1 ];
 	let anBGParam = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_STAGE_BG_PARAMETER, [ 800, 90, 50, 0, 0, 0 ] );
 	let nSpeed = Smooth( nSpeedTable[ Max( nPhase - 1, 0 ) ], nSpeedTable[ nPhase ], nPhaseCount, 300 );
 	anBGParam[ BG_TO_Z ] = anBGParam[ BG_TO_Z ] - nSpeed;
-	if( !OnEnemySpell() && IsRenderFrame() && nPhase == 1 && nPhaseCount <= 600 ){
-		anBGParam[ BG_FROM_PITCH ] = SplineFakeSFS( 50, 20, nPhaseCount, 600 );
+	if( !OnEnemySpell() ){
+		if( IsRenderFrame() && nPhase == 1 && nPhaseCount <= 600 ){
+			anBGParam[ BG_FROM_PITCH ] = SplineFakeSFS( 50, 20, nPhaseCount, 600 );
+		}
+		if(
+			GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG_EFFECT, true ) &&
+			nStageCount % [ 12, 20, 20, 100, 100, 30, 30, 30, 30, 20, 2 ][ nPhase ] == 0
+		){
+			let nRandX = m_anFlanRandomTable[ ( nCount + 37 ) % FLAN_RANDTABLE_LENGTH ];
+			let nRandY = m_anFlanRandomTable[ ( nCount + 41 ) % FLAN_RANDTABLE_LENGTH ];
+			let nRandZ = m_anFlanRandomTable[ ( nCount + 29 ) % FLAN_RANDTABLE_LENGTH ];
+			Add3DEffect(
+				anBGParam[ BG_TO_X ] + nRandX / 2 - 64,
+				nRandY / 2,
+				anBGParam[ BG_TO_Z ] + nRandZ,
+				nRandX / 128 - 1,					nRandZ / 256,	nRandZ / 128 - 1,
+				anBGParam[ BG_FROM_PITCH ] + 90,	0,				nRandZ,
+				0,									0,				0,
+				300
+			);
+		}
 	}
 	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_BG_PARAMETER, anBGParam );
 }
@@ -288,9 +312,9 @@ function Stage6DrawBackGround( let nScenario, let nStage, let nStageCount, let n
 		let nColorCode = nPhase - 5;
 		SetFogEx(
 			300, 1200,
-			[ 16,	0,	0,	32, 64, 80, 80	][ nColorCode ],
-			[ 0,	0,	32, 0,	16,	8,	0	][ nColorCode ],
-			[ 16,	32, 0,	0,	0,	0,	0	][ nColorCode ]
+			[ 16,	0,	0,	32, 64, 88, 80	][ nColorCode ],
+			[ 0,	0,	32, 0,	16,	0,	0	][ nColorCode ],
+			[ 16,	32, 0,	0,	0,	32,	0	][ nColorCode ]
 		);
 	}
 	SetViewFrom( anBGParam[ BG_FROM_DISTANCE ], anBGParam[ BG_FROM_YAW ], anBGParam[ BG_FROM_PITCH ] );
@@ -305,6 +329,7 @@ function Stage6DrawBackGround( let nScenario, let nStage, let nStageCount, let n
 	SetGraphicRect( 0, 0, 2048, 2048 );
 	DrawGraphic3D( 0, -500, nViewToZ + 128 );
 	SetTexture( imgMapWhite );
+	SetGraphicAngle( 90, 0, 0 );
 	SetGraphicRect( 0, 0, 1536, 512 );
 	SetGraphicScale( 1, 3 );
 	DrawGraphic3D( 0, 0, nViewToZ );
@@ -343,6 +368,17 @@ function Stage6DrawBackGround( let nScenario, let nStage, let nStageCount, let n
 			nZ += nSpace;
 		}
 	}
+	if( nPhase >= 10 ){
+		let nScroll = -nCount * 2.5;
+		SetTexture( imgMapChip2 );
+		SetGraphicAngle( 0, 0, 0 );
+		SetColor( 255, 128, 128 );
+		SetGraphicRect( 0, nScroll, 2048, nScroll + 2048 );
+		DrawGraphic3D( 0, 0, nViewToZ - 250 );
+		SetGraphicRect( 0, nScroll * 1.5, 2048, nScroll * 1.5 + 2048 );
+		DrawGraphic3D( 0, 0, nViewToZ - 240 );
+		SetColor( 255, 255, 255 );
+	}
 	if( nPhase == 4 && nPhaseCount < 120 ){
 		ascent( let i in 0..4 ){
 			let nScale = Smooth( 0, 1, nPhaseCount - i * 8, 120 );
@@ -353,6 +389,13 @@ function Stage6DrawBackGround( let nScenario, let nStage, let nStageCount, let n
 			SetGraphicRect( 0, 0, 512, 512 );
 			DrawGraphic3D( 0, 8, nViewToZ );
 		}
+		SetGraphicScale( 1, 1 );
+	}
+	if( GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG_EFFECT, true ) ){
+		SetTexture( imgMapChip );
+		SetGraphicRect( 0, 0, 64, 64 );
+		SetGraphicScale( 0.5, 0.5 );
+		Draw3DEffect();
 		SetGraphicScale( 1, 1 );
 	}
 	SetGraphicAngle( 0, 0, 0 );

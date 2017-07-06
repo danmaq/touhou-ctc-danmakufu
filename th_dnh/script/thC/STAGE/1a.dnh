@@ -184,7 +184,7 @@ if( BossCount_1A<BaceTime+450 ){
 if( BossCount_1A<BaceTime+600 ){
 	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_ITEM, [ 3, 7 ] );
 	loop( 7 ){
-		CreateEnemyFromFile( z_s_07, GetCenterX()/3+RandBlur(30), GetClipMinY()-20, 2, 45, -1 );
+		CreateEnemyFromFile( z_s_07, GetCenterX()/3+RandBlur(30), GetClipMinY()-20, 2, 90, -1 );
 		__Wait( 12 );
 	}
 	__Wait( 20 );
@@ -193,7 +193,7 @@ if( BossCount_1A<BaceTime+600 ){
 if( BossCount_1A<BaceTime+750 ){
 	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_ITEM, [ 3, 7 ] );
 	loop( 7 ){
-		CreateEnemyFromFile( z_s_07, GetCenterX()*1.66+RandBlur(30), GetClipMinY()-20, 2, 135, 1 );
+		CreateEnemyFromFile( z_s_07, GetCenterX()*1.66+RandBlur(30), GetClipMinY()-20, 2, 90, 1 );
 		__Wait( 12 );
 	}
 	__Wait( 80 );

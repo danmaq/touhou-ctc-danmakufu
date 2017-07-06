@@ -133,6 +133,12 @@ let CL_CD_RESULT_PLAYER			= "RESULT_PLAYER";
 let CL_CD_RESULT_BOMB			= "RESULT_BOMB";
 /**	リザルトで表示されるトータル点数が格納されます。 */
 let CL_CD_RESULT_TOTAL			= "RESULT_TOTAL";
+/**	リザルトで表示される前点アイテム数が格納されます。 */
+let CL_CD_RESULT_POINT_PREV		= "RESULT_POINT_PREV";
+/**	リザルトで表示される前カスリ数が格納されます。 */
+let CL_CD_RESULT_GRAZE_PREV		= "RESULT_GRAZE_PREV";
+/**	リザルトで表示される前博麗小符数が格納されます。 */
+let CL_CD_RESULT_HAKUREI_PREV	= "RESULT_HAKUREI_PREV";
 
 
 //////////////////////////////////////////////////////////////////////
@@ -221,7 +227,7 @@ let CL_CD_BOSS_Y2				= "BOSS_Y2";
 let CL_CD_BOSS_ANGLE			= "BOSS_ANGLE";
 let CL_CD_BOSS_DEAD				= "BOSS_DEAD";
 /**	ラストスペル中かどうかが格納されます。 */
-let CL_CD_BOSS_SPELL_LASTSPELL	= "SPELL_LASTSPELL";
+let CL_CD_BOSS_SPELL_LASTSPELL	= "SPELL_LASTSPELL";	// TODO : 大丈夫そうなら文字列統一
 /** 弾スクリプトからExplosion01を使うためのパラメータ配列が格納されます。 */
 let CL_CD_SHOT_EXPLOSION_PARAM	= "SHOT_EXPLOSION_PARAM";
 /**	ボスIDを定義します。 */

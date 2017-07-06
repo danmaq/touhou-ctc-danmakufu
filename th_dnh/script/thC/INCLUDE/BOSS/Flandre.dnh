@@ -41,6 +41,12 @@ let m_aszSeFileList = [];
 *	îwåiÇï`âÊÇµÇ‹Ç∑ÅB
 */
 function DrawSpellBG{
+
+	if( m_bDrawSpellBGLight ){
+		DrawSpellBG_Light();
+		return;
+	}
+
 	SetGraphicRect( 0, 0, 512, 512 );
 	DrawRotateCenter( imgSpellRedMoon, 1 );
 	SetAlpha( 144 + sin( m_nFlanCount ) * 16 );
@@ -49,6 +55,14 @@ function DrawSpellBG{
 		__DrawChr( imgSpellRedWall, CL_CEN_X, CL_CEN_Y + i * 448 - m_nFlanCount * 3 % 448 );
 	}
 	SetAlpha( 255 );
+
+}
+
+function DrawSpellBG_Light{
+
+	SetGraphicRect( 0, 0, 512, 512 );
+	DrawRotateCenter( imgSpellRedMoon, 1 );
+
 }
 
 

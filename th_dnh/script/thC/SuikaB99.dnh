@@ -223,12 +223,11 @@ script_event Talk{
 		TextOutPlayerC( m_nWaitFrame, "あー、楽しかったぜ" );
 		InCharEnemy( CUT_ENEMY_CRY );
 		TextOutEnemy( "うー、ちょっと他所見してたら\n転んじゃっただけよ" );
-		TextOutEnemy( "…だからとて負けるとは\n思わなんだけど" );
-		TextOutPlayer( "何言ってるんだ、そんなの弾幕勝負を\n中止する理由にならないぜ" );
+		TextOutPlayer( "何言ってるんだ、そんなの\n負けた理由にならないぜ" );
 		InCharPlayer( CUT_PLAYER_BAD );
 		TextOutPlayer( "ってか大体お前\n嘘は大嫌いなんじゃなかったんか？" );
-		TextOutEnemy( "あー、そこまで嘘ってわけでもないよ？" );
-		TextOutEnemy( "まだこの幻想郷結びつきが弱いから\nちょっと気を緩めると綻んじゃうし" );
+		TextOutEnemy( "そこまで嘘ってわけでもないよ？" );
+		TextOutEnemy( "この幻想郷結びつきがまだ弱いから\nちょっと気を緩めるとすぐ綻んじゃうし" );
 		TextOutEnemy( "あーあ、こう言うのって\n私ハッキリ言って専門外なのよねー" );
 		InCharPlayer( CUT_PLAYER_NORMAL );
 		TextOutPlayer( "ああ、そりゃ確かに専門家が必要だな" );

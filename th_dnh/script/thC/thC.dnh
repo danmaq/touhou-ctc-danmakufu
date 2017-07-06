@@ -16,8 +16,8 @@
 //////////////////////////////////////////////////////////////////////
 
 #東方弾幕風[Stage]
-#Title[東方夢終劇 ～ Concealed the Conclusion ]
-#Text[THC R1.00]
+#Title[東方夢終劇 ～ Concealed the Conclusion]
+#Text[THC R1.01]
 #ScriptVersion[2]
 #Player[player\THC_MARISA\1.dnh, player\THC_MARISA\2.dnh, player\THC_MARISA\3.dnh, player\THC_MARISA\4.dnh]
 #Image[.\IMAGE\SYSTEM\jacket.png]
@@ -44,7 +44,7 @@ script_stage_main{
 //	FLAN設定定義
 //////////////////////////////////////////////////////////////////////
 
-	FLAN_STAGE_NORMLIST = FLAN_STAGE_NORMLIST[ 0..0 ] ~ [ 100, 250, 450, 700, 1000, 1400, 1999, 9999, -1 ];
+	FLAN_STAGE_NORMLIST = FLAN_STAGE_NORMLIST[ 0..0 ] ~ [ 100, 250, 450, 650, 900, 1200, 1999, 9999, -1 ];
 
 
 //////////////////////////////////////////////////////////////////////
@@ -70,6 +70,8 @@ script_stage_main{
 		dotYousei,
 		dotKedama,
 		dotShadow,
+		imgMapChip,
+		imgMapFog2,
 		IMAGE_THC_CIRLE_BORDER
 	] ~ IMAGE_LIST_MARISA;
 	/**	各ステージのロード時に連結して読み出す敵スクリプトのリストです。 */
@@ -167,6 +169,7 @@ script_stage_main{
 				case( 5 ){ Stage6(); }
 				case( 7 ){ SpellPractice(); }
 			}
+			if( GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG_EFFECT, true ) ){ Move3DEffectLoop(); }
 		}
 		else{
 			AddBomb( -GetPlayerBomb() );
@@ -181,7 +184,6 @@ script_stage_main{
 	*	@param nLevel レベル(0～3)
 	*/
 	function onInitialize( let nStage, let nLevel ){
-
 		ForbidBomb( true );
 		ForbidShot( true );
 		SetRateScoreSystemEnable( false );
@@ -204,7 +206,7 @@ script_stage_main{
 			if( m_bStagePractice	){ nLife = 8; }
 			else if( nStage >= 7	){ nLife = 3; }
 			ExpertEx(
-				IsDebugMode(),
+				false,
 				[ GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_CONTINUE, 1 ), 0 ][ m_bStagePractice || nStage >= 7 ],
 				nLife
 			);
@@ -245,6 +247,7 @@ script_stage_main{
 		case( 6 ){ Stage6Loop( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 		case( 10 ){ StageExLoop(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 		case( 11 ){ StageEx2Loop(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//		OutputDebugString( 0, "FontCacheSize", length( m_aCLTTCBeUsed ) );
 	}
 
 	/**

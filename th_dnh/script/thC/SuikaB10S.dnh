@@ -382,7 +382,7 @@ script_enemy_main{
 	*/
 	task CheckPhase{
 
-		let anNextLife = [ 405, 310, 215, 120 ];
+		let anNextLife = [ 400, 300, 200, 100 ];
 		let anNextTime = [ 89, 69, 49, 29 ];
 
 		/** ‰A—z’e */
