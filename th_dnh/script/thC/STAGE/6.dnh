@@ -90,7 +90,6 @@ task Stage6MainTask(){
 	__Wait( 150 );
 	StageLogo();
 	__Wait( 400 );
-//	/*
 //--------------------------------------------------------------------
 
 	CreateEnemyFromFile( z_m_05, GetCenterX() * 1.5, GetClipMinY() - 20, 5, 90, 0 );
@@ -162,7 +161,6 @@ task Stage6MainTask(){
 		nFSDTimer = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, -1 );
 		yield;
 	}
-//	WaitZeroEnemy(); // ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
 	bGoodEnding = nFSDTimer != 0;
 	if( bGoodEnding ){
 		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, -32767 );
@@ -189,7 +187,6 @@ task Stage6MainTask(){
 // èIóπèàóù
 /////////////////////////////////////////////////////////////////////// 
 	}
-//	*/
 	SetClearHistoryFinal( 6, bGoodEnding );
 
 	FadeOutMusic( bgmList[ [ 31, 32 ][ bGoodEnding ] ], 6 );
@@ -221,7 +218,7 @@ task SetFSDTimeLoop(){
 		yield;
 		nTime = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, -1 );
 	}
-	let nRate = [ 29, 17, 10, 8 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 ) ];
+	let nRate = [ 29, 18, 11, 9 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 ) ];
 	let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 );
 	let nHakureiPrev = nHakurei;
 	nTime = 2000 + nHakurei * nRate;

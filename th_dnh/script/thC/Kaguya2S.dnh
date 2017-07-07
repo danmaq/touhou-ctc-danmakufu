@@ -352,7 +352,7 @@ script_enemy Shadow{
 		let nFrame = 30;
 		if( m_nNumber == 0 ){ nFrame = 60; }
 		SetLife( 64 );
-		SetDamageRateDelayEx( 13 * m_nDamageRate, 13 * m_nDamageRate, 50, 50, nFrame );
+		_SetDamageRateDelayEx( 13 * m_nDamageRate, 13 * m_nDamageRate, 50, 50, nFrame );
 		CheckBossLife();
 
 	}

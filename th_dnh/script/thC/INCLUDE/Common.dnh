@@ -90,7 +90,7 @@ task PlaySEDelayLoop( let szSeFile, let nDelayFrame, let nTotalFrame, let nPlayF
 *	@return ラストスペル突入条件を満たしていればtrue
 */
 function IsTryLastSpell(){
-	return	!UsedDebugKey() && 
+	return	( !UsedDebugKey() ) && 
 			( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) >= 10 || m_nFlanLevel >= 1 ) &&
 			GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN_GAUGE, 255 ) > 250 &&
 			GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 ) >= GetHakureiNorm();

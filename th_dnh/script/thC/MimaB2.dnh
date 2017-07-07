@@ -385,7 +385,7 @@ script_enemy Shadow{
 		/** ŒÂ•Ê‰Šúİ’è */
 		if( !m_bStage || m_bSpellPractice || m_bStagePractice ){ m_nDamageRate = 0.8; }
 		SetLife( 64 );
-		SetDamageRateDelayEx( 75 * m_nDamageRate, 75 * m_nDamageRate, 50, 50, 30 );
+		_SetDamageRateDelayEx( 75 * m_nDamageRate, 75 * m_nDamageRate, 50, 50, 30 );
 
 	}
 

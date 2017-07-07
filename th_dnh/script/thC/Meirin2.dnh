@@ -321,7 +321,7 @@ script_enemy Shadow{
 		/** ŒÂ•Ê‰Šúİ’è */
 		if( !m_bStage || m_bSpellPractice || m_bStagePractice ){ m_nDamageRate = 0.8; }
 		SetLife( 160 );
-		SetDamageRateDelayEx( 90 * m_nDamageRate, 90 * m_nDamageRate, 50, 50, 60 );
+		_SetDamageRateDelayEx( 90 * m_nDamageRate, 90 * m_nDamageRate, 50, 50, 60 );
 		m_nNumber = nArgv;
 		BehaviorShadow( CHAR_SHADOW_MAID );
 
