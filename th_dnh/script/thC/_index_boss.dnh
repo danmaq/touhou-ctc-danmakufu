@@ -3,73 +3,74 @@
 // -----------------------------------------------------------------------------
 // 紅魔郷ルート
 // -----------------------------------------------------------------------------
+let DIR_THC_ROOT = GetCurrentScriptDirectory();
 
-let bossFlandreE = GetCurrentScriptDirectory() ~ "FlandreE.dnh";
-let bossFlandreH = GetCurrentScriptDirectory() ~ "FlandreH.dnh";
-let bossFlandre99 = GetCurrentScriptDirectory() ~ "Flandre99.dnh";
-let bossMeirin = GetCurrentScriptDirectory() ~ "Meirin.dnh";
-let bossMeirinL = GetCurrentScriptDirectory() ~ "MeirinL.dnh";
-let bossMeirin99 = GetCurrentScriptDirectory() ~ "Meirin99.dnh";
-let bossSakuya = GetCurrentScriptDirectory() ~ "Sakuya.dnh";
-let bossSakuya99 = GetCurrentScriptDirectory() ~ "Sakuya99.dnh";
-let bossRemilia = GetCurrentScriptDirectory() ~ "Remilia.dnh";
-let bossRemiliaL = GetCurrentScriptDirectory() ~ "RemiliaL.dnh";
-let bossRemilia99 = GetCurrentScriptDirectory() ~ "Remilia99.dnh";
-let bossDevil = GetCurrentScriptDirectory() ~ "Devil.dnh";
-let bossDevil99 = GetCurrentScriptDirectory() ~ "Devil99.dnh";
-let bossPatchouli = GetCurrentScriptDirectory() ~ "Patchouli.dnh";
-let bossPatchouliL = GetCurrentScriptDirectory() ~ "PatchouliL.dnh";
-let bossPatchouli99 = GetCurrentScriptDirectory() ~ "Patchouli99.dnh";
+let bossFlandreE = DIR_THC_ROOT ~ "FlandreE.dnh";
+let bossFlandreH = DIR_THC_ROOT ~ "FlandreH.dnh";
+let bossFlandre99 = DIR_THC_ROOT ~ "Flandre99.dnh";
+let bossMeirin = DIR_THC_ROOT ~ "Meirin.dnh";
+let bossMeirinL = DIR_THC_ROOT ~ "MeirinL.dnh";
+let bossMeirin99 = DIR_THC_ROOT ~ "Meirin99.dnh";
+let bossSakuya = DIR_THC_ROOT ~ "Sakuya.dnh";
+let bossSakuya99 = DIR_THC_ROOT ~ "Sakuya99.dnh";
+let bossRemilia = DIR_THC_ROOT ~ "Remilia.dnh";
+let bossRemiliaL = DIR_THC_ROOT ~ "RemiliaL.dnh";
+let bossRemilia99 = DIR_THC_ROOT ~ "Remilia99.dnh";
+let bossDevil = DIR_THC_ROOT ~ "Devil.dnh";
+let bossDevil99 = DIR_THC_ROOT ~ "Devil99.dnh";
+let bossPatchouli = DIR_THC_ROOT ~ "Patchouli.dnh";
+let bossPatchouliL = DIR_THC_ROOT ~ "PatchouliL.dnh";
+let bossPatchouli99 = DIR_THC_ROOT ~ "Patchouli99.dnh";
 
 let bossFlandreList = [
-	GetCurrentScriptDirectory() ~ "Flandre0.dnh",
-	GetCurrentScriptDirectory() ~ "Flandre1.dnh",
-	GetCurrentScriptDirectory() ~ "Flandre1S.dnh",
-	GetCurrentScriptDirectory() ~ "Flandre99.dnh"
+	DIR_THC_ROOT ~ "Flandre0.dnh",
+	DIR_THC_ROOT ~ "Flandre1.dnh",
+	DIR_THC_ROOT ~ "Flandre1S.dnh",
+	DIR_THC_ROOT ~ "Flandre99.dnh"
 ];
 let bossMeirinList = [
-	GetCurrentScriptDirectory() ~ "Meirin0.dnh",
-	GetCurrentScriptDirectory() ~ "Meirin1.dnh",
-	GetCurrentScriptDirectory() ~ "Meirin1S.dnh",
-	GetCurrentScriptDirectory() ~ "Meirin2.dnh",
-	GetCurrentScriptDirectory() ~ "Meirin2S.dnh",
-	GetCurrentScriptDirectory() ~ "Meirin99.dnh",
-	GetCurrentScriptDirectory() ~ "MeirinL.dnh"
+	DIR_THC_ROOT ~ "Meirin0.dnh",
+	DIR_THC_ROOT ~ "Meirin1.dnh",
+	DIR_THC_ROOT ~ "Meirin1S.dnh",
+	DIR_THC_ROOT ~ "Meirin2.dnh",
+	DIR_THC_ROOT ~ "Meirin2S.dnh",
+	DIR_THC_ROOT ~ "Meirin99.dnh",
+	DIR_THC_ROOT ~ "MeirinL.dnh"
 ];
 
 let bossSakuyaList = [
-	GetCurrentScriptDirectory() ~ "Sakuya0.dnh",
-	GetCurrentScriptDirectory() ~ "Sakuya1.dnh",
-	GetCurrentScriptDirectory() ~ "Sakuya1S.dnh",
-	GetCurrentScriptDirectory() ~ "Sakuya99.dnh"
+	DIR_THC_ROOT ~ "Sakuya0.dnh",
+	DIR_THC_ROOT ~ "Sakuya1.dnh",
+	DIR_THC_ROOT ~ "Sakuya1S.dnh",
+	DIR_THC_ROOT ~ "Sakuya99.dnh"
 ];
 let bossRemiliaList = [
-	GetCurrentScriptDirectory() ~ "Remilia0.dnh",
-	GetCurrentScriptDirectory() ~ "Remilia1.dnh",
-	GetCurrentScriptDirectory() ~ "Remilia1S.dnh",
-	GetCurrentScriptDirectory() ~ "Remilia2.dnh",
-	GetCurrentScriptDirectory() ~ "Remilia2S.dnh",
-	GetCurrentScriptDirectory() ~ "Remilia3S.dnh",
-	GetCurrentScriptDirectory() ~ "Remilia99.dnh",
-	GetCurrentScriptDirectory() ~ "RemiliaL.dnh"
+	DIR_THC_ROOT ~ "Remilia0.dnh",
+	DIR_THC_ROOT ~ "Remilia1.dnh",
+	DIR_THC_ROOT ~ "Remilia1S.dnh",
+	DIR_THC_ROOT ~ "Remilia2.dnh",
+	DIR_THC_ROOT ~ "Remilia2S.dnh",
+	DIR_THC_ROOT ~ "Remilia3S.dnh",
+	DIR_THC_ROOT ~ "Remilia99.dnh",
+	DIR_THC_ROOT ~ "RemiliaL.dnh"
 ];
 
 let bossDevilList = [
-	GetCurrentScriptDirectory() ~ "Devil0.dnh",
-	GetCurrentScriptDirectory() ~ "Devil1.dnh",
-	GetCurrentScriptDirectory() ~ "Devil1S.dnh",
-	GetCurrentScriptDirectory() ~ "Devil99.dnh"
+	DIR_THC_ROOT ~ "Devil0.dnh",
+	DIR_THC_ROOT ~ "Devil1.dnh",
+	DIR_THC_ROOT ~ "Devil1S.dnh",
+	DIR_THC_ROOT ~ "Devil99.dnh"
 ];
 let bossPatchouliList = [
-	GetCurrentScriptDirectory() ~ "Patchouli0.dnh",
-	GetCurrentScriptDirectory() ~ "Patchouli1.dnh",
-	GetCurrentScriptDirectory() ~ "Patchouli1S.dnh",
-	GetCurrentScriptDirectory() ~ "Patchouli2.dnh",
-	GetCurrentScriptDirectory() ~ "Patchouli2S.dnh",
-	GetCurrentScriptDirectory() ~ "Patchouli3S.dnh",
-	GetCurrentScriptDirectory() ~ "Patchouli4S.dnh",
-	GetCurrentScriptDirectory() ~ "Patchouli99.dnh",
-	GetCurrentScriptDirectory() ~ "PatchouliL.dnh"
+	DIR_THC_ROOT ~ "Patchouli0.dnh",
+	DIR_THC_ROOT ~ "Patchouli1.dnh",
+	DIR_THC_ROOT ~ "Patchouli1S.dnh",
+	DIR_THC_ROOT ~ "Patchouli2.dnh",
+	DIR_THC_ROOT ~ "Patchouli2S.dnh",
+	DIR_THC_ROOT ~ "Patchouli3S.dnh",
+	DIR_THC_ROOT ~ "Patchouli4S.dnh",
+	DIR_THC_ROOT ~ "Patchouli99.dnh",
+	DIR_THC_ROOT ~ "PatchouliL.dnh"
 ];
 
 
@@ -78,73 +79,73 @@ let bossPatchouliList = [
 // 永夜抄ルート
 // -----------------------------------------------------------------------------
 
-let bossMokouE = GetCurrentScriptDirectory() ~ "MokouE.dnh";
-let bossMokouH = GetCurrentScriptDirectory() ~ "MokouH.dnh";
-let bossMokou99 = GetCurrentScriptDirectory() ~ "Mokou99.dnh";
-let bossKaguya = GetCurrentScriptDirectory() ~ "Kaguya.dnh";
-let bossKaguyaL = GetCurrentScriptDirectory() ~ "KaguyaL.dnh";
-let bossKaguya99 = GetCurrentScriptDirectory() ~ "Kaguya99.dnh";
-let bossReisen = GetCurrentScriptDirectory() ~ "Reisen.dnh";
-let bossReisen99 = GetCurrentScriptDirectory() ~ "Reisen99.dnh";
-let bossEirin = GetCurrentScriptDirectory() ~ "Eirin.dnh";
-let bossEirinL = GetCurrentScriptDirectory() ~ "EirinL.dnh";
-let bossEirin99 = GetCurrentScriptDirectory() ~ "Eirin99.dnh";
-let bossTewiA = GetCurrentScriptDirectory() ~ "TewiA.dnh";
-let bossTewiA99 = GetCurrentScriptDirectory() ~ "TewiA99.dnh";
-let bossTewiB = GetCurrentScriptDirectory() ~ "TewiB.dnh";
-let bossTewiBL = GetCurrentScriptDirectory() ~ "TewiBL.dnh";
-let bossTewiB99 = GetCurrentScriptDirectory() ~ "TewiB99.dnh";
+let bossMokouE = DIR_THC_ROOT ~ "MokouE.dnh";
+let bossMokouH = DIR_THC_ROOT ~ "MokouH.dnh";
+let bossMokou99 = DIR_THC_ROOT ~ "Mokou99.dnh";
+let bossKaguya = DIR_THC_ROOT ~ "Kaguya.dnh";
+let bossKaguyaL = DIR_THC_ROOT ~ "KaguyaL.dnh";
+let bossKaguya99 = DIR_THC_ROOT ~ "Kaguya99.dnh";
+let bossReisen = DIR_THC_ROOT ~ "Reisen.dnh";
+let bossReisen99 = DIR_THC_ROOT ~ "Reisen99.dnh";
+let bossEirin = DIR_THC_ROOT ~ "Eirin.dnh";
+let bossEirinL = DIR_THC_ROOT ~ "EirinL.dnh";
+let bossEirin99 = DIR_THC_ROOT ~ "Eirin99.dnh";
+let bossTewiA = DIR_THC_ROOT ~ "TewiA.dnh";
+let bossTewiA99 = DIR_THC_ROOT ~ "TewiA99.dnh";
+let bossTewiB = DIR_THC_ROOT ~ "TewiB.dnh";
+let bossTewiBL = DIR_THC_ROOT ~ "TewiBL.dnh";
+let bossTewiB99 = DIR_THC_ROOT ~ "TewiB99.dnh";
 
 
 let bossMokouList = [
-	GetCurrentScriptDirectory() ~ "Mokou0.dnh",
-	GetCurrentScriptDirectory() ~ "Mokou1.dnh",
-	GetCurrentScriptDirectory() ~ "Mokou1S.dnh",
-	GetCurrentScriptDirectory() ~ "Mokou99.dnh"
+	DIR_THC_ROOT ~ "Mokou0.dnh",
+	DIR_THC_ROOT ~ "Mokou1.dnh",
+	DIR_THC_ROOT ~ "Mokou1S.dnh",
+	DIR_THC_ROOT ~ "Mokou99.dnh"
 ];
 let bossKaguyaList = [
-	GetCurrentScriptDirectory() ~ "Kaguya0.dnh",
-	GetCurrentScriptDirectory() ~ "Kaguya1.dnh",
-	GetCurrentScriptDirectory() ~ "Kaguya1S.dnh",
-	GetCurrentScriptDirectory() ~ "Kaguya2.dnh",
-	GetCurrentScriptDirectory() ~ "Kaguya2S.dnh",
-	GetCurrentScriptDirectory() ~ "Kaguya99.dnh",
-	GetCurrentScriptDirectory() ~ "KaguyaL.dnh"
+	DIR_THC_ROOT ~ "Kaguya0.dnh",
+	DIR_THC_ROOT ~ "Kaguya1.dnh",
+	DIR_THC_ROOT ~ "Kaguya1S.dnh",
+	DIR_THC_ROOT ~ "Kaguya2.dnh",
+	DIR_THC_ROOT ~ "Kaguya2S.dnh",
+	DIR_THC_ROOT ~ "Kaguya99.dnh",
+	DIR_THC_ROOT ~ "KaguyaL.dnh"
 ];
 
 let bossReisenList = [
-	GetCurrentScriptDirectory() ~ "Reisen0.dnh",
-	GetCurrentScriptDirectory() ~ "Reisen1.dnh",
-	GetCurrentScriptDirectory() ~ "Reisen1S.dnh",
-	GetCurrentScriptDirectory() ~ "Reisen99.dnh",
+	DIR_THC_ROOT ~ "Reisen0.dnh",
+	DIR_THC_ROOT ~ "Reisen1.dnh",
+	DIR_THC_ROOT ~ "Reisen1S.dnh",
+	DIR_THC_ROOT ~ "Reisen99.dnh",
 ];
 let bossEirinList = [
-	GetCurrentScriptDirectory() ~ "Eirin0.dnh",
-	GetCurrentScriptDirectory() ~ "Eirin1.dnh",
-	GetCurrentScriptDirectory() ~ "Eirin1S.dnh",
-	GetCurrentScriptDirectory() ~ "Eirin2.dnh",
-	GetCurrentScriptDirectory() ~ "Eirin2S.dnh",
-	GetCurrentScriptDirectory() ~ "Eirin3S.dnh",
-	GetCurrentScriptDirectory() ~ "Eirin99.dnh",
-	GetCurrentScriptDirectory() ~ "EirinL.dnh"
+	DIR_THC_ROOT ~ "Eirin0.dnh",
+	DIR_THC_ROOT ~ "Eirin1.dnh",
+	DIR_THC_ROOT ~ "Eirin1S.dnh",
+	DIR_THC_ROOT ~ "Eirin2.dnh",
+	DIR_THC_ROOT ~ "Eirin2S.dnh",
+	DIR_THC_ROOT ~ "Eirin3S.dnh",
+	DIR_THC_ROOT ~ "Eirin99.dnh",
+	DIR_THC_ROOT ~ "EirinL.dnh"
 ];
 
 let bossTewiAList = [
-	GetCurrentScriptDirectory() ~ "TewiA0.dnh",
-	GetCurrentScriptDirectory() ~ "TewiA1.dnh",
-	GetCurrentScriptDirectory() ~ "TewiA1S.dnh",
-	GetCurrentScriptDirectory() ~ "TewiA99.dnh"
+	DIR_THC_ROOT ~ "TewiA0.dnh",
+	DIR_THC_ROOT ~ "TewiA1.dnh",
+	DIR_THC_ROOT ~ "TewiA1S.dnh",
+	DIR_THC_ROOT ~ "TewiA99.dnh"
 ];
 let bossTewiBList = [
-	GetCurrentScriptDirectory() ~ "TewiB0.dnh",
-	GetCurrentScriptDirectory() ~ "TewiB1.dnh",
-	GetCurrentScriptDirectory() ~ "TewiB1S.dnh",
-	GetCurrentScriptDirectory() ~ "TewiB2.dnh",
-	GetCurrentScriptDirectory() ~ "TewiB2S.dnh",
-	GetCurrentScriptDirectory() ~ "TewiB3S.dnh",
-	GetCurrentScriptDirectory() ~ "TewiB4S.dnh",
-	GetCurrentScriptDirectory() ~ "TewiB99.dnh",
-	GetCurrentScriptDirectory() ~ "TewiBL.dnh"
+	DIR_THC_ROOT ~ "TewiB0.dnh",
+	DIR_THC_ROOT ~ "TewiB1.dnh",
+	DIR_THC_ROOT ~ "TewiB1S.dnh",
+	DIR_THC_ROOT ~ "TewiB2.dnh",
+	DIR_THC_ROOT ~ "TewiB2S.dnh",
+	DIR_THC_ROOT ~ "TewiB3S.dnh",
+	DIR_THC_ROOT ~ "TewiB4S.dnh",
+	DIR_THC_ROOT ~ "TewiB99.dnh",
+	DIR_THC_ROOT ~ "TewiBL.dnh"
 ];
 
 
@@ -152,72 +153,72 @@ let bossTewiBList = [
 // 花映塚ルート
 // -----------------------------------------------------------------------------
 
-let bossLilyE = GetCurrentScriptDirectory() ~ "LilyE.dnh";
-let bossLilyH = GetCurrentScriptDirectory() ~ "LilyH.dnh";
-let bossLily99 = GetCurrentScriptDirectory() ~ "Lily99.dnh";
-let bossMedicine = GetCurrentScriptDirectory() ~ "Medicine.dnh";
-let bossMedicineL = GetCurrentScriptDirectory() ~ "MedicineL.dnh";
-let bossMedicine99 = GetCurrentScriptDirectory() ~ "Medicine99.dnh";
-let bossAyaA = GetCurrentScriptDirectory() ~ "AyaA.dnh";
-let bossAyaA99 = GetCurrentScriptDirectory() ~ "AyaA99.dnh";
-let bossAyaB = GetCurrentScriptDirectory() ~ "AyaB.dnh";
-let bossAyaBL = GetCurrentScriptDirectory() ~ "AyaBL.dnh";
-let bossAyaB99 = GetCurrentScriptDirectory() ~ "AyaB99.dnh";
-let bossKomachi = GetCurrentScriptDirectory() ~ "Komachi.dnh";
-let bossKomachi99 = GetCurrentScriptDirectory() ~ "Komachi99.dnh";
-let bossEiki = GetCurrentScriptDirectory() ~ "Eiki.dnh";
-let bossEikiL = GetCurrentScriptDirectory() ~ "EikiL.dnh";
-let bossEiki99 = GetCurrentScriptDirectory() ~ "Eiki99.dnh";
+let bossLilyE = DIR_THC_ROOT ~ "LilyE.dnh";
+let bossLilyH = DIR_THC_ROOT ~ "LilyH.dnh";
+let bossLily99 = DIR_THC_ROOT ~ "Lily99.dnh";
+let bossMedicine = DIR_THC_ROOT ~ "Medicine.dnh";
+let bossMedicineL = DIR_THC_ROOT ~ "MedicineL.dnh";
+let bossMedicine99 = DIR_THC_ROOT ~ "Medicine99.dnh";
+let bossAyaA = DIR_THC_ROOT ~ "AyaA.dnh";
+let bossAyaA99 = DIR_THC_ROOT ~ "AyaA99.dnh";
+let bossAyaB = DIR_THC_ROOT ~ "AyaB.dnh";
+let bossAyaBL = DIR_THC_ROOT ~ "AyaBL.dnh";
+let bossAyaB99 = DIR_THC_ROOT ~ "AyaB99.dnh";
+let bossKomachi = DIR_THC_ROOT ~ "Komachi.dnh";
+let bossKomachi99 = DIR_THC_ROOT ~ "Komachi99.dnh";
+let bossEiki = DIR_THC_ROOT ~ "Eiki.dnh";
+let bossEikiL = DIR_THC_ROOT ~ "EikiL.dnh";
+let bossEiki99 = DIR_THC_ROOT ~ "Eiki99.dnh";
 
 let bossLilyList = [
-	GetCurrentScriptDirectory() ~ "Lily0.dnh",
-	GetCurrentScriptDirectory() ~ "Lily1.dnh",
-	GetCurrentScriptDirectory() ~ "Lily1S.dnh",
-	GetCurrentScriptDirectory() ~ "Lily99.dnh"
+	DIR_THC_ROOT ~ "Lily0.dnh",
+	DIR_THC_ROOT ~ "Lily1.dnh",
+	DIR_THC_ROOT ~ "Lily1S.dnh",
+	DIR_THC_ROOT ~ "Lily99.dnh"
 ];
 let bossMedicineList = [
-	GetCurrentScriptDirectory() ~ "Medicine0.dnh",
-	GetCurrentScriptDirectory() ~ "Medicine1.dnh",
-	GetCurrentScriptDirectory() ~ "Medicine1S.dnh",
-	GetCurrentScriptDirectory() ~ "Medicine2.dnh",
-	GetCurrentScriptDirectory() ~ "Medicine2S.dnh",
-	GetCurrentScriptDirectory() ~ "Medicine99.dnh",
-	GetCurrentScriptDirectory() ~ "MedicineL.dnh"
+	DIR_THC_ROOT ~ "Medicine0.dnh",
+	DIR_THC_ROOT ~ "Medicine1.dnh",
+	DIR_THC_ROOT ~ "Medicine1S.dnh",
+	DIR_THC_ROOT ~ "Medicine2.dnh",
+	DIR_THC_ROOT ~ "Medicine2S.dnh",
+	DIR_THC_ROOT ~ "Medicine99.dnh",
+	DIR_THC_ROOT ~ "MedicineL.dnh"
 ];
 
 let bossAyaAList = [
-	GetCurrentScriptDirectory() ~ "AyaA0.dnh",
-	GetCurrentScriptDirectory() ~ "AyaA1.dnh",
-	GetCurrentScriptDirectory() ~ "AyaA1S.dnh",
-	GetCurrentScriptDirectory() ~ "AyaA99.dnh"
+	DIR_THC_ROOT ~ "AyaA0.dnh",
+	DIR_THC_ROOT ~ "AyaA1.dnh",
+	DIR_THC_ROOT ~ "AyaA1S.dnh",
+	DIR_THC_ROOT ~ "AyaA99.dnh"
 ];
 let bossAyaBList = [
-	GetCurrentScriptDirectory() ~ "AyaB0.dnh",
-	GetCurrentScriptDirectory() ~ "AyaB1.dnh",
-	GetCurrentScriptDirectory() ~ "AyaB1S.dnh",
-	GetCurrentScriptDirectory() ~ "AyaB2.dnh",
-	GetCurrentScriptDirectory() ~ "AyaB2S.dnh",
-	GetCurrentScriptDirectory() ~ "AyaB3S.dnh",
-	GetCurrentScriptDirectory() ~ "AyaB99.dnh",
-	GetCurrentScriptDirectory() ~ "AyaBL.dnh"
+	DIR_THC_ROOT ~ "AyaB0.dnh",
+	DIR_THC_ROOT ~ "AyaB1.dnh",
+	DIR_THC_ROOT ~ "AyaB1S.dnh",
+	DIR_THC_ROOT ~ "AyaB2.dnh",
+	DIR_THC_ROOT ~ "AyaB2S.dnh",
+	DIR_THC_ROOT ~ "AyaB3S.dnh",
+	DIR_THC_ROOT ~ "AyaB99.dnh",
+	DIR_THC_ROOT ~ "AyaBL.dnh"
 ];
 
 let bossKomachiList = [
-	GetCurrentScriptDirectory() ~ "Komachi0.dnh",
-	GetCurrentScriptDirectory() ~ "Komachi1.dnh",
-	GetCurrentScriptDirectory() ~ "Komachi1S.dnh",
-	GetCurrentScriptDirectory() ~ "Komachi99.dnh"
+	DIR_THC_ROOT ~ "Komachi0.dnh",
+	DIR_THC_ROOT ~ "Komachi1.dnh",
+	DIR_THC_ROOT ~ "Komachi1S.dnh",
+	DIR_THC_ROOT ~ "Komachi99.dnh"
 ];
 let bossEikiList = [
-	GetCurrentScriptDirectory() ~ "Eiki0.dnh",
-	GetCurrentScriptDirectory() ~ "Eiki1.dnh",
-	GetCurrentScriptDirectory() ~ "Eiki1S.dnh",
-	GetCurrentScriptDirectory() ~ "Eiki2.dnh",
-	GetCurrentScriptDirectory() ~ "Eiki2S.dnh",
-	GetCurrentScriptDirectory() ~ "Eiki3S.dnh",
-	GetCurrentScriptDirectory() ~ "Eiki4S.dnh",
-	GetCurrentScriptDirectory() ~ "Eiki99.dnh",
-	GetCurrentScriptDirectory() ~ "EikiL.dnh"
+	DIR_THC_ROOT ~ "Eiki0.dnh",
+	DIR_THC_ROOT ~ "Eiki1.dnh",
+	DIR_THC_ROOT ~ "Eiki1S.dnh",
+	DIR_THC_ROOT ~ "Eiki2.dnh",
+	DIR_THC_ROOT ~ "Eiki2S.dnh",
+	DIR_THC_ROOT ~ "Eiki3S.dnh",
+	DIR_THC_ROOT ~ "Eiki4S.dnh",
+	DIR_THC_ROOT ~ "Eiki99.dnh",
+	DIR_THC_ROOT ~ "EikiL.dnh"
 ];
 
 
@@ -225,72 +226,72 @@ let bossEikiList = [
 // 旧作ルート
 // -----------------------------------------------------------------------------
 
-let bossMimaAE = GetCurrentScriptDirectory() ~ "MimaAE.dnh";
-let bossMimaAH = GetCurrentScriptDirectory() ~ "MimaAH.dnh";
-let bossMimaA99 = GetCurrentScriptDirectory() ~ "MimaA99.dnh";
-let bossMimaB = GetCurrentScriptDirectory() ~ "MimaB.dnh";
-let bossMimaBL = GetCurrentScriptDirectory() ~ "MimaBL.dnh";
-let bossMimaB99 = GetCurrentScriptDirectory() ~ "MimaB99.dnh";
-let bossYukaA = GetCurrentScriptDirectory() ~ "YukaA.dnh";
-let bossYukaA99 = GetCurrentScriptDirectory() ~ "YukaA99.dnh";
-let bossYukaB = GetCurrentScriptDirectory() ~ "YukaB.dnh";
-let bossYukaBL = GetCurrentScriptDirectory() ~ "YukaBL.dnh";
-let bossYukaB99 = GetCurrentScriptDirectory() ~ "YukaB99.dnh";
-let bossShinki = GetCurrentScriptDirectory() ~ "Shinki.dnh";
-let bossShinki99 = GetCurrentScriptDirectory() ~ "Shinki99.dnh";
-let bossAlice = GetCurrentScriptDirectory() ~ "Alice.dnh";
-let bossAliceL = GetCurrentScriptDirectory() ~ "AliceL.dnh";
-let bossAlice99 = GetCurrentScriptDirectory() ~ "Alice99.dnh";
+let bossMimaAE = DIR_THC_ROOT ~ "MimaAE.dnh";
+let bossMimaAH = DIR_THC_ROOT ~ "MimaAH.dnh";
+let bossMimaA99 = DIR_THC_ROOT ~ "MimaA99.dnh";
+let bossMimaB = DIR_THC_ROOT ~ "MimaB.dnh";
+let bossMimaBL = DIR_THC_ROOT ~ "MimaBL.dnh";
+let bossMimaB99 = DIR_THC_ROOT ~ "MimaB99.dnh";
+let bossYukaA = DIR_THC_ROOT ~ "YukaA.dnh";
+let bossYukaA99 = DIR_THC_ROOT ~ "YukaA99.dnh";
+let bossYukaB = DIR_THC_ROOT ~ "YukaB.dnh";
+let bossYukaBL = DIR_THC_ROOT ~ "YukaBL.dnh";
+let bossYukaB99 = DIR_THC_ROOT ~ "YukaB99.dnh";
+let bossShinki = DIR_THC_ROOT ~ "Shinki.dnh";
+let bossShinki99 = DIR_THC_ROOT ~ "Shinki99.dnh";
+let bossAlice = DIR_THC_ROOT ~ "Alice.dnh";
+let bossAliceL = DIR_THC_ROOT ~ "AliceL.dnh";
+let bossAlice99 = DIR_THC_ROOT ~ "Alice99.dnh";
 
 let bossMimaAList = [
-	GetCurrentScriptDirectory() ~ "MimaA0.dnh",
-	GetCurrentScriptDirectory() ~ "MimaA1.dnh",
-	GetCurrentScriptDirectory() ~ "MimaA1S.dnh",
-	GetCurrentScriptDirectory() ~ "MimaA99.dnh"
+	DIR_THC_ROOT ~ "MimaA0.dnh",
+	DIR_THC_ROOT ~ "MimaA1.dnh",
+	DIR_THC_ROOT ~ "MimaA1S.dnh",
+	DIR_THC_ROOT ~ "MimaA99.dnh"
 ];
 let bossMimaBList = [
-	GetCurrentScriptDirectory() ~ "MimaB0.dnh",
-	GetCurrentScriptDirectory() ~ "MimaB1.dnh",
-	GetCurrentScriptDirectory() ~ "MimaB1S.dnh",
-	GetCurrentScriptDirectory() ~ "MimaB2.dnh",
-	GetCurrentScriptDirectory() ~ "MimaB2S.dnh",
-	GetCurrentScriptDirectory() ~ "MimaB99.dnh",
-	GetCurrentScriptDirectory() ~ "MimaBL.dnh"
+	DIR_THC_ROOT ~ "MimaB0.dnh",
+	DIR_THC_ROOT ~ "MimaB1.dnh",
+	DIR_THC_ROOT ~ "MimaB1S.dnh",
+	DIR_THC_ROOT ~ "MimaB2.dnh",
+	DIR_THC_ROOT ~ "MimaB2S.dnh",
+	DIR_THC_ROOT ~ "MimaB99.dnh",
+	DIR_THC_ROOT ~ "MimaBL.dnh"
 ];
 
 let bossYukaAList = [
-	GetCurrentScriptDirectory() ~ "YukaA0.dnh",
-	GetCurrentScriptDirectory() ~ "YukaA1.dnh",
-	GetCurrentScriptDirectory() ~ "YukaA1S.dnh",
-	GetCurrentScriptDirectory() ~ "YukaA99.dnh"
+	DIR_THC_ROOT ~ "YukaA0.dnh",
+	DIR_THC_ROOT ~ "YukaA1.dnh",
+	DIR_THC_ROOT ~ "YukaA1S.dnh",
+	DIR_THC_ROOT ~ "YukaA99.dnh"
 ];
 let bossYukaBList = [
-	GetCurrentScriptDirectory() ~ "YukaB0.dnh",
-	GetCurrentScriptDirectory() ~ "YukaB1.dnh",
-	GetCurrentScriptDirectory() ~ "YukaB1S.dnh",
-	GetCurrentScriptDirectory() ~ "YukaB2.dnh",
-	GetCurrentScriptDirectory() ~ "YukaB2S.dnh",
-	GetCurrentScriptDirectory() ~ "YukaB3S.dnh",
-	GetCurrentScriptDirectory() ~ "YukaB99.dnh",
-	GetCurrentScriptDirectory() ~ "YukaBL.dnh"
+	DIR_THC_ROOT ~ "YukaB0.dnh",
+	DIR_THC_ROOT ~ "YukaB1.dnh",
+	DIR_THC_ROOT ~ "YukaB1S.dnh",
+	DIR_THC_ROOT ~ "YukaB2.dnh",
+	DIR_THC_ROOT ~ "YukaB2S.dnh",
+	DIR_THC_ROOT ~ "YukaB3S.dnh",
+	DIR_THC_ROOT ~ "YukaB99.dnh",
+	DIR_THC_ROOT ~ "YukaBL.dnh"
 ];
 
 let bossShinkiList = [
-	GetCurrentScriptDirectory() ~ "Shinki0.dnh",
-	GetCurrentScriptDirectory() ~ "Shinki1.dnh",
-	GetCurrentScriptDirectory() ~ "Shinki1S.dnh",
-	GetCurrentScriptDirectory() ~ "Shinki99.dnh"
+	DIR_THC_ROOT ~ "Shinki0.dnh",
+	DIR_THC_ROOT ~ "Shinki1.dnh",
+	DIR_THC_ROOT ~ "Shinki1S.dnh",
+	DIR_THC_ROOT ~ "Shinki99.dnh"
 ];
 let bossAliceList = [
-	GetCurrentScriptDirectory() ~ "Alice0.dnh",
-	GetCurrentScriptDirectory() ~ "Alice1.dnh",
-	GetCurrentScriptDirectory() ~ "Alice1S.dnh",
-	GetCurrentScriptDirectory() ~ "Alice2.dnh",
-	GetCurrentScriptDirectory() ~ "Alice2S.dnh",
-	GetCurrentScriptDirectory() ~ "Alice3S.dnh",
-	GetCurrentScriptDirectory() ~ "Alice4S.dnh",
-	GetCurrentScriptDirectory() ~ "Alice99.dnh",
-	GetCurrentScriptDirectory() ~ "AliceL.dnh"
+	DIR_THC_ROOT ~ "Alice0.dnh",
+	DIR_THC_ROOT ~ "Alice1.dnh",
+	DIR_THC_ROOT ~ "Alice1S.dnh",
+	DIR_THC_ROOT ~ "Alice2.dnh",
+	DIR_THC_ROOT ~ "Alice2S.dnh",
+	DIR_THC_ROOT ~ "Alice3S.dnh",
+	DIR_THC_ROOT ~ "Alice4S.dnh",
+	DIR_THC_ROOT ~ "Alice99.dnh",
+	DIR_THC_ROOT ~ "AliceL.dnh"
 ];
 
 
@@ -298,28 +299,28 @@ let bossAliceList = [
 // Stage4
 // -----------------------------------------------------------------------------
 
-let bossChenRan1S = GetCurrentScriptDirectory() ~ "ChenRan1S.dnh";
-let bossChenRan99 = GetCurrentScriptDirectory() ~ "ChenRan99.dnh";
-let bossYukariE = GetCurrentScriptDirectory() ~ "YukariE.dnh";
-let bossYukariH = GetCurrentScriptDirectory() ~ "YukariH.dnh";
-let bossYukariL = GetCurrentScriptDirectory() ~ "YukariL.dnh";
-let bossYukari99 = GetCurrentScriptDirectory() ~ "Yukari99.dnh";
+let bossChenRan1S = DIR_THC_ROOT ~ "ChenRan1S.dnh";
+let bossChenRan99 = DIR_THC_ROOT ~ "ChenRan99.dnh";
+let bossYukariE = DIR_THC_ROOT ~ "YukariE.dnh";
+let bossYukariH = DIR_THC_ROOT ~ "YukariH.dnh";
+let bossYukariL = DIR_THC_ROOT ~ "YukariL.dnh";
+let bossYukari99 = DIR_THC_ROOT ~ "Yukari99.dnh";
 
 let bossChenRanList =[
-	GetCurrentScriptDirectory() ~ "ChenRan1S.dnh",
-	GetCurrentScriptDirectory() ~ "ChenRan99.dnh"
+	DIR_THC_ROOT ~ "ChenRan1S.dnh",
+	DIR_THC_ROOT ~ "ChenRan99.dnh"
 ];
 let bossYukariList =[
-	GetCurrentScriptDirectory() ~ "Yukari0.dnh",
-	GetCurrentScriptDirectory() ~ "Yukari1.dnh",
-	GetCurrentScriptDirectory() ~ "Yukari1S.dnh",
-	GetCurrentScriptDirectory() ~ "Yukari2.dnh",
-	GetCurrentScriptDirectory() ~ "Yukari2S.dnh",
-	GetCurrentScriptDirectory() ~ "Yukari3S.dnh",
-	GetCurrentScriptDirectory() ~ "Yukari4S.dnh",
-	GetCurrentScriptDirectory() ~ "Yukari5S.dnh",
-	GetCurrentScriptDirectory() ~ "Yukari99.dnh",
-	GetCurrentScriptDirectory() ~ "YukariL.dnh"
+	DIR_THC_ROOT ~ "Yukari0.dnh",
+	DIR_THC_ROOT ~ "Yukari1.dnh",
+	DIR_THC_ROOT ~ "Yukari1S.dnh",
+	DIR_THC_ROOT ~ "Yukari2.dnh",
+	DIR_THC_ROOT ~ "Yukari2S.dnh",
+	DIR_THC_ROOT ~ "Yukari3S.dnh",
+	DIR_THC_ROOT ~ "Yukari4S.dnh",
+	DIR_THC_ROOT ~ "Yukari5S.dnh",
+	DIR_THC_ROOT ~ "Yukari99.dnh",
+	DIR_THC_ROOT ~ "YukariL.dnh"
 ];
 
 
@@ -327,39 +328,39 @@ let bossYukariList =[
 // Stage5
 // -----------------------------------------------------------------------------
 
-let bossYoumuA = GetCurrentScriptDirectory() ~ "YoumuA.dnh";
-let bossYoumuB = GetCurrentScriptDirectory() ~ "YoumuB.dnh";
-let bossYoumuC = GetCurrentScriptDirectory() ~ "YoumuC.dnh";
-let bossYoumuD = GetCurrentScriptDirectory() ~ "YoumuD.dnh";
-let bossYoumu99 = GetCurrentScriptDirectory() ~ "Youmu99.dnh";
-let bossYuyuko99 = GetCurrentScriptDirectory() ~ "Yuyuko99.dnh";
-let bossYuyukoA = GetCurrentScriptDirectory() ~ "YuyukoA.dnh";
-let bossYuyukoB = GetCurrentScriptDirectory() ~ "YuyukoB.dnh";
-let bossYuyukoC = GetCurrentScriptDirectory() ~ "YuyukoC.dnh";
-let bossYuyukoD = GetCurrentScriptDirectory() ~ "YuyukoD.dnh";
-let bossYuyukoL = GetCurrentScriptDirectory() ~ "YuyukoL.dnh";
+let bossYoumuA = DIR_THC_ROOT ~ "YoumuA.dnh";
+let bossYoumuB = DIR_THC_ROOT ~ "YoumuB.dnh";
+let bossYoumuC = DIR_THC_ROOT ~ "YoumuC.dnh";
+let bossYoumuD = DIR_THC_ROOT ~ "YoumuD.dnh";
+let bossYoumu99 = DIR_THC_ROOT ~ "Youmu99.dnh";
+let bossYuyuko99 = DIR_THC_ROOT ~ "Yuyuko99.dnh";
+let bossYuyukoA = DIR_THC_ROOT ~ "YuyukoA.dnh";
+let bossYuyukoB = DIR_THC_ROOT ~ "YuyukoB.dnh";
+let bossYuyukoC = DIR_THC_ROOT ~ "YuyukoC.dnh";
+let bossYuyukoD = DIR_THC_ROOT ~ "YuyukoD.dnh";
+let bossYuyukoL = DIR_THC_ROOT ~ "YuyukoL.dnh";
 
 
 let bossYoumuList =[
-	GetCurrentScriptDirectory() ~ "Youmu1.dnh",
-	GetCurrentScriptDirectory() ~ "Youmu1S.dnh",
-	GetCurrentScriptDirectory() ~ "Youmu2S.dnh",
-	GetCurrentScriptDirectory() ~ "Youmu3S.dnh",
-	GetCurrentScriptDirectory() ~ "Youmu4S.dnh",
-	GetCurrentScriptDirectory() ~ "Youmu99.dnh"
+	DIR_THC_ROOT ~ "Youmu1.dnh",
+	DIR_THC_ROOT ~ "Youmu1S.dnh",
+	DIR_THC_ROOT ~ "Youmu2S.dnh",
+	DIR_THC_ROOT ~ "Youmu3S.dnh",
+	DIR_THC_ROOT ~ "Youmu4S.dnh",
+	DIR_THC_ROOT ~ "Youmu99.dnh"
 ];
 let bossYuyukoList =[
-	GetCurrentScriptDirectory() ~ "Yuyuko0.dnh",
-	GetCurrentScriptDirectory() ~ "Yuyuko1.dnh",
-	GetCurrentScriptDirectory() ~ "Yuyuko1S.dnh",
-	GetCurrentScriptDirectory() ~ "Yuyuko2.dnh",
-	GetCurrentScriptDirectory() ~ "Yuyuko2S.dnh",
-	GetCurrentScriptDirectory() ~ "Yuyuko3S.dnh",
-	GetCurrentScriptDirectory() ~ "Yuyuko4S.dnh",
-	GetCurrentScriptDirectory() ~ "Yuyuko5S.dnh",
-	GetCurrentScriptDirectory() ~ "Yuyuko6S.dnh",
-	GetCurrentScriptDirectory() ~ "Yuyuko99.dnh",
-	GetCurrentScriptDirectory() ~ "YuyukoL.dnh"
+	DIR_THC_ROOT ~ "Yuyuko0.dnh",
+	DIR_THC_ROOT ~ "Yuyuko1.dnh",
+	DIR_THC_ROOT ~ "Yuyuko1S.dnh",
+	DIR_THC_ROOT ~ "Yuyuko2.dnh",
+	DIR_THC_ROOT ~ "Yuyuko2S.dnh",
+	DIR_THC_ROOT ~ "Yuyuko3S.dnh",
+	DIR_THC_ROOT ~ "Yuyuko4S.dnh",
+	DIR_THC_ROOT ~ "Yuyuko5S.dnh",
+	DIR_THC_ROOT ~ "Yuyuko6S.dnh",
+	DIR_THC_ROOT ~ "Yuyuko99.dnh",
+	DIR_THC_ROOT ~ "YuyukoL.dnh"
 ];
 
 
@@ -367,40 +368,40 @@ let bossYuyukoList =[
 // Stage6
 // -----------------------------------------------------------------------------
 
-let bossYuyukoYukari = GetCurrentScriptDirectory() ~ "YuyukoYukari.dnh";
-let bossYuyukoYukari99 = GetCurrentScriptDirectory() ~ "YuyukoYukari99.dnh";
-let bossReimuW = GetCurrentScriptDirectory() ~ "ReimuW.dnh";
-let bossReimuW99 = GetCurrentScriptDirectory() ~ "ReimuW99.dnh";
-let bossReimuX0 = GetCurrentScriptDirectory() ~ "ReimuX0.dnh";
-let bossReimuX = GetCurrentScriptDirectory() ~ "ReimuX.dnh";
-let bossReimuX99 = GetCurrentScriptDirectory() ~ "ReimuX99.dnh";
+let bossYuyukoYukari = DIR_THC_ROOT ~ "YuyukoYukari.dnh";
+let bossYuyukoYukari99 = DIR_THC_ROOT ~ "YuyukoYukari99.dnh";
+let bossReimuW = DIR_THC_ROOT ~ "ReimuW.dnh";
+let bossReimuW99 = DIR_THC_ROOT ~ "ReimuW99.dnh";
+let bossReimuX0 = DIR_THC_ROOT ~ "ReimuX0.dnh";
+let bossReimuX = DIR_THC_ROOT ~ "ReimuX.dnh";
+let bossReimuX99 = DIR_THC_ROOT ~ "ReimuX99.dnh";
 
 let bossYuyukoYukariList =[
-	GetCurrentScriptDirectory() ~ "YuyukoYukari0.dnh",
-	GetCurrentScriptDirectory() ~ "YuyukoYukari1S.dnh",
-	GetCurrentScriptDirectory() ~ "YuyukoYukari99.dnh",
+	DIR_THC_ROOT ~ "YuyukoYukari0.dnh",
+	DIR_THC_ROOT ~ "YuyukoYukari1S.dnh",
+	DIR_THC_ROOT ~ "YuyukoYukari99.dnh",
 ];
 let bossReimuWList =[
-	GetCurrentScriptDirectory() ~ "ReimuW0.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuW1.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuW1S.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuW2.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuW2S.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuW3.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuW3S.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuW4.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuW4S.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuW5S.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuW99.dnh",
+	DIR_THC_ROOT ~ "ReimuW0.dnh",
+	DIR_THC_ROOT ~ "ReimuW1.dnh",
+	DIR_THC_ROOT ~ "ReimuW1S.dnh",
+	DIR_THC_ROOT ~ "ReimuW2.dnh",
+	DIR_THC_ROOT ~ "ReimuW2S.dnh",
+	DIR_THC_ROOT ~ "ReimuW3.dnh",
+	DIR_THC_ROOT ~ "ReimuW3S.dnh",
+	DIR_THC_ROOT ~ "ReimuW4.dnh",
+	DIR_THC_ROOT ~ "ReimuW4S.dnh",
+	DIR_THC_ROOT ~ "ReimuW5S.dnh",
+	DIR_THC_ROOT ~ "ReimuW99.dnh",
 ];
 let bossReimuXList =[
-	GetCurrentScriptDirectory() ~ "ReimuX0.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuX1S.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuX2S.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuX3S.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuX4S.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuX5S.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuX99.dnh",
+	DIR_THC_ROOT ~ "ReimuX0.dnh",
+	DIR_THC_ROOT ~ "ReimuX1S.dnh",
+	DIR_THC_ROOT ~ "ReimuX2S.dnh",
+	DIR_THC_ROOT ~ "ReimuX3S.dnh",
+	DIR_THC_ROOT ~ "ReimuX4S.dnh",
+	DIR_THC_ROOT ~ "ReimuX5S.dnh",
+	DIR_THC_ROOT ~ "ReimuX99.dnh",
 ];
 
 
@@ -409,41 +410,41 @@ let bossReimuXList =[
 // Extra
 // -----------------------------------------------------------------------------
 
-let bossSuikaA = GetCurrentScriptDirectory() ~ "SuikaA.dnh";
-let bossSuikaA99 = GetCurrentScriptDirectory() ~ "SuikaA99.dnh";
-let bossSuikaB = GetCurrentScriptDirectory() ~ "SuikaB.dnh";
-let bossSuikaB99 = GetCurrentScriptDirectory() ~ "SuikaB99.dnh";
-let bossSuikaBL = GetCurrentScriptDirectory() ~ "SuikaBL.dnh";
+let bossSuikaA = DIR_THC_ROOT ~ "SuikaA.dnh";
+let bossSuikaA99 = DIR_THC_ROOT ~ "SuikaA99.dnh";
+let bossSuikaB = DIR_THC_ROOT ~ "SuikaB.dnh";
+let bossSuikaB99 = DIR_THC_ROOT ~ "SuikaB99.dnh";
+let bossSuikaBL = DIR_THC_ROOT ~ "SuikaBL.dnh";
 
 let bossSuikaAList = [
-	GetCurrentScriptDirectory() ~ "SuikaA0.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaA1S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaA2S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaA3S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaA99.dnh",
+	DIR_THC_ROOT ~ "SuikaA0.dnh",
+	DIR_THC_ROOT ~ "SuikaA1S.dnh",
+	DIR_THC_ROOT ~ "SuikaA2S.dnh",
+	DIR_THC_ROOT ~ "SuikaA3S.dnh",
+	DIR_THC_ROOT ~ "SuikaA99.dnh",
 ];
 let bossSuikaBList = [
-	GetCurrentScriptDirectory() ~ "SuikaB0.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB1.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB1S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB2.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB2S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB3.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB3S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB4.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB4S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB5.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB5S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB6.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB6S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB7.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB7S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB8.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB8S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB9S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB10S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaB99.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaBL.dnh",
+	DIR_THC_ROOT ~ "SuikaB0.dnh",
+	DIR_THC_ROOT ~ "SuikaB1.dnh",
+	DIR_THC_ROOT ~ "SuikaB1S.dnh",
+	DIR_THC_ROOT ~ "SuikaB2.dnh",
+	DIR_THC_ROOT ~ "SuikaB2S.dnh",
+	DIR_THC_ROOT ~ "SuikaB3.dnh",
+	DIR_THC_ROOT ~ "SuikaB3S.dnh",
+	DIR_THC_ROOT ~ "SuikaB4.dnh",
+	DIR_THC_ROOT ~ "SuikaB4S.dnh",
+	DIR_THC_ROOT ~ "SuikaB5.dnh",
+	DIR_THC_ROOT ~ "SuikaB5S.dnh",
+	DIR_THC_ROOT ~ "SuikaB6.dnh",
+	DIR_THC_ROOT ~ "SuikaB6S.dnh",
+	DIR_THC_ROOT ~ "SuikaB7.dnh",
+	DIR_THC_ROOT ~ "SuikaB7S.dnh",
+	DIR_THC_ROOT ~ "SuikaB8.dnh",
+	DIR_THC_ROOT ~ "SuikaB8S.dnh",
+	DIR_THC_ROOT ~ "SuikaB9S.dnh",
+	DIR_THC_ROOT ~ "SuikaB10S.dnh",
+	DIR_THC_ROOT ~ "SuikaB99.dnh",
+	DIR_THC_ROOT ~ "SuikaBL.dnh",
 ];
 
 
@@ -451,41 +452,41 @@ let bossSuikaBList = [
 // Phantasm
 // -----------------------------------------------------------------------------
 
-let bossSuikaC = GetCurrentScriptDirectory() ~ "SuikaC.dnh";
-let bossSuikaC99 = GetCurrentScriptDirectory() ~ "SuikaC99.dnh";
-let bossReimuR = GetCurrentScriptDirectory() ~ "Reimu.dnh";
-let bossReimuR99 = GetCurrentScriptDirectory() ~ "Reimu99.dnh";
-let bossReimuRL = GetCurrentScriptDirectory() ~ "ReimuL.dnh";
+let bossSuikaC = DIR_THC_ROOT ~ "SuikaC.dnh";
+let bossSuikaC99 = DIR_THC_ROOT ~ "SuikaC99.dnh";
+let bossReimuR = DIR_THC_ROOT ~ "Reimu.dnh";
+let bossReimuR99 = DIR_THC_ROOT ~ "Reimu99.dnh";
+let bossReimuRL = DIR_THC_ROOT ~ "ReimuL.dnh";
 
 let bossSuikaCList = [
-	GetCurrentScriptDirectory() ~ "SuikaC0.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaC1S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaC2S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaC3S.dnh",
-	GetCurrentScriptDirectory() ~ "SuikaC99.dnh",
+	DIR_THC_ROOT ~ "SuikaC0.dnh",
+	DIR_THC_ROOT ~ "SuikaC1S.dnh",
+	DIR_THC_ROOT ~ "SuikaC2S.dnh",
+	DIR_THC_ROOT ~ "SuikaC3S.dnh",
+	DIR_THC_ROOT ~ "SuikaC99.dnh",
 ];
 let bossReimuRList = [
-	GetCurrentScriptDirectory() ~ "Reimu0.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu1.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu1S.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu2.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu2S.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu3.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu3S.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu4.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu4S.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu5.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu5S.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu6.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu6S.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu7.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu7S.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu8.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu8S.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu9S.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu10S.dnh",
-	GetCurrentScriptDirectory() ~ "Reimu99.dnh",
-	GetCurrentScriptDirectory() ~ "ReimuL.dnh",
+	DIR_THC_ROOT ~ "Reimu0.dnh",
+	DIR_THC_ROOT ~ "Reimu1.dnh",
+	DIR_THC_ROOT ~ "Reimu1S.dnh",
+	DIR_THC_ROOT ~ "Reimu2.dnh",
+	DIR_THC_ROOT ~ "Reimu2S.dnh",
+	DIR_THC_ROOT ~ "Reimu3.dnh",
+	DIR_THC_ROOT ~ "Reimu3S.dnh",
+	DIR_THC_ROOT ~ "Reimu4.dnh",
+	DIR_THC_ROOT ~ "Reimu4S.dnh",
+	DIR_THC_ROOT ~ "Reimu5.dnh",
+	DIR_THC_ROOT ~ "Reimu5S.dnh",
+	DIR_THC_ROOT ~ "Reimu6.dnh",
+	DIR_THC_ROOT ~ "Reimu6S.dnh",
+	DIR_THC_ROOT ~ "Reimu7.dnh",
+	DIR_THC_ROOT ~ "Reimu7S.dnh",
+	DIR_THC_ROOT ~ "Reimu8.dnh",
+	DIR_THC_ROOT ~ "Reimu8S.dnh",
+	DIR_THC_ROOT ~ "Reimu9S.dnh",
+	DIR_THC_ROOT ~ "Reimu10S.dnh",
+	DIR_THC_ROOT ~ "Reimu99.dnh",
+	DIR_THC_ROOT ~ "ReimuL.dnh",
 ];
 
 
@@ -493,34 +494,34 @@ let bossReimuRList = [
 // Lastword
 // -----------------------------------------------------------------------------
 
-let bossLWDummy		= GetCurrentScriptDirectory() ~ "LW_.dnh";
+let bossLWDummy		= DIR_THC_ROOT ~ "LW_.dnh";
 
-let bossLWFlandre	= GetCurrentScriptDirectory() ~ "LW_Flandre.dnh";
-let bossLWMeirin	= GetCurrentScriptDirectory() ~ "LW_Meirin.dnh";
-let bossLWSakuya	= GetCurrentScriptDirectory() ~ "LW_Sakuya.dnh";
-let bossLWRemilia	= GetCurrentScriptDirectory() ~ "LW_Remilia.dnh";
-let bossLWDevil		= GetCurrentScriptDirectory() ~ "LW_Devil.dnh";
-let bossLWPatchouli	= GetCurrentScriptDirectory() ~ "LW_Patchouli.dnh";
-let bossLWMokou		= GetCurrentScriptDirectory() ~ "LW_Mokou.dnh";
-let bossLWKaguya	= GetCurrentScriptDirectory() ~ "LW_Kaguya.dnh";
-let bossLWReisen	= GetCurrentScriptDirectory() ~ "LW_Reisen.dnh";
-let bossLWEirin		= GetCurrentScriptDirectory() ~ "LW_Eirin.dnh";
-let bossLWTewi		= GetCurrentScriptDirectory() ~ "LW_Tewi.dnh";
-let bossLWLily		= GetCurrentScriptDirectory() ~ "LW_Lily.dnh";
-let bossLWMedicine	= GetCurrentScriptDirectory() ~ "LW_Medicine.dnh";
-let bossLWAya		= GetCurrentScriptDirectory() ~ "LW_Aya.dnh";
-let bossLWKomachi	= GetCurrentScriptDirectory() ~ "LW_Komachi.dnh";
-let bossLWEiki		= GetCurrentScriptDirectory() ~ "LW_Eiki.dnh";
-let bossLWMima		= GetCurrentScriptDirectory() ~ "LW_Mima.dnh";
-let bossLWYuka		= GetCurrentScriptDirectory() ~ "LW_Yuka.dnh";
-let bossLWShinki	= GetCurrentScriptDirectory() ~ "LW_Shinki.dnh";
-let bossLWAlice		= GetCurrentScriptDirectory() ~ "LW_Alice.dnh";
-let bossLWChen		= GetCurrentScriptDirectory() ~ "LW_Chen.dnh";
-let bossLWRan		= GetCurrentScriptDirectory() ~ "LW_Ran.dnh";
-let bossLWYukari	= GetCurrentScriptDirectory() ~ "LW_Yukari.dnh";
-let bossLWYoumu		= GetCurrentScriptDirectory() ~ "LW_Youmu.dnh";
-let bossLWYuyuko	= GetCurrentScriptDirectory() ~ "LW_Yuyuko.dnh";
-let bossLWReimuW	= GetCurrentScriptDirectory() ~ "LW_ReimuW.dnh";
-let bossLWSuika		= GetCurrentScriptDirectory() ~ "LW_Suika.dnh";
-let bossLWReimuR	= GetCurrentScriptDirectory() ~ "LW_ReimuR.dnh";
+let bossLWFlandre	= DIR_THC_ROOT ~ "LW_Flandre.dnh";
+let bossLWMeirin	= DIR_THC_ROOT ~ "LW_Meirin.dnh";
+let bossLWSakuya	= DIR_THC_ROOT ~ "LW_Sakuya.dnh";
+let bossLWRemilia	= DIR_THC_ROOT ~ "LW_Remilia.dnh";
+let bossLWDevil		= DIR_THC_ROOT ~ "LW_Devil.dnh";
+let bossLWPatchouli	= DIR_THC_ROOT ~ "LW_Patchouli.dnh";
+let bossLWMokou		= DIR_THC_ROOT ~ "LW_Mokou.dnh";
+let bossLWKaguya	= DIR_THC_ROOT ~ "LW_Kaguya.dnh";
+let bossLWReisen	= DIR_THC_ROOT ~ "LW_Reisen.dnh";
+let bossLWEirin		= DIR_THC_ROOT ~ "LW_Eirin.dnh";
+let bossLWTewi		= DIR_THC_ROOT ~ "LW_Tewi.dnh";
+let bossLWLily		= DIR_THC_ROOT ~ "LW_Lily.dnh";
+let bossLWMedicine	= DIR_THC_ROOT ~ "LW_Medicine.dnh";
+let bossLWAya		= DIR_THC_ROOT ~ "LW_Aya.dnh";
+let bossLWKomachi	= DIR_THC_ROOT ~ "LW_Komachi.dnh";
+let bossLWEiki		= DIR_THC_ROOT ~ "LW_Eiki.dnh";
+let bossLWMima		= DIR_THC_ROOT ~ "LW_Mima.dnh";
+let bossLWYuka		= DIR_THC_ROOT ~ "LW_Yuka.dnh";
+let bossLWShinki	= DIR_THC_ROOT ~ "LW_Shinki.dnh";
+let bossLWAlice		= DIR_THC_ROOT ~ "LW_Alice.dnh";
+let bossLWChen		= DIR_THC_ROOT ~ "LW_Chen.dnh";
+let bossLWRan		= DIR_THC_ROOT ~ "LW_Ran.dnh";
+let bossLWYukari	= DIR_THC_ROOT ~ "LW_Yukari.dnh";
+let bossLWYoumu		= DIR_THC_ROOT ~ "LW_Youmu.dnh";
+let bossLWYuyuko	= DIR_THC_ROOT ~ "LW_Yuyuko.dnh";
+let bossLWReimuW	= DIR_THC_ROOT ~ "LW_ReimuW.dnh";
+let bossLWSuika		= DIR_THC_ROOT ~ "LW_Suika.dnh";
+let bossLWReimuR	= DIR_THC_ROOT ~ "LW_ReimuR.dnh";
 

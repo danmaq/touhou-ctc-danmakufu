@@ -193,6 +193,8 @@ let CL_CD_HISTORY_TRY			= "HISTORY_STAGE_TRY";
 let CL_CD_HISTORY_BGM			= "HISTORY_BGM";
 /**	合計フレームカウンタが格納されます。 */
 let CL_CD_HISTORY_COUNT_TOTAL	= "HISTORY_COUNT_TOTAL";
+/**	特別リプレイかどうかが格納されます。 */
+let CL_CD_SPECIAL_REPLAY		= "SPECIAL_REPLAY";
 
 
 //////////////////////////////////////////////////////////////////////

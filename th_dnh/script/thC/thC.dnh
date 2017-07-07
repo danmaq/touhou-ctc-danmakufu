@@ -17,7 +17,7 @@
 
 #東方弾幕風[Stage]
 #Title[東方夢終劇 ～ Concealed the Conclusion]
-#Text[THC R1.01]
+#Text[THC R1.02]
 #ScriptVersion[2]
 #Player[player\THC_MARISA\1.dnh, player\THC_MARISA\2.dnh, player\THC_MARISA\3.dnh, player\THC_MARISA\4.dnh]
 #Image[.\IMAGE\SYSTEM\jacket.png]
@@ -115,6 +115,8 @@ script_stage_main{
 	let m_bStageBGLongClip = false;
 	/**	書き込み可能テクスチャ生成を現フレームにて試みるかどうかが格納されます。 */
 	let m_bWritableTextureCreate = false;
+	/**	リプレイモードかどうかを格納します。 */
+	let m_bReplay = false;
 
 //--------------------------------------------------------------------
 //	以下、旧ライブラリから柔軟に対応するために用意した非推奨変数です。
@@ -206,7 +208,7 @@ script_stage_main{
 			if( m_bStagePractice	){ nLife = 8; }
 			else if( nStage >= 7	){ nLife = 3; }
 			ExpertEx(
-				false,
+				IsDebugMode(),
 				[ GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_CONTINUE, 1 ), 0 ][ m_bStagePractice || nStage >= 7 ],
 				nLife
 			);
@@ -232,6 +234,7 @@ script_stage_main{
 	*	@param nPrevPhase 1つ前の状態のフェーズ
 	*/
 	function onMainLoop( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		m_bReplay = IsReplay() && ( GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_SPECIAL_REPLAY, false ) == 0 );
 		if( m_nFlanLoadResourcePercentage != -1 ){ return; }
 		if( nStage == 7 ){
 			onMainLoop( m_nSpellPracticeBGStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
@@ -262,7 +265,7 @@ script_stage_main{
 	*	@param nPrevPhase 1つ前の状態のフェーズ
 	*/
 	function onFinalize( let nStage, let nStageCount, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
-		if( !( IsReplay() || nStage == 0 || UsedDebugKey() ) ){
+		if( !( m_bReplay || nStage == 0 || UsedDebugKey() ) ){
 			AddCommonDataEx( CL_CDNS_RESULT, CL_CD_HISTORY_COUNT_TOTAL, m_nFlanCount, 0 );
 			SaveCommonDataEx( CL_CDNS_RESULT, CL_CDFILE_RESULT );
 		}
