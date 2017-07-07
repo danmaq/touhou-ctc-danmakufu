@@ -15,7 +15,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include_function ".\IMAGE\index_shot.dnh"
-#include_function ".\SOUND\SE\index.dnh"
+#include_function "\lib\THCCL\SE\index.dnh"
 #include_function "\lib\THCCL\_index_UserShot.dnh"
 #include_function "\lib\THCCL\IMAGE\OTHER\index.dnh"
 

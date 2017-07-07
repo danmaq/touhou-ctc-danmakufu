@@ -57,66 +57,106 @@ script_player_main{
 //	定数
 //////////////////////////////////////////////////////////////////////
 
+	/**	左のレーザーを示す要素番号です。 */
+	let PLAYER_MARISA_LASER_LEFT		= 0;
+	/**	右のレーザーを示す要素番号です。 */
+	let PLAYER_MARISA_LASER_RIGHT		= 1;
+	/**	レーザーのフェードにかかる時間の定義です。 */
+	let PLAYER_MARISA_LASER_FADETIME	= 60;
+
 
 //////////////////////////////////////////////////////////////////////
 //	メンバ変数
 //////////////////////////////////////////////////////////////////////
 
-	let m_nMarisaLastShot	= 0;
-	let m_nBitLeftObject	= -1;
-	let m_nBitRightObject	= -1;
+	/**	現在の攻撃力が格納されます。 */
+	let m_nNowPower			= 0;
+	/**	ショットキー入力から算出したレーザーのAlpha値が格納されます。 */
+	let m_nLaserKeyAlpha	= 0;
+	/**	照射時間から算出したレーザーのAlpha値が格納されます。 */
+	let m_nLaserTimeAlpha	= 0;
+	/**	左右のレーザーがそれぞれ作成されたかどうかを返します。 */
+	let m_abLaserCreate		= [ false, false ];
 
 
 //////////////////////////////////////////////////////////////////////
 //	固有処理
 //////////////////////////////////////////////////////////////////////
 
-	task DoLaser( let nParentDir ){
-		let nParentObj;
-		loop{
-			nParentObj = [ m_nBitLeftObject, m_nBitRightObject ][ nParentDir == 1 ];
-			if( nParentObj >= 0 ){ break; }
+	/**
+	*	レーザーを照射します。
+	*
+	*	@param nParentBitDir レーザー照射元オブジェクトの位置
+	*	@param nParentBitObj レーザー照射元オブジェクトのハンドル
+	*/
+	task ShotLaser( let nParentBitDir, let nParentBitObj ){
+		let nLR = [ PLAYER_MARISA_LASER_RIGHT, PLAYER_MARISA_LASER_LEFT ][ nParentBitDir == -1 ];
+		let nCount = 0;
+		let nShotFreeTime = -1;
+		let obj = Obj_Create( OBJ_LASER );
+		Obj_SetAlpha( obj, 0 );
+		Obj_SetAngle( obj, 270 );
+		Obj_SetAutoDelete( obj, false );
+		Obj_SetAutoDelete( obj, false );
+		ObjShot_SetGraphic( obj, US_LASER );
+		ObjLaser_SetLength( obj, 448 );
+		ObjLaser_SetSource( obj, false );
+		m_abLaserCreate[ nLR ] = true;
+		__LaserInterval( obj );
+		__LaserDamage( obj );
+		while( !Obj_BeDeleted( obj ) ){
+			let nLaserWidthMin = 8 + m_nNowPower;
+			let nLaserWidthMax = 24 + m_nNowPower * 2;
+			ObjLaser_SetWidth(
+				obj, Smooth(
+					[ nLaserWidthMax, nLaserWidthMin ][ m_bFlanKeySlow ],
+					[ nLaserWidthMin, nLaserWidthMax ][ m_bFlanKeySlow ],
+					GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_KEY_SLOW_TIME, 0 ), 50
+				)
+			);
+			m_nLaserKeyAlpha = MinMax( m_nLaserKeyAlpha + 4 * [ -1, 1 ][ GetKeyState( VK_SHOT ) != KEY_FREE ], 0, 255 );
+			if( m_nLaserKeyAlpha == 0 ){ Obj_Delete( obj ); }
+			Obj_SetPosition( obj, Obj_GetX( nParentBitObj ), Obj_GetY( nParentBitObj ) );
 			yield;
+			nCount++;
 		}
-		loop{
-			yield;
-			let obj = Obj_Create( OBJ_LASER );
-			Obj_SetAngle( obj, 270 );
-			Obj_SetAutoDelete( obj, false );
-			Obj_SetAutoDelete( obj, false );
-			ObjShot_SetGraphic( obj, US_LASER );
-			ObjLaser_SetLength( obj, 448 );
-			ObjLaser_SetSource( obj, false );
-			__LaserDamage( obj );
-			while( !Obj_BeDeleted( obj ) ){
-				Obj_SetPosition( obj, Obj_GetX( nParentObj ), Obj_GetY( nParentObj ) );
+		m_abLaserCreate[ nLR ] = false;
+	}
+
+	/**
+	*	レーザーが時間によって明滅するのを制御します。
+	*
+	*	@param obj レーザーオブジェクトのハンドル
+	*/
+	task __LaserInterval( let obj ){
+		let nFade = 0;
+		while( !Obj_BeDeleted( obj ) ){
+			ascent( let i in 0..PLAYER_MARISA_LASER_FADETIME ){
+				if( Obj_BeDeleted( obj ) ){ return; }
+				m_nLaserTimeAlpha = Smooth( 0, 255, i, PLAYER_MARISA_LASER_FADETIME );
 				yield;
 			}
-			while( m_nFlanCount - m_nMarisaLastShot > 1 ){ yield; }
+			loop( [ [ 1, 30, 70, 120, 160, 230 ][ m_nNowPower ], [ 60, 90, 160, 280, 380, 600 ][ m_nNowPower ] ][ GetKeyState( VK_SLOWMOVE ) == KEY_HOLD ] ){ yield; }
+			descent( let i in 0..PLAYER_MARISA_LASER_FADETIME ){
+				if( Obj_BeDeleted( obj ) ){ return; }
+				m_nLaserTimeAlpha = Smooth( 0, 255, i, PLAYER_MARISA_LASER_FADETIME );
+				yield;
+			}
+			loop( [ [ 100, 50, 10, 1, 1, 1 ][ m_nNowPower ], [ 10, 1, 1, 1, 1, 1 ][ m_nNowPower ] ][ GetKeyState( VK_SLOWMOVE ) == KEY_HOLD ] ){ yield; }
 		}
 	}
 
+	/**
+	*	時間明滅とショットキー押離を比較して最終的なレーザーの光量とダメージを算出し、設定します。
+	*
+	*	@param obj レーザーオブジェクトのハンドル
+	*/
 	task __LaserDamage( let obj ){
-		let nKeyPullAlpha = 1;
-		let bForbidShot = true;
 		while( !Obj_BeDeleted( obj ) ){
+			let nAlpha = Min( m_nLaserKeyAlpha, m_nLaserTimeAlpha );
+			Obj_SetAlpha( obj, Smooth( 0, 112, nAlpha, 255 ) );
+			ObjShot_SetDamage( obj, Accelerate( 0, Smooth( 0.7, 1.3, m_nNowPower, 5 ), nAlpha, 255 ) );
 			yield;
-			let nPhase = GetPhase();
-			let nLaserWidthMin = 8 + nPhase;
-			let nLaserWidthMax = 24 + nPhase * 2;
-			let nSlowKeyChangeCount = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_KEY_SLOW_TIME, 0 );
-			ObjLaser_SetWidth( obj, Smooth( [ nLaserWidthMax, nLaserWidthMin ][ m_bFlanKeySlow ], [ nLaserWidthMin, nLaserWidthMax ][ m_bFlanKeySlow ], nSlowKeyChangeCount, 50 ) );
-			if( !bForbidShot ){ nKeyPullAlpha = MinMax( nKeyPullAlpha + [ -6, 5 ][ m_nFlanCount - m_nMarisaLastShot < FLAN_PLAYER_SHOT_INTERVAL * 2 ], 0, 255 ); }
-			if( nKeyPullAlpha == 0 ){
-				bForbidShot = true;
-				Obj_Delete( obj );
-				return;
-			}
-			let nAngleCircle = m_nFlanCount * Smooth( 2, 0.5, nPhase, 5 );
-			if( nAngleCircle % 360 < 10 ){ bForbidShot = false; }
-			let nAlpha = Min( Triangle( nAngleCircle ) * 255 * ( nPhase + 1 ), nKeyPullAlpha );
-			Obj_SetAlpha( obj, Min( nAlpha, 112 ) );
-			ObjShot_SetDamage( obj, Accelerate( 0, 1.3, Max( nAlpha - 64, 0 ), 192 ) * [ 1, 1.5 ][ m_bFlanKeySlow ] );
 		}
 	}
 
@@ -136,7 +176,6 @@ script_player_main{
 	*	初期化時に呼ばれます。
 	*/
 	function onInitializeTHC(){
-		ascent( let i in 0..2 ){ DoLaser( [ -1, 1 ][ i ] ); }
 	}
 
 	/**
@@ -161,9 +200,7 @@ script_player_main{
 	*	@param nPrevPhase 1つ前の状態のフェーズ
 	*/
 	function onSubShotTHC( let nParentBitObj, let nParentBitDir, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
-		m_nMarisaLastShot = nCount;
-		if( nParentBitDir == -1 ){ m_nBitLeftObject = nParentBitObj; }
-		if( nParentBitDir == 1 ){ m_nBitRightObject = nParentBitObj; }
+		if( !m_abLaserCreate[ [ PLAYER_MARISA_LASER_RIGHT, PLAYER_MARISA_LASER_LEFT ][ nParentBitDir == -1 ] ] ){ ShotLaser( nParentBitDir, nParentBitObj ); }
 	}
 
 	/**
@@ -175,6 +212,7 @@ script_player_main{
 	*	@param nPrevPhase 1つ前の状態のフェーズ
 	*/
 	function onMainLoopTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+		m_nNowPower = nPhase;
 		FLAN_PLAYER_SPEED_FAST = [ 4.7, [ 0.7, 2 ][ m_nPlayerSpellType == MOVE_NORMAL ] ][ OnBomb() ];
 		FLAN_PLAYER_SPEED_SLOW = [ 2.5, [ 0.8, 1.6 ][ m_nPlayerSpellType == MOVE_NORMAL ] ][ OnBomb() ];
 	}
@@ -258,9 +296,13 @@ script_spell SpellMarisaD1{
 //	定数
 //////////////////////////////////////////////////////////////////////
 
+	/**	レーザー照射時間です。 */
 	let NL_TIMEOUT			= 330;
+	/**	レーザーが既定の太さに達するまでの時間です。 */
 	let NL_TIMEOUT_SCALE	= 50;
+	/**	レーザーがフェードアウトに要する時間です。 */
 	let NL_TIMEOUT_BRIGHT	= 100;
+	/**	レーザーの半径です。 */
 	let NL_LASER_DIAM		= 460;
 
 
@@ -419,18 +461,30 @@ script_spell SpellMarisaD2{
 //	定数
 //////////////////////////////////////////////////////////////////////
 
+	/**	フラッシュが初期膨張するのに必要な時間です。 */
 	let MS_FLASH_PHASE1_INTERVAL	= 30;
+	/**	フラッシュが拡散(フェードアウト)するのに必要な時間です。 */
 	let MS_FLASH_PHASE2_INTERVAL	= 144;
+	/**	フラッシュの中心点とプレイヤー間の最大Y座標誤差です。 */
 	let MS_FLASH_GAP_Y				= 256;
+	/**	拡散時の最大幅に対して初期膨張時におけるフラッシュの最大幅の比率です。 */
 	let MS_FLASH_SCALE_DECAY		= 0.75;
+	/**	スパーク本体が初期膨張するのに必要な時間です。 */
 	let MS_SPARK_PHASE1_INTERVAL	= 50;
+	/**	スパーク本体が最大出力の状態で維持出来る時間です。 */
 	let MS_SPARK_PHASE2_INTERVAL	= 160;
-	let MS_SPARK_GAP_Y				= 320;
-	let MS_SPARK_ALPHA_DECAY		= 160;
+	/**	スパーク本体が収束するのに必要な時間です。 */
 	let MS_SPARK_PHASE3_INTERVAL	= 60;
+	/**	スパーク本体の中心点とプレイヤー間の最大Y座標誤差です。 */
+	let MS_SPARK_GAP_Y				= 320;
+	/**	スパーク本体が収束する瞬間の輝度です。 */
+	let MS_SPARK_ALPHA_DECAY		= 160;
 
+	/**	青レーザーの射出角度です。 */
 	let SPELL_LASER_SRC_X_BLUE	= 406;
+	/**	赤レーザーの射出角度です。 */
 	let SPELL_LASER_SRC_X_RED	= 256;
+	/**	橙レーザーの射出角度です。 */
 	let SPELL_LASER_SRC_X_ORANGE	= 286;
 
 

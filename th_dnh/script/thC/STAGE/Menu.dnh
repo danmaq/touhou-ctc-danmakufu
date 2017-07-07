@@ -23,6 +23,7 @@ let MENU_FADE_INTERVAL = 50;
 /**	メニューがスクロール状態におけるタイトルの行位置を定義します。 */
 let MENU_SCROLL_TARGET = 4;
 
+let SPELL_LW_ALL = 28;
 
 //--------------------------------------------------------------------
 //	読み込むリソース関連のを定義します。
@@ -58,25 +59,26 @@ let MENU_PHASE_MAIN						= 1;
 let MENU_PHASE_LEVEL					= 2;
 let MENU_PHASE_LEVEL_EX					= 3;
 let MENU_PHASE_PRACTICE					= 4;
-let MENU_PHASE_MUSIC					= 5;
-let MENU_PHASE_CONFIG					= 6;
-let MENU_PHASE_PRACTICE_STAGE			= 7;
-let MENU_PHASE_PRACTICE_SPELL			= 8;
-let MENU_PHASE_CONFIG_GRAPHIC			= 9;
-let MENU_PHASE_CONFIG_SOUND				= 10;
-let MENU_PHASE_CONFIG_GAME				= 11;
-let MENU_PHASE_RESET_CONFIG				= 12;
-let MENU_PHASE_RESET_ALL				= 13;
-let MENU_PHASE_SCENARIO					= 14;
-let MENU_PHASE_PRACTICE_SPELL_ALL		= 15;
-let MENU_PHASE_PRACTICE_SPELL_CHAR		= 16;
-let MENU_PHASE_PRACTICE_SPELL_LEVEL		= 17;
-let MENU_PHASE_PRACTICE_SPELL_GOT		= 18;
-let MENU_PHASE_PRACTICE_SPELL_UNBEATEN	= 19;
-let MENU_PHASE_LAUNCH					= 20;
-let MENU_PHASE_LAUNCH_EX				= 21;
-let MENU_PHASE_LAUNCH_SPELL				= 22;
-let MENU_PHASE_REBOOT					= 23;
+let MENU_PHASE_RESULT					= 5;
+let MENU_PHASE_MUSIC					= 6;
+let MENU_PHASE_CONFIG					= 7;
+let MENU_PHASE_PRACTICE_STAGE			= 8;
+let MENU_PHASE_PRACTICE_SPELL			= 9;
+let MENU_PHASE_CONFIG_GRAPHIC			= 10;
+let MENU_PHASE_CONFIG_SOUND				= 11;
+let MENU_PHASE_CONFIG_GAME				= 12;
+let MENU_PHASE_RESET_CONFIG				= 13;
+let MENU_PHASE_RESET_ALL				= 14;
+let MENU_PHASE_SCENARIO					= 15;
+let MENU_PHASE_PRACTICE_SPELL_ALL		= 16;
+let MENU_PHASE_PRACTICE_SPELL_CHAR		= 17;
+let MENU_PHASE_PRACTICE_SPELL_LEVEL		= 18;
+let MENU_PHASE_PRACTICE_SPELL_GOT		= 19;
+let MENU_PHASE_PRACTICE_SPELL_UNBEATEN	= 10;
+let MENU_PHASE_LAUNCH					= 21;
+let MENU_PHASE_LAUNCH_EX				= 22;
+let MENU_PHASE_LAUNCH_SPELL				= 23;
+let MENU_PHASE_REBOOT					= 24;
 
 
 //--------------------------------------------------------------------
@@ -84,10 +86,11 @@ let MENU_PHASE_REBOOT					= 23;
 //--------------------------------------------------------------------
 
 let MENU_SIZE_BOOLEAN				= 2;
-let MENU_SIZE_MAIN					= 5;
+let MENU_SIZE_MAIN					= 6;
 let MENU_SIZE_LEVEL					= 4;
 let MENU_SIZE_LEVEL_EX				= 2;
 let MENU_SIZE_PRACTICE				= 2;
+let MENU_SIZE_RESULT				= 3;
 let MENU_SIZE_STAGE					= 6;
 let MENU_SIZE_CONFIG				= 5;
 let MENU_SIZE_SPELL_SORT			= 5;
@@ -96,7 +99,7 @@ let MENU_SIZE_CONFIG_GRAPHIC		= 5;
 let MENU_SIZE_CONFIG_SOUND			= 2;
 let MENU_SIZE_CONFIG_GAME			= 2;
 let MENU_SIZE_SCENARIO				= 4;
-let MENU_SIZE_PRACTICE_SPELL_ALL	= 360;
+let MENU_SIZE_PRACTICE_SPELL_ALL	= 388;
 
 
 //--------------------------------------------------------------------
@@ -116,6 +119,7 @@ let MENU_LOCK_CONFIG_SOUND			= [];
 let MENU_LOCK_CONFIG_GAME			= [];
 let MENU_LOCK_SCENARIO				= [];	// 自動制御されるので空にしておく
 let MENU_LOCK_PRACTICE_SPELL_ALL	= [];	// 自動制御されるので空にしておく
+let MENU_LOCK_PRACTICE_SPELL_ALL2	= [];	// 自動制御されるので空にしておく
 
 
 //--------------------------------------------------------------------
@@ -153,11 +157,12 @@ let m_bMenuModified = false;
 /**	スペルプラクティスにおける各スペルの解禁レベルのリストが格納されます。 */
 let m_anMenuSpellRelease;
 
+let m_anTTHMenuResult;
+
 let m_anTTHMenuSpellHistoryHiScore = [];
 let m_anTTHMenuSpellHistoryPercentage = [];
 let m_anTTHMenuSpellHistoryTry = [];
 let m_anTTHMenuSpellHistoryGet = [];
-
 
 //--------------------------------------------------------------------
 //	各メニューのカーソル位置を格納します。
@@ -177,6 +182,7 @@ let m_nMenuCursorConfigGame		= 0;
 let m_nMenuCursorReset			= 0;
 let m_nMenuCursorScenario		= 0;
 let m_nMenuCursorSpellAll		= 0;
+let m_nMenuCursorResult			= 0;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -203,7 +209,7 @@ function LoadProgressMenu( let aszGraphicFileList, let aszEnemyFileList, let asz
 	GosubPhase( PROGRESS_PHASE );
 	LoadResourceProgress( aszGraphicFileList, aszEnemyFileList, aszSEFileList );
 	while( m_nFlanLoadResourcePercentage != -1 ){
-		m_nFlanLoadResourcePercentage /= 10;
+		m_nFlanLoadResourcePercentage /= 5;
 		yield;
 	}
 	let anSpellHistoryInitializeList = CreateArray( CL_SPELL_TOTAL, 0 );
@@ -212,8 +218,14 @@ function LoadProgressMenu( let aszGraphicFileList, let aszEnemyFileList, let asz
 	let anSpellHistoryGet		= GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_COUNT_GET,	anSpellHistoryInitializeList );
 	m_anMenuSpellRelease		= GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_RELEASE,		anSpellHistoryInitializeList );
 	let nTTHZero = CreateTexText24Cache( "0" );
+	m_anMenuSpellLWReleaseProgress = GetLWReleaseProgress();
 	ascent( let i in 0..CL_SPELL_TOTAL ){
-		if( anSpellHistoryTry[ i ] == 0 ){ MENU_LOCK_PRACTICE_SPELL_ALL = MENU_LOCK_PRACTICE_SPELL_ALL ~ [ i ]; }
+		if( anSpellHistoryTry[ i ] == 0 ){
+			if( ( i < 360 ) || ( m_anMenuSpellLWReleaseProgress[ MinMax( i - 360, 0, length( m_anMenuSpellLWReleaseProgress ) - 1 ) ] < 100 ) ){
+				MENU_LOCK_PRACTICE_SPELL_ALL2 = MENU_LOCK_PRACTICE_SPELL_ALL2 ~ [ i ];
+				if( i < 360 ){ MENU_LOCK_PRACTICE_SPELL_ALL = MENU_LOCK_PRACTICE_SPELL_ALL ~ [ i ]; }
+			}
+		}
 		let nPercentage = truncate( anSpellHistoryGet[ i ] / Max( anSpellHistoryTry[ i ], 1 ) * 100 );
 		if( nPercentage					== 0 ){	m_anTTHMenuSpellHistoryPercentage	= m_anTTHMenuSpellHistoryPercentage	~ [ nTTHZero ]; }
 		else{									m_anTTHMenuSpellHistoryPercentage	= m_anTTHMenuSpellHistoryPercentage	~ [ CreateTexText24Cache( ToStringInt( nPercentage					) ) ]; }
@@ -223,10 +235,12 @@ function LoadProgressMenu( let aszGraphicFileList, let aszEnemyFileList, let asz
 		else{									m_anTTHMenuSpellHistoryTry			= m_anTTHMenuSpellHistoryTry		~ [ CreateTexText24Cache( ToStringInt( anSpellHistoryTry[ i		]	) ) ]; }
 		if( anSpellHistoryGet[ i ]		== 0 ){	m_anTTHMenuSpellHistoryGet			= m_anTTHMenuSpellHistoryGet		~ [ nTTHZero ]; }
 		else{									m_anTTHMenuSpellHistoryGet			= m_anTTHMenuSpellHistoryGet		~ [ CreateTexText24Cache( ToStringInt( anSpellHistoryGet[ i		]	) ) ]; }
-		m_nFlanLoadResourcePercentage = Smooth( 10, 100, i, CL_SPELL_TOTAL );
+		m_nFlanLoadResourcePercentage = Smooth( 30, 100, i, CL_SPELL_TOTAL );
 		if( GetFps() < 30 || i % 20 == 0 ){ yield; }
 	}
 	if( length( MENU_LOCK_PRACTICE_SPELL_ALL ) >= CL_SPELL_TOTAL ){ MENU_LOCK_PRACTICE = MENU_LOCK_PRACTICE ~ [ 1 ]; }
+	let nTotalTime = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_HISTORY_COUNT_TOTAL, 0 );
+	m_anTTHMenuResult = getResultHistoryAllStage( false );
 	ascent( let i in 0..length( anFrameObj ) ){ Obj_Delete( anFrameObj[ i ] ); }
 	MovePlayerDefaultPosition();
 	ReturnPhase();
@@ -240,7 +254,6 @@ function LoadProgressMenu( let aszGraphicFileList, let aszEnemyFileList, let asz
 *	メインメニューの初期化処理をします。
 */
 function MainMenuInitialize(){
-//	RaiseError( GetClearHistory( [ 3 ], [], [ 6 ], [], 0, 0, 0 ), "Clear" );
 	LoadProgressMenu( MENU_RESOURCE_LOAD_GRAPHIC, [], MENU_RESOURCE_LOAD_SOUND );
 	ForbidShot( true );
 	SetStage( 0 );
@@ -360,7 +373,7 @@ function DoMenuSelectPhase(){
 				}
 				GosubPhase(
 					[ MENU_PHASE_LAUNCH, MENU_PHASE_SCENARIO ][
-					( length( MENU_LOCK_SCENARIO ) < 3 && GetClearHistory( [], [ nPlayerID ], [ 6 ], [ m_nMenuCursorLevel ], 0, 0, 0 ) > 0 ) || ( IsDebugMode() && m_bFlanKeySlow ) ]
+					( length( MENU_LOCK_SCENARIO ) < 3 && GetClearHistory( [], [ nPlayerID ], [ 6 ], [ m_nMenuCursorLevel ], 0, 0, 0 ) > 0 ) ]
 				);
 			}
 		}
@@ -383,7 +396,15 @@ function DoMenuSelectPhase(){
 		if( m_bMenuPractice ){ GosubPhase( [ MENU_PHASE_PRACTICE_STAGE, MENU_PHASE_PRACTICE_SPELL_ALL ][ m_nMenuCursorPractice ] ); }
 		else{ ReturnPhase(); }
 	}
-	case( MENU_PHASE_MUSIC ){	// ◆音楽室
+	case( MENU_PHASE_RESULT ){	// ◆リザルトモード選択
+		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
+			yield;
+			m_nMenuCursorResult = MoveMenuCursorTHC( m_nMenuCursorResult, MENU_SIZE_RESULT, [] );
+		}
+		PlaySEEx( seOk );
+		ReturnPhase();
+	}
+	case( MENU_PHASE_MUSIC ){	// ◆音樂室
 		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
 			yield;
 			m_nMenuCursorMusic = MoveMenuCursorTHC( m_nMenuCursorMusic, MENU_SIZE_MUSIC, MENU_LOCK_MUSIC );
@@ -523,14 +544,13 @@ function DoMenuSelectPhase(){
 		else{ ReturnPhase(); }
 	}
 	case( MENU_PHASE_PRACTICE_SPELL_ALL ){	// ◆スペルプラクティス全検索
-		let anLockList;
-		if( IsDebugMode() ){ anLockList = []; }
-		else{ anLockList = MENU_LOCK_PRACTICE_SPELL_ALL; }
 		while( !( GetKeyStateEx( VK_SHOT ) == KEY_PUSH || GetKeyStateEx( VK_BOMB ) == KEY_PUSH ) ){
 			yield;
-			m_nMenuCursorSpellAll = MoveMenuCursorTHC( m_nMenuCursorSpellAll, MENU_SIZE_PRACTICE_SPELL_ALL, anLockList );
+			m_nMenuCursorSpellAll = MoveMenuCursorTHC( m_nMenuCursorSpellAll, MENU_SIZE_PRACTICE_SPELL_ALL, MENU_LOCK_PRACTICE_SPELL_ALL );
 		}
-		if( IsSubmitMenuTHC() ){ SetPhase( MENU_PHASE_LAUNCH_SPELL ); }
+		if( IsSubmitMenuTHC() ){
+			if( SearchArray( MENU_LOCK_PRACTICE_SPELL_ALL2, m_nMenuCursorSpellAll ) == length( MENU_LOCK_PRACTICE_SPELL_ALL2 ) ){ SetPhase( MENU_PHASE_LAUNCH_SPELL ); }
+		}
 		else{ ReturnPhase(); }
 	}
 	case( MENU_PHASE_LAUNCH ){	// ◆ステージをレジュームに入れて再起動
@@ -586,11 +606,11 @@ function DrawMenu( let nPhase, let nPhaseCount, let nCount ){
 	case( MENU_PHASE_RESET_CONFIG		){ __DrawMenu( MENU_PHASE_RESET_CONFIG,		8, 30, 96,	208, 48, 384, -1, -3,	CL_TTHBASE_BOOLEAN_YESNO,				CL_TTHBASE_DESCRIPTION_CONFIG_RESET_CONFIG,	2,						m_nMenuCursorReset,		[],						true	); }
 	case( MENU_PHASE_RESET_ALL			){ __DrawMenu( MENU_PHASE_RESET_ALL,		8, 30, 96,	208, 48, 384, -1, -3,	CL_TTHBASE_BOOLEAN_YESNO,				CL_TTHBASE_DESCRIPTION_CONFIG_RESET_ALL,	2,						m_nMenuCursorReset,		[],						true	); }
 	case( MENU_PHASE_PRACTICE_SPELL_ALL	){
-		__DrawMenu( MENU_PHASE_PRACTICE_SPELL_ALL, 0, 20, 80, 208, 48, 384, -1, -2, CL_TTHBASE_SPELL_NAME, CL_TT_INVALID, MENU_SIZE_PRACTICE_SPELL_ALL, m_nMenuCursorSpellAll, MENU_LOCK_PRACTICE_SPELL_ALL, true );
+		__DrawMenu( MENU_PHASE_PRACTICE_SPELL_ALL, 0, 20, 80, 208, 48, 384, -1, -2, CL_TTHBASE_SPELL_NAME, CL_TT_INVALID, MENU_SIZE_PRACTICE_SPELL_ALL, m_nMenuCursorSpellAll, MENU_LOCK_PRACTICE_SPELL_ALL2, true );
 		let nBaseX = 64;
 		let nBaseY = 176;
 		if( nNowPhase == nPhase ){
-			SetAlpha( Accelerate( 0, 255, m_nFlanPhaseCount, MENU_FADE_INTERVAL ) );
+			if( m_nFlanPhaseCount <= MENU_FADE_INTERVAL ){ SetAlpha( Accelerate( 0, 255, m_nFlanPhaseCount, MENU_FADE_INTERVAL ) ); }
 			DrawTexTextOnCache( CL_TTHBASE_SPELL_INFOMATION + CL_TTH_SPELL_INFOMATION_SCORE_HIGH, 0, 0, nBaseX, nBaseY );
 			DrawTexTextOnCache( CL_TTHBASE_SPELL_INFOMATION + CL_TTH_SPELL_INFOMATION_HISTORY, 0, 0, nBaseX, nBaseY + 20 );
 			DrawTexTextOnCache( CL_TTHBASE_SPELL_INFOMATION + CL_TTH_SPELL_INFOMATION_SLASH, 0, 0, nBaseX + 160, nBaseY + 20 );
@@ -600,12 +620,16 @@ function DrawMenu( let nPhase, let nPhaseCount, let nCount ){
 			DrawTexTextOnCache( m_anTTHMenuSpellHistoryTry[ m_nMenuCursorSpellAll ], 0, 0, nBaseX + 176, nBaseY + 20 );
 			DrawTexTextOnCache( m_anTTHMenuSpellHistoryPercentage[ m_nMenuCursorSpellAll ], 0, 0, nBaseX + 240, nBaseY + 20 );
 			DrawTexTextOnCache( [ CL_TTH_DESCRIPTION_SECRET, CL_TTHBASE_SPELL_DESCRIPTION + m_nMenuCursorSpellAll ][ m_anMenuSpellRelease[ m_nMenuCursorSpellAll ] == CL_SPELL_HISTORY_RELEASE_LEVEL_COMMENT ], -1, -7, 48, 368 );
+			if( m_nMenuCursorSpellAll >= 360 ){
+				DrawTexTextOnCache( CL_TTHBASE_NUMBER + truncate( m_anMenuSpellLWReleaseProgress[ m_nMenuCursorSpellAll - 360 ] ), 0, 0, nBaseX + 64, nBaseY - 20 );
+				DrawTexTextOnCache( CL_TTHBASE_SPELL_INFOMATION + CL_TTH_SPELL_INFOMATION_PERCENTAGE, 0, 0, nBaseX + 108, nBaseY - 20 );
+			}
 		}
 	}
 	case( MENU_PHASE_MUSIC				){
 		__DrawMenu( MENU_PHASE_MUSIC, 0, 20, 80, 144, 48, 300, -2, -2, CL_TTHBASE_BGM_TITLE, CL_TTHBASE_BGM_DESCRIPTION, MENU_SIZE_MUSIC, m_nMenuCursorMusic, MENU_LOCK_MUSIC, true );
 		if( nNowPhase == nPhase ){
-			SetAlpha( Accelerate( 0, 255, m_nFlanPhaseCount, MENU_FADE_INTERVAL ) );
+			if( m_nFlanPhaseCount <= MENU_FADE_INTERVAL ){ SetAlpha( Accelerate( 0, 255, m_nFlanPhaseCount, MENU_FADE_INTERVAL ) ); }
 			let nNowTime = GetTime() - m_nStageStartMusicSystemTime;
 			DrawTexTextOnCache( CL_TTH_MUSIC_MARKER, 0, 0, 48, 384 + Smooth( -2, 3, nNowTime % 1000, 1000 ) );
 			DrawTexTextOnCache( CL_TTHBASE_BGM_TITLE + m_nStageMusicIndex, -2, 0, 68, 384 );
@@ -625,6 +649,43 @@ function DrawMenu( let nPhase, let nPhaseCount, let nCount ){
 	case( MENU_PHASE_CONFIG_GAME		){
 		__DrawMenu( MENU_PHASE_CONFIG_GAME,		0, 30, 80,	208, 48, 384, -1, -3,	CL_TTHBASE_MENU_CONFIG_GAME,	CL_TTHBASE_DESCRIPTION_CONFIG_GAME,		MENU_SIZE_CONFIG_GAME,		m_nMenuCursorConfigGame,	MENU_LOCK_CONFIG_GAME,		true );
 		if( nNowPhase == nPhase ){ __DrawMenuConfigReal( MENU_CONFIG_KEY_GAME, MENU_CONFIG_VALUE_GAME, 30, 352, 208, m_nMenuCursorConfigGame, MENU_LOCK_CONFIG_GAME ); }
+	}
+	case( MENU_PHASE_RESULT				){
+		let bNowPhase = nNowPhase == nPhase;
+		let nAlpha = 255;
+		if( m_nFlanPhaseCount <= MENU_FADE_INTERVAL ){ nAlpha = Smooth( [ 255, 0 ][ bNowPhase ], [ 0, 255 ][ bNowPhase ], m_nFlanPhaseCount, MENU_FADE_INTERVAL ); }
+		ascent( let i in 0..2 ){
+			let nLevel = m_nMenuCursorResult * 2 + i;
+			let aTTHResultLevel = m_anTTHMenuResult[ nLevel ];
+			ascent( let j in 0..6 ){
+				SetAlpha( nAlpha * [ 1, 0.7 ][ j == 4 ] );
+				let aTTHResultElement = aTTHResultLevel[ j ];
+				ascent( let k in 0..4 ){
+					if( !( m_nMenuCursorResult == 2 && k == 2 ) ){ DrawTexTextOnCache( aTTHResultElement[ k ], -2, 0, 136 + j * 40, 160 + i * 160 + k * 32 + [ 0, ( j % 2 ) * 10 - 5 ][ k == 3 ] ); }
+				}
+			}
+			DrawTexTextOnCache( CL_TTHBASE_RESULT_LEVEL + nLevel, -1, 0, 48, 140 + i * 160 );
+		}
+		let nPageY = GetClipMaxY() - 18;
+		DrawTexTextOnCache( CL_TTHBASE_NUMBER + m_nMenuCursorResult + 1, 0, 0, 320, nPageY );
+		DrawTexTextOnCache( CL_TTHBASE_NUMBER + MENU_SIZE_RESULT, 0, 0, 360, nPageY );
+		DrawTexTextOnCache( CL_TTHBASE_RESULT_PAGE + CL_TTH_RESULT_PAGE_CAPTION, -2, 0, 240, nPageY );
+		DrawTexTextOnCache( CL_TTHBASE_RESULT_PAGE + CL_TTH_RESULT_PAGE_SLASH, 0, 0, 344, nPageY );
+		ascent( let i in 0..6 ){
+			SetAlpha( nAlpha * [ 1, 0.7 ][ i == 4 ] );
+			DrawTexTextOnCache( CL_TTHBASE_RESULT_TYPE + i, -1, 0, 128 + i * 40, 140 + ( i % 2 ) * 10 - 5 );
+		}
+		ascent( let i in 0..2 ){
+			ascent( let j in 0..4 ){
+				if( !( m_nMenuCursorResult == 2 && j == 2 ) ){ DrawTexTextOnCache( CL_TTHBASE_RESULT_DESCRIPTION + j, -2, 0, 56, 158 + i * 160 + j * 32 ); }
+			}
+		}
+		let nTotalCount = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_HISTORY_COUNT_TOTAL, 0 ) + m_nFlanCount;
+		ascent( let i in 0..4 ){
+			DrawTexTextOnCache( CL_TTHBASE_NUMBER + truncate( nTotalCount / [ 5184000, 216000, 3600, 60 ][ i ] ) % [ 199, 24, 60, 60 ][ i ], 0, 0, 256 + i * 40, 48 );
+			if( i != 3 ){ DrawTexTextOnCache( CL_TTH_MUSIC_SECOND, 0, 0, 280 + i * 40, 48 ); }
+		}
+		DrawTexTextOnCache( CL_TTH_RESULT_TOTAL_PLAY_TIME, -1, 0, 80, 48 );
 	}
 }
 
@@ -679,5 +740,6 @@ function MainMenuDrawTopObject( let nStageCount, let nCount, let nPhase, let nPh
 	SetAlpha( 255 );
 	ascent( let i in 0..2 ){
 		if( i == 0 || nPhaseCount <= MENU_FADE_INTERVAL ){ DrawMenu( [ nPhase, nPrevPhase ][ i ], nPhaseCount, nCount ); }
+		SetAlpha( 255 );
 	}
 }

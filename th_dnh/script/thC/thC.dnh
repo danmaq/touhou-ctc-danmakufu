@@ -16,8 +16,8 @@
 //////////////////////////////////////////////////////////////////////
 
 #“Œ•û’e–‹•—[Stage]
-#Title[“Œ•û–²IŒ€ ` Concealed the Conclusion]
-#Text[THC R1.02]
+#Title[“Œ•û–²IŒ€ ` Concealed the Conclusion  ]
+#Text[THC R2.00]
 #ScriptVersion[2]
 #Player[player\THC_MARISA\1.dnh, player\THC_MARISA\2.dnh, player\THC_MARISA\3.dnh, player\THC_MARISA\4.dnh]
 #Image[.\IMAGE\SYSTEM\jacket.png]
@@ -45,6 +45,7 @@ script_stage_main{
 //////////////////////////////////////////////////////////////////////
 
 	FLAN_STAGE_NORMLIST = FLAN_STAGE_NORMLIST[ 0..0 ] ~ [ 100, 250, 450, 650, 900, 1200, 1999, 9999, -1 ];
+	FLAN_KEY_REPEAT_CYCLE = 4;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -186,6 +187,7 @@ script_stage_main{
 	*	@param nLevel ƒŒƒxƒ‹(0`3)
 	*/
 	function onInitialize( let nStage, let nLevel ){
+
 		ForbidBomb( true );
 		ForbidShot( true );
 		SetRateScoreSystemEnable( false );
@@ -196,7 +198,7 @@ script_stage_main{
 		LoadAllCommonData();
 		m_bResume = GetResume();
 		SetDefaultStatusVisible( m_bResume );
-		LoadGraphicList( [ IMAGE_CL_BLACK, IMAGE_THC_BLACK_FRAME ] );
+		LoadGraphicList( [ IMAGE_CL_BLACK, IMAGE_THC_BLACK_FRAME, IMAGE_THC_LOADING_BG_FRAME, IMAGE_THC_LOADING_BG_FIELD ] );
 		if( m_bResume ){
 			m_bWritableTextureCreate = GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_FONT_PRERENDER, true );
 			let nStage = GetCommonDataDefaultEx( CL_CDNS_RESULT, FLAN_CD_STAGE, 0 );
@@ -208,7 +210,7 @@ script_stage_main{
 			if( m_bStagePractice	){ nLife = 8; }
 			else if( nStage >= 7	){ nLife = 3; }
 			ExpertEx(
-				IsDebugMode(),
+				false,
 				[ GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_CONTINUE, 1 ), 0 ][ m_bStagePractice || nStage >= 7 ],
 				nLife
 			);
@@ -250,7 +252,7 @@ script_stage_main{
 		case( 6 ){ Stage6Loop( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 		case( 10 ){ StageExLoop(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 		case( 11 ){ StageEx2Loop(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
-//		OutputDebugString( 0, "FontCacheSize", length( m_aCLTTCBeUsed ) );
+		case( 12 ){ StageLWLoop(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 	}
 
 	/**
@@ -301,6 +303,7 @@ script_stage_main{
 		case( 6 ){ Stage6DrawBackGround( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 		case( 10 ){ StageExDrawBackGround(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 		case( 11 ){ StageEx2DrawBackGround(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+		case( 12 ){ StageLWDrawBackGround(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 	}
 
 	/**

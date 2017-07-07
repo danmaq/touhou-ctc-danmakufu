@@ -144,8 +144,8 @@ function MinMax( let nExpr, let nMin, let nMax ){
 	if( nMin == nMax ){ return nMin; }
 	if( nMin > nMax ){
 		let nMin__ = nMin;
-		let nMin = nMax;
-		let nMax = nMin__;
+		nMin = nMax;
+		nMax = nMin__;
 	}
 	nExpr	=	[ nMin, nExpr ][ nExpr > nMin ];
 	return		[ nExpr, nMax ][ nExpr > nMax ];

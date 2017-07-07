@@ -160,6 +160,18 @@
 				(<code>onFinalize</code>で呼ぶ場合プレイヤーを中心座標に設定すると丁度魔法陣に重なります)
 			</paragraph>
 		</define>
+		<define key="GetDropItemPosListCirleGap">
+			<argument>中心X座標</argument>
+			<argument>中心Y座標</argument>
+			<argument>アイテムの数</argument>
+			<argument>誤差</argument>
+			<return>アイテム座標の配列<value>[ [ X1, Y1 ], [ X2, Y2 ], ... ]</value></return>
+			<paragraph>
+				<caption>アイテムを落とす座標をランダムに生成</caption>します。<br />
+				その際魔法陣の円形にあわせて座標を生成します。
+				(<code>onFinalize</code>で呼ぶ場合プレイヤーを中心座標に設定すると丁度魔法陣に重なります)
+			</paragraph>
+		</define>
 	</category>
 	<category caption="デバッグ用">
 		<paragraph>

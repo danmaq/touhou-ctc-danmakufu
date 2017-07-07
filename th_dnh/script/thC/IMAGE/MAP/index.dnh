@@ -56,3 +56,4 @@ let imgMapCarpetBlue = dirImageMap ~ "Carpet2.png";
 
 //	白玉楼ステージ
 let imgMapStoneTile3 = dirImageMap ~ "Stonetile3.png";
+let imgMapStoneTile4 = dirImageMap ~ "Stonetile4.png";

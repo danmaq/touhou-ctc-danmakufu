@@ -88,6 +88,32 @@ function SetClearHistory( let nStage ){
 }
 
 /**
+*	ステージクリア情報を取得し、共通データに格納します。
+*
+*	@param nStage ステージ番号
+*	@param bGoodEnd グッドエンドがどうか
+*/
+function SetClearHistoryFinal( let nStage, let bGoodEnd ){
+	let nScore = GetScore();
+//	if( !m_bStagePractice ){
+//		nScore -= m_nStageScorePrevious;
+//		m_nStageScorePrevious = GetScore();
+//	}
+	PushCommonDataExArray(
+		CL_CDNS_RESULT, CL_CD_HISTORY_CLEAR,
+		[
+			GetPlayerID(),
+			GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_STAGE_SCENARIO, 0 ),
+			nStage,
+			GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 ),
+			nScore,
+			[ 0, 1 ][ Continued() || !bGoodEnd ],
+			[ 0, 1 ][ m_bStagePractice ]
+		]
+	);
+}
+
+/**
 *	ステージトライ情報を取得し、共通データに格納します。
 *
 *	@param nStage ステージ番号
@@ -127,13 +153,212 @@ function IsCanTryStageEX(){
 */
 function IsCanTryStageEX2(){
 	let nPlayerID = GetPlayerID();
-	ascent( let i in 0..4 ){
-		if( GetClearHistory( [ nPlayerID ], [ i ], [ 6 ], [ 0, 1	], 0, 0, 0 ) == 0 ){ return false; }
-		if( GetClearHistory( [ nPlayerID ], [ i ], [ 6 ], [ 1, 2, 3 ], 0, 0, 0 ) == 0 ){ return false; }
-	}
+	ascent( let i in 0..4 ){ if( GetClearHistory( [ nPlayerID ], [ i ], [ 6 ], [ 0, 1	], 0, 0, 0 ) == 0 ){ return false; } }
 	if( GetClearHistory( [ nPlayerID ], [], [ 10 ], [], 0, 0, 0 ) == 0 ){ return false; }
-	if( GetClearHistory( [], [], [ 6 ], [ 2, 3 ], 0, -1, 0 ) == 0 ){ return false; }
+	if( GetClearHistory( [ nPlayerID ], [], [ 6 ], [ 1, 2, 3 ], 0, -1, 0 ) == 0 ){ return false; }
+	if( GetTryHistory( [ nPlayerID ], [], [], [ 3 ], 0 ) == 0 ){ return false; }
+	if( MENU_SIZE_PRACTICE_SPELL_ALL - length( MENU_LOCK_PRACTICE_SPELL_ALL ) <= 80 ){ return false; }
 	return true;
+}
+
+/**
+*	オールステージ/EXモードの履歴を取得します。
+*
+*	@param bNum 数値で返すかどうかを設定します。falseの場合フォントレンダリングしたハンドルを返します。
+*	@return 履歴リスト
+*/
+function getResultHistoryAllStage( let bNum ){
+	let aAll = [];
+	ascent( let i in 0..6 ){
+		let aType = [];
+		ascent( let j in 0..6 ){
+			let aElement = [];
+			let anPlayerID = [];
+			let anStage = [ 6 ];
+			let anLevel = [];
+			if( i >= 4 ){ anStage[ 0 ] = i + 6; }
+			else{ anLevel = anLevel ~ [ i ]; }
+			if( j != 5 ){ anPlayerID = anPlayerID ~ [ j ]; }
+			let aScoreRank = GetClearHiScoreRanking( anPlayerID, [], anStage, anLevel, -1, 0 );
+			if( length( aScoreRank ) == 0 ){ aScoreRank = aScoreRank ~ [ 0 ]; }
+			let nTry = GetTryHistory( anPlayerID, [], anStage, anLevel, 0 );
+			let nClear = GetClearHistory( anPlayerID, [], anStage, anLevel, 0, 0, 0 );
+			let nContinue = GetClearHistory( anPlayerID, [], anStage, anLevel, 0, 1, 0 );
+			if( bNum ){ aElement = aElement ~ [ nTry, nClear, nContinue, aScoreRank[ 0 ] ]; }
+			else{
+				aElement = aElement ~ [
+					CreateTexText16Cache( ToStringInt( nTry ) ),
+					CreateTexText16Cache( ToStringInt( nClear ) ),
+					CreateTexText16Cache( ToStringInt( nContinue ) ),
+					CreateTexText16Cache( ToStringInt( aScoreRank[ 0 ] ) )
+				];
+			}
+			aType = aType ~ [ aElement ];
+		}
+		aAll = aAll ~ [ aType ];
+	}
+	return aAll;
+}
+
+/**
+*	指定した絞込み条件でクリア履歴を検索し、該当する履歴のスコアランキングを返します。
+*	条件は項目内でOR検索の後、項目ごとにAND検索がかかります。
+*	条件を全く指定しなかった場合、全件数が返ります。
+*	ソートを使ったりなど結構重たいのでステージ中で使用する場合は注意して使用してください。
+*
+*	@param anPlayerID プレイヤー識別IDリスト
+*	@param anScenarioID シナリオIDリスト
+*	@param anStage ステージリスト
+*	@param anLevel レベルリスト
+*	@param nContinue コンティニューしたかどうか。0か1以外で絞り込み対象外とする
+*	@param nPractice プラクティスかどうか。0か1以外で絞り込み対象外とする
+*	@return 
+*/
+function GetClearHiScoreRanking( let anPlayerID, let anScenarioID, let anStage, let anLevel, let nContinue, let nPractice ){
+	let anScoreList = [];
+	let aanHistoryList = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_HISTORY_CLEAR, [] );
+	let nHistorySize = length( aanHistoryList );
+	let bRefinePlayer	= length( anPlayerID	) != 0;
+	let bRefineScenario	= length( anScenarioID	) != 0;
+	let bRefineStage	= length( anStage		) != 0;
+	let bRefineLevel	= length( anLevel		) != 0;
+	let bRefineContinue	= ( nContinue == 0 || nContinue == 1 );
+	let bRefinePractice	= ( nPractice == 0 || nPractice == 1 );
+
+	ascent( let i in 0..nHistorySize ){
+		let anHistory = aanHistoryList[ i ];
+		let nHit = 0;
+		if( bRefinePlayer || bRefineScenario || bRefineStage || bRefineLevel || bRefineContinue || bRefinePractice ){
+			if( !( bRefinePlayer	&& SearchArray( anPlayerID,		anHistory[ STAGE_HISTORY_TRY_PLAYER		] ) == length( anPlayerID	) ) ){ nHit++; }
+			if( !( bRefineScenario	&& SearchArray( anScenarioID,	anHistory[ STAGE_HISTORY_TRY_SCENARIO	] ) == length( anScenarioID	) ) ){ nHit++; }
+			if( !( bRefineStage		&& SearchArray( anStage,		anHistory[ STAGE_HISTORY_TRY_STAGE		] ) == length( anStage		) ) ){ nHit++; }
+			if( !( bRefineLevel		&& SearchArray( anLevel,		anHistory[ STAGE_HISTORY_TRY_LEVEL		] ) == length( anLevel		) ) ){ nHit++; }
+			if( !( bRefineContinue	&& nContinue != anHistory[ STAGE_HISTORY_CLEAR_CONTINUE ] ) ){ nHit++; }
+			if( !( bRefinePractice	&& nPractice != anHistory[ STAGE_HISTORY_CLEAR_PRACTICE ] ) ){ nHit++; }
+		}
+		else{ nHit = 6; }
+		if( nHit == 6 ){ anScoreList = anScoreList ~ [ anHistory[ STAGE_HISTORY_CLEAR_SCORE ] ]; }
+	}
+	return Reverse( SortArray( anScoreList ) );
+}
+
+/**
+*	指定した絞込み条件でクリア履歴を検索し、該当する履歴の合計件数を返します。
+*	条件は項目内でOR検索の後、項目ごとにAND検索がかかります。
+*	条件を全く指定しなかった場合、全件数が返ります。
+*	それなりに重いのでステージ中で使用する場合は注意して使用してください。
+*
+*	@param anPlayerID プレイヤー識別IDリスト
+*	@param anScenarioID シナリオIDリスト
+*	@param anStage ステージリスト
+*	@param anLevel レベルリスト
+*	@param nScore スコア。正数でハイパス、負数でローパス、0で絞り込み対象外とする
+*	@param nContinue コンティニューしたかどうか。0か1以外で絞り込み対象外とする
+*	@param nPractice プラクティスかどうか。0か1以外で絞り込み対象外とする
+*	@return 
+*/
+function GetClearHistory( let anPlayerID, let anScenarioID, let anStage, let anLevel, let nScore, let nContinue, let nPractice ){
+	let nTotalCount = 0;
+	let aanHistoryList = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_HISTORY_CLEAR, [] );
+	let nHistorySize = length( aanHistoryList );
+	let bRefinePlayer	= length( anPlayerID	) != 0;
+	let bRefineScenario	= length( anScenarioID	) != 0;
+	let bRefineStage	= length( anStage		) != 0;
+	let bRefineLevel	= length( anLevel		) != 0;
+	let bRefineScore	= nScore != 0;
+	let bRefineContinue	= ( nContinue == 0 || nContinue == 1 );
+	let bRefinePractice	= ( nPractice == 0 || nPractice == 1 );
+
+	if( !( bRefinePlayer || bRefineScenario || bRefineStage || bRefineLevel || bRefineScore || bRefineContinue || bRefinePractice ) ){ return nHistorySize; }
+	ascent( let i in 0..nHistorySize ){
+		let anHistory = aanHistoryList[ i ];
+		let nHit = 0;
+		if( !( bRefinePlayer	&& SearchArray( anPlayerID,		anHistory[ STAGE_HISTORY_TRY_PLAYER		] ) == length( anPlayerID	) ) ){ nHit++; }
+		if( !( bRefineScenario	&& SearchArray( anScenarioID,	anHistory[ STAGE_HISTORY_TRY_SCENARIO	] ) == length( anScenarioID	) ) ){ nHit++; }
+		if( !( bRefineStage		&& SearchArray( anStage,		anHistory[ STAGE_HISTORY_TRY_STAGE		] ) == length( anStage		) ) ){ nHit++; }
+		if( !( bRefineLevel		&& SearchArray( anLevel,		anHistory[ STAGE_HISTORY_TRY_LEVEL		] ) == length( anLevel		) ) ){ nHit++; }
+		if( !( bRefineScore		&& !(
+				( nScore <	0 && nScore <= anHistory[ STAGE_HISTORY_CLEAR_SCORE ] ) ||
+				( nScore >=	0 && nScore >= anHistory[ STAGE_HISTORY_CLEAR_SCORE ] )
+			)
+		) ){ nHit++; }
+		if( !( bRefineContinue	&& nContinue != anHistory[ STAGE_HISTORY_CLEAR_CONTINUE ] ) ){ nHit++; }
+		if( !( bRefinePractice	&& nPractice != anHistory[ STAGE_HISTORY_CLEAR_PRACTICE ] ) ){ nHit++; }
+		if( nHit == 7 ){ nTotalCount++; }
+	}
+	return nTotalCount;
+}
+
+/**
+*	指定した絞込み条件でトライ履歴を検索し、該当する履歴の合計件数を返します。
+*	条件を全く指定しなかった場合、全件数が返ります。
+*	それなりに重いのでステージ中で使用する場合は注意して使用してください。
+*
+*	@param anPlayerID プレイヤー識別IDリスト
+*	@param anScenarioID シナリオIDリスト
+*	@param anStage ステージリスト
+*	@param anLevel レベルリスト
+*	@param nPractice プラクティスかどうか。0か1以外で絞り込み対象外とする
+*	@return 
+*/
+function GetTryHistory( let anPlayerID, let anScenarioID, let anStage, let anLevel, let nPractice ){
+	let nTotalCount = 0;
+	let aanHistoryList = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_HISTORY_TRY, [] );
+	let nHistorySize	= length( aanHistoryList );
+	let bRefinePlayer	= length( anPlayerID	) != 0;
+	let bRefineScenario	= length( anScenarioID	) != 0;
+	let bRefineStage	= length( anStage		) != 0;
+	let bRefineLevel	= length( anLevel		) != 0;
+	let bRefinePractice	= ( nPractice == 0 || nPractice == 1 );
+
+	if( !( bRefinePlayer || bRefineScenario || bRefineStage || bRefineLevel || bRefinePractice ) ){ return nHistorySize; }
+	ascent( let i in 0..nHistorySize ){
+		let anHistory = aanHistoryList[ i ];
+		let nHit = 0;
+		if( !( bRefinePlayer	&& SearchArray( anPlayerID,		anHistory[ STAGE_HISTORY_TRY_PLAYER		] ) == length( anPlayerID	) ) ){ nHit++; }
+		if( !( bRefineScenario	&& SearchArray( anScenarioID,	anHistory[ STAGE_HISTORY_TRY_SCENARIO	] ) == length( anScenarioID	) ) ){ nHit++; }
+		if( !( bRefineStage		&& SearchArray( anStage,		anHistory[ STAGE_HISTORY_TRY_STAGE		] ) == length( anStage		) ) ){ nHit++; }
+		if( !( bRefineLevel		&& SearchArray( anLevel,		anHistory[ STAGE_HISTORY_TRY_LEVEL		] ) == length( anLevel		) ) ){ nHit++; }
+		if( !( bRefinePractice	&& nPractice != anHistory[ STAGE_HISTORY_TRY_PRACTICE ] ) ){ nHit++; }
+		if( nHit == 5 ){ nTotalCount++; }
+	}
+	return nTotalCount;
+}
+
+/**
+*	指定した絞込み条件でスペル取得の合計件数を返します。
+*	それなりに重いのでステージ中で使用する場合は注意して使用してください。
+*
+*	@param anSpellIDList 対象とするスペルIDのリスト。空欄なら全スペルが対象。
+*	@param bTotal 延べ件数で算出するかどうか。
+*	@return 
+*/
+function GetSumSpellGotHistory( let anSpellIDList, let bTotal ){
+	let __anSpellIDList;
+	let nRes = 0;
+	let anHistorySpellGot = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_COUNT_GET, CreateArray( CL_SPELL_TOTAL, 0 ) );
+	if( length( anSpellIDList ) != 0 ){ __anSpellIDList = anSpellIDList; }
+	else{ __anSpellIDList = CreateOrderArray( CL_SPELL_TOTAL ); }
+	ascent( let i in 0..length( anSpellIDList ) ){ nRes += [ ( anHistorySpellGot[ anSpellIDList[ i ] ] > 0 ) + 0, anHistorySpellGot[ anSpellIDList[ i ] ] ][ bTotal ]; }
+	return nRes;
+}
+
+/**
+*	指定した絞込み条件でスペル挑戦の合計件数を返します。
+*	それなりに重いのでステージ中で使用する場合は注意して使用してください。
+*
+*	@param anSpellIDList 対象とするスペルIDのリスト。空欄なら全スペルが対象。
+*	@param bTotal 延べ件数で算出するかどうか。
+*	@return 
+*/
+function GetSumSpellTryHistory( let anSpellIDList, let bTotal ){
+	let __anSpellIDList;
+	let nRes = 0;
+	let anHistorySpellTry = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_COUNT_TRY, CreateArray( CL_SPELL_TOTAL, 0 ) );
+	if( length( anSpellIDList ) != 0 ){ __anSpellIDList = anSpellIDList; }
+	else{ __anSpellIDList = CreateOrderArray( CL_SPELL_TOTAL ); }
+	ascent( let i in 0..length( anSpellIDList ) ){ nRes += [ ( anHistorySpellTry[ anSpellIDList[ i ] ] > 0 ) + 0, anHistorySpellTry[ anSpellIDList[ i ] ] ][ bTotal ]; }
+	return nRes;
 }
 
 
@@ -308,7 +533,7 @@ function GetBGRealLoadList( let aszLoadFileBG ){
 */
 function LoadProgress( let aszGraphicFileList, let aszEnemyFileList, let aszSEFileList ){
 	yield;
-	let anFrameObj = CreateFillScreenEffectObject( IMAGE_CL_BLACK, IMAGE_THC_BLACK_FRAME );
+	let anFrameObj = CreateFillScreenEffectObject( IMAGE_THC_LOADING_BG_FIELD, IMAGE_THC_LOADING_BG_FRAME );
 	SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_SHOT_ENABLE, false );
 	SetRenderFrame( false );
 	SetDefaultStatusVisible( false );
@@ -340,8 +565,6 @@ function LoadProgress( let aszGraphicFileList, let aszEnemyFileList, let aszSEFi
 */
 function DrawLoadProgress(){
 	if( m_nFlanLoadResourcePercentage == -1 ){ return; }
-	SetGraphicRect( 0, 0, 384, 448 );
-	DrawCenter( IMAGE_CL_BLACK );
 	__DrawChrRect( imgSystemProgress, GetCenterX(), GetClipMaxY() - PROGRESS_BOTTOMMARGIN, 0, 16, 256, 16 );
 	SetGraphicScale( Smooth( 0, 1, m_nFlanLoadResourcePercentage, 100 ), 1 );
 	__DrawChrRect( imgSystemProgress, GetCenterX() - Smooth( 128, 0, m_nFlanLoadResourcePercentage, 100 ), GetClipMaxY() - PROGRESS_BOTTOMMARGIN, 0, 0, 256, 16 );

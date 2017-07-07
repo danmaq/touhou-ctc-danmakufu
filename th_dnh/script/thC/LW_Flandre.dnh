@@ -14,7 +14,6 @@
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-
 #ScriptVersion[2]
 #BackGround[User]
 #Title[Flandre - ラストワード]
@@ -187,7 +186,7 @@ script_enemy_main{
 		PlaySEEx( seShadow );
 		CreateShotFromScript( "Shadow", GetX(), GetY(), 0, 0, 0, 0 );
 		__Wait( 300 );
-		SetDamageRate( 10, 0 );
+		SetDamageRate( 9, 0 );
 
 		/** 扇状槍レーザー */
 		SetAction( ACT_SHOT_B5, 180 );

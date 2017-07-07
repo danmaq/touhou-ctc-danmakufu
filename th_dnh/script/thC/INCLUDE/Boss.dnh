@@ -16,8 +16,9 @@
 //	インデックスをインクルード
 //////////////////////////////////////////////////////////////////////
 
-#include_function "lib\THCCL\IMAGE\index.dnh"
-#include_function ".\SOUND\index.dnh"
+#include_function "\lib\THCCL\IMAGE\index.dnh"
+#include_function "\lib\THCCL\SE\index.dnh"
+#include_function ".\SOUND\BGM\index.dnh"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -112,16 +113,8 @@ let m_nSpellScore = 500000;
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-/**
-*	ステージに組み込むスクリプトのPlural単体テスト用にレベルを設定します。
-*	基本0でスキップキーで+1、ユーザ定義キーで+2します。
-*/
 function SetLevelTemporary(){
-	if( !IsDebugMode() ){ return; }
-	let nLevel = 0;
-	if( GetKeyState( VK_SKIP ) == KEY_HOLD ){ nLevel++; }
-	if( GetKeyState( VK_USER ) == KEY_HOLD ){ nLevel += 2; }
-	__SetLevelTemporary( nLevel );
+	return;
 }
 
 
@@ -421,7 +414,7 @@ function DrawBlur( let szImageFile ){
 		let nRectY = RECT_BOSS_LENGTH * anRect[ 1 ];
 		SetAlpha( anBlurStatus[ 2 ] );
 		//	色追加
-		SetColor( anBlurStatus[ 2 ], anBlurStatus[ 2 ], 255 );
+		SetColor( anBlurStatus[ 2 ], anBlurStatus[ 2 ] / 2, 255 );
 		__DrawChrRect( szImageFile, anBlurStatus[ 0 ], anBlurStatus[ 1 ], nRectX, nRectY, RECT_BOSS_LENGTH, RECT_BOSS_LENGTH );
 	}
 	SetColor( 255, 255, 255 );
@@ -441,10 +434,21 @@ function DrawBlur( let szImageFile ){
 *	@param nNum 個数
 */
 function DropItemHakureiTHC( let nNum ){
-	let aanPutItemPosList = GetDropItemPosListCircle( GetPlayerX(), GetPlayerY(), nNum );
-	ascent( let i in 0..length( aanPutItemPosList ) ){
-		let anPutItemPos = aanPutItemPosList[ i ];
-		SetItemQueue( ITEMEX_HAKUREI, anPutItemPos[ FLAN_ITEM_X ], anPutItemPos[ FLAN_ITEM_Y ], 2.8, 270 );
+	DropItemHakureiTHCGap( nNum, 8 );
+}
+
+/**
+*	博麗小符アイテムを自身の位置に落下させます。
+*
+*	@param nNum 個数
+*	@param nGap 誤差
+*/
+function DropItemHakureiTHCGap( let nNum, let nGap ){
+	ascent( let i in 0..nNum ){
+		let nRadius = 300;
+		if( nGap != 0 ){ nRadius += RandBlur( nGap ); }
+		let nAngle = Smooth( 0, 360, i, nNum );
+		SetItemQueue( ITEMEX_HAKUREI, GetPlayerX() - cos( nAngle ) * nRadius, GetPlayerY() + sin( nAngle ) * nRadius, 2.8, 270, Animation( 0, 40, i, nNum, CreateArray( 4, FLAN_ANIMATION_NORMAL ) ) );
 	}
 }
 
@@ -546,7 +550,10 @@ function onMainLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCo
 */
 function onFinalize( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	onFinalizeTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
-	if( GotSpellCardBonus() ){ DropItemHakureiTHC( [ 50, 150 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) >= 6 ] ); }
+	if( GotSpellCardBonus() ){
+		DropItemHakureiTHC( 50 );
+		if( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) >= 6 ){ DropItemHakureiTHCGap( 100, 0 ); }
+	}
 	if( m_nCLCutInSpellID >= 0 ){
 		AddCommonDataExArray(				CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_COUNT_TRY,	m_nCLCutInSpellID, 1, CL_SPELL_TOTAL, 0 );
 		if( GotSpellCardBonus() ){

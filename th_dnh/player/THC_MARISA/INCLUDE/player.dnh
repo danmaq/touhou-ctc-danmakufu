@@ -110,6 +110,10 @@ let PLAYER_SPELL_FUNCTION_SLOWMOVE = "";
 //	メンバ変数
 //////////////////////////////////////////////////////////////////////
 
+/**	以前のX座標格納されます。 */
+let m_anXHistory = [];
+/**	以前のY座標格納されます。 */
+let m_anYHistory = [];
 /**	喰らいボム初期時間が格納されます。 */
 let m_nPlayerBorderOfLifeDefault;
 /**	低速移動時の結界表示不透明度が格納されます。 */
@@ -183,15 +187,14 @@ task __InYanLoop(){
 			let nGraze = GetGraze();
 			if( nGraze != nGrazePrev ){
 				if( m_nInYanGauge > 16 && ( !m_bFlanKeySlow || bInYanMax ) ){
-					loop( ( nGraze - nGrazePrev ) * [ 1, 3 ][ bInYanMax ] ){ SetItemQueue( ITEMEX_HAKUREI, GetPlayerX(), GetPlayerY(), rand( 3, 5 ), 270 + RandBlur( 16 ) ); }
+					loop( ( nGraze - nGrazePrev ) * [ 1, 3 ][ bInYanMax ] ){ SetItemQueue( ITEMEX_HAKUREI, GetPlayerX(), GetPlayerY(), rand( 3, 5 ), 270 + RandBlur( 16 ), 0 ); }
 				}
 				nGrazePrev = nGraze;
 			}
 			if( bEnableInYanWork ){
 				m_nInYanGauge += 0.04 * PLAYER_INYAN_GAUGE_RATE * nLevelRate;
 				if( m_bFlanKeyUser && nHakurei > 0 && bInYanMax ){
-					m_nInYanGauge = 0;
-					m_nInYanGaugePenalty = PLAYER_INYAN_GAUGELOST_PENALTY_INTERVAL / 8;
+					m_nInYanGauge = 32;
 					SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * 0.01 ) );
 					PlaySEEx( seShot3 );
 					InYanShot();
@@ -351,7 +354,7 @@ task InYanShotShockCluster( let nX, let nY, let nAngle, let nSpeed, let nLifeTim
 		DeleteEnemyShotImmediatelyInCircle( SHOT, nNowX, nNowY, m_nInYanShockRadius + 1 );
 		if( GetEnemyShotCountEx( nNowX, nNowY, m_nInYanShockRadius, ALL ) > 0 ){
 			let nRadiusHalf = m_nInYanShockRadius / 2;
-			SetItemQueue( ITEMEX_HAKUREI, nNowX + RandBlur( nRadiusHalf ), nNowY + RandBlur( nRadiusHalf ), 3, 270 );
+			SetItemQueue( ITEMEX_HAKUREI, nNowX + RandBlur( nRadiusHalf ), nNowY + RandBlur( nRadiusHalf ), 3, 270, 0 );
 		}
 		loop( PLAYER_INYAN_SHOT2HAKUREI_INTERVAL ){ yield; }
 	}
@@ -385,8 +388,52 @@ function DrawDotMarisa(){
 	}
 	else{ nY = trunc( m_nFlanCount / PLAYER_DOT_ANIMATION ) % 3 * 64; }
 	SetGraphicRect( nX, nY, nX + 64, nY + 64 );
+	SetTexture( IMAGE_DOT_MARISA );
 	if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN, false ) && m_nInYanGaugePenalty > 0 ){ SetColor( 255, 128, 192 ); }
-	DrawPlayer( IMAGE_DOT_MARISA );
+	if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_PLAYER_BLUR, false ) ){
+		let nMax = length( m_anXHistory );
+		ascent( let i in 0..nMax ){
+			let nAlpha = Accelerate( 0, 255, i, nMax );
+			SetAlpha( nAlpha / 2 );
+			SetColor( 255, nAlpha, nAlpha );
+			DrawGraphic( m_anXHistory[ i ], m_anYHistory[ i ] );
+		}
+		SetAlpha( 255 );
+		SetColor( 255, 255, 255 );
+	}
+	DrawGraphic( GetPlayerX(), GetPlayerY() );
+
+	//	最終弾幕決闘用エフェクト処理
+	let nFade = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_SCREEN_FADE, 0 );
+	if( nFade > 0 ){
+		if( m_anFlanRandomTable[ m_nFlanCount % FLAN_RANDTABLE_LENGTH ] < Accelerate( -0.5, 10, nFade, 255 ) ){
+			let nBright = m_anFlanRandomTable[ ( m_nFlanCount + 371 ) % FLAN_RANDTABLE_LENGTH ] / 2;
+			let nY = m_anFlanRandomTable[ ( m_nFlanCount + 51 ) % FLAN_RANDTABLE_LENGTH ] / 2;
+			SetGraphicScale( 1.5, 1000 );
+			SetRenderState( ADD );
+			SetColor( 128, nBright, nBright );
+			DrawGraphic( GetPlayerX(), GetPlayerY() + nY - nY / 2 );
+			SetGraphicScale( 1, 1 );
+			SetColor( 255, 255, 255 );
+			SetRenderState( ALPHA );
+		}
+		if( m_anFlanRandomTable[ ( m_nFlanCount + 65 ) % FLAN_RANDTABLE_LENGTH ] < Smooth( 160, 255, nFade, 255 ) ){
+			let nBright = Smooth( 2, 48, nFade, 255 );
+			let nScale = Smooth( 200, 160, nFade, 255 );
+			let nGap = Accelerate( 24, 4, nFade, 255 );
+			SetRenderState( ADD );
+			SetColor( nBright, nBright, nBright );
+			ascent( let i in 1..8 ){
+				let nX = m_anFlanRandomTable[ ( m_nFlanCount + 467 * i ) % FLAN_RANDTABLE_LENGTH ] / nGap;
+				let nY = m_anFlanRandomTable[ ( m_nFlanCount + 19 * i ) % FLAN_RANDTABLE_LENGTH ] / nGap;
+				let nScaleX = m_anFlanRandomTable[ ( m_nFlanCount + 51 * i ) % FLAN_RANDTABLE_LENGTH ] / nScale;
+				SetGraphicScale( nScaleX, 1.2 );
+				DrawGraphic( GetPlayerX() + nX - 255 / nGap / 2.5, GetPlayerY() + nY - 255 / nGap / 2 );
+			}
+			SetGraphicScale( 1, 1 );
+			SetRenderState( ALPHA );
+		}
+	}
 	SetColor( 255, 255, 255 );
 }
 
@@ -474,6 +521,21 @@ task LookPowerLoop(){
 }
 
 /**
+*	座標情報を監視し5フレームごとに格納し続けるループです。
+*/
+task LookPositionLoop(){
+	loop{
+		m_anXHistory = m_anXHistory ~ [ GetPlayerX() ];
+		m_anYHistory = m_anYHistory ~ [ GetPlayerY() ];
+		if( length( m_anXHistory ) > 10 ){
+			m_anXHistory = erase( m_anXHistory, 0 );
+			m_anYHistory = erase( m_anYHistory, 0 );
+		}
+		loop( 2 ){ yield; }
+	}
+}
+
+/**
 *	共通メインループです。
 *	onMainLoop、onPlayerMissed双方の時に呼び出したい処理を記述します。
 */
@@ -491,20 +553,11 @@ task __CommonPlayerMainLoopTHC(){
 task Bit( let nDir ){
 	if( absolute( nDir ) != 1 ){ ErrorIllegalNumberList( nDir, [ -1, 1 ], "自機ビットタスク" ); }
 	let obj = CreateSquareEffectObject( IMAGE_DOT_MARISA, 194, 98, 16, 16, 16, 16 );
-//	let obj = CreateCircleEffectObject( 12, 6, 240, 240, 240, 240 );
 	let nAngle = 90;
-//	ObjEffect_SetTexture( obj, IMAGE_CL_WHITE );
-//	ObjEffect_SetRenderState( obj, ADD );
 	ObjEffect_SetLayer( obj, 3 );
 	while( !Obj_BeDeleted( obj ) ){
 		yield;
-//=====================================================================================================================
-//	TODO : 旧ライブラリからの移行互換用、完了次第削除・置換する
-		if( m_bFranPlayerShot && !m_bFlanKeyUser && m_bFlanPlayerShotEnable && !GetCommonDataDefault( FLAN_CD_BOSS_EVENT_ENABLE, false ) ){
-//=====================================================================================================================
-//	置換先
-//		if( m_bFranPlayerShot && !m_bFlanKeyUser && m_bFlanPlayerShotEnable ){
-//=====================================================================================================================
+		if( m_bFranPlayerShot && !m_bFlanKeyUser && m_bFlanPlayerShotEnable ){
 			onSubShotTHC( obj, nDir, m_nFlanCount, GetPhase(), m_nFlanPhaseCount, m_nFlanPrevPhase );
 		}
 		nAngle = MinMax( nAngle + PLAYER_BIT_MOVESPEED * [ 1, -1 ][ m_bFlanKeySlow ], 20, 90 );
@@ -556,7 +609,6 @@ task MainTask(){
 */
 function onInitialize(){
 //	CreateDebugWindow();
-
 	m_nPlayerBorderOfLifeDefault = FLAN_PLAYER_BORDERLIFE_DEFAULT;
 	if( !GetCommonDataDefault( CL_CD_CDNS_INITIALIZED, false ) ){ CLCommonNameSpaceInitialize(); }
 	LoadPlayerShotData( PATH_USER_SHOT );
@@ -564,6 +616,7 @@ function onInitialize(){
 	LoadResource( PLAYER_LOADLIST_GRAPHIC, PLAYER_LOADLIST_SE );
 	SetPlayerLifeImage( IMAGE_DOT_MARISA, 192, 0, 240, 48 );
 	LookPowerLoop();
+	LookPositionLoop();
 	CheckHoldKeyLRLoop();
 	__CommonPlayerMainLoopTHC();
 	if( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_ENABLE, false ) ){ InYanSystemStart(); }	// 博麗システムを停止したい場合はここをコメントアウトする
@@ -578,12 +631,8 @@ function onInitialize(){
 *	@param nPrevPhase 1つ前の状態のフェーズ
 */
 function onShot( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
-//=====================================================================================================================
-//	TODO : 旧ライブラリからの移行互換用、完了次第削除する
-	if( GetCommonDataDefault( FLAN_CD_BOSS_EVENT_ENABLE, false ) ){ return; }
-//=====================================================================================================================
 	BasicShot( [ PLAYER_SHOT_BASIC_WIDTH_FASTMOVE, PLAYER_SHOT_BASIC_WIDTH_SLOWMOVE ][ m_bFlanKeySlow ], nPhase );
-	onShotTHC( nCount, nPhase, nPhaseCount, nPrevPhase );
+//	onShotTHC( nCount, nPhase, nPhaseCount, nPrevPhase );
 }
 
 /**
@@ -601,7 +650,7 @@ function onMainLoop( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 		FLAN_PLAYER_COLLISION_HIT = 0;
 		DeleteEnemyShotImmediatelyInCircle( SHOT, GetPlayerX(), GetPlayerY(), 6 );
 	}
-	m_bPlayerLastLife = GetPlayerLife() == 1;
+	m_bPlayerLastLife = GetPlayerLife() == 1 && !OnEnemyLastSpell();
 	onMainLoopTHC( nCount, nPhase, nPhaseCount, nPrevPhase );
 	FLAN_PLAYER_BORDERLIFE_DEFAULT = [ m_nPlayerBorderOfLifeDefault, PLAYER_INYAN_ADDIRIONAL_BORDER_LIMIT ][ m_nInYanGauge > 254 ];
 }
@@ -631,17 +680,17 @@ function onPlayerMissed( let nCount, let nPhase, let nPhaseCount, let nPrevPhase
 		let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 );
 		if( m_bPlayerLastLife ){
 			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * 0.8 ) );
-			loop( 3 ){ SetItemQueue( ITEMEX_POWER_FULL, GetPlayerX(), GetPlayerY(), nItemBaseSpeed + RandBlur( 1.5 ) - 0.5, 270 + RandBlur( nItemBlurAngle ) + nItemGapAngle ); }
+			loop( 3 ){ SetItemQueue( ITEMEX_POWER_FULL, GetPlayerX(), GetPlayerY(), nItemBaseSpeed + RandBlur( 1.5 ) - 0.5, 270 + RandBlur( nItemBlurAngle ) + nItemGapAngle, 0 ); }
 			SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
 		}
 		else{
 			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, truncate( nHakurei - nHakurei * [ 0.09, 0.18 ][ m_nInYanGauge > 254 ] ) );
 			let nPower = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
 			if( nPower > 8 ){
-				SetItemQueue( ITEMEX_POWER_BIG, GetPlayerX(), GetPlayerY(), nItemBaseSpeed + RandBlur( 2 ), 270 + RandBlur( nItemBlurAngle / 3 ) );
+				SetItemQueue( ITEMEX_POWER_BIG, GetPlayerX(), GetPlayerY(), nItemBaseSpeed + RandBlur( 2 ), 270 + RandBlur( nItemBlurAngle / 3 ), 0 );
 				bBigPower = true;
 			}
-			loop( Min( nPower - [ 0, 8 ][ bBigPower ], 5 ) ){ SetItemQueue( ITEMEX_POWER, GetPlayerX(), GetPlayerY(), nItemBaseSpeed + RandBlur( 1.5 ) - 0.5, 270 + RandBlur( nItemBlurAngle ) + nItemGapAngle ); }
+			loop( Min( nPower - [ 0, 8 ][ bBigPower ], 5 ) ){ SetItemQueue( ITEMEX_POWER, GetPlayerX(), GetPlayerY(), nItemBaseSpeed + RandBlur( 1.5 ) - 0.5, 270 + RandBlur( nItemBlurAngle ) + nItemGapAngle, 0 ); }
 			SetCommonDataEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, Max( nPower - 16, 0 ) );
 		}
 	}
@@ -692,7 +741,7 @@ function onDrawLoop( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN, false ) ){ DrawInYanSystem(); }
 	DrawDotMarisa();
 	if( m_nAlphaBorder > 0 ){ DrawPlayerBorder(); }
-	onDrawLoopTHC( nCount, nPhase, nPhaseCount, nPrevPhase );
+//	onDrawLoopTHC( nCount, nPhase, nPhaseCount, nPrevPhase );
 	if( IsCLCutIn() ){ CLDrawSpellCardEffect(); }
 }
 

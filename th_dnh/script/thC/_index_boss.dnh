@@ -523,5 +523,5 @@ let bossLWYoumu		= DIR_THC_ROOT ~ "LW_Youmu.dnh";
 let bossLWYuyuko	= DIR_THC_ROOT ~ "LW_Yuyuko.dnh";
 let bossLWReimuW	= DIR_THC_ROOT ~ "LW_ReimuW.dnh";
 let bossLWSuika		= DIR_THC_ROOT ~ "LW_Suika.dnh";
-let bossLWReimuR	= DIR_THC_ROOT ~ "LW_ReimuR.dnh";
+let bossLWReimuR	= DIR_THC_ROOT ~ "LW_Reimu.dnh";
 
