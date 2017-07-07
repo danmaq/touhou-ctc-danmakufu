@@ -303,7 +303,9 @@ task StageLogo(){
 function DrawStageLogo(){
 	if( m_nStageLogoIndex == -1 ){ return; }
 	SetAlpha( m_nStageLogoAlpha );
-	__DrawChrRect( IMAGE_THC_STAGE_LOGO[ m_nStageLogoIndex ], GetCenterX() - 2, GetCenterY() + m_nStageLogoGap, 0, 0, 384, 512 );
+	SetTexture( IMAGE_THC_STAGE_LOGO[ m_nStageLogoIndex ] );
+	SetGraphicRect( 0, 0, 384, 512 );
+	DrawGraphic( GetCenterX() - 2, GetCenterY() + m_nStageLogoGap );
 	DrawTexTextOnCache( m_nTTHStageLogoDescription, -2, -5, GetClipMinX() + 32 - m_nStageLogoGap, GetCenterY() - 64 );
 	SetAlpha( 255 );
 }

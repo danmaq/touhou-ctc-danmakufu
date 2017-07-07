@@ -187,7 +187,6 @@ script_stage_main{
 	*	@param nLevel ÉåÉxÉã(0Å`3)
 	*/
 	function onInitialize( let nStage, let nLevel ){
-
 		ForbidBomb( true );
 		ForbidShot( true );
 		SetRateScoreSystemEnable( false );
@@ -331,8 +330,8 @@ script_stage_main{
 //		case( 4 ){ Stage4DrawBottomObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 //		case( 5 ){ Stage5DrawBottomObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 		case( 6 ){ Stage6DrawBottomObject( m_nScenario, nStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
-		case( 7 ){ onDrawBottomObject( m_nSpellPracticeBGStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
-		case( 10 ){ StageExDrawBottomObject(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//		case( 7 ){ onDrawBottomObject( m_nSpellPracticeBGStage, nStageCount, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase ); }
+//		case( 10 ){ StageExDrawBottomObject(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 //		case( 11 ){ StageEx2DrawBottomObject(	nStageCount, nCount, nPhase, nPhaseCount, nPrevPhase ); }
 	}
 
