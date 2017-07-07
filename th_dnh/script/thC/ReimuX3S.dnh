@@ -88,10 +88,13 @@ script_enemy_main{
 		SetLife( 250 );
 		if( !m_bStage || m_bSpellPractice ){
 			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
+			SetDamageRateDelay( 10, 0, 780 );
 		}
-		else{ LastSpell(); }
+		else{
+			LastSpell();
+			SetDamageRateDelay( 40, 0, 780 );
+		}
 		SetDamageRate( 2, 0 );
-		SetDamageRateDelay( 40, 0, 780 );
 		SetShotAutoDeleteClip( 32, 32, 32, 32 );
 		SetInvincibility( 301 );
 		BehaviorBoss( ACT_STAND3 );

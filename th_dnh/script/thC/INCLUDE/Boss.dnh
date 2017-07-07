@@ -117,7 +117,11 @@ let m_nSpellScore = 500000;
 *	基本0でスキップキーで+1、ユーザ定義キーで+2します。
 */
 function SetLevelTemporary(){
-	return;
+	if( !IsDebugMode() ){ return; }
+	let nLevel = 0;
+	if( GetKeyState( VK_SKIP ) == KEY_HOLD ){ nLevel++; }
+	if( GetKeyState( VK_USER ) == KEY_HOLD ){ nLevel += 2; }
+	__SetLevelTemporary( nLevel );
 }
 
 
@@ -135,11 +139,11 @@ function SetResult(){
 	let nGraze = GetGraze() - GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_RESULT_GRAZE_PREV, 0 );
 	let nHakurei = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 ) - GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_RESULT_HAKUREI_PREV, 0 );
 	let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
-	let nClear = nStage * 10000000;
+	let nClear = [ nStage * 10000000, 100000000 ][ nStage >= 10 ];
 	let nBonusPoint = Max( nPoint * 50000, 2000 );
 	let nBonusGraze = Max( nGraze * 500, 20 );
 	let nBonusHakurei = Max( nHakurei * 2500, 100 );
-	let nRate = [ 50, 100, 120, 150 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 0 ) ];
+	let nRate = [ [ 50, 100, 120, 150 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 0 ) ], 200 ][ nStage >= 10 ];
 	let nPlayerPenalty = [ 100, 100, 100, 100, 60, 30, 20, 10, 10, 10, 10 ][ GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_PLAYER, 3 ) ];
 	let nPlayer = 0;
 	let nBomb = 0;
@@ -542,7 +546,7 @@ function onMainLoop( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCo
 */
 function onFinalize( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 	onFinalizeTHC( nArgv, nLevel, nCount, nPhase, nPhaseCount, nPrevPhase );
-	if( GotSpellCardBonus() ){ DropItemHakureiTHC( [ 50, 150 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 0 ) >= 6 ] ); }
+	if( GotSpellCardBonus() ){ DropItemHakureiTHC( [ 50, 150 ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) >= 6 ] ); }
 	if( m_nCLCutInSpellID >= 0 ){
 		AddCommonDataExArray(				CL_CDNS_RESULT, CL_CD_SPELL_HISTORY_COUNT_TRY,	m_nCLCutInSpellID, 1, CL_SPELL_TOTAL, 0 );
 		if( GotSpellCardBonus() ){

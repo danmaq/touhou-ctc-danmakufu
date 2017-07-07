@@ -48,6 +48,7 @@ function DrawSpellBG{
 		return;
 	}
 
+	SetAlpha( 255 );
 	SetGraphicRect( 0, 0, 512, 512 );
 	DrawCenter( imgSpellReimu3 );
 
@@ -61,6 +62,7 @@ function DrawSpellBG{
 
 function DrawSpellBG_Light{
 
+	SetAlpha( 255 );
 	SetGraphicRect( 0, 0, 512, 512 );
 	DrawCenter( imgSpellReimu3 );
 
@@ -82,24 +84,26 @@ task Barrier{
 	loop{
 
 		/** ボム待ち */
-		while( !OnBomb() ){ yield; }
+		while( !OnBomb() ){
+			if( m_nEnemyAlpha < 255 ){ m_nEnemyAlpha += 5; }
+			yield;
+		}
 
 		/** ボム中 */
 		let nLength = 128;
 		let obj = CreateSquareEffectObject( m_szImageBarrier, 0, 0, nLength, nLength, nLength, nLength );
-		m_nEnemyAlpha = 95;
 		let nAngle = 0;
 		let nAddAngle = 2;
 		while( OnBomb() ){
 			SetInvincibility( 2 );
 			Obj_SetPosition( obj, GetX(), GetY() );
 			ObjEffect_SetAngle( obj, 0, 0, nAngle );
+			if( m_nEnemyAlpha > 95 ){ m_nEnemyAlpha -= 5; }
 			yield;
 			nAngle += nAddAngle;
 		}
 
 		/** ボム終了 */
-		m_nEnemyAlpha = 255;
 		let nBlurFrame = 15;
 		let nScale = 1;
 		let nAddScale = ( 1.5 - nScale ) / nBlurFrame;

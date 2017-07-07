@@ -47,6 +47,7 @@ function DrawSpellBG{
 		return;
 	}
 
+	SetAlpha( 255 );
 	SetGraphicRect( 0, 0, 512, 512 );
 	DrawCenter( imgSpellSuika01 );
 
@@ -66,6 +67,7 @@ function DrawSpellBG{
 
 function DrawSpellBG_Light{
 
+	SetAlpha( 255 );
 	SetGraphicRect( 0, 0, 512, 512 );
 	DrawCenter( imgSpellSuika01 );
 
@@ -87,17 +89,20 @@ task Vanish{
 	loop{
 
 		/** ƒ{ƒ€‘Ò‚¿ */
-		while( !OnBomb() ){ yield; }
+		while( !OnBomb() ){
+			if( m_nEnemyAlpha < 255 ){ m_nEnemyAlpha += 5; }
+			yield;
+		}
 
 		/** ƒ{ƒ€’† */
 		let nCollisionA = FLAN_ENEMY_COLLISION_A;
 		let nCollisionB = FLAN_ENEMY_COLLISION_B;
 		FLAN_ENEMY_COLLISION_A = 0;
 		FLAN_ENEMY_COLLISION_B = 0;
-		m_nEnemyAlpha = 0;
 
 		while( OnBomb() ){
 			if( m_nFlanCount % 2 == 0 ){ Smoke(); }
+			if( m_nEnemyAlpha > 0 ){ m_nEnemyAlpha -= 5; }
 			yield;
 		}
 
@@ -105,7 +110,6 @@ task Vanish{
 		Concentration01( 30 );
 		FLAN_ENEMY_COLLISION_A = nCollisionA;
 		FLAN_ENEMY_COLLISION_B = nCollisionB;
-		m_nEnemyAlpha = 255;
 
 	}
 

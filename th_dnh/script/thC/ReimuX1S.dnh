@@ -90,13 +90,14 @@ script_enemy_main{
 			if( !m_bFlanPlural ){ SetPosition( m_nPracticeX, m_nPracticeY ); }
 			let nBossID = CL_TTH_CHARACTER_NAME_YOUMU + CL_TTH_CHARACTER_NAME_YOUMU_REIMU;
 			SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+			SetDamageRateDelay( 10, 0, 780 );
 		}
 		else{
 			SetPosition( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y + RandBlur( 0.1 ) );
 			LastSpellEffect();
+			SetDamageRateDelay( 40, 0, 780 );
 		}
 		SetDamageRate( 2, 0 );
-		SetDamageRateDelay( 40, 0, 780 );
 		SetShotAutoDeleteClip( 32, 32, 32, 32 );
 		SetInvincibility( 301 );
 		BehaviorBoss( ACT_STAND3 );
