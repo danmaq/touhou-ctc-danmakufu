@@ -273,6 +273,7 @@ task InYanShot(){
 		InYanBlur( nX, nY, nCount );
 		nCount++;
 		yield;
+		if( GetKeyState( VK_USER ) == KEY_PUSH ){ Obj_Delete( obj ); }
 	}
 	InYanShockWave( nX, nY, nCount );
 }

@@ -140,9 +140,9 @@ task Stage5MainTask(){
 	yield;
 
 ///////////////////////////////////////////////////////////////////////
-	if( GetPlayerScriptName() == "1.dnh" ){ CreateEnemyBossFromFile( bossYoumuA, GetCenterX(), 0, 0, 0, 0 ); }
-	if( GetPlayerScriptName() == "2.dnh" ){ CreateEnemyBossFromFile( bossYoumuB, GetCenterX(), 0, 0, 0, 0 ); }
-	if( GetPlayerScriptName() == "3.dnh" ){ CreateEnemyBossFromFile( bossYoumuC, GetCenterX(), 0, 0, 0, 0 ); }
+	if( GetCommonDataDefaultEx(CL_CDNS_RESULT,CL_CD_STAGE_SCENARIO,"") == 0 ){ CreateEnemyBossFromFile( bossYoumuA, GetCenterX(), 0, 0, 0, 0 ); }
+	if( GetCommonDataDefaultEx(CL_CDNS_RESULT,CL_CD_STAGE_SCENARIO,"") == 1 ){ CreateEnemyBossFromFile( bossYoumuB, GetCenterX(), 0, 0, 0, 0 ); }
+	if( GetCommonDataDefaultEx(CL_CDNS_RESULT,CL_CD_STAGE_SCENARIO,"") == 2 ){ CreateEnemyBossFromFile( bossYoumuC, GetCenterX(), 0, 0, 0, 0 ); }
 	else{ CreateEnemyBossFromFile( bossYoumuD, GetCenterX(), 0, 0, 0, 0 ); }
 	WaitZeroEnemy();	//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
 	CreateEnemyFromFile( bossYoumu99, GetCenterX(), 0, 0, 0, 0 );
@@ -199,9 +199,9 @@ task Stage5MainTask(){
 
 
 ///////////////////////////////////////////////////////////////////////
-	if( GetPlayerScriptName() == "1.dnh" ){ CreateEnemyBossFromFile( bossYuyukoA, GetCenterX(), 0, 0, 0, 0 ); }
-	if( GetPlayerScriptName() == "2.dnh" ){ CreateEnemyBossFromFile( bossYuyukoB, GetCenterX(), 0, 0, 0, 0 ); }
-	if( GetPlayerScriptName() == "3.dnh" ){ CreateEnemyBossFromFile( bossYuyukoC, GetCenterX(), 0, 0, 0, 0 ); }
+	if( GetCommonDataDefaultEx(CL_CDNS_RESULT,CL_CD_STAGE_SCENARIO,"") == 0 ){ CreateEnemyBossFromFile( bossYuyukoA, GetCenterX(), 0, 0, 0, 0 ); }
+	if( GetCommonDataDefaultEx(CL_CDNS_RESULT,CL_CD_STAGE_SCENARIO,"") == 1 ){ CreateEnemyBossFromFile( bossYuyukoB, GetCenterX(), 0, 0, 0, 0 ); }
+	if( GetCommonDataDefaultEx(CL_CDNS_RESULT,CL_CD_STAGE_SCENARIO,"") == 2 ){ CreateEnemyBossFromFile( bossYuyukoC, GetCenterX(), 0, 0, 0, 0 ); }
 	else{ CreateEnemyBossFromFile( bossYuyukoD, GetCenterX(), 0, 0, 0, 0 ); }
 	WaitZeroEnemy();	//ìGÇ™è¡Ç¶ÇÈÇ‹Ç≈í‚é~
 	if( IsTryLastSpell() ){

@@ -198,7 +198,8 @@ function __DrawMenu(
 	if( bInPhase && nTexTextDescriptionHandleStart >= 0 ){
 		SetAlpha( 255 );
 		if( m_nFlanPhaseCount < MENU_FADE_INTERVAL ){ SetAlpha( Accelerate( 48, 255, m_nFlanPhaseCount, MENU_FADE_INTERVAL ) ); }
-		let bDanger = ( nTargetPhase == MENU_PHASE_RESET_ALL ) || ( nTargetPhase == MENU_PHASE_CONFIG && m_nMenuCursorConfig >= CL_TTH_MENU_CONFIG_RESET_CONFIGURE );
+		let bDanger =	( ( nTargetPhase == MENU_PHASE_RESET_CONFIG || nTargetPhase == MENU_PHASE_RESET_ALL ) && m_nMenuCursorReset == 1 ) ||
+						( nTargetPhase == MENU_PHASE_CONFIG && m_nMenuCursorConfig >= CL_TTH_MENU_CONFIG_RESET_CONFIGURE );
 		SetColor( 255, [ 255, 16 ][ bDanger ], [ 192, 16 ][ bDanger ] );
 		DrawTexTextOnCache( nTexTextDescriptionHandleStart + nCursorPos, nDescriptionKerning, -8, nDescriptionX, nDescriptionY );
 	}

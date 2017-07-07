@@ -120,8 +120,7 @@ task __CreateTTHSystemTimerCountSecondLoop(){
 task __CreateTTHBossNameLoop(){
 	let nPrevBossID = CL_TT_INVALID;
 	loop{
-		if( m_nBossNameAlpha <= 0 || m_nFlanLoadResourcePercentage != -1 ){
-			m_nBossNameAlpha = 0;
+		if( m_nBossNameAlpha <= 0 ){
 			m_nTTHBossName = CL_TT_INVALID;
 			__Wait( 100 );
 		}
@@ -253,8 +252,8 @@ function DrawStageInfomation(){
 	if( IsDebugMode() ){ DrawStageInfomationBottomRight(); }
 	if( m_nStageMusicIndex >= 0 && m_nFlanCount - m_nStageStartMusicTime <= 300 ){ DrawStageBGM(); }
 	if( m_nFlanCount - m_nItemPlayerPowerMax < 120 ){ DrawMaxPower(); }
-	if( IsReplay() ){
-		SetAlpha( 96 );
+	if( !IsDebugMode() && IsReplay() ){
+		SetAlpha( Min( m_nCenterAlpha, 96 ) );
 		DrawTexTextOnCache( CL_TTH_STAGE_DEMO, 0, 0, GetCenterX() - 64, GetCenterY() + 36 );
 		SetAlpha( 255 );
 	}
@@ -434,22 +433,17 @@ function DrawStageResult(){
 *	ステージリザルトを絵画します。
 */
 function __DrawStageResult(){
-	let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
-	let nLevel = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 );
-	let nTTHLevel = [
-		[ CL_TTH_RESULT_PENALTY_EASY, CL_TTH_RESULT_PENALTY_NORMAL, CL_TTH_RESULT_PENALTY_HARD, CL_TTH_RESULT_PENALTY_LUNATIC ][ nLevel ],
-		[ CL_TTH_RESULT_PENALTY_EXTRA, CL_TTH_RESULT_PENALTY_PHANTASM, CL_TTH_RESULT_PENALTY_EXTRA, CL_TTH_RESULT_PENALTY_PHANTASM ][ nLevel ]
-	][ nStage >= 10 ];
+	let nTTHLevel = [ CL_TTH_RESULT_PENALTY_EASY, CL_TTH_RESULT_PENALTY_NORMAL, CL_TTH_RESULT_PENALTY_HARD, CL_TTH_RESULT_PENALTY_LUNATIC ][ GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 ) ];
 	let anTTHHeading	= [ CL_TTH_RESULT_BONUS_STAGE,	CL_TTH_RESULT_BONUS_POINT,	CL_TTH_RESULT_BONUS_GRAZE,	CL_TTH_RESULT_BONUS_HAKUREI,	CL_TT_INVALID,	CL_TT_INVALID,	nTTHLevel,							CL_TTH_RESULT_BONUS_PLAYER,			CL_TTH_RESULT_BONUS_TOTAL	];
 	let anTTHOperand	= [ CL_TTH_RESULT_SYMBOL_EQUAL,	CL_TTH_RESULT_SYMBOL_EQUAL,	CL_TTH_RESULT_SYMBOL_EQUAL,	CL_TTH_RESULT_SYMBOL_EQUAL,		CL_TT_INVALID,	CL_TT_INVALID,	CL_TTH_RESULT_SYMBOL_PERCENTAGE,	CL_TTH_RESULT_SYMBOL_PERCENTAGE,	CL_TTH_RESULT_SYMBOL_EQUAL	];
 	let anTTHValues		= [ m_nTTHStageResultStage,		m_nTTHStageResultPoint,		m_nTTHStageResultGraze,		m_nTTHStageResultHakurei,		CL_TT_INVALID,	CL_TT_INVALID,	m_nTTHStageResultRate,				m_nTTHStageResultPlayerInit,		m_nTTHStageResultTotal		];
 	if( !( m_nTTHStageResultPlayer == CL_TT_INVALID || m_nTTHStageResultBomb == CL_TT_INVALID ) ){
-		anTTHHeading[ 4 ]	= CL_TTH_RESULT_BONUS_PLAYER;
-		anTTHOperand[ 4 ]	= CL_TTH_RESULT_SYMBOL_EQUAL;
-		anTTHValues[ 4 ]	= m_nTTHStageResultPlayer;
-		anTTHHeading[ 5 ]	= CL_TTH_RESULT_BONUS_BOMB;
-		anTTHOperand[ 5 ]	= CL_TTH_RESULT_SYMBOL_EQUAL;
-		anTTHValues[ 5 ]	= m_nTTHStageResultBomb;
+		anTTHHeading[ 6 ]	= CL_TTH_RESULT_BONUS_PLAYER;
+		anTTHOperand[ 6 ]	= CL_TTH_RESULT_SYMBOL_EQUAL;
+		anTTHValues[ 6 ]	= m_nTTHStageResultPlayer;
+		anTTHHeading[ 7 ]	= CL_TTH_RESULT_BONUS_BOMB;
+		anTTHOperand[ 7 ]	= CL_TTH_RESULT_SYMBOL_EQUAL;
+		anTTHValues[ 7 ]	= m_nTTHStageResultBomb;
 	}
 	ascent( let i in 0..length( anTTHHeading ) ){
 		if( i == 6 || i == 7 ){ SetColor( 255, 128, 128 ); }
@@ -461,6 +455,6 @@ function __DrawStageResult(){
 			DrawTexTextOnCache( anTTHValues[ i ], 0, 0, 256, nDstY );
 		}
 	}
-	DrawTexTextOnCache( CL_TTHBASE_RESULT + [ CL_TTH_RESULT_CLEAR_STAGE, CL_TTH_RESULT_CLEAR_ALL ][ m_bStagePractice || nStage >= 6 ], 0, 0, 144, 64 );
+	DrawTexTextOnCache( CL_TTHBASE_RESULT + [ CL_TTH_RESULT_CLEAR_STAGE, CL_TTH_RESULT_CLEAR_ALL ][ m_bStagePractice || GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) >= 5 ], 0, 0, 144, 64 );
 	SetColor( 255, 255, 255 );
 }
