@@ -1,0 +1,238 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		Last word
+//
+//		※ステージライブラリから自動的にインクルードされます
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数
+//////////////////////////////////////////////////////////////////////
+
+/**	読み込むステージ固有の背景グラフィックです。
+*	背景無効時は無視されます。
+*/
+let STAGE_LW_LOAD_LIST_GRAPHIC_BG = [
+	imgMapStoneTile4
+];
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+/**	LW出現条件成立率のリストが格納されます。 */
+let m_anMenuSpellLWReleaseProgress;
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	固有処理部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	LW出現条件成立率を計算します。
+*
+*	@return 達成率リスト
+*/
+function GetLWReleaseProgress(){
+	let anOrder = CreateOrderArray( CL_SPELL_TOTAL );
+	let anLWReleaseProgress = CreateArray( SPELL_LW_ALL, 0 );
+	let nTotalHour = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_HISTORY_COUNT_TOTAL, 0 ) / 216000;
+	let anTotalScoreRank = GetClearHiScoreRanking( [], [], [], [], 0, 0 );
+	let nTotalScore = 0;
+	ascent( let i in 0..length( nTotalScore ) ){ nTotalScore += anTotalScoreRank[ i ]; }
+	ascent( let i in 0..SPELL_LW_ALL ){
+		let nTimeRelease = 24;
+		let nRequire = 0;
+		let nMission = 0;
+		alternative( i )
+		case( 5, 10, 12, 23 ){
+			let bMedicine = i == 12;
+			let nPlayerID = SearchArray( [ 5, 10, 12, 23 ], i );
+			nMission =	( GetClearHistory( [ nPlayerID ], [], [ 6 ], [ 0, 1 ],	0, 0, 0 ) >= 1 ) +
+						( GetClearHistory( [ nPlayerID ], [], [ 6 ], [ 2 ],		0, -1, 0 ) >= 1 ) +
+						[ 0, GetSumSpellGotHistory( [ 280 ], false ) ][ bMedicine ];
+			nRequire = [ 2, 3 ][ bMedicine ];	nTimeRelease = [ 15, 17 ][ i == 23 ];
+		}
+		case( 4, 6, 11, 19 ){
+			nMission = GetClearHistory( [ SearchArray( [ 4, 6, 11, 19 ], i ) ], [], [ 6 ], [], 0, 0, 0 );
+			nRequire = 2;
+			nTimeRelease = [ 2, 1 ][ i == 11 ];
+		}
+		case( 0, 8, 14, 18 ){
+			nMission = IsCanTryStageEX() + ( GetClearHistory( [ SearchArray( [ 0, 8, 14, 18 ], i ) ], [], [ 10 ], [], 0, 0, 0 ) >= 1 );
+			nRequire = 2;
+			nTimeRelease = 5;
+		}
+		case( 2, 7, 13, 17 ){
+			nMission = IsCanTryStageEX() + IsCanTryStageEX2() + ( GetClearHistory( [ SearchArray( [ 2, 7, 13, 17 ], i ) ], [], [ 11 ], [], 0, 0, 0 )  >= 1 );
+			nRequire = 3;
+			nTimeRelease = 8;
+		}
+		case( 25, 27 ){
+			let bRR = i == 27;
+			nMission = GetSumSpellGotHistory( [], bRR );
+			nRequire = 388;
+			nTimeRelease = [ 24, 17.58 ][ bRR ];
+		}
+		case( 1 ){
+			nMission = ( GetSumSpellGotHistory( anOrder[ 360..387 ], false ) >= 1 ) + Min( GetSumSpellTryHistory( anOrder[ 360..387 ], false ), 2 );
+			nRequire = 3;
+			nTimeRelease = 9;
+		}
+		case( 3 ){
+			let aanSpellID = [ [ 0, 1 ], [ 4, 5 ], [ 8, 9 ], [ 11, 12 ], [ 361, 362 ], anOrder[ 17..31 ] ];
+			nRequire = length( aanSpellID );
+			nTimeRelease = 13;
+			ascent( let j in 0..nRequire ){ nMission += ( GetSumSpellGotHistory( aanSpellID[ j ], false ) >= 1 ); }
+		}
+		case( 9 ){
+			nMission =	GetSumSpellGotHistory( anOrder[ 57..67 ],	false ) +
+						GetSumSpellGotHistory( [ 367 ],				false );
+			nRequire = 12;
+			nTimeRelease = 23;
+		}
+		case( 15 ){
+			nMission = nTotalScore;
+			nRequire = 10000000000;
+		}
+		case( 16 ){
+			nMission = IsCanTryStageEX() + IsCanTryStageEX2();
+			nRequire = 18;
+			ascent( let j in 0..4 ){
+				ascent( let k in 0..4 ){ nMission += ( GetClearHistory( [ j ], [], [ 6 ], [ k ], 0, -1, 0 ) >= 1 ); }
+			}
+		}
+		case( 20 ){
+			nMission = Min( GetSumSpellGotHistory( anOrder[ 360..387 ], false ), 5 ) + GetSumSpellGotHistory( anOrder[ 373 ], false );
+			nRequire = 6;
+			nTimeRelease = 10;
+		}
+		case( 21 ){
+			nMission = Min( GetSumSpellGotHistory( [ 220, 221, 380 ], false ), 2 ) + ( GetClearHistory( [], [], [ 6 ], [ 3 ], 0, -1, 0 ) >= 1 );
+			nRequire = 7;
+			ascent( let j in 0..4 ){ nMission += ( GetClearHistory( [ j ], [], [ 10 ], [], 0, 0, 0 ) >= 1 ); }
+			nTimeRelease = 20;
+		}
+		case( 22 ){
+			nMission = GetSumSpellGotHistory( [ 276 ], false );
+			nRequire = 1;
+		}
+		case( 24 ){
+			nMission =	GetSumSpellGotHistory( anOrder[ 245..260 ] ~ [ 383 ], false );
+			nRequire = 17;
+		}
+		case( 26 ){
+			nMission = GetSumSpellGotHistory( anOrder[ 360..387 ], false );
+			nRequire = 20;
+			nTimeRelease = 22;
+		}
+		anLWReleaseProgress[ i ] = Max( Smooth( 0, 100, nTotalHour, nTimeRelease ), Smooth( 0, 100, nMission, nRequire ) );
+		m_nFlanLoadResourcePercentage = Smooth( 20, 30, i, SPELL_LW_ALL );
+		if( GetFps() < 30 || i % 5 == 0 ){ yield; }
+	}
+	return anLWReleaseProgress;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	共通処理部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	LW中毎フレームごとに呼ばれます。
+*
+*	@param nScenario シナリオ番号
+*	@param nStage 現在のステージ
+*	@param nStageCount 現在のステージカウンタ値
+*	@param nLevel レベル(0～3)
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function StageLWLoop( let nStageCount, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	if( !GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_BGG, true ) ){ return; }
+	let nSpeedTable = [ 10, 1 ];
+	let anBGParam = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_STAGE_BG_PARAMETER, [ 800, 90, 30, 0, 0, 0 ] );
+	let nSpeed = SlowDown( nSpeedTable[ Max( nPhase - 1, 0 ) ], nSpeedTable[ nPhase ], nPhaseCount, 150 );
+	anBGParam[ BG_TO_Z ] = anBGParam[ BG_TO_Z ] - nSpeed;
+	anBGParam[ BG_TO_Y ] = anBGParam[ BG_TO_Y ] + nSpeed;
+	if( !OnEnemySpell() && IsRenderFrame() ){
+		anBGParam[ BG_TO_X ] = MinMax( cos( nStageCount / 5 + 90 ) * 40, -32, 32 );
+		anBGParam[ BG_FROM_YAW ] = MinMax( cos( nStageCount / 5 + 90 ) * 8, -5, 5 ) + 90;
+		if( nPhase == 1 && nPhaseCount <= 30 ){
+			anBGParam[ BG_FROM_PITCH ] = SlowDown( 30, -10, nPhaseCount, 30 );
+		}
+	}
+	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_BG_PARAMETER, anBGParam );
+}
+
+/**
+*	LW背景絵画時に呼ばれます。
+*
+*	@param nStageCount 現在のステージカウンタ値
+*	@param nCount 現在のカウンタ値
+*	@param nPhase 現在のフェーズ
+*	@param nPhaseCount 現在のフェーズカウンタ値
+*	@param nPrevPhase 1つ前の状態のフェーズ
+*/
+function StageLWDrawBackGround( let nStageCount, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	let anBGParam = GetCommonDataEx( CL_CDNS_TEMP, CL_CD_STAGE_BG_PARAMETER );
+	if( nStageCount > 600 ){ SetFogEx( 600, 1000, 64, 0, 32 ); }
+	else{
+		SetFogEx(
+			Smooth( 450, 600, nStageCount, 600 ),
+			Smooth( 800, 1000, nStageCount, 500 ),
+			64,
+			0,
+			32
+		);
+	}
+	SetViewFrom( anBGParam[ BG_FROM_DISTANCE ], anBGParam[ BG_FROM_YAW ], anBGParam[ BG_FROM_PITCH ] );
+	let nViewToX = anBGParam[ BG_TO_X ] + GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_X, 0 );
+	let nViewToY = anBGParam[ BG_TO_Y ] + GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Y, 0 );
+	let nViewToZ = anBGParam[ BG_TO_Z ] + GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_STAGE_GAP_Z, 0 );
+	SetViewTo( nViewToX, nViewToY, nViewToZ );
+	let nBaseZ = truncEx( anBGParam[ BG_TO_Z ], 512 );
+	SetTexture( IMAGE_CL_BLACK );
+	SetGraphicRect( 0, 0, 4096, 5120 );
+	DrawGraphic3D( 0, nViewToY, nViewToZ - 450 );
+	ascent( let i in -1..3 ){
+		let nY = 32 + i * 512 - nBaseZ;
+		let nZ = -i * 512 + nBaseZ;
+		SetTexture( imgMapStoneTile3 );
+		SetGraphicScale( 1, 1.414213562 );
+		ascent( let j in 0..2 ){
+			let nBright = [ 240, 160 ][ j ];
+			SetColor( nBright, nBright, nBright );
+			SetGraphicAngle( [ -45, 0 ][ j ], [ 0, -90 ][ j ], [ 0, 45 ][ j ] );
+			ascent( let k in 0..2 ){
+				let nDir = [ 1, -1 ][ k ];
+				SetGraphicRect( j * 64 * nDir, 0, ( j + 1 ) * 64 * nDir, 512 );
+				DrawGraphic3D( ( 256 - [ 0, 32 ][ j ] ) * nDir, nY, nZ - [ 0, 32 ][ j ] );
+			}
+		}
+	}
+	SetGraphicScale( 1, 1 );
+	ascent( let i in -5..15 ){
+		ascent( let j in 0..2 ){
+			let nIndex = i * 2 + j;
+			let nBright = [ 255, 192 ][ j ];
+			SetColor( nBright, nBright, nBright );
+			SetGraphicRect( 0, nIndex * 64, 512, ( nIndex + 1 ) * 64 );
+			SetGraphicAngle( [ 90, 0 ][ j ], 0, 0 );
+			DrawGraphic3D( 0, nIndex * 32 - nBaseZ, -nIndex * 32 + nBaseZ );
+		}
+	}
+	SetColor( 255, 255, 255 );
+}

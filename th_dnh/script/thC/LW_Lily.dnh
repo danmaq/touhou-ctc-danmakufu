@@ -14,7 +14,6 @@
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-
 #ScriptVersion[2]
 #BackGround[User]
 #Title[Lily - ラストワード]
@@ -85,7 +84,7 @@ script_enemy_main{
 		SetPosition( m_nPracticeX, m_nPracticeY );
 		SetTimer( 59 );
 		SetLife( 500 );
-		SetDamageRate( 10, 0 );
+		SetDamageRate( 2, 0 );
 		SetShotAutoDeleteClip( 32, 32, 32, 32 );
 		SetInvincibility( 181 );
 		BehaviorBoss( ACT_STAND3 );
@@ -195,6 +194,7 @@ script_enemy_main{
 
 			nTurn ++;
 			if( nTurn == 4 ){ nTurn = 0; }
+			SetDamageRate( 10, 0 );
 
 		}
 

@@ -19,7 +19,7 @@
 let FLAN_COMMON_BR_CODE = "
 ";
 /**	FLANのバージョン情報です。 */
-let FLAN_COMMON_VERSION = "0.2e";
+let FLAN_COMMON_VERSION = "0.2f";
 
 
 //////////////////////////////////////////////////////////////////////

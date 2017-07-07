@@ -1,0 +1,488 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ラストワード　八意 永琳
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Eirin - ラストワード]
+#Text[ラストワード
+八意 永琳]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Eirin.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 80;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 80;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** ラインを構成する壁の数 */
+	let m_nNum = 8;
+
+	/** 壁間の長さ */
+	let m_nLength = ( CL_MAX_X - CL_MIN_X ) / ( m_nNum - 0.5 );
+
+	/** ラインy座標 */
+	let m_nY = CL_MAX_Y;
+
+	/** 前ラインの方向配列 */
+	let m_anAngle = [];
+
+	/** 偶数番ラインか（最初のラインは0番とする） */
+	let m_bEven = true;
+
+	/** スクロール速度 */
+	let m_nSpeed = 0;
+
+	/** プレイヤー座標 */
+	let m_nPlayerX = 0;
+	let m_nPlayerY = 0;
+
+	/** 最大ライフ */
+	let m_nMaxLife;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetPosition( m_nPracticeX, m_nPracticeY );
+		SetTimer( 63 );
+		SetLife( 500 );
+		SetDamageRate( 0, 0 );
+		SetShotAutoDeleteClip( 32, 96, 32, 64 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+		m_nMaxLife = GetLife();
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_EIYA + CL_TTH_CHARACTER_NAME_EIYA_EIRIN;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** プレイヤー座標 */
+		m_nPlayerX = GetPlayerX();
+		m_nPlayerY = GetPlayerY();
+
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_LASTWORD + CL_TTH_SPELL_LW_EIRIN;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		/** 迷路初期作成 */
+		SetAction( ACT_SHOT_B5, 240 );
+		PlaySEEx( sePower );
+		Concentration01( 120 );
+		__Wait( 120 );
+		InitializeMaze();
+		__Wait( 120 );
+
+		/** スクロール開始 */
+		ScrollMaze();
+		SetDamageRate( 8, 0 );
+
+		loop{
+
+			/** 移動 */
+			Move( 60 );
+			__Wait( 60 );
+
+			/** 全方向直線弾 */
+			RoundLineShotEx();
+			__Wait( 60 );
+
+		}
+
+	}
+
+	/**
+	*	全方向直線弾
+	*/
+	task RoundLineShotEx{
+
+		let nMinSpeed = 3;
+		let nMaxSpeed = 5.6;
+		let nSpeed = Smooth( nMinSpeed, nMaxSpeed, m_nMaxLife - GetLife(), m_nMaxLife );
+		let nAngle = 90;
+		let nWay = 32;
+		let nNum = 3;
+		let nGraphic = US_RICE_M_PURPLE;
+		let nDelay = 10;
+
+		SetAction( ACT_SHOT_A5, 30 );
+		PlaySEEx( seShot1 );
+		_RoundLineShot( GetX(), GetY(), nSpeed * 0.6, nSpeed, nAngle, nWay, nNum, nGraphic, nDelay );
+
+	}
+
+	/**
+	*	迷路初期作成
+	*/
+	task InitializeMaze{
+
+		let nFrame = 3;
+		m_anAngle = CreateArray( m_nNum, - 1 );
+
+		while( m_nY > CL_MIN_Y - 32 ){
+			PlaySEEx( seKira1 );
+			CreateMaze( m_bEven, true );
+			__Wait( nFrame );
+			m_nY -= m_nLength * sin( 60 );
+			m_bEven = !m_bEven;
+		}
+
+	}
+
+	/**
+	*	スクロール＆迷路ライン追加
+	*/
+	task ScrollMaze{
+
+		let nMinSpeed = 0.1;
+		let nMaxSpeed = 2.6;
+
+		loop{
+			m_nSpeed = Smooth( nMinSpeed, nMaxSpeed, m_nMaxLife - GetLife(), m_nMaxLife );
+			m_nY += m_nSpeed;
+			while( m_nY > CL_MIN_Y - 32 ){
+				CreateMaze( m_bEven, false );
+				m_nY -= m_nLength * sin( 60 );
+				m_bEven = !m_bEven;
+			}
+			yield;
+		}
+
+	}
+
+	/**
+	*	迷路作成（1ライン）
+	*	@param bEven	偶数番ラインか
+	*	@param bEffect	演出するか
+	*/
+	task CreateMaze( let bEven, let bEffect ){
+
+		/** 壁方向配列作成　0:左上 から右回りで 5:左下 */
+		let anAngle = CreateArray( m_nNum, - 1 );
+
+		/** 偶数番ラインの場合 */
+		if( bEven ){
+			ascent( let i in 0 .. m_nNum ){
+				if( i == 0 || i == m_nNum - 1 ){ anAngle[ i ] = 1; }
+				else{
+					anAngle[ i ] = rand_int( 0, 5 );
+					alternative( anAngle[ i ] )
+					case( 2 ){
+						if( anAngle[ i - 1 ] == 2 ){ anAngle[ i ] = 1; }
+					}
+					case( 3 ){
+						if( m_anAngle[ i ] == 0 ){ anAngle[ i ] = - 1; }
+					}
+					case( 4 ){
+						if( m_anAngle[ i - 1 ] == 1 ){ anAngle[ i ] = - 1; }
+					}
+					case( 5 ){
+						alternative( anAngle[ i - 1 ] )
+						case( 2 ){ anAngle[ i ] = - 1; }
+						case( 5 ){ anAngle[ i ] = 0; }
+					}
+				}
+			}
+		}
+		/** 奇数番ラインの場合 */
+		else{
+			ascent( let i in 0 .. m_nNum ){
+				if( i == 0 || i == m_nNum - 1 ){ anAngle[ i ] = 0; }
+				else{
+					anAngle[ i ] = rand_int( 0, 5 );
+					alternative( anAngle[ i ] )
+					case( 2 ){
+						if( anAngle[ i - 1 ] == 2 ){ anAngle[ i ] = 1; }
+					}
+					case( 3 ){
+						if( m_anAngle[ i + 1 ] == 0 ){ anAngle[ i ] = - 1; }
+					}
+					case( 4 ){
+						if( m_anAngle[ i ] == 1 ){ anAngle[ i ] = - 1; }
+					}
+					case( 5 ){
+						alternative( anAngle[ i - 1 ] )
+						case( 2 ){ anAngle[ i ] = - 1; }
+						case( 5 ){ anAngle[ i ] = 0; }
+					}
+				}
+			}
+		}
+
+		/** 壁配置 */
+		let nX = [ CL_MIN_X + m_nLength * 0.5, CL_MIN_X ][ bEven ];
+		ascent( let i in 0 .. m_nNum ){
+			WallShot( nX, m_nY, bEffect );
+			if( anAngle[ i ] != - 1 ){
+				let nAngle = - 120 + 60 * anAngle[ i ];
+				WallLaser( nX, m_nY, nAngle, bEffect );
+			}
+			nX += m_nLength;
+		}
+
+	}
+
+	/**
+	*	壁弾
+	*	@param nX		設置x座標
+	*	@param nY		設置y座標
+	*	@param bEffect	演出するか
+	*/
+	task WallShot( let nX, let nY, let bEffect ){
+
+		let obj = Obj_Create( OBJ_SHOT );
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetAngle( obj, rand( 0, 360 ) );
+		ObjShot_SetGraphic( obj, US_STAR_S_SKY );
+		ObjShot_SetBombResist( obj, true );
+		if( bEffect ){ SetEffect(); }
+
+		/** スクロール */
+		while( !Obj_BeDeleted( obj ) ){
+			nY += m_nSpeed;
+			Obj_SetY( obj, nY );
+			yield;
+		}
+
+		/** 演出 */
+		task SetEffect{
+			ObjShot_SetDelay( obj, 15 );
+			Obj_SetCollisionToPlayer( obj, false );
+			loop( 60 ){ yield; }
+			Obj_SetCollisionToPlayer( obj, true );
+		}
+	}
+
+	/**
+	*	壁レーザー
+	*	@param nX		設置x座標
+	*	@param nY		設置y座標
+	*	@param nAngle	壁角度
+	*	@param bEffect	演出するか
+	*/
+	task WallLaser( let nX, let nY, let nAngle, let bEffect ){
+
+		let obj = Obj_Create( OBJ_LASER );
+		let nWidth = 10;
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetAngle( obj, nAngle );
+		ObjShot_SetGraphic( obj, US_BEAM_BLUE );
+		Obj_SetCollisionToPlayer( obj, false );
+		ObjLaser_SetSource( obj, false );
+		if( bEffect ){ SetEffect(); }
+		else{
+			ObjLaser_SetLength( obj, m_nLength );
+			ObjLaser_SetWidth( obj, nWidth );
+			CheckCollision();
+		}
+
+		/** スクロール */
+		while( !Obj_BeDeleted( obj ) ){
+			nY += m_nSpeed;
+			Obj_SetY( obj, nY );
+			yield;
+		}
+
+		/** 当たり判定チェック */
+		task CheckCollision{
+
+			let _nX = m_nLength * cos( nAngle );
+			let _nY = m_nLength * sin( nAngle );
+			let nHitWidth = 8;
+			let nHitR = 0.5;
+
+			while( !Obj_BeDeleted( obj ) ){
+				if( Collision_Line_Circle( nX, nY, nX + _nX, nY + _nY, nHitWidth, m_nPlayerX, m_nPlayerY, nHitR ) ){
+					if( GetMissCountInThisSpell() == 0 ){ ShootDownPlayer(); }
+					break;
+				}
+				yield;
+			}
+
+		}
+
+		/** 演出 */
+		task SetEffect{
+
+			ObjShot_SetDelay( obj, 90 );
+			ObjLaser_SetLength( obj, 0 );
+			ObjLaser_SetWidth( obj, 20 );
+			Obj_SetAlpha( obj, 0 );
+			loop( 15 ){ yield; }
+			Obj_SetAlpha( obj, 255 );
+			let _nLength = 0;
+			let nAccelLength = m_nLength / 15;
+			loop( 15 ){
+				_nLength += nAccelLength;
+				ObjLaser_SetLength( obj, _nLength );
+				yield;
+			}
+			loop( 60 ){ yield; }
+			ObjLaser_SetWidth( obj, nWidth );
+			CheckCollision();
+
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 30;
+		let nMaxMoveX = 60;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 10;
+
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

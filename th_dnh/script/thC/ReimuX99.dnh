@@ -81,7 +81,7 @@ script_enemy_main{
 		SetDamageRate( 0, 0 );
 		SetPosition( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y );
 		SetEnemyMarker( false );
-
+		SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE_NEXTPHASE, true );
 	}
 
 	/**
@@ -154,20 +154,25 @@ script_enemy_main{
 
 		/** 撃破音 */
 		PlaySEEx( seBossExplode );
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_PLAYER_BLUR, true );
 
 		/** 前スペルでミスした場合はスロー＆ブラーなし */
 		if( !GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_DEAD, false ) ){
-			MotionBlur( ALL, 80, 200 );
+			MotionBlur( ALL, 100, 200 );
 			Slow( 1 );
-			__Wait( 80 );
+			__Wait( 100 );
 			Slow( 0 );
-			__Wait( 130 );
 		}
-		else{ __Wait( 210 ); }
+		else{
+			MotionBlurEx( ALL, 100, 128, ALPHA );
+			__Wait( 100 );
+		}
+		MotionBlurEx( ALL, 1536, 128, ALPHA );
+		__Wait( 110 );
 
 		/** リザルト */
 		SetResult();
-		__Wait( 120 );
+		__Wait( 150 );
 		let nFrame = 60 * 8;
 		let nEventCount = m_nFlanCount;
 		while( GetKeyState( VK_SHOT ) != KEY_PUSH && m_nFlanCount - nEventCount <= nFrame ){ yield; }

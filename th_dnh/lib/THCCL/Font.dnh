@@ -183,8 +183,11 @@ let m_aszCLFontImageSjis16 = [];
 let m_szCLFontImageAscii = "";
 /** 指定したフォントハンドルが使用されているかどうかを格納します。 */
 let m_aCLTTCBeUsed = [];
+// - [ obsolete ]- - - - - - - - - - - - - - - - - - - - - - - - - - -
+// 多重配列アクセスに大きなオーバーヘッドがかかるようなので実行中は使わない。
 /** 指定したフォントハンドルの内容を格納します。 */
 let m_aCLTTCValue = [];
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
 //////////////////////////////////////////////////////////////////////
@@ -419,6 +422,7 @@ function CreateTexText32Cache( let szText ){
 function CreateTexText48Cache( let szText ){
 	return __CreateTexTextCache( CL_FONT_48_X, CL_FONT_48_RIGHTCUT, CL_FONT_48_SPACING, CL_FONT_48_Y, CL_FONT_48_HEIGHT, CL_FONT_48_KERNING, CL_FONT_48_SPACING_HEIGHT, szText );
 }
+
 
 //////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------

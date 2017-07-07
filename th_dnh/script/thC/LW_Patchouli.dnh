@@ -1,0 +1,333 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ラストワード　パチュリー・ノーレッジ
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Patchouli - ラストワード]
+#Text[ラストワード
+パチュリー・ノーレッジ]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Patchouli.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 60;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** フェイズ番号 */
+	let m_nPhase = 0;
+
+	/** フェイズ移行中か */
+	let m_bNextPhase = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetPosition( m_nPracticeX, m_nPracticeY );
+		SetTimer( 62 );
+		SetLife( 500 );
+		SetDamageRate( 2, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_KOUMA + CL_TTH_CHARACTER_NAME_KOUMA_PACHOULI;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_LASTWORD + CL_TTH_SPELL_LW_PACHOULI;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		/** ボール弾＋レーザー */
+		Concentration01( 120 );
+		SetAction( ACT_SHOT_B5, 6000 );
+		PlaySEEx( sePower );
+		__Wait( 120 );
+		SetDamageRate( 8, 0 );
+		BallShot();
+		SearchLaser();
+
+		/** フェイズチェック */
+		CheckLifePhase();
+
+	}
+
+	/**
+	*	ボール弾
+	*/
+	task BallShot{
+
+		let nX = GetX();
+		let nY = GetY();
+		let anGraphic = [ US_BALL_S_RED, US_BALL_S_BLUE, US_BALL_S_GREEN, US_BALL_S_YELLOW, US_BALL_S_WHITE ];
+		let nDelay = 8;
+		let nFrame1 = 60;
+		let nFrame2 = 120;
+
+		PlaySELoop( seShot3, 6000, 6 );
+		loop{
+			let nWay = m_nPhase + 1;
+			if( GetEnemyShotCount() <= 99 * nWay ){
+				let nWayAngle = 180 / nWay;
+				let _nAngle = nWayAngle / 2;
+				let nRandAngle = _nAngle;
+				let nBaseAngle = GetAngleToPlayer() - 90;
+				ascent( let i in 0 .. nWay ){
+					let nSpeed0 = rand( 2.6, 3.8 );
+					let nAngle0 = nBaseAngle + _nAngle + RandBlur( nRandAngle );
+					let nSpeed1 = rand( 2.6, 3.8 );
+					let nAngle1 = nAngle0 + RandBlur( 90 );
+					let nSpeed2 = rand( 0.6, 1.8 );
+					let nAngle2 = nAngle1 + RandBlur( 90 );
+					CreateShotA( 0, nX, nY, nDelay );
+					SetShotDataA( 0, 0, nSpeed0, nAngle0, 0, - nSpeed0 / nFrame1, 0, anGraphic[ i ] );
+					SetShotDataA( 0, nFrame1, nSpeed1, nAngle1, 0, - nSpeed1 / nFrame1, 0, anGraphic[ i ] );
+					SetShotDataA( 0, nFrame2, nSpeed2, nAngle2, 0, 0, 0, anGraphic[ i ] );
+					FireShot( 0 );
+					_nAngle += nWayAngle;
+				}
+			}
+			yield;
+			yield;
+		}
+
+	}
+
+	/**
+	*	狙いレーザー
+	*/
+	task SearchLaser{
+
+		let anR = [ 255, 63, 63, 255, 255 ];
+		let anG = [ 63, 63, 255, 255, 255 ];
+		let anB = [ 63, 255, 63, 63, 255 ];
+		let nFrame = 120;
+		let _nFrame = 6;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 12;
+		let nLength = 300;
+		let nWidth = 16;
+		let anGraphic = [ US_BALL_M_A_RED, US_BALL_M_A_BLUE, US_BALL_M_A_GREEN, US_BALL_M_A_YELLOW, US_BALL_M_A_WHITE ];		let nRevGapY = CL_MAX_Y - nY;
+		let nMinRevAngle = GetGapAngle( nX, nY, CL_MAX_X, CL_MAX_Y );
+		let nMaxRevAngle = GetGapAngle( nX, nY, CL_MIN_Y, CL_MAX_Y );
+
+		loop{
+			__Wait( nFrame );
+			let nNum = m_nPhase + 1;
+			ascent( let i in 0 .. nNum ){ Laser( _nFrame * i, i ); }
+		}
+
+		task Laser( let __nFrame, let nNumber ){
+			__Wait( __nFrame );
+			SetColor( anR[ nNumber ], anG[ nNumber ], anB[ nNumber ] );
+			Concentration01( 30 );
+			SetColor( 255, 255, 255 );
+			PlaySEEx( seKira2 );
+			__Wait( 30 + _nFrame * nNumber );
+			loop( 2 ){
+				let nAngle = GetAngleToPlayer();
+				SetShotColor( anR[ nNumber ], anG[ nNumber ], anB[ nNumber ] );
+				CreateLaser01( nX, nY, nSpeed, nAngle, nLength, nWidth, anGraphic[ nNumber ], 0 );
+				if( nAngle > nMinRevAngle && nAngle < nMaxRevAngle ){
+					let nRevLength = nRevGapY / sin( nAngle );
+					let nRevFrame = trunc( nRevLength / nSpeed );
+					let nRevX = nX + nRevLength * cos( nAngle );
+					RevLaser( nRevX, CL_MAX_Y, nSpeed, nLength, nWidth, anGraphic[ nNumber ],
+						nRevFrame, anR[ nNumber ], anG[ nNumber ], anB[ nNumber ] );
+				}
+				SetShotColor( 255, 255, 255 );
+				PlaySEEx( seLaser2 );
+				__Wait( _nFrame );
+			}
+		}
+
+	}
+
+	/**
+	*	反転レーザー
+	*	@param nX		レーザー源x座標
+	*	@param nY		レーザー源y座標
+	*	@param nSpeed	速度
+	*	@param nLength	長さ
+	*	@param nWidth	幅
+	*	@param nGraphic	画像
+	*	@param nFrame	発射待ちフレーム数
+	*	@param nR		色成分（赤）
+	*	@param nG		色成分（青）
+	*	@param nB		色成分（緑）
+	*/
+	task RevLaser( let nX, let nY, let nSpeed, let nLength, let nWidth, let nGraphic, let nFrame, let nR, let nG, let nB  ){
+
+		loop( nFrame ){ yield; }
+
+		let nAngle = - 90;
+		let nDelay = 30;
+		SetShotColor( nR, nG, nB );
+		CreateLaser01( nX, nY, nSpeed, nAngle, nLength, nWidth, nGraphic, nDelay );
+		SetShotColor( 255, 255, 255 );
+
+		loop( nDelay ){ yield; }
+		PlaySEEx( seLaser2 );
+
+	}
+
+	/**
+	*	フェイズチェック
+	*/
+	task CheckLifePhase{
+
+		let anNextLife = [ 400, 300, 200, 100 ];
+		loop( 4 ){
+			while( GetLife() > anNextLife[ m_nPhase ] ){ yield; }
+			m_nPhase ++;
+		}
+
+	}
+
+}

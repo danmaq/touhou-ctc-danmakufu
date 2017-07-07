@@ -260,7 +260,7 @@ script_event Talk{
 		InCharPlayer( CUT_PLAYER_SERIOUS );
 		TextOutPlayerC( m_nWaitFrame, "いい加減にしろ\nいつまで逃げ回ってるんだ霊夢" );
 		SetStep( 1 );
-		TextOutEnemyB( 150, "私はここにいるわ" );
+		TextOutEnemyB( 200, "私はここにいるわ" );
 		InCharEnemy( CUT_ENEMY_NORMAL );
 		TextOutEnemy( "紫や幽々子から話は聞いたでしょう？" );
 		InCharPlayer( CUT_PLAYER_NORMAL );

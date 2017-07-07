@@ -1,0 +1,462 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ラストワード　八雲 紫
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Yukari - ラストワード]
+#Text[ラストワード
+八雲 紫]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Yukari.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_CEN_Y;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** サークル画像 */
+	let m_szImageCircle = IMAGE_CL_CIRCLE_8M;
+
+	/** フェイズ番号 */
+	let m_nPhase = 0;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		if( !m_bStage ){ LoadGraphic( m_szImageCircle ); }
+		SetPosition( m_nPracticeX, m_nPracticeY );
+		SetTimer( 89 );
+		SetLife( 500 );
+		SetDamageRate( 0, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+		SetDurableSpellCard();
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_YOUMU + CL_TTH_CHARACTER_NAME_YOUMU_YUKARI;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 当たり判定 */
+		if( m_nFlanCount < 300 ){
+			if( m_nWarpStatus == 0 ){
+				FLAN_ENEMY_COLLISION_A = 32;
+				FLAN_ENEMY_COLLISION_B = 16;
+			}
+			else if( m_nWarpStatus >= 3 ){
+				FLAN_ENEMY_COLLISION_A = 32;
+				FLAN_ENEMY_COLLISION_B = 0;
+			}
+			else{
+				FLAN_ENEMY_COLLISION_A = 0;
+				FLAN_ENEMY_COLLISION_B = 0;
+			}
+		}
+
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		if( m_nFlanCount < 300 ){ SetDrawDataYukari(); }
+		DrawBossFloat( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		Warp( FLAN_BOSS_HOME_X, FLAN_BOSS_HOME_Y, 55 );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5_B, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_LASTWORD + CL_TTH_SPELL_LW_YUKARI;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+
+		while( m_nPhase < 5 ){
+
+			/** ランダムサークル */
+			SetAction( ACT_SHOT_B4, 120 );
+			PlaySEEx( sePower );
+			Concentration01( 120 );
+			__Wait( 120 );
+			m_nEnemyAlpha = 95;
+			FLAN_ENEMY_COLLISION_A = 0;
+			FLAN_ENEMY_COLLISION_B = 0;
+			RandomCircle();
+			let nPhase = m_nPhase;
+			while( m_nPhase == nPhase ){ yield; }
+
+		}
+
+	}
+
+	/**
+	*	ランダムサークル
+	*/
+	task RandomCircle{
+
+		let nNum = [ 3, 4, 5, 6, 8 ][ m_nPhase ];
+		let anFrame = [ 30, 90 ];
+		let nX = GetX();
+		let nY = GetY();
+		let nGapLength = 110;
+		let nBaseGapAngle = - 90;
+		let nNumGapAngle = 360 / nNum;
+		let anSort = GetSort( nNum );
+		let nFrameB = 0;
+
+		SetAction( ACT_SHOT_A5, anFrame[ 0 ] * nNum + 30 );
+		ascent( let i in 0 .. nNum ){
+			let nGapAngle = nBaseGapAngle + nNumGapAngle * anSort[ i ];
+			let _nX = GetGapX( nX, nGapLength, nGapAngle );
+			let _nY = GetGapY( nY, nGapLength, nGapAngle );
+			let nFrameA = 30 + anFrame[ 0 ] * nNum + ( anFrame[ 1 ] - anFrame[ 0 ] ) * i;
+			nFrameB = 30 + anFrame[ 0 ] * ( nNum - i ) + anFrame[ 1 ] * nNum;
+			let nFrameV = nFrameB + 240;
+			Circle( nX, nY, _nX, _nY, nFrameA, nFrameB, nFrameV );
+			PlaySEEx( seShadow );
+			__Wait( anFrame[ 0 ] );
+		}
+		__Wait( nFrameB - anFrame[ 0 ] );
+		SetAction( ACT_SHOT_A5, 60 );
+		__Wait( 240 );
+		m_nPhase ++;
+
+	}
+
+	/**
+	*	サークル順取得
+	*	@param nNum	サークル数
+	*/
+	function GetSort( let nNum ){
+
+		let anSort = [];
+		alternative( nNum )
+		case( 3 ){
+			alternative( rand_int( 0, 2 ) )
+			case( 0 ){ anSort = [ 0, 1, 2 ]; }
+			case( 1 ){ anSort = [ 1, 2, 0 ]; }
+			case( 2 ){ anSort = [ 2, 0, 1 ]; }
+		}
+		case( 4 ){
+			alternative( rand_int( 0, 3 ) )
+			case( 0 ){ anSort = [ 0, 3, 1, 2 ]; }
+			case( 1 ){ anSort = [ 1, 3, 0, 2 ]; }
+			case( 2 ){ anSort = [ 2, 1, 3, 0 ]; }
+			case( 3 ){ anSort = [ 3, 1, 2, 0 ]; }
+		}
+		case( 5 ){
+			alternative( rand_int( 0, 4 ) )
+			case( 0 ){ anSort = [ 0, 2, 4, 1, 3 ]; }
+			case( 1 ){ anSort = [ 1, 4, 2, 3, 0 ]; }
+			case( 2 ){ anSort = [ 2, 4, 0, 1, 3 ]; }
+			case( 3 ){ anSort = [ 3, 1, 0, 4, 2 ]; }
+			case( 4 ){ anSort = [ 4, 1, 3, 2, 0 ]; }
+		}
+		case( 6 ){
+			alternative( rand_int( 0, 5 ) )
+			case( 0 ){ anSort = [ 0, 1, 5, 3, 4, 2 ]; }
+			case( 1 ){ anSort = [ 1, 3, 5, 4, 0, 2 ]; }
+			case( 2 ){ anSort = [ 2, 4, 1, 5, 0, 3 ]; }
+			case( 3 ){ anSort = [ 3, 4, 2, 0, 1, 5 ]; }
+			case( 4 ){ anSort = [ 4, 0, 2, 1, 3, 5 ]; }
+			case( 5 ){ anSort = [ 5, 1, 4, 2, 3, 0 ]; }
+		}
+		case( 8 ){
+			alternative( rand_int( 0, 7 ) )
+			case( 0 ){ anSort = [ 0, 6, 4, 2, 7, 1, 3, 5 ]; }
+			case( 1 ){ anSort = [ 1, 6, 3, 0, 5, 2, 7, 4 ]; }
+			case( 2 ){ anSort = [ 2, 0, 4, 6, 5, 7, 3, 1 ]; }
+			case( 3 ){ anSort = [ 3, 5, 4, 2, 6, 0, 1, 7 ]; }
+			case( 4 ){ anSort = [ 4, 2, 0, 6, 3, 5, 7, 1 ]; }
+			case( 5 ){ anSort = [ 5, 2, 7, 4, 1, 6, 3, 0 ]; }
+			case( 6 ){ anSort = [ 6, 4, 0, 2, 1, 3, 7, 5 ]; }
+			case( 7 ){ anSort = [ 7, 1, 0, 6, 2, 4, 5, 3 ]; }
+		}
+		return anSort;
+
+	}
+
+	/**
+	*	サークル
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param _nX		設置x座標
+	*	@param _nY		設置y座標
+	*	@param nFrameA	ショットA発射までのフレーム数
+	*	@param nFrameB	ショットB発射までのフレーム数
+	*	@param nFrameV	消滅までのフレーム数
+	*/
+	task Circle( let nX, let nY, let _nX, let _nY, let nFrameA, let nFrameB, let nFrameV ){
+
+		let nLength = 128;
+		let obj = CreateSquareEffectObject( m_szImageCircle, 0, 0, nLength, nLength, nLength, nLength );
+		Roll();
+		Move();
+		loop( nFrameA ){ yield; }
+
+		CircleShotA( _nX, _nY, nLength / 2 );
+		loop( nFrameB - nFrameA ){ yield; }
+
+		CircleShotB( _nX, _nY, nLength / 2 );
+		loop( nFrameV - nFrameB ){ yield; }
+
+		Vanish();
+
+		/** 移動 */
+		task Move{
+
+			let nFrame = 30;
+			let nAlpha = 0;
+			let nAccelAlpha = 220 / nFrame;
+			ascent( let i in 0 .. nFrame ){
+				let __nX = SlowDown( nX, _nX, i, nFrame );
+				let __nY = SlowDown( nY, _nY, i, nFrame );
+				nAlpha += nAccelAlpha;
+				Obj_SetPosition( obj, __nX, __nY );
+				ascent( let j in 0 .. 4 ){
+					ObjEffect_SetVertexColor( obj, j, nAlpha, 255, 255, 255 );
+				}
+				yield;
+			}
+
+		}
+
+		/** 回転 */
+		task Roll{
+
+			let nAngle = 0;
+			let nAccelAngle = - 2;
+			while( !Obj_BeDeleted( obj ) ){
+				nAngle += nAccelAngle;
+				ObjEffect_SetAngle( obj, 0, 0, nAngle );
+				yield;
+			}
+
+		}
+
+		/** 消滅 */
+		task Vanish{
+
+			let nFrame = 30;
+			let nAlpha = 220;
+			let nAccelAlpha = - nAlpha / nFrame;
+			loop( nFrame ){
+				nAlpha += nAccelAlpha;
+				ascent( let i in 0 .. 4 ){
+					ObjEffect_SetVertexColor( obj, i, nAlpha, 255, 255, 255 );
+				}
+				yield;
+			}
+			Obj_Delete( obj );
+
+		}
+
+	}
+
+	/**
+	*	サークル弾A
+	*	@param nX			サークルx座標
+	*	@param nY			サークルy座標
+	*	@param nGapLength	サークル半径
+	*/
+	task CircleShotA( let nX, let nY, let nGapLength ){
+
+		let nNum = 15;
+		let nWay = 18;
+		let nSpeed = 1;
+		let nNumSpeed = ( 6 - nSpeed ) / ( nNum - 1 );
+		let nGapAngle = rand( 0, 360 );
+		let nWayGapAngle = 360 / nWay;
+		let nNumGapAngle = - nWayGapAngle * 0.4;
+		nGapLength *= 0.95;
+		let anGraphic = [ US_SCALE_BLUE, US_SCALE_PURPLE ];
+		let nDelay = 10;
+
+		PlaySELoop( seShot1, nNum, 3 );
+		ascent( let i in 0 .. nNum ){
+			let _nGapAngle = nGapAngle;
+			let nGraphic = anGraphic[ i % 2 ];
+			loop( nWay ){
+				let _nX = GetGapX( nX, nGapLength, _nGapAngle );
+				let _nY = GetGapY( nY, nGapLength, _nGapAngle );
+				CreateShot01( _nX, _nY, nSpeed, _nGapAngle + 60, nGraphic, nDelay );
+				if( i > nNum / 2 ){
+					let __nGapAngle = _nGapAngle + nWayGapAngle / 2;
+					_nX = GetGapX( nX, nGapLength, __nGapAngle );
+					_nY = GetGapY( nY, nGapLength, __nGapAngle );
+					CreateShot01( _nX, _nY, nSpeed, __nGapAngle + 60, nGraphic, nDelay );
+				}
+				_nGapAngle += nWayGapAngle;
+			}
+			yield;
+			nSpeed += nNumSpeed;
+			nGapAngle += nNumGapAngle;
+		}
+
+	}
+
+	/**
+	*	サークル弾B
+	*	@param nX			サークルx座標
+	*	@param nY			サークルy座標
+	*	@param nGapLength	サークル半径
+	*/
+	task CircleShotB( let nX, let nY, let nGapLength ){
+
+		let nWideWay = 8;
+		let nRoundWay = nWideWay * 32;
+		let anSpeed = [ 0.6, 1.2 ];
+		let nWayGapAngle = 360 / nRoundWay;
+		let nGapAngle = - 90 - nWayGapAngle * ( nWideWay - 1 ) / 2;
+		nGapLength *= 0.95;
+		let anGraphic = [ US_BILL_BLUE, US_BILL_PURPLE ];
+		let nDelay = 20;
+		let nAssign = 0;
+
+		PlaySEDelay( seShot2, nDelay );
+		ascent( let i in 0 .. nRoundWay ){
+			let j = i % nWideWay;
+			if( j > 0 && j < nWideWay - 1 ){
+				let _nX = GetGapX( nX, nGapLength, nGapAngle );
+				let _nY = GetGapY( nY, nGapLength, nGapAngle );
+				CreateShot01( _nX, _nY, anSpeed[ nAssign ], nGapAngle, anGraphic[ nAssign ], nDelay );
+			}
+			else if( j == nWideWay - 1 ){ nAssign = 1 - nAssign; }
+			nGapAngle += nWayGapAngle;
+		}
+
+	}
+
+}

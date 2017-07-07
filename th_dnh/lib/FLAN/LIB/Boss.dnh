@@ -150,14 +150,33 @@ function MoveHome03( let nBrake, let nSpeed ){ SetMovePosition03( FLAN_BOSS_HOME
 *	@return アイテム座標の配列[ [ X1, Y1 ], [ X2, Y2 ], ... ]
 */
 function GetDropItemPosListCircle( let nX, let nY, let nNum ){
+	return GetDropItemPosListCircleGap( nX, nY, nNum, 8 );
+}
+
+/**
+*	アイテムを落とす座標を生成します。
+*	その際魔法陣の円形にあわせて座標を生成します。
+*	(onFinalizeで呼ぶ場合プレイヤーを中心座標に設定すると丁度魔法陣に重なります)
+*
+*	@param nX 中心X座標
+*	@param nY 中心Y座標
+*	@param nNum アイテムの数
+*	@param nGap 誤差
+*	@return アイテム座標の配列[ [ X1, Y1 ], [ X2, Y2 ], ... ]
+*/
+function GetDropItemPosListCircleGap( let nX, let nY, let nNum, let nGap ){
 	let aanPosList = [];
 	let nRadiusBase = [ m_nFlanTimer * 5, 300 ][ nX == GetPlayerX() && nY == GetPlayerY() ];
 	ascent( let i in 0..nNum ){
 		let anPos = [ -65536, -65536 ];
 		let nRandCount = 0;
-		let nRadius = nRadiusBase + RandBlur( 8 );
+		let nRadius;
+		if( nGap == 0 ){ nRadius = nRadiusBase; }
+		else{ nRadius = nRadiusBase + RandBlur( nGap ); }
 		while( nRandCount <= FLAN_ITEM_OUT_COMPENSATION && IsOutPos( anPos[ FLAN_ITEM_X ], anPos[ FLAN_ITEM_Y ], 0 ) ){
-			let nAngle = rand( 0, 360 );
+			let nAngle;
+			if( nGap == 0 ){ nAngle = Smooth( 0, 360, i, nNum ); }
+			else{ nAngle = rand( 0, 360 ); }
 			anPos[ FLAN_ITEM_X ] = nX - cos( nAngle ) * nRadius;
 			anPos[ FLAN_ITEM_Y ] = nY + sin( nAngle ) * nRadius;
 			nRandCount++;

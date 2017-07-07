@@ -343,10 +343,12 @@ function __CreateWritableTexture( let aszTextureNameList, let szCDKey, let nWidt
 */
 task ScreenFade( let bFadeOut, let nInterval ){
 	let anObj = CreateFillScreenEffectObject( IMAGE_CL_WHITE, IMAGE_THC_WHITE_FRAME );
+	ascent( let i in 0..length( anObj ) ){ ObjEffect_SetRenderState( anObj[ i ], ADD ); }
 	ascent( let i in 0..nInterval ){
 		let nAlpha = Smooth( [ 255, 0 ][ bFadeOut ], [ 0, 255 ][ bFadeOut ], i, nInterval );
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_SCREEN_FADE, nAlpha );
 		m_nFadeOutAlpha = Max( 240 - nAlpha, 0 );
-		SetFillScreenEffectObjectColor( anObj, nAlpha, 255, 255, 255 );
+		SetFillScreenEffectObjectColor( anObj, 255, nAlpha, nAlpha, nAlpha );
 		yield;
 	}
 	ascent( let i in 0..length( anObj ) ){ Obj_Delete( anObj[ i ] ); }

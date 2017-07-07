@@ -14,7 +14,6 @@
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-
 #ScriptVersion[2]
 #BackGround[User]
 #Title[Reisen - ƒXƒyƒ‹1]
@@ -537,8 +536,10 @@ script_shot Shadow{
 
 		loop( nNum ){
 			let _nAngle = m_nAngle;
+			let anGraphic = [ US_MISSILE_RED, US_MISSILE_V_RED ];
+			if( nAssign < 0 ){ anGraphic = [ US_MISSILE_BLUE, US_MISSILE_V_BLUE ]; }
 			loop( nWay ){
-				VisionShot( nX, nY, _nAngle, nAssign, nCount );
+				VisionShot( nX, nY, _nAngle, nAssign, nCount, anGraphic );
 				_nAngle += nWayAngle;
 			}
 			__Wait( nFrame );
@@ -550,18 +551,17 @@ script_shot Shadow{
 
 	/**
 	*	Œ¶Ž‹’e
-	*	@param nX		’eŒ¹xÀ•W
-	*	@param nY		’eŒ¹yÀ•W
-	*	@param nAngle	Šp“x
-	*	@param nAssign	Š„‚èU‚èŒW”
-	*	@param nCount	Œ¶Ž‹ŠJŽn‚Ü‚Å‚ÌƒtƒŒ[ƒ€”
+	*	@param nX			’eŒ¹xÀ•W
+	*	@param nY			’eŒ¹yÀ•W
+	*	@param nAngle		Šp“x
+	*	@param nAssign		Š„‚èU‚èŒW”
+	*	@param nCount		Œ¶Ž‹ŠJŽn‚Ü‚Å‚ÌƒtƒŒ[ƒ€”
+	*	@param anGraphic	’e‰æ‘œ
 	*/
-	task VisionShot( let nX, let nY, let nAngle, let nAssign, let nCount ){
+	task VisionShot( let nX, let nY, let nAngle, let nAssign, let nCount, let anGraphic ){
 
 		let obj = Obj_Create( OBJ_SHOT );
 		let nSpeed = 4.5;
-		let anGraphic = [ US_MISSILE_RED, US_MISSILE_V_RED ];
-		if( nAssign < 0 ){ anGraphic = [ US_MISSILE_BLUE, US_MISSILE_V_BLUE ]; }
 		let nDelay = 6;
 		Obj_SetPosition( obj, nX, nY );
 		Obj_SetSpeed( obj, nSpeed );

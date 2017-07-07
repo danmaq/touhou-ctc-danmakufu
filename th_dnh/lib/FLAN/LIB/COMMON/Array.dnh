@@ -69,12 +69,12 @@ function CreateOrderArray( let nSize ){
 */
 function SortArray( let array ){
 	let nLength = length( array );
-	ascent( let i in 0..nLength ){
-		ascent( let j in 1..( nLength - 1 ) ){
-			if( array[ j - 1 ] > array[ j ] ){
-				let arrayEntry = array[ j - 1 ];
-				array[ j - 1 ] = array[ j ];
-				array[ j ] = arrayEntry;
+	ascent( let i in 0..( nLength - 1 ) ){
+		ascent( let j in 0..( nLength - i - 1 ) ){
+			if( array[ j ] > array[ j + 1 ] ){
+				let arrayEntry = array[ j ];
+				array[ j ] = array[ j + 1 ];
+				array[ j + 1 ] = arrayEntry;
 			}
 		}
 	}

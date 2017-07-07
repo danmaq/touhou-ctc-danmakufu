@@ -83,38 +83,6 @@ let m_abItemWritableTextureUsed = [];
 //////////////////////////////////////////////////////////////////////
 
 /**
-*	ステージごとの経過フレーム数から算出した経過秒数を表示可能な状態に加工し、フォントキャッシュに格納するループです。
-*/
-task __CreateTTHFrameCountSecondLoop(){
-	let nPrevTime = -1;
-	loop{
-		yield;
-		let nTime = truncate( ( m_nFlanCount - m_nFlanStageTime ) / 60 );
-		if( nTime != nPrevTime ){
-			nPrevTime = nTime;
-			DeleteTexTextHandle( m_nTTHFrameCountSeconds );
-			m_nTTHFrameCountSeconds = CreateTexText16Cache( ToStringInt( nTime ) );
-		}
-	}
-}
-
-/**
-*	高精度タイマから取得した経過秒数を表示可能な状態に加工し、フォントキャッシュに格納するループです。
-*/
-task __CreateTTHSystemTimerCountSecondLoop(){
-	let nPrevTime = -1;
-	loop{
-		yield;
-		let nTime = truncate( ( GetTime() - m_nFlanStageSystemTime ) / 1000 );
-		if( nTime != nPrevTime ){
-			nPrevTime = nTime;
-			DeleteTexTextHandle( m_nTTHTimerCountSeconds );
-			m_nTTHTimerCountSeconds = CreateTexText16Cache( ToStringInt( nTime ) );
-		}
-	}
-}
-
-/**
 *	ボス名前表示フォント・透明度を定義するループです。
 */
 task __CreateTTHBossNameLoop(){
@@ -161,7 +129,6 @@ task __PlayerPositionInInfomationAreaLoop(){
 		let nMinimalAlpha = Min( m_nFadeOutAlpha, 48 );
 		let nLengthToBottomLeft = GetGapLength( GetPlayerX(), GetPlayerY(), GetClipMinX(), GetClipMaxY() );
 		let nLengthToBottomRight = GetGapLength( GetPlayerX(), GetPlayerY(), GetClipMaxX(), GetClipMaxY() );
-		if( IsDebugMode() ){ m_nBottomRightAlpha = MinMax( m_nBottomRightAlpha + nAdditional * [ 1, -1 ][ nLengthToBottomRight < 128 ], 48, 240 ); }	// EDでデバッグカウンタが表示されないと困る
 		m_nBottomLeftAlpha	= MinMax( m_nBottomLeftAlpha	+ nAdditional * [ 1, -1 ][ nLengthToBottomLeft < 128 ], nMinimalAlpha, m_nFadeOutAlpha );
 		m_nBGMAlpha			= MinMax( m_nBGMAlpha			+ nAdditional * [ 1, -1 ][ GetClipMaxY() - GetPlayerY() < 64 ], nMinimalAlpha, m_nFadeOutAlpha );
 		m_nCLSpellNameAlpha	= MinMax( m_nCLSpellNameAlpha	+ nAdditional * [ 1, -1 ][ absolute( m_nCLSpellNameY - GetPlayerY() ) < 64 ], nMinimalAlpha, m_nFadeOutAlpha );
@@ -177,10 +144,6 @@ task __CreateStageInfomationLoop(){
 	let nPrevHakurei = 0;
 	__PlayerPositionInInfomationAreaLoop();
 	__CreateTTHBossNameLoop();
-	if( IsDebugMode() ){
-		__CreateTTHFrameCountSecondLoop();
-		__CreateTTHSystemTimerCountSecondLoop();
-	}
 	loop{
 		__Wait( CL_STAGE_INFOMATION_REFRESH_INTERVAL );
 		let nPower = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
@@ -250,7 +213,6 @@ function DrawStageInfomation(){
 	if( m_nFlanLoadResourcePercentage != -1 ){ return; }
 	DrawStageInfomationTop();
 	DrawStageInfomationBottomLeft();
-	if( IsDebugMode() ){ DrawStageInfomationBottomRight(); }
 	if( m_nStageMusicIndex >= 0 && m_nFlanCount - m_nStageStartMusicTime <= 300 ){ DrawStageBGM(); }
 	if( m_nFlanCount - m_nItemPlayerPowerMax < 120 ){ DrawMaxPower(); }
 	if( IsReplay() ){
@@ -304,16 +266,6 @@ function DrawStageInfomationTop(){
 }
 
 /**
-*	ステージの各情報(右下)を絵画します。
-*/
-function DrawStageInfomationBottomRight(){
-	let nBaseX = GetClipMaxX() - 24;
-	SetAlpha( m_nBottomRightAlpha );
-	DrawCount( nBaseX );
-	SetAlpha( 255 );
-}
-
-/**
 *	ステージの各情報(左下)を絵画します。
 */
 function DrawStageInfomationBottomLeft(){
@@ -321,6 +273,7 @@ function DrawStageInfomationBottomLeft(){
 	let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 1 );
 	let nTTHLevel =	CL_TTHBASE_LEVEL_MINI + GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 ) +
 					[ 0, CL_TTH_LEVELMINI_EXTRA ][ nStage >= 10 || ( nStage == 7 && m_nSpellPracticeBGStage >= 10 ) ];
+	if( nStage == 7 && m_nSpellPracticeBGStage >= 12 ){ nTTHLevel = CL_TTHBASE_LEVEL_MINI + CL_TTH_LEVELMINI_LASTWORD; }
 	SetAlpha( m_nBottomLeftAlpha );
 	SetColor( 255, 192, 192 );
 	DrawTexTextOnCache( nTTHLevel, -2, 0, nBaseX, GetClipMaxY() - 12 );

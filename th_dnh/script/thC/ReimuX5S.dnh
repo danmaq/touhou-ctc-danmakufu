@@ -14,7 +14,6 @@
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-
 #ScriptVersion[2]
 #BackGround[User]
 #Title[ReimuX - スペル5]
@@ -124,7 +123,7 @@ script_enemy_main{
 	*	@param nPrevPhase 1つ前の状態のフェーズ
 	*/
 	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
-
+		if( m_bStage && !m_bSpellPractice && GotSpellCardBonus() ){ DropItemHakureiTHC( 890 ); }
 		/** 共通終了設定 */
 		FinalizeBoss();
 
@@ -192,7 +191,6 @@ script_enemy_main{
 		let nSpellID = CL_TTH_SPELL_YOUMU + CL_TTH_SPELL_STAGE6_BOSS_LAST_5 + m_nLevel;
 		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
 		__Wait( 125 );
-		SetCommonDataEx( FLAN_CDNS, FLAN_CD_STAGE_NEXTPHASE, true );
 		if( m_bDead ){ break; }
 
 		/** 封魔陣 */

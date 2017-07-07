@@ -66,7 +66,9 @@ script_player_main{
 //	メンバ変数
 //////////////////////////////////////////////////////////////////////
 
+	/**	 */
 	let m_nSubShotADir = 1;
+	/**	 */
 	let m_nSubShotBAngle = 3;
 	/**	ビット専用カウンタです。 */
 	let m_nBitCount = 0;
@@ -76,7 +78,13 @@ script_player_main{
 //	固有処理
 //////////////////////////////////////////////////////////////////////
 
-	//	マジックミサイル(低速)
+	/**
+	*	マジックミサイル(低速)
+	*
+	*	@param nX
+	*	@param nY
+	*	@param nAngle
+	*/
 	task SuperExplodeShot( let nX, let nY, let nAngle ){
 		let nObjCount = 0;
 		let obj = Obj_Create( OBJ_SHOT );
@@ -102,7 +110,15 @@ script_player_main{
 		SuperDelayBomb( nNowX, nNowY, 2, 8, 64 );
 	}
 
-	//	遅延範囲攻撃(エフェクト表示のみ)
+	/**
+	*	遅延範囲攻撃(エフェクト表示のみ)
+	*
+	*	@param nX
+	*	@param nY
+	*	@param nDamage
+	*	@param nTime
+	*	@param nMaxSize
+	*/
 	task SuperDelayBomb( let nX, let nY, let nDamage, let nTime, let nMaxSize ){
 		let obj = CreateSquareEffectObject( IMAGE_FLASH, 0, 0, 128, 128, nMaxSize * 1.5, nMaxSize * 1.5 );
 		Obj_SetPosition( obj, nX, nY );
@@ -120,7 +136,13 @@ script_player_main{
 		Obj_Delete( obj );
 	}
 
-	//	マジックミサイル
+	/**
+	*	マジックミサイル
+	*
+	*	@param nX
+	*	@param nY
+	*	@param nDir
+	*/
 	task ExplodeShot( let nX, let nY, let nDir ){
 		let nObjCount = 0;
 		let obj = Obj_Create( OBJ_SHOT );
@@ -144,7 +166,14 @@ script_player_main{
 		SuperDelayBomb( nNowX, nNowY, 1, 4, 32 );
 	}
 	
-	//	遅延範囲攻撃(ダメージのみ)
+	/**
+	*	遅延範囲攻撃(ダメージのみ)
+	*
+	*	@param nX
+	*	@param nY
+	*	@param nDamage
+	*	@param nTime
+	*/
 	task DelayBomb( let nX, let nY, let nDamage, let nTime ){
 		let nObjCount = 0;
 		let obj = Obj_Create( OBJ_SHOT );
