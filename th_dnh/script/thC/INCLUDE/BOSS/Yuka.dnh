@@ -239,6 +239,7 @@ task LaserSource( let nX, let nY, let nDelay, let nKill, let nWidth, let nGraphi
 	ObjShot_SetDelay( obj, nDelay );
 	ObjLaser_SetLength( obj, 0 );
 	ObjLaser_SetWidth( obj, 0 );
+	Obj_SetAutoDelete( obj, false );
 	Obj_SetCollisionToPlayer( obj, false );
 	ObjShot_ToItem( obj, false );
 	ObjLaser_SetSource( obj, false );

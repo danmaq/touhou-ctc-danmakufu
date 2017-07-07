@@ -15,10 +15,11 @@
 //////////////////////////////////////////////////////////////////////
 
 #include_function "\lib\THCCL\IMAGE\index.dnh"
+#include_function "\lib\THCCL\SE\index.dnh"
 #include_function "\img\index.dnh"
 #include_function "\se\index.dnh"
 #include_function ".\IMAGE\index.dnh"
-#include_function ".\SOUND\index.dnh"
+#include_function ".\SOUND\BGM\index.dnh"
 #include_function ".\_index.dnh"
 
 
@@ -28,6 +29,7 @@
 
 #include_function "\lib\FLAN\HEADER\Stage.dnh"
 #include_function "\lib\THCCL\CutIn.dnh"
+#include_function "\lib\THCCL\Font3D.dnh"
 #include_function ".\INCLUDE\Common.dnh"
 #include_function ".\INCLUDE\STAGE\index.dnh"
 

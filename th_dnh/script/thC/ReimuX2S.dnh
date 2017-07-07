@@ -14,7 +14,6 @@
 //--------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////
 
-
 #ScriptVersion[2]
 #BackGround[User]
 #Title[ReimuX - ƒXƒyƒ‹2]
@@ -81,6 +80,7 @@ script_enemy_main{
 	function onInitializeTHC( nArgv, nLevel ){
 
 		/** ‹¤’Ê‰Šúİ’è */
+		m_bDeadEffect = true;
 		InitializeBoss();
 
 		/** ŒÂ•Ê‰Šúİ’è */
@@ -141,6 +141,7 @@ script_enemy_main{
 
 		/** ŒÂ•ÊI—¹İ’è */
 		if( m_bStage && !m_bSpellPractice ){
+			if( GotSpellCardBonus() ){ DropItemHakureiTHC( 100 ); }
 			if( GotSpellCardBonus() || IsTimeOut() ){
 				SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_DEAD, false );
 			}

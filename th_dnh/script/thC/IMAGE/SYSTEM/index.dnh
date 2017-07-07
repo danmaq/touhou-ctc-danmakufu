@@ -14,6 +14,8 @@ let IMAGE_THC_WHITE_FRAME = szDirImageSystem ~ "White_Frame.png";
 let IMAGE_THC_ED_BG_FRAME = szDirImageSystem ~ "EDBG_Frame.png";
 let IMAGE_THC_ED_BG_FIELD = szDirImageSystem ~ "EDBG_Field.png";
 let IMAGE_THC_CIRLE_BORDER = szDirImageSystem ~ "Border.png";
+let IMAGE_THC_LOADING_BG_FRAME = szDirImageSystem ~ "Loading_Frame.png";
+let IMAGE_THC_LOADING_BG_FIELD = szDirImageSystem ~ "Loading_Field.png";
 
 //　タイトル
 let imgSystemLogo = szDirImageSystem ~ "Logo2.png";

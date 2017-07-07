@@ -1,0 +1,193 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	THC Common-Library
+//		プロポーショナル(*)ビットマップフォントライブラリ v2.1
+//
+//	(*)半角のみ。全角は固定ピッチ。
+//	※3D機能を利用する関係でステージ専用です。内部から自動的に
+//		インクルードされるので直接インクルードすることはありません。
+//	※雑魚や使い魔でデバッグ用などに使用したい場合のみ
+//		直接各スクリプトからインクルードしてください。
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(変更不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(変更可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	絵画関連
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+/**
+*	キャッシュハンドルを使用してプリレンダリング済みの文字列を絵画します。
+*
+*	@param nHandle キャッシュハンドル
+*	@param nKerning 相対カーニング値
+*	@param nLineHeight 相対行高さ
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*	@param nZ 左端文字を配置するZ座標
+*/
+function DrawTexTextOnCache3D( let nHandle, let nKerning, let nLineHeight, let nX, let nY, let nZ ){
+	if( !IsValidTexTextCacheHandle( nHandle ) ){ return; }
+	let anCacheValue = m_aCLTTCValue[ nHandle ];
+	let aszFileName = anCacheValue[ 0 ];
+	let anSrcX = anCacheValue[ 1 ];
+	let anSrcY = anCacheValue[ 2 ];
+	let anSrcWidth = anCacheValue[ 3 ];
+	let anSrcHeight = anCacheValue[ 4 ];
+	let anKerningGap = anCacheValue[ 5 ];
+	let anHeadSpace = anCacheValue[ 6 ];
+	let nLen  = length( anSrcWidth );
+	let nPosX = nX;
+	ascent( let i in 0..nLen ){
+		let nGap = 0;
+		alternative( anSrcX[ i ] )
+		case( CL_FONT_CODE_SPACE ){
+			nGap = anSrcWidth[ i ];
+			if( i > 0 ){ nGap += anSrcWidth[ i - 1 ] / 2; }
+		}
+		case( CL_FONT_CODE_CRLF ){
+			nPosX = nX;
+			nY -= anSrcHeight[ i ] - 6 + nLineHeight;
+		}
+		others{
+			if( aszFileName[ i ] == -1 ){
+				if( i != 0 && aszFileName[ i - 1 ] != -1 ){ nPosX += 4; }
+				SetTexture( m_szCLFontImageAscii );
+			}
+			else{ SetTexture( m_aszCLFontImageSjis16[ aszFileName[ i ] ] ); }
+			SetGraphicRect( anSrcX[ i ], anSrcY[ i ], anSrcX[ i ] + anSrcWidth[ i ], anSrcY[ i ] + anSrcHeight[ i ] );
+			DrawGraphic3D( nPosX, nY - anHeadSpace[ i ], nZ );
+			nGap = anSrcWidth[ i ] / 2;
+		}
+		if( ( i + 1 ) < nLen ){ nGap += anSrcWidth[ i + 1 ] / 2; }
+		nPosX += Max( 0, nGap - anKerningGap[ i ] + nKerning );
+	}
+	
+}
+
+/**
+*	キャッシュハンドルを使用せず直接指定文字列を絵画します。
+*	この関数を直接呼ばずに下記のラッパー関数を使用すると便利です。
+*	DrawTexText48 / DrawTexText32 / DrawTexText24 / DrawTexText16 / DrawTexText12
+*	注:キャッシュを使わず毎回レンダリングするので結構重いです。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param anSrcXTable フォント元画像のX座標リスト
+*	@param anSrcXRightCut フォント元画像の右端切り捨て量リスト
+*	@param nSpacing スペースの幅
+*	@param nSrcY フォント元画像の開始Y座標
+*	@param nSrcHeight フォント元画像の高さ
+*	@param nSrcKerning カーニングの広さ
+*	@param nHeadSpacing 頭位置揃え用スペース
+*	@param szText 文章
+*	@param nKerning 相対カーニング値
+*	@param nLineHeight 相対行高さ
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*/
+function __DrawTexText3D( let anSrcXTable, let anSrcXRightCut, let nSpacing, let nSrcY, let nSrcHeight, let nSrcKerning, let nHeadSpacing, let szText, let nKerning, let nLineHeight, let nX, let nY, let nZ ){
+	if( !m_bCLFontInitialize ){ return; }
+	let nHandle = __CreateTexTextCache( anSrcXTable, anSrcXRightCut, nSpacing, nSrcY, nSrcHeight, nSrcKerning, nHeadSpacing, szText );
+	DrawTexTextOnCache3D( nHandle, nKerning, nLineHeight, nX, nY, nZ );
+	DeleteTexTextHandle( nHandle );
+}
+
+/*	↓↓↓以下全て_DrawTexText()のラッパー関数↓↓↓	*/
+
+/**
+*	キャッシュハンドルを使用せずに直接指定文字列を12ポイントフォントで絵画します。
+*	__DrawTexText()のラッパー関数です。
+*	注:キャッシュを使わず毎回レンダリングするので結構重いです。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param szText 文章
+*	@param nKerning 相対カーニング値
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*	@param nZ 左端文字を配置するZ座標
+*/
+function DrawTexText3D12( let szText, let nKerning, let nLineHeight, let nX, let nY, let nZ ){
+	__DrawTexText3D( CL_FONT_12_X, CL_FONT_12_RIGHTCUT, CL_FONT_12_SPACING, CL_FONT_12_Y, CL_FONT_12_HEIGHT, CL_FONT_12_KERNING, CL_FONT_12_SPACING_HEIGHT, szText, nKerning, nLineHeight, nX, nY, nZ );
+}
+
+/**
+*	キャッシュハンドルを使用せずに直接指定文字列を16ポイントフォントで絵画します。
+*	__DrawTexText()のラッパー関数です。
+*	注:キャッシュを使わず毎回レンダリングするので結構重いです。
+*
+*	@param szText 文章
+*	@param nKerning 相対カーニング値
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*	@param nZ 左端文字を配置するZ座標
+*/
+function DrawTexText3D16( let szText, let nKerning, let nLineHeight, let nX, let nY, let nZ ){
+	__DrawTexText3D( CL_FONT_16_X, CL_FONT_16_RIGHTCUT, CL_FONT_16_SPACING, CL_FONT_16_Y, CL_FONT_16_HEIGHT, CL_FONT_16_KERNING, CL_FONT_16_SPACING_HEIGHT, szText, nKerning, nLineHeight, nX, nY, nZ );
+}
+
+/**
+*	キャッシュハンドルを使用せずに直接指定文字列を24ポイントフォントで絵画します。
+*	__DrawTexText()のラッパー関数です。
+*	注:キャッシュを使わず毎回レンダリングするので結構重いです。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param szText 文章
+*	@param nKerning 相対カーニング値
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*	@param nZ 左端文字を配置するZ座標
+*/
+function DrawTexText3D24( let szText, let nKerning, let nLineHeight, let nX, let nY, let nZ ){
+	__DrawTexText3D( CL_FONT_24_X, CL_FONT_24_RIGHTCUT, CL_FONT_24_SPACING, CL_FONT_24_Y, CL_FONT_24_HEIGHT, CL_FONT_24_KERNING, CL_FONT_24_SPACING_HEIGHT, szText, nKerning, nLineHeight, nX, nY, nZ );
+}
+
+/**
+*	キャッシュハンドルを使用せずに直接指定文字列を32ポイントフォントで絵画します。
+*	__DrawTexText()のラッパー関数です。
+*	注:キャッシュを使わず毎回レンダリングするので結構重いです。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param szText 文章
+*	@param nKerning 相対カーニング値
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*	@param nZ 左端文字を配置するZ座標
+*/
+function DrawTexText3D32( let szText, let nKerning, let nLineHeight, let nX, let nY, let nZ ){
+	__DrawTexText3D( CL_FONT_32_X, CL_FONT_32_RIGHTCUT, CL_FONT_32_SPACING, CL_FONT_32_Y, CL_FONT_32_HEIGHT, CL_FONT_32_KERNING, CL_FONT_32_SPACING_HEIGHT, szText, nKerning, nLineHeight, nX, nY, nZ );
+}
+
+/**
+*	キャッシュハンドルを使用せずに直接指定文字列を48ポイントフォントで絵画します。
+*	__DrawTexText()のラッパー関数です。
+*	注:キャッシュを使わず毎回レンダリングするので結構重いです。
+*	注:マルチバイト文字は強制的に16ポイントとなります。
+*
+*	@param szText 文章
+*	@param nKerning 相対カーニング値
+*	@param nX 左端文字を配置するX座標
+*	@param nY 左端文字を配置するY座標
+*	@param nZ 左端文字を配置するZ座標
+*/
+function DrawTexText3D48( let szText, let nKerning, let nLineHeight, let nX, let nY, let nZ ){
+	__DrawTexText3D( CL_FONT_48_X, CL_FONT_48_RIGHTCUT, CL_FONT_48_SPACING, CL_FONT_48_Y, CL_FONT_48_HEIGHT, CL_FONT_48_KERNING, CL_FONT_48_SPACING_HEIGHT, szText, nKerning, nLineHeight, nX, nY, nZ );
+}

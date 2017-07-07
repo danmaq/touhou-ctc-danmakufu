@@ -1,0 +1,351 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ラストワード　紅 美鈴
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Meirin - ラストワード]
+#Text[ラストワード
+紅 美鈴]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Meirin.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 80;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetPosition( m_nPracticeX, m_nPracticeY );
+		SetTimer( 60 );
+		SetLife( 500 );
+		SetDamageRate( 2, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_KOUMA + CL_TTH_CHARACTER_NAME_KOUMA_MEIRING;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL4, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_LASTWORD + CL_TTH_SPELL_LW_MEIRING;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		/** 花弾 */
+		SetAction( ACT_SHOT_B3, 6000 );
+		PlaySEEx( sePower );
+		Concentration01( 120 );
+		__Wait( 120 );
+		FlowerShot( -1 );
+		FlowerShot( 1 );
+		__Wait( 120 );
+
+		SetDamageRate( 11.5, 0 );
+
+		loop{
+
+			/** フック弾 */
+			HookShot( 1 );
+			__Wait( 60 );
+
+			/** フック弾（縦） */
+			HookShotV();
+			__Wait( 60 );
+
+			/** フック弾 */
+			HookShot( - 1 );
+			__Wait( 60 );
+
+			/** フック弾（縦） */
+			HookShotV();
+			__Wait( 60 );
+
+		}
+
+	}
+
+	/**
+	*	花弾
+	*	@param nAssign	割り振り係数
+	*/
+	task FlowerShot( let nAssign ){
+
+		let nFrame = 4;
+		let nNum = 2;
+		let nWay = 9;
+		let nTurnFrame = 60;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed0 = 4;
+		let nAccelSpeed0 = - nSpeed0 / nTurnFrame;
+		let nSpeed1 = 1.8;
+		let _nSpeed = 2.4;
+		let nWayAngle = 360 / nWay;
+		let nAngle = 90 - nWayAngle / 2;
+		let nTurnAngle = - 150 * nAssign;
+		let nAddAngle = 0.5 * nAssign;
+		let anGraphic = [ US_ICE_RED, US_ICE_ORANGE, US_ICE_YELLOW,
+			US_ICE_GREEN, US_ICE_SKY, US_ICE_BLUE, US_ICE_PURPLE ];
+		let nGra = 0;
+		let nDelay = 8;
+
+		loop{
+			PlaySEEx( seShot1 );
+			loop( nNum ){
+				let _nGra = nGra % 7;
+				let _nAngle = nAngle;
+				loop( nWay ){
+					if( sin( _nAngle ) >= - 0.6 ){
+						CreateShotA( 0, nX, nY, nDelay );
+						SetShotDataA( 0, 0, nSpeed0, _nAngle, 0, nAccelSpeed0, 0, anGraphic[ _nGra ] );
+						SetShotDataA( 0, nTurnFrame, nSpeed1, _nAngle + nTurnAngle, 0, 0, 0, anGraphic[ _nGra ] );
+						CreateShotA( 1, 0, 0, 0 );
+						SetShotDataA( 1, 0, _nSpeed, _nAngle + nTurnAngle - 180, 0, 0, 0, anGraphic[ _nGra ] );
+						AddShot( nTurnFrame, 0, 1, 0 );
+						FireShot( 0 );
+					}
+					_nAngle += nWayAngle;
+				}
+				__Wait( nFrame );
+				nAngle += nAddAngle * nFrame;
+			}
+			__Wait( nFrame * nNum );
+			nAngle += nAddAngle * nFrame * nNum;
+			nGra ++;
+		}
+
+	}
+
+	/**
+	*	フック弾
+	*	@param nAssignX	x方向割り振り係数
+	*/
+	task HookShot( let nAssignX ){
+
+		let nFrame = 8;
+		let nNum = 8;
+		let nWay = 3;
+		let nX = GetX();
+		let nY = GetY();
+		let _nY = GetPlayerY();
+		let nAssignY = [ 1, - 1 ][ _nY < nY ];
+		let nKill = 60;
+		let nSpeedX = 6 * nAssignX;
+		let nSpeedY = 15 / nKill * nAssignY;
+		let nWaySpeedY = 0.15 * nAssignY;
+		let nAccelSpeedX = - 0.08 * nAssignX;
+		let nGraphic = US_LIGHT_ORANGE;
+		let _nX = [ CL_MAX_X + 30, CL_MIN_X - 30 ][ nAssignX == - 1 ];
+		_nY -= 30 * nAssignY;
+
+		SetColor( 255, 191, 63 );
+		Concentration01( 30 );
+		SetColor( 255, 255, 255 );
+		PlaySEEx( seShot2 );
+		loop( nNum ){
+			let _nSpeedY = nSpeedY;
+			loop( nWay ){
+				CreateShotA( 0, nX, nY, 0 );
+				SetShotDataA_XY( 0, 0, nSpeedX, _nSpeedY, nAccelSpeedX, 0, 0, 0, nGraphic );
+				SetShotKillTime( 0, nKill );
+				FireShot( 0 );
+				_nSpeedY += nWaySpeedY;
+			}
+			__Wait( nFrame );
+		}
+		loop( nNum ){
+			let __nY = _nY;
+			let _nSpeedY = nSpeedY * 0.5;
+			loop( nWay ){
+				CreateShotA( 0, _nX, __nY, 0 );
+				SetShotDataA_XY( 0, 0, 0, _nSpeedY, nAccelSpeedX, 0, - nSpeedX, 0, nGraphic );
+				FireShot( 0 );
+				__nY += nSpeedY * 40;
+				_nSpeedY += nWaySpeedY * 0.75;
+			}
+			__Wait( nFrame );
+		}
+
+	}
+
+	/**
+	*	フック弾（縦）
+	*/
+	task HookShotV{
+
+		let nFrame = 8;
+		let nNum = 8;
+		let nWay = 3;
+		let nX = GetX();
+		let nY = GetY();
+		let nWaySpeedX = 0.15;
+		let nSpeedX = ( GetPlayerX() - GetX() ) / 180 - nWaySpeedX * ( nWay - 1 ) / 2;
+		let nSpeedY = - 4;
+		let nMaxSpeedY = 6;
+		let nAccelSpeedY = 0.08;
+		let nGraphic = US_LIGHT_ORANGE;
+
+		SetColor( 255, 191, 63 );
+		Concentration01( 30 );
+		SetColor( 255, 255, 255 );
+		PlaySEEx( seShot2 );
+		loop( nNum ){
+			let _nSpeedX = nSpeedX;
+			loop( nWay ){
+				CreateShotA( 0, nX, nY, 0 );
+				SetShotDataA_XY( 0, 0, _nSpeedX, nSpeedY, 0, nAccelSpeedY, 0, nMaxSpeedY, nGraphic );
+				FireShot( 0 );
+				_nSpeedX += nWaySpeedX;
+			}
+			__Wait( nFrame );
+		}
+
+	}
+
+}

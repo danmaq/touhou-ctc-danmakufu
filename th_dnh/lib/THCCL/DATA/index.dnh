@@ -41,6 +41,8 @@ let CL_CD_WRITABLE_TEXTURE_CREATED		= "WRITABLE_TEXTURE_CREATED";
 let CL_CD_WRITABLE_TEXTURE_MID_CREATED	= "WRITABLE_TEXTURE_CREATED_MID";
 /**	書き込み可能なテクスチャが生成されたかどうかが格納されます。 */
 let CL_CD_WRITABLE_TEXTURE_MINI_CREATED	= "WRITABLE_TEXTURE_CREATED_MINI";
+/**	画面のフェード進捗が格納されます。 */
+let CL_CD_SCREEN_FADE					= "SCREEN_FADE";
 
 
 //////////////////////////////////////////////////////////////////////
@@ -215,6 +217,8 @@ let CL_CD_PLAYER_INYAN					= "PLAYER_INYANSYSTEM_ENABLE";
 let CL_CD_PLAYER_INYAN_GAUGE			= "PLAYER_INYANSYSTEM_GAUGE";
 /**	博麗ゲージの初期値が格納されます。(0～255) */
 let CL_CD_PLAYER_INYAN_GAUGE_DEFAULT	= "PLAYER_INYANSYSTEM_GAUGE_DEFAULT";
+/**	自機にブラーをかけるかどうかが格納されます。 */
+let CL_CD_PLAYER_BLUR					= "PLAYER_BLUR";
 
 
 //////////////////////////////////////////////////////////////////////

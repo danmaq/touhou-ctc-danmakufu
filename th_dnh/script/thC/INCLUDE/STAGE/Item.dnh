@@ -88,7 +88,7 @@ task __PopItemQueueLoop(){
 				case( ITEMEX_POWER ){ aItemInfo[ 0 ] = ITEMEX_SCORE_SMALL; }
 				case( ITEMEX_POWER_BIG, ITEMEX_POWER_FULL ){ aItemInfo[ 0 ] = ITEMEX_SCORE; }
 			}
-			ObjItem( aItemInfo[ 0 ], aItemInfo[ 1 ], aItemInfo[ 2 ], aItemInfo[ 3 ], aItemInfo[ 4 ] );
+			ObjItem( aItemInfo[ 0 ], aItemInfo[ 1 ], aItemInfo[ 2 ], aItemInfo[ 3 ], aItemInfo[ 4 ], aItemInfo[ 5 ] );
 		}
 		loop( 6 ){
 			yield;
@@ -151,8 +151,10 @@ task ItemMarker( let nItemObj, let nKind ){
 *	@param nY 出現Y座標
 *	@param nY 初期速度
 *	@param nY 初期角度
+*	@param nDelay 出現遅延時間
 */
-task ObjItem( let nKind, let nX, let nY, let nFirstSpeed, let nAngle ){
+task ObjItem( let nKind, let nX, let nY, let nFirstSpeed, let nAngle, let nDelay ){
+	__Wait( nDelay );
 	let nObjCount = 0;
 	let bMarker = false;
 	let bHoming = false;
@@ -204,11 +206,11 @@ task ObjItem( let nKind, let nX, let nY, let nFirstSpeed, let nAngle ){
 		if( nPower == FLAN_PLAYER_POWER_MAX ){
 			alternative( nKind )
 			case( ITEMEX_POWER ){
-				ObjItem( ITEMEX_SCORE_SMALL, nX, nY, 1, 270 );
+				ObjItem( ITEMEX_SCORE_SMALL, nX, nY, 1, 270, 0 );
 				Obj_Delete( obj );
 			}
 			case( ITEMEX_POWER_BIG, ITEMEX_POWER_FULL ){
-				ObjItem( ITEMEX_SCORE, nX, nY, 1, 270 );
+				ObjItem( ITEMEX_SCORE, nX, nY, 1, 270, 0 );
 				Obj_Delete( obj );
 			}
 		}

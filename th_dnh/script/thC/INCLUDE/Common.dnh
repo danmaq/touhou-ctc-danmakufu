@@ -90,9 +90,9 @@ task PlaySEDelayLoop( let szSeFile, let nDelayFrame, let nTotalFrame, let nPlayF
 *	@return ラストスペル突入条件を満たしていればtrue
 */
 function IsTryLastSpell(){
-	return	( IsDebugMode() || !UsedDebugKey() ) && 
+	return	!UsedDebugKey() && 
 			( GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 ) >= 10 || m_nFlanLevel >= 1 ) &&
-			GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN_GAUGE, 255 ) > 254 &&
+			GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN_GAUGE, 255 ) > 250 &&
 			GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 ) >= GetHakureiNorm();
 }
 
@@ -108,85 +108,3 @@ function GetHakureiNorm(){
 	if( nStage >= 10 ){ return CL_LASTSPELL_HAKUREI_NORM * 10 * [ 1, 1.4 ][ nLevel ]; }
 	return 0;
 }
-
-/**
-*	指定した絞込み条件でクリア履歴を検索し、該当する履歴の合計件数を返します。
-*	条件は項目内でOR検索の後、項目ごとにAND検索がかかります。
-*	条件を全く指定しなかった場合、全件数が返ります。
-*	それなりに重いのでステージ中で使用する場合は注意して使用してください。
-*
-*	@param anPlayerID プレイヤー識別IDリスト
-*	@param anScenarioID シナリオIDリスト
-*	@param anStage ステージリスト
-*	@param anLevel レベルリスト
-*	@param nScore スコア。正数でハイパス、負数でローパス、0で絞り込み対象外とする
-*	@param nContinue コンティニューしたかどうか。0か1以外で絞り込み対象外とする
-*	@param nPractice プラクティスかどうか。0か1以外で絞り込み対象外とする
-*/
-function GetClearHistory( let anPlayerID, let anScenarioID, let anStage, let anLevel, let nScore, let nContinue, let nPractice ){
-	let nTotalCount = 0;
-	let aanHistoryList = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_HISTORY_CLEAR, [] );
-	let nHistorySize = length( aanHistoryList );
-	let bRefinePlayer	= length( anPlayerID	) != 0;
-	let bRefineScenario	= length( anScenarioID	) != 0;
-	let bRefineStage	= length( anStage		) != 0;
-	let bRefineLevel	= length( anLevel		) != 0;
-	let bRefineScore	= nScore != 0;
-	let bRefineContinue	= ( nContinue == 0 || nContinue == 1 );
-	let bRefinePractice	= ( nPractice == 0 || nPractice == 1 );
-
-	if( !( bRefinePlayer || bRefineScenario || bRefineStage || bRefineLevel || bRefineScore || bRefineContinue || bRefinePractice ) ){ return nHistorySize; }
-	ascent( let i in 0..nHistorySize ){
-		let anHistory = aanHistoryList[ i ];
-		let nHit = 0;
-		if( !( bRefinePlayer	&& SearchArray( anPlayerID,		anHistory[ STAGE_HISTORY_TRY_PLAYER		] ) == length( anPlayerID	) ) ){ nHit++; }
-		if( !( bRefineScenario	&& SearchArray( anScenarioID,	anHistory[ STAGE_HISTORY_TRY_SCENARIO	] ) == length( anScenarioID	) ) ){ nHit++; }
-		if( !( bRefineStage		&& SearchArray( anStage,		anHistory[ STAGE_HISTORY_TRY_STAGE		] ) == length( anStage		) ) ){ nHit++; }
-		if( !( bRefineLevel		&& SearchArray( anLevel,		anHistory[ STAGE_HISTORY_TRY_LEVEL		] ) == length( anLevel		) ) ){ nHit++; }
-		if( !( bRefineScore		&& !(
-				( nScore <	0 && nScore <= anHistory[ STAGE_HISTORY_CLEAR_SCORE ] ) ||
-				( nScore >=	0 && nScore >= anHistory[ STAGE_HISTORY_CLEAR_SCORE ] )
-			)
-		) ){ nHit++; }
-		if( !( bRefineContinue	&& nContinue != anHistory[ STAGE_HISTORY_CLEAR_CONTINUE ] ) ){ nHit++; }
-		if( !( bRefinePractice	&& nPractice != anHistory[ STAGE_HISTORY_CLEAR_PRACTICE ] ) ){ nHit++; }
-		if( nHit == 7 ){ nTotalCount++; }
-	}
-	return nTotalCount;
-}
-
-/**
-*	指定した絞込み条件でトライ履歴を検索し、該当する履歴の合計件数を返します。
-*	条件を全く指定しなかった場合、全件数が返ります。
-*	それなりに重いのでステージ中で使用する場合は注意して使用してください。
-*
-*	@param anPlayerID プレイヤー識別IDリスト
-*	@param anScenarioID シナリオIDリスト
-*	@param anStage ステージリスト
-*	@param anLevel レベルリスト
-*	@param nPractice プラクティスかどうか。0か1以外で絞り込み対象外とする
-*/
-function GetTryHistory( let anPlayerID, let anScenarioID, let anStage, let anLevel, let nPractice ){
-	let nTotalCount = 0;
-	let aanHistoryList = GetCommonDataDefaultEx( CL_CDNS_RESULT, CL_CD_HISTORY_TRY, [] );
-	let nHistorySize	= length( aanHistoryList );
-	let bRefinePlayer	= length( anPlayerID	) != 0;
-	let bRefineScenario	= length( anScenarioID	) != 0;
-	let bRefineStage	= length( anStage		) != 0;
-	let bRefineLevel	= length( anLevel		) != 0;
-	let bRefinePractice	= ( nPractice == 0 || nPractice == 1 );
-
-	if( !( bRefinePlayer || bRefineScenario || bRefineStage || bRefineLevel || bRefinePractice ) ){ return nHistorySize; }
-	ascent( let i in 0..nHistorySize ){
-		let anHistory = aanHistoryList[ i ];
-		let nHit = 0;
-		if( !( bRefinePlayer	&& SearchArray( anPlayerID,		anHistory[ STAGE_HISTORY_TRY_PLAYER		] ) == length( anPlayerID	) ) ){ nHit++; }
-		if( !( bRefineScenario	&& SearchArray( anScenarioID,	anHistory[ STAGE_HISTORY_TRY_SCENARIO	] ) == length( anScenarioID	) ) ){ nHit++; }
-		if( !( bRefineStage		&& SearchArray( anStage,		anHistory[ STAGE_HISTORY_TRY_STAGE		] ) == length( anStage		) ) ){ nHit++; }
-		if( !( bRefineLevel		&& SearchArray( anLevel,		anHistory[ STAGE_HISTORY_TRY_LEVEL		] ) == length( anLevel		) ) ){ nHit++; }
-		if( !( bRefinePractice	&& nPractice != anHistory[ STAGE_HISTORY_TRY_PRACTICE ] ) ){ nHit++; }
-		if( nHit == 5 ){ nTotalCount++; }
-	}
-	return nTotalCount;
-}
-

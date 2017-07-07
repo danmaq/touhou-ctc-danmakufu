@@ -148,10 +148,11 @@ function CLCommonNameSpaceInitialize(){
 *	@param nY Y座標
 *	@param nSpeed 速度
 *	@param nAngle 角度
+*	@param nDelay 出現遅延時間
 */
-function SetItemQueue( let nKind, let nX, let nY, let nSpeed, let nAngle ){
+function SetItemQueue( let nKind, let nX, let nY, let nSpeed, let nAngle, let nDelay ){
 	let aItem = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_QUEUE_CREATE, [] );
-	let aItemInfo = [ nKind, nX, nY, nSpeed, nAngle ];
+	let aItemInfo = [ nKind, nX, nY, nSpeed, nAngle, nDelay ];
 	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_QUEUE_CREATE, aItem ~ [ aItemInfo ] );
 }
 

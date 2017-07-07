@@ -143,7 +143,7 @@ script_player_main{
 	*/
 	function onMainLoopTHC( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 		FLAN_PLAYER_SPEED_FAST = [ 3.6, [ 0.7, 3 ][ m_nPlayerSpellType == MOVE_NORMAL ] ][ OnBomb() ];
-		FLAN_PLAYER_SPEED_SLOW = [ 1.4, [ 0.7, 2 ][ m_nPlayerSpellType == MOVE_NORMAL ] ][ OnBomb() ];
+		FLAN_PLAYER_SPEED_SLOW = [ 1.4, [ 0.9, 2 ][ m_nPlayerSpellType == MOVE_NORMAL ] ][ OnBomb() ];
 	}
 
 	/**
@@ -225,12 +225,19 @@ script_spell SpellMarisaB1{
 //	定数
 //////////////////////////////////////////////////////////////////////
 
+	/**	ビットを全て射出してからスペルが終了するまでの待機時間です。 */
 	let ER_TIMEOUT			= 100;
+	/**	レーザーを射出した後、ビットがフェードアウトするのに必要な時間です。 */
 	let ER_TIMEOUT_FADE		= 60;
+	/**	射出するビットの総数です。 */
 	let ER_BIT_NUM			= 12;
+	/**	ビットの各色ごとの画像切り出し開始X座標の一覧です。 */
 	let ER_BIT_COLOR_SRCX	= [ SPELL_LASER_SRC_X_RED, SPELL_LASER_SRC_X_YELLOW, SPELL_LASER_SRC_X_GREEN, SPELL_LASER_SRC_X_AQUA, SPELL_LASER_SRC_X_BLUE, SPELL_LASER_SRC_X_PURPLE ];
+	/**	レーザーの幅です。 */
 	let ER_LASER_WIDTH		= 32;
+	/**	レーザーの長さです。 */
 	let ER_LASER_HEIGHT		= 256;
+	/**	レーザーの速度です。 */
 	let ER_LASER_SPEED		= 16;
 
 
@@ -243,6 +250,12 @@ script_spell SpellMarisaB1{
 //	固有処理
 //////////////////////////////////////////////////////////////////////
 
+	/**
+	*	レーザーを発するスペル用ビット本体のタスクです。
+	*
+	*	@param nDstX ビットの移動先X座標
+	*	@param nLaserSrcX ビット画像の切り出し開始位置X座標
+	*/
 	task Satellite( let nDstX, let nLaserSrcX ){
 		let obj = CreateLaserObject( nLaserSrcX, 60, 60 );
 		Obj_SetPosition( obj, GetPlayerX(), GetPlayerY() );
@@ -254,10 +267,6 @@ script_spell SpellMarisaB1{
 		}
 		Obj_SetSpeed( obj, 0 );
 		Laser( obj );
-		__FadeoutSatellite( obj );
-	}
-
-	task __FadeoutSatellite( let obj ){
 		ascent( let i in 0..ER_TIMEOUT_FADE ){
 			let nBright = Accelerate( 255, 0, i, ER_TIMEOUT_FADE );
 			ascent( let j in 0..4 ){ ObjEffect_SetVertexColor( obj, j, 255, nBright, nBright, nBright ); }
@@ -265,6 +274,11 @@ script_spell SpellMarisaB1{
 		}
 	}
 
+	/**
+	*	ビットから射出されるレーザー本体のオブジェクトタスクです。
+	*
+	*	@param nParentObj 射出元のビットオブジェクトのハンドル
+	*/
 	task Laser( let nParentObj ){
 		PlaySEEx( seLaser1 );
 		let obj = CreateLaserObject( SPELL_LASER_SRC_X_WHITE, ER_LASER_WIDTH, ER_LASER_HEIGHT );
@@ -288,11 +302,17 @@ script_spell SpellMarisaB1{
 		}
 	}
 
+	/**
+	*	レーザーの当たり判定を登録します。
+	*
+	*	@param obj レーザーオブジェクトのハンドル
+	*	@param nScale 判定の長さ(比率)
+	*/
 	task __LaserSetIntersecrionLine( let obj, let nScale ){
 		let nX = Obj_GetX( obj );
 		let nY = Obj_GetY( obj );
 		let nLaserLengthHalf = ( ER_LASER_HEIGHT * nScale ) / 2;
-		ObjSpell_SetIntersecrionLine( obj, nX, nY - nLaserLengthHalf, nX, nY + nLaserLengthHalf, ER_LASER_WIDTH, 24, true );
+		ObjSpell_SetIntersecrionLine( obj, nX, nY - nLaserLengthHalf, nX, nY + nLaserLengthHalf, ER_LASER_WIDTH, 16, true );
 	}
 
 
@@ -309,8 +329,8 @@ script_spell SpellMarisaB1{
 	task MainTask( let nArgv ){
 		ascent( let i in 0..ER_BIT_NUM ){
 			PlaySEEx( seKira2 );
-			Satellite( SplineFakeFSF( GetClipMinX() + 32, GetClipMaxX() - 32, i, ER_BIT_NUM - 1 ), ER_BIT_COLOR_SRCX[ i % length( ER_BIT_COLOR_SRCX ) ] );
-			Satellite( SplineFakeFSF( GetClipMaxX() - 32, GetClipMinX() + 32, i, ER_BIT_NUM - 1 ), ER_BIT_COLOR_SRCX[ i % length( ER_BIT_COLOR_SRCX ) ] );
+			Satellite( SplineFakeSFS( GetClipMinX() + 32, GetClipMaxX() - 32, i, ER_BIT_NUM - 1 ), ER_BIT_COLOR_SRCX[ i % length( ER_BIT_COLOR_SRCX ) ] );
+			Satellite( SplineFakeSFS( GetClipMaxX() - 32, GetClipMinX() + 32, i, ER_BIT_NUM - 1 ), ER_BIT_COLOR_SRCX[ i % length( ER_BIT_COLOR_SRCX ) ] );
 			__Wait( truncate( Smooth( 10, 2, i, ER_BIT_NUM ) ) );
 		}
 		__Wait( ER_TIMEOUT );
@@ -386,13 +406,21 @@ script_spell SpellMarisaB2{
 //	定数
 //////////////////////////////////////////////////////////////////////
 
+	/**	射出するビットの総数です。 */
 	let SR_BIT_NUM			= 12;
+	/**	ビットの各色ごとの画像切り出し開始X座標の一覧です。 */
 	let SR_BIT_COLOR_SRCX	= [ SPELL_LASER_SRC_X_RED, SPELL_LASER_SRC_X_YELLOW, SPELL_LASER_SRC_X_GREEN, SPELL_LASER_SRC_X_AQUA, SPELL_LASER_SRC_X_BLUE, SPELL_LASER_SRC_X_PURPLE ];
+	/**	ビットの最大周回半径です。 */
 	let SR_DIAM_MAX			= 96;
+	/**	レーザーの幅です。 */
 	let SR_LASER_WIDTH		= 32;
+	/**	レーザーの長さです。 */
 	let SR_LASER_HEIGHT		= 256;
+	/**	レーザーの速度です。 */
 	let SR_LASER_SPEED		= 10;
+	/**	ビットを全て射出してからスペルが終了するまでの待機時間です。 */
 	let SR_TIMEOUT			= 240;
+	/**	レーザーを射出した後、ビットがフェードアウトするのに必要な時間です。 */
 	let SR_TIMEOUT_FADE		= 60;
 
 
@@ -400,7 +428,9 @@ script_spell SpellMarisaB2{
 //	メンバ変数
 //////////////////////////////////////////////////////////////////////
 
+	/**	ビット周回の中心となるX座標が格納されます。 */
 	let m_nBaseX = GetPlayerX();
+	/**	ビット周回の中心となるY座標が格納されます。 */
 	let m_nBaseY = GetPlayerY();
 
 
@@ -408,6 +438,12 @@ script_spell SpellMarisaB2{
 //	固有処理
 //////////////////////////////////////////////////////////////////////
 
+	/**
+	*	レーザーを発するスペル用ビット本体のタスクです。
+	*
+	*	@param nAngle 初期角度
+	*	@param nLaserSrcX ビット画像の切り出し開始位置X座標
+	*/
 	task Satellite( let nAngle, let nLaserSrcX ){
 		let obj = CreateLaserObject( nLaserSrcX, 60, 60 );
 		ascent( let i in 0..SR_TIMEOUT ){
@@ -425,6 +461,11 @@ script_spell SpellMarisaB2{
 		}
 	}
 
+	/**
+	*	ビットをフェードアウトさせるタスクです。
+	*
+	*	@param obj ビットオブジェクトのハンドル
+	*/
 	task __FadeoutSatellite( let obj ){
 		ascent( let i in 0..SR_TIMEOUT_FADE ){
 			let nBright = Accelerate( 255, 0, i, SR_TIMEOUT_FADE );
@@ -433,6 +474,11 @@ script_spell SpellMarisaB2{
 		}
 	}
 
+	/**
+	*	ビットから射出されるレーザー本体のオブジェクトタスクです。
+	*
+	*	@param nParentObj 射出元のビットオブジェクトのハンドル
+	*/
 	task Laser( let nParentObj ){
 		PlaySEEx( seLaser1 );
 		let obj = CreateLaserObject( SPELL_LASER_SRC_X_WHITE, SR_LASER_WIDTH, SR_LASER_HEIGHT );
@@ -457,10 +503,16 @@ script_spell SpellMarisaB2{
 		}
 	}
 
+	/**
+	*	レーザーの当たり判定を登録します。
+	*
+	*	@param obj レーザーオブジェクトのハンドル
+	*	@param nScale 判定の長さ(比率)
+	*/
 	task __LaserSetIntersecrionLine( let obj, let nScale ){
 		let nX = Obj_GetX( obj );
 		let nY = Obj_GetY( obj );
-		ObjSpell_SetIntersecrionCircle( obj, nX, nY, SR_LASER_WIDTH, 24, true );
+		ObjSpell_SetIntersecrionCircle( obj, nX, nY, SR_LASER_WIDTH, 28, true );
 /*	FIXME: なんか判定が明らかにおかしい
 		let nAngle = Obj_GetAngle( obj );
 		let nLaserLengthHalf = ( SR_LASER_HEIGHT * nScale ) / 2;

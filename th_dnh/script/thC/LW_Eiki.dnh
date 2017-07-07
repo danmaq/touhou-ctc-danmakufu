@@ -1,0 +1,519 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ラストワード　四季映姫・ヤマザナドゥ
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Eiki - ラストワード]
+#Text[ラストワード
+四季映姫・ヤマザナドゥ]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Eiki.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 100;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 100;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 裁判オブジェクト配列 */
+	let m_aobjJudge = [];
+
+	/** 裁判が行われたか */
+	let m_bJudge = false;
+
+	/** フェイズ番号 */
+	let m_nPhase = 0;
+
+	/** 最大ライフ */
+	let m_nMaxLife;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetPosition( m_nPracticeX, m_nPracticeY );
+		SetTimer( 94 );
+		SetLife( 500 );
+		SetDamageRate( 2, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 181 );
+		BehaviorBoss( ACT_STAND3 );
+		m_nMaxLife = GetLife();
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_KAEI + CL_TTH_CHARACTER_NAME_KAEI_EIKI;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		DrawBoss( m_szImageBoss );
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, true );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_LASTWORD + CL_TTH_SPELL_LW_EIKI;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		/** フェイズチェック＋裁判SE */
+		SetAction( ACT_SHOT_B5, 65 );
+		CheckLifePhase();
+		JudgeSE();
+		__Wait( 60 );
+		SetDamageRate( 5.5, 0 );
+
+		let nAssign = 1;
+
+		loop{
+
+			/** 側面被告弾 */
+			SetAction( ACT_SHOT_A3, 30 );
+			SideDefendShot( 1, nAssign );
+			SideDefendShot( - 1, nAssign );
+			__Wait( 30 );
+
+			/** 移動 */
+			Move( 60 );
+			__Wait( 60 );
+
+			/** 全方向被告弾 */
+			SetAction( ACT_SHOT_A3, 60 );
+			RoundDefendShot();
+			__Wait( 90 );
+
+			nAssign = - nAssign;
+
+		}
+
+	}
+
+	/**
+	*	側面被告弾
+	*	@param nSideAssign	発射方向割り振り係数
+	*	@param nRollAssign	回転方向割り振り係数
+	*/
+	task SideDefendShot( let nSideAssign, let nRollAssign ){
+
+		let nX = GetX();
+		let nY = GetY();
+		let nWay = 3;
+		let nGapLength = 16;
+		let nAddGapLength = 6;
+		let nGapAngle = GetAngleToPlayer() + 90 * nSideAssign;
+		let nSpeed = 2.4;
+		let nAngle = rand( 0, 360 );
+		let nWayAngle = 360 / nWay;
+		let nAddAngle = 19 * nRollAssign;
+		let nGraphic = US_RICE_S_BLUE;
+		let nDelay = 15;
+
+		PlaySEEx( seShot1 );
+		loop{
+			let _nX = GetGapX( nX, nGapLength, nGapAngle );
+			let _nY = GetGapY( nY, nGapLength, nGapAngle );
+			if( IsOutPos( _nX, _nY, 20 ) ){ break; }
+			let _nAngle = nAngle;
+			loop( nWay ){
+				DefendShot( _nX, _nY, nSpeed, _nAngle, nGraphic, nDelay );
+				_nAngle += nWayAngle;
+			}
+			yield;
+			nGapLength += nAddGapLength;
+			nAngle += nAddAngle;
+		}
+
+	}
+
+	/**
+	*	全方向被告弾
+	*/
+	task RoundDefendShot{
+
+		let nNum = 4;
+		let nFrame = 10;
+		let nWay = 48;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 3.2;
+		let nNumSpeed = - 0.4 * nNum / ( nNum - 1 );
+		let nAngle = GetAngleToPlayer();
+		let nWayAngle = 360 / nWay;
+		let nGraphic = US_BALL_SS_BLUE;
+		let nDelay = 15;
+
+		loop( nNum ){
+			let _nAngle = nAngle;
+			loop( nWay ){
+				DefendShot( nX, nY, nSpeed, _nAngle, nGraphic, nDelay );
+				_nAngle += nWayAngle;
+			}
+			PlaySEEx( seShot1 );
+			__Wait( nFrame );
+			nSpeed += nNumSpeed;
+		}
+
+	}
+
+	/**
+	*	被告弾
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nSpeed	速度
+	*	@param nAngle	角度
+	*	@param nGraphic	弾画像
+	*	@param nDelay	遅延フレーム数
+	*/
+	task DefendShot( let nX, let nY, let nSpeed, let nAngle, let nGraphic, let nDelay ){
+
+		let obj = Obj_Create( OBJ_SHOT );
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetSpeed( obj, nSpeed );
+		Obj_SetAngle( obj, nAngle );
+		ObjShot_SetDelay( obj, nDelay );
+		ObjShot_SetGraphic( obj, nGraphic );
+
+		/** 遅延 */
+		loop( nDelay ){ yield; }
+
+		/** 裁判弾との接触判定 */
+		loop{
+			if( Obj_BeDeleted( obj ) ){ break; }
+			ascent( let i in 0 .. length( m_aobjJudge ) ){
+				if( Collision_Obj_Obj( m_aobjJudge[ i ], obj ) ){
+					nX = Obj_GetX( obj );
+					nY = Obj_GetY( obj );
+					CreateShot01( nX, nY, nSpeed, nAngle, nGraphic, 0 );
+					GuiltShot( nX, nY, nSpeed, nAngle );
+					Obj_Delete( obj );
+					m_bJudge = true;
+					break;
+				}
+			}
+			yield;
+		}
+
+	}
+
+	/**
+	*	罪弾
+	*	@param nX		弾源x座標
+	*	@param nY		弾源y座標
+	*	@param nSpeed	速度
+	*	@param nAngle	角度
+	*/
+	function GuiltShot( let nX, let nY, let nSpeed, let nAngle ){
+
+		let nGraphic = US_TABLET;
+
+		alternative( m_nPhase )
+		case( 0 ){
+			CreateShot01( nX, nY, 4, nAngle, nGraphic, 0 );
+		}
+		case( 1 ){
+			CreateShot01( nX, nY, nSpeed * 0.75 , nAngle + [ 90, - 90 ][ rand_int( 0, 1 ) ], nGraphic, 0 );
+		}
+		case( 2 ){
+			CreateShot01( nX, nY, nSpeed, 90, nGraphic, 0 );
+		}
+		case( 3 ){
+			CreateShot01( nX, nY, nSpeed * 0.5, rand( - 20, 200 ), nGraphic, 0 );
+		}
+		case( 4 ){
+			SetShotDirectionType( PLAYER );
+			CreateShot01( nX, nY, 5, 0, nGraphic, 0 );
+			SetShotDirectionType( ABSOLUTE );
+		}
+		case( 5 ){
+			CreateShot01( nX, nY, nSpeed * 0.9, 180 - nAngle, nGraphic, 0 );
+		}
+		case( 6 ){
+			CreateShot01( nX, nY, nSpeed * 0.75, 0, nGraphic, 0 );
+		}
+		case( 7 ){
+			CreateShot01( nX, nY, 3, 30 + 30 * rand_int( 0, 4 ), nGraphic, 0 );
+		}
+		case( 8 ){
+			SetShotDirectionType( PLAYER );
+			CreateShot01( nX, nY, 5, [ - 8, 8 ][ rand_int( 0, 1 ) ], nGraphic, 0 );
+			SetShotDirectionType( ABSOLUTE );
+		}
+		others{
+			CreateShot01( nX, nY, 5.8, nAngle, nGraphic, 0 );
+		}
+
+	}
+
+	/**
+	*	裁判弾
+	*	@param nPhase	フェイズ番号
+	*/
+	task JudgmentShot( let nPhase ){
+
+		let anX = [
+			[ CL_CEN_X, CL_CEN_X - 90, CL_CEN_X + 90 ],
+			[ CL_CEN_X - 130, CL_CEN_X + 130 ],
+			[ CL_CEN_X, CL_CEN_X - 135, CL_CEN_X + 135 ],
+			[ CL_CEN_X - 35, CL_CEN_X + 35 ], 
+			[ CL_CEN_X - 60, CL_CEN_X + 60 ],
+			[ CL_CEN_X - 130, CL_CEN_X + 130 ],
+			[ CL_MIN_X + 10, CL_MIN_X, CL_MIN_X - 10 ],
+			[ CL_CEN_X - 60, CL_CEN_X + 60 ], 
+			[ CL_CEN_X - 40, CL_CEN_X + 40 ],
+			[ CL_CEN_X, CL_CEN_X - 100, CL_CEN_X + 100 ],
+			][ nPhase ];
+		let anY = [
+			[ CL_CEN_Y - 40, CL_CEN_Y - 70, CL_CEN_Y - 70 ],
+			[ CL_MAX_Y - 20, CL_MAX_Y - 20 ],
+			[ CL_MIN_Y + 15, CL_MIN_Y + 15, CL_MIN_Y + 15 ],
+			[ CL_CEN_Y, CL_CEN_Y ],
+			[ CL_CEN_Y - 70, CL_CEN_Y - 70 ],
+			[ CL_CEN_Y - 40, CL_CEN_Y - 40 ],
+			[ CL_MAX_Y - 40, CL_MAX_Y - 120, CL_MAX_Y - 200 ],
+			[ CL_CEN_Y - 40, CL_CEN_Y - 40 ],
+			[ CL_MIN_Y + 120, CL_MIN_Y + 120 ],
+			[ CL_MIN_Y + 120, CL_MIN_Y + 80, CL_MIN_Y + 80 ],
+			][ nPhase ];
+		let nR = [ 255, 255, 63, 63, 255, 63, 255, 255, 63, 127 ][ nPhase ];
+		let nG = [ 255, 63, 255, 63, 255, 255, 63, 127, 255, 63 ][ nPhase ];
+		let nB = [ 255, 63, 63, 255, 63, 255, 255, 63, 127, 255 ][ nPhase ];
+
+		PlaySEEx( seKira1 );
+		Concentration01( 30 );
+		SetShotColor( nR, nG, nB );
+		ascent( let i in 0 .. length( anX ) ){
+			_JudgmentShot( anX[ i ], anY[ i ], nPhase );
+		}
+		SetShotColor( 255, 255, 255 );
+
+	}
+
+	/**
+	*	裁判弾（1発）
+	*	@param nX		設置x座標
+	*	@param nY		設置y座標
+	*	@param nPhase	フェイズ番号
+	*/
+	task _JudgmentShot( let nX, let nY, let nPhase ){
+
+		let obj = Obj_Create( OBJ_SHOT );
+		Obj_SetPosition( obj, nX, nY );
+		Obj_SetAngle( obj, rand( 0, 360 ) );
+		ObjShot_SetGraphic( obj, US_JUDGMENT );
+		Obj_SetCollisionToPlayer( obj, false );
+		ObjShot_SetBombResist( obj, true );
+		ObjShot_ToItem( obj, false );
+
+		/** フェードイン */
+		let nFrame = 45;
+		let nAlpha = 0;
+		let nAddAlpha = 200 / nFrame;
+		loop( nFrame ){
+			nAlpha += nAddAlpha;
+			Obj_SetAlpha( obj, nAlpha );
+			yield;
+		}
+
+		/** 裁判中 */
+		m_aobjJudge = m_aobjJudge ~ [ obj ];
+		while( nPhase == m_nPhase ){ yield; }
+		m_aobjJudge = erase( m_aobjJudge, 0 );
+
+		/** フェードアウト */
+		loop( nFrame ){
+			nAlpha -= nAddAlpha;
+			Obj_SetAlpha( obj, nAlpha );
+			yield;
+		}
+		Obj_Delete( obj );
+
+	}
+
+	/**
+	*	裁判SE
+	*/
+	task JudgeSE{
+
+		let nCount = m_nFlanCount;
+		let nWaitCount = 3;
+		loop{
+			if( m_bJudge ){
+				if( nCount < m_nFlanCount ){
+					PlaySEEx( seShot3 );
+					nCount = m_nFlanCount + nWaitCount;
+				}
+				m_bJudge = false;
+			}
+			yield;
+		}
+
+	}
+
+	/**
+	*	フェイズチェック
+	*/
+	task CheckLifePhase{
+
+		let anNextLife = [ 0.9, 0.81, 0.72, 0.63, 0.54, 0.45, 0.36, 0.27, 0.18, 0 ];
+		ascent( let i in 0 .. 10 ){ anNextLife[ i ] = anNextLife[ i ] * m_nMaxLife; }
+
+		ascent( let i in 0 .. 10 ){
+			/** 裁判弾 */
+			JudgmentShot( i );
+			while( GetLife() >= anNextLife[ i ] ){ yield; }
+			m_nPhase = i + 1;
+		}
+
+	}
+
+	/**
+	*	移動
+	*	@param nFrame	移動完了フレーム数
+	*/
+	task Move( let nFrame ){
+
+		let nMinMoveX = 40;
+		let nMaxMoveX = 80;
+		let nMinMoveY = 0;
+		let nMaxMoveY = 10;
+
+		SetAction( ACT_MOVE, nFrame );
+		BossMove( nMinMoveX, nMaxMoveX, nMinMoveY, nMaxMoveY, nFrame );
+
+	}
+
+}

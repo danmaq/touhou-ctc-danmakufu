@@ -1,4 +1,3 @@
-#include_function ".\STAGE\Menu.dnh"
 #include_function ".\STAGE\1.dnh"
 #include_function ".\STAGE\1a.dnh"
 #include_function ".\STAGE\1b.dnh"
@@ -21,3 +20,5 @@
 #include_function ".\STAGE\ex__.dnh"
 #include_function ".\STAGE\SpellPractice.dnh"
 #include_function ".\STAGE\ED.dnh"
+#include_function ".\STAGE\LW.dnh"
+#include_function ".\STAGE\Menu.dnh"

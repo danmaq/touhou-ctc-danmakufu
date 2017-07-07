@@ -427,7 +427,7 @@ function __DropItemTHC( let nType, let nNum ){
 	let aanPutItemPosList = GetDropItemPosList( nNum );
 	ascent( let i in 0..length( aanPutItemPosList ) ){
 		let anPutItemPos = aanPutItemPosList[ i ];
-		SetItemQueue( nType, anPutItemPos[ FLAN_ITEM_X ], anPutItemPos[ FLAN_ITEM_Y ], 2.8, 270 );
+		SetItemQueue( nType, anPutItemPos[ FLAN_ITEM_X ], anPutItemPos[ FLAN_ITEM_Y ], 2.8, 270, 0 );
 	}
 }
 

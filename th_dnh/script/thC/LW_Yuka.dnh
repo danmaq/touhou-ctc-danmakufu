@@ -1,0 +1,619 @@
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//
+//	東方夢終劇 ～ Concealed the Conclusion
+//		ラストワード　風見 幽香
+//
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	ヘッダ
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+#ScriptVersion[2]
+#BackGround[User]
+#Title[Yuka - ラストワード]
+#Text[ラストワード
+風見 幽香]
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy_main{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\Boss.dnh"
+	#include_function ".\INCLUDE\BOSS\Yuka.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_BOSS_HOME_X = CL_CEN_X;
+	FLAN_BOSS_HOME_Y = CL_MIN_Y + 120;
+	FLAN_BOSS_MOVE_MARGIN_SIDE = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = false;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 分身中か */
+	let m_bMirage = false;
+
+	/** 分身座標 */
+	let m_anMirageX = [];
+	let m_anMirageY = [];
+
+	/** 最大ライフ */
+	let m_nMaxLife;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 共通初期設定 */
+		InitializeBoss();
+
+		/** 個別初期設定 */
+		SetPosition( m_nPracticeX, m_nPracticeY );
+		SetTimer( 60 );
+		SetLife( 500 );
+		SetDamageRate( 8, 0 );
+		SetShotAutoDeleteClip( 32, 32, 32, 32 );
+		SetInvincibility( 241 );
+		BehaviorBoss( ACT_STAND3 );
+		m_nMaxLife = 500;
+
+		/** ボスID設定 */
+		let nBossID = CL_TTH_CHARACTER_NAME_LOTUS + CL_TTH_CHARACTER_NAME_LOTUS_YUKA;
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_BOSS_ID, nBossID ); 
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 当たり判定 */
+		FLAN_ENEMY_COLLISION_A = 0;
+		FLAN_ENEMY_COLLISION_B = 0;
+		if( m_nEnemyAlpha >= 95 ){
+			if( m_bMirage ){
+				ascent( let i in 0 .. length( m_anMirageX ) ){
+					__Collision( m_anMirageX[ i ], m_anMirageY[ i ], 32, 16 );
+				}
+			}
+			else{
+				FLAN_ENEMY_COLLISION_A = 32;
+				FLAN_ENEMY_COLLISION_B = 16;
+			}
+		}
+
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 共通終了設定 */
+		FinalizeBoss();
+
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** ボス描画 */
+		if( m_bMirage ){
+			ascent( let i in 0 .. length( m_anMirageX ) ){
+				_DrawBoss( m_szImageBoss, m_anMirageX[ i ], m_anMirageY[ i ] );
+			}
+		}
+		else{ DrawBoss( m_szImageBoss ); }
+
+	}
+
+	/**
+	*	背景絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onBackGroundTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+
+		/** 背景描画 */
+		DrawSpellBG();
+
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		/** 初期移動 */
+		let nFrame = 45;
+		SetAction( ACT_MOVE, nFrame );
+		BossMoveHome( nFrame, false );
+		__Wait( 55 );
+
+		/** スペルカード発動 */
+		SetAction( ACT_SPELL5, 0 );
+		SetScoreTHC( m_nSpellScore );
+		let nSpellID = CL_TTH_SPELL_LASTWORD + CL_TTH_SPELL_LW_YUKA;
+		PushCLCutInQueueEnemy( m_szImageCutIn, nSpellID );
+		__Wait( 125 );
+
+		/** 分身攻撃 */
+		Mirage();
+		while( !m_bMirage ){ yield; }
+		while( m_bMirage ){ yield; }
+
+		/** 極太スパークレーザー攻撃 */
+		HyperSpark();
+
+	}
+
+	/**
+	*	分身攻撃
+	*/
+	task Mirage{
+
+		/** 分身座標 */
+		let nNum = 6;
+		let nNumX = ( CL_MAX_X - CL_MIN_X ) / nNum;
+		let nX = CL_MIN_X + nNumX / 2;
+		loop( nNum ){
+			m_anMirageX = m_anMirageX ~ [ nX ];
+			nX += nNumX;
+		}
+		m_anMirageY = [ CL_MIN_Y + 55, CL_MIN_Y + 40, CL_MIN_Y + 70, CL_MIN_Y + 70, CL_MIN_Y + 40, CL_MIN_Y + 55 ];
+
+		/** 消える＋移動 */
+		PlaySEEx( seKira4 );
+		Swing( - 1 );
+		__Wait( 55 );
+		SetMovePosition02( GetX(), CL_MIN_Y + 40, 5 );
+		__Wait( 5 );
+		m_bMirage = true;
+
+		/** 分身出現 */
+		PlaySEEx( seKira4 );
+		SwingEx( 1 );
+		__Wait( 60 );
+
+		let bNextPhase = false;
+		CheckLifePhase();
+		let nLaser = rand_int( 1, 4 );
+
+		while( !bNextPhase ){
+
+			/** 狙い弾 */
+			SetAction( ACT_SHOT_A5, 120 );
+			SearchShot( nLaser );
+			__Wait( 120 );
+
+			/** スパークレーザー */
+			SetAction( ACT_SHOT_B5, 180 );
+			__Wait( 18 );
+			SparkLaser( m_anMirageX[ nLaser ], m_anMirageY[ nLaser ] + 22, 420, false );
+			__Wait( 162 );
+
+			let nextLaser = rand_int( 1, 3 );
+			if( nextLaser == nLaser ){ nLaser = 4; }
+			else{ nLaser = nextLaser; }
+
+		}
+
+		/** 消える */
+		PlaySEEx( seKira4 );
+		SwingEx( - 1 );
+		__Wait( 60 );
+		m_bMirage = false;
+
+		/**
+		*	ライフチェック
+		*/
+		task CheckLifePhase{
+
+			loop{
+				if( GetLife() <= m_nMaxLife * 0.02 ){ break; }
+				yield;
+			}
+			bNextPhase = true;
+			SetDamageRate( 0, 0 );
+
+		}
+
+	}
+
+	/**
+	*	分身狙い弾
+	*	@param nNumber	弾を撃たない分身
+	*/
+	task SearchShot( let nNumber ){
+
+		__Wait( 20 );
+
+		let nFrame = 3;
+		let nNum = 25;
+		let nSpeed = 7;
+		let nNumSpeed = ( 0.7 - nSpeed ) / ( nNum - 1 );
+		let nGraphic = US_SCALE_YELLOW;
+		let nDelay = 4;
+		let nWideAngle = 144;
+		let nWay = 5;
+
+		PlaySELoop( seShot1, nFrame * nNum, 6 );
+		loop( nNum ){
+			let nX = GetPlayerX();
+			let nY = GetPlayerY();
+			ascent( let i in 0 .. length( m_anMirageX ) ){
+				if( i != nNumber ){
+					let nAngle = GetGapAngle( m_anMirageX[ i ], m_anMirageY[ i ], nX, nY );
+					_WideShot01( m_anMirageX[ i ], m_anMirageY[ i ], nSpeed, nAngle, nWideAngle, nWay, nGraphic, nDelay );
+				}
+			}
+			loop( nFrame ){ yield; }
+			nSpeed += nNumSpeed;
+		}
+
+	}
+
+	/**
+	*	極太スパークレーザー攻撃
+	*/
+	task HyperSpark{
+
+		/** 出現 */
+		PlaySEEx( seKira4 );
+		PlaySEEx( sePower );
+		Swing( 1 );
+		Concentration01( 120 );
+		__Wait( 60 );
+
+		/** スパークレーザー */
+		SetAction( ACT_SHOT_B5, 480 );
+		__Wait( 60 );
+		let nX = GetX();
+		let nY = GetY() + 22;
+		SparkLaser( nX, nY, 600, true );
+		__Wait( 60 );
+		loop( 7 ){
+			CreateEnemyFromScript( "Wave", nX, nY, 0, 0, [ 24, 18 ] );
+			__Wait( 60 );
+		}
+
+		/** 消滅 */
+		AddLife( - GetLife() );
+
+	}
+
+	/**
+	*	スパークレーザー
+	*	@param nX		レーザー源x座標
+	*	@param nY		レーザー源y座標
+	*	@param nWidth	レーザー幅
+	*	@param bHyper	極太か
+	*/
+	task SparkLaser( let nX, let nY, let nWidth, let bHyper ){
+
+		/** レーザー */
+		let nLength = 0;
+		let anGraphic = [ US_BALL_M_A_BLUE, US_BEAM_BLUE ];
+		let nDelay = 30;
+		let nKill = [ 162, 480 ][ bHyper ];
+		let nAngle = 90;
+		let nFrame = 20;
+		let nAddLength = 400 / nFrame;
+
+		LaserSource( nX, nY + nWidth * 0.1, nDelay, nKill, nWidth, anGraphic[ 0 ] );
+		CreateLaserA( 0, nX, nY, nLength, nWidth, anGraphic[ 1 ], nDelay );
+		SetLaserDataA( 0, 0, nAngle, 0, nAddLength, 0, 0 );
+		SetLaserDataA( 0, nFrame, NULL, 0, 0, 0, 0 );
+		SetShotKillTime( 0, nKill );
+		FireShot( 0 );
+		PlaySEEx( seLaser1 );
+
+		/** 衝撃波 */
+		let _nKill = [ 12, 18 ][ bHyper ];
+		CreateEnemyFromScript( "Wave", nX, nY, 0, 0, [ nDelay - 6, _nKill ] );
+		__Wait( nDelay );
+
+		/** クラッシュ弾 */
+		nFrame = 2;
+		let nNum = trunc( ( nKill - nDelay - 30 ) / nFrame );
+		let _nY = CL_MAX_Y;
+		let nRandWidth = nWidth * 0.18;
+		anGraphic = [ US_STAR_S_SKY, US_STAR_M_BLUE, US_STAR_S_PURPLE, US_STAR_M_SKY, US_STAR_S_BLUE, US_STAR_M_PURPLE ];
+		let nGra = rand_int( 0, 5 );
+
+		PlaySELoop( seShot2, nFrame * nNum, 6 );
+		ascent( let i in 0 .. nNum ){
+			let _nNum = 1;
+			if( bHyper && i % 2 == 1 ){ _nNum = 2; }
+			loop( _nNum ){
+				let _nX = nX + rand( 0, nRandWidth ) * [ 1, - 1 ][ i % 2 ];
+				let nSpeed = rand( 1, 3 );
+				nAngle = - 90 + RandBlur( 85 );
+				nDelay = rand( 15, 30 );
+				CreateShotA( 0, _nX, _nY, nDelay );
+				SetShotDataA( 0, 0, nSpeed + 2.5, nAngle, 0, 0, 0, anGraphic[ nGra ] );
+				SetShotDataA( 0, 10, nSpeed, NULL, 0, 0, 0, anGraphic[ nGra ] );
+				FireShot( 0 );
+				nGra ++;
+				if( nGra == 6 ){ nGra = 0; }
+			}
+			loop( nFrame ){ yield; }
+		}
+
+	}
+
+	/**
+	*	傘スイング＋フェードエフェクト（LW分身用）
+	*	@param nVanish	消滅パラメーター
+	*	1 :スイング＋フェードイン
+	*	0 :スイングのみ
+	*	-1:スイング＋フェードアウト
+	*/
+	task SwingEx( let nVanish ){
+
+		let nFrame = 42;
+		let nXGapLength = 24;
+		let nXAngle = 180;
+		let nAddXAngle = 540 / nFrame;
+		let nYGapLength = 30;
+		let nYAngle = 180;
+		let nAddYAngle = 90 / nFrame;
+		let nAddAlpha = 255 / nFrame * nVanish;
+
+		SetAction( ACT_ROLL, 0 );
+		loop( nFrame ){
+			ascent( let i in 0 .. length( m_anMirageX ) ){
+				let nX = GetGapX( m_anMirageX[ i ], nXGapLength, nXAngle );
+				let nY = GetGapY( m_anMirageY[ i ] + nYGapLength / 2, nYGapLength, nYAngle );
+				if( nYAngle < 221 || nYAngle > 229 ){ Light( nX, nY ); }
+			}
+			if( nVanish != 0 ){
+				m_nEnemyAlpha += nAddAlpha;
+				SetAlpha( m_nEnemyAlpha );
+			}
+			yield;
+			nXAngle += nAddXAngle;
+			nYAngle += nAddYAngle;
+		}
+
+	}
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//====================================================================
+//	衝撃波
+//====================================================================
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------
+//	メインスクリプト部
+//--------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+
+script_enemy Wave{
+
+
+//////////////////////////////////////////////////////////////////////
+//	ライブラリのインクルード
+//////////////////////////////////////////////////////////////////////
+
+	#include_function ".\INCLUDE\ShadowNoHidden.dnh"
+
+
+//////////////////////////////////////////////////////////////////////
+//	FLAN設定定義
+//////////////////////////////////////////////////////////////////////
+
+	FLAN_ZAKO_ACTION_EXISTBOSS = FLAN_ZAKO_EXISTBOSS_NONEACTION;
+	FLAN_ESS_NOGONE = true;
+	FLAN_RINGOUT_BORDER = 48;
+	FLAN_ENEMY_COLLISION_A = 0;
+	FLAN_ENEMY_COLLISION_B = 0;
+	FLAN_ESS_NOCALL_MAINLOOP = true;
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換不可)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	定数(書換可能)
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//	メンバ変数
+//////////////////////////////////////////////////////////////////////
+
+	/** 遅延フレーム数 */
+	let m_nDelay;
+
+	/** 消滅フレーム数 */
+	let m_nKill;
+
+
+//////////////////////////////////////////////////////////////////////
+//	共通処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	初期化時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	function onInitializeTHC( nArgv, nLevel ){
+
+		/** 個別初期設定 */
+		SetLife( 1 );
+		SetDamageRateEx( 0, 0, 0, 0 );
+		m_bShadowLighting = false;
+		m_nShadowDeleteShot = 0;
+		m_nDelay = nArgv[ 0 ];
+		m_nKill = nArgv[ 1 ];
+
+	}
+
+	/**
+	*	毎フレームごとに呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onMainLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	終了時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onFinalizeTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+	/**
+	*	絵画時に呼ばれます。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*	@param nCount 現在のカウンタ値
+	*	@param nPhase 現在のフェーズ
+	*	@param nPhaseCount 現在のフェーズカウンタ値
+	*	@param nPrevPhase 1つ前の状態のフェーズ
+	*/
+	function onDrawLoopTHC( let nArgv, let nLevel, let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
+	}
+
+
+//////////////////////////////////////////////////////////////////////
+//	固有処理
+//////////////////////////////////////////////////////////////////////
+
+	/**
+	*	固有動作のタスクです。onInitializeTHC()より1フレーム後に呼ばれます。
+	*	ここに固有の動作を記述します。
+	*	@param nArgv 任意の値
+	*	@param nLevel レベル(0～3)
+	*/
+	task MainTaskTHC( let nArgv, let nLevel ){
+
+		loop( m_nDelay ){ yield; }
+
+		/** 衝撃波　*/
+		WaveShot();
+		loop( m_nKill ){ yield; }
+
+		/** 弾消し */
+		DeleteEnemyShot( CHILD );
+		VanishEnemy();
+
+	}
+
+	/**
+	*	衝撃波
+	*/
+	task WaveShot{
+
+		let nWay = 150;
+		let nX = GetX();
+		let nY = GetY();
+		let nSpeed = 10;
+		let _nSpeed = 1;
+		let nAngle = 90;
+		let nWayAngle = 360 / nWay;
+		let nGraphic = US_BALL_M_A_BLUE;
+
+		loop( nWay ){
+			CreateShotA( 0, nX, nY, 0 );
+			SetShotDataA( 0, 0, nSpeed, nAngle, 0, 0, 0, nGraphic );
+			SetShotDataA( 0, m_nKill, _nSpeed, NULL, 0, 0, 0, nGraphic );
+			FireShot( 0 );
+			nAngle += nWayAngle;
+		}
+
+	}
+
+}

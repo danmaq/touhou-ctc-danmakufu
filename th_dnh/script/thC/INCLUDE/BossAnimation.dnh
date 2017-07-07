@@ -551,6 +551,40 @@ function _DrawBoss( let szImageFile, let nX, let nY ){
 	let nRectX = RECT_BOSS_LENGTH * anRect[ 0 ];
 	let nRectY = RECT_BOSS_LENGTH * anRect[ 1 ];
 	SetAlpha( m_nEnemyAlpha );
-	__DrawChrRect( szImageFile, nX, nY, nRectX, nRectY, RECT_BOSS_LENGTH, RECT_BOSS_LENGTH );
+	SetGraphicRect( nRectX, nRectY, nRectX + RECT_BOSS_LENGTH, nRectY + RECT_BOSS_LENGTH );
+	SetTexture( szImageFile );
+	DrawGraphic( nX, nY );
+
+	let nFade = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_SCREEN_FADE, 0 );
+	if( nFade > 0 ){
+		if( m_anFlanRandomTable[ m_nFlanCount % FLAN_RANDTABLE_LENGTH ] < Accelerate( -0.5, 10, nFade, 255 ) ){
+			let nBright = m_anFlanRandomTable[ ( m_nFlanCount + 371 ) % FLAN_RANDTABLE_LENGTH ] / 2;
+			let _nY = m_anFlanRandomTable[ ( m_nFlanCount + 51 ) % FLAN_RANDTABLE_LENGTH ] / 2;
+			SetGraphicScale( 1.5, 1000 );
+			SetRenderState( ADD );
+			SetColor( 128, nBright, nBright );
+			DrawGraphic( nX, nY + _nY - _nY / 2 );
+			SetGraphicScale( 1, 1 );
+			SetColor( 255, 255, 255 );
+			SetRenderState( ALPHA );
+		}
+		if( m_anFlanRandomTable[ ( m_nFlanCount + 65 ) % FLAN_RANDTABLE_LENGTH ] < Smooth( 160, 255, nFade, 255 ) ){
+			let nBright = Smooth( 2, 48, nFade, 255 );
+			let nGap = Accelerate( 24, 4, nFade, 255 );
+			let nScale = Smooth( 200, 160, nFade, 255 );
+			SetRenderState( ADD );
+			SetColor( nBright, nBright, nBright );
+			ascent( let i in 1..8 ){
+				let _nX = m_anFlanRandomTable[ ( m_nFlanCount + 467 * i ) % FLAN_RANDTABLE_LENGTH ] / nGap;
+				let _nY = m_anFlanRandomTable[ ( m_nFlanCount + 19 * i ) % FLAN_RANDTABLE_LENGTH ] / nGap;
+				let nScaleX = m_anFlanRandomTable[ ( m_nFlanCount + 51 * i ) % FLAN_RANDTABLE_LENGTH ] / nScale;
+				SetGraphicScale( nScaleX, 1.2 );
+				DrawGraphic( nX + _nX - 255 / nGap / 2.5, nY + _nY - 255 / nGap / 2 );
+			}
+			SetGraphicScale( 1, 1 );
+			SetRenderState( ALPHA );
+			SetColor( 255, 255, 255 );
+		}
+	}
 }
 

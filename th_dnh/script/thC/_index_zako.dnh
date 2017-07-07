@@ -87,4 +87,3 @@
 	let z_g_10 = GetCurrentScriptDirectory() ~ "g_10.dnh";	// YG
 	let z_m_19 = GetCurrentScriptDirectory() ~ "m_19.dnh";	// YG
 	let z_g_17 = GetCurrentScriptDirectory() ~ "g_17.dnh";	// YR
-
