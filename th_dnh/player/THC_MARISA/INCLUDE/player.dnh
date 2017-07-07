@@ -644,7 +644,6 @@ function onShot( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
 *	@param nPrevPhase 1つ前の状態のフェーズ
 */
 function onMainLoop( let nCount, let nPhase, let nPhaseCount, let nPrevPhase ){
-//	OutputDebugString( 0, "Phase", GetPhase() );
 	SetCommonDataEx( CL_CDNS_TEMP, CL_CD_PLAYER_ONMISSED, false );
 	if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_BOSS_FSD_TIME, -1 ) == 0 ){
 		FLAN_PLAYER_COLLISION_HIT = 0;

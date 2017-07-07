@@ -74,6 +74,8 @@ let m_nTTHBossName = CL_TT_INVALID;
 let m_nBossNameAlpha = 0;
 /**	書き込み可能テクスチャがアイテム得点表示に使用されているかかどうかが格納されます。 */
 let m_abItemWritableTextureUsed = [];
+/**	左下に表示される各種情報が更新されたかどうかが格納されます。 */
+let m_bRefreshInfomation = true;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -152,13 +154,15 @@ task __CreateStageInfomationLoop(){
 			nPrevPower = nPower;
 			DeleteTexTextHandle( m_nTTHPower );
 			m_nTTHPower = CreateTexText16Cache( "P : " ~ [ ToStringInt( nPower ), "MAX" ][ nPower == 128 ] );
+			m_bRefreshInfomation = true;
 		}
-		if( m_nTTHHakurei == CL_TT_INVALID || nPrevHakurei != nHakurei || m_nFlanCount - m_nFlanStageTime < 100 ){
+		if( m_nTTHHakurei == CL_TT_INVALID || nPrevHakurei != nHakurei || m_nFlanCount - m_nFlanStageTime < CL_STAGE_INFOMATION_REFRESH_INTERVAL ){
 			let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 0 );
 			let nHakureiNorm = GetHakureiNorm();
 			nPrevHakurei = nHakurei;
 			DeleteTexTextHandle( m_nTTHHakurei );
 			m_nTTHHakurei = CreateTexText16Cache( "H : " ~ ToStringInt( nHakurei ) ~ "/" ~ ToStringInt( nHakureiNorm ) );
+			m_bRefreshInfomation = true;
 		}
 		if( GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_RESULT, false ) ){ __CreateResult(); }
 	}
@@ -205,6 +209,8 @@ task __CreateResult(){
 	m_nTTHStageResultTotal		= CL_TT_INVALID;
 }
 
+let m_bDemoPreRasterize = false;
+
 /**
 *	ステージの各情報を絵画します。
 */
@@ -212,14 +218,26 @@ function DrawStageInfomation(){
 	if( m_nTTHStageResultStage != CL_TT_INVALID ){ DrawStageResult(); }
 	if( m_nFlanLoadResourcePercentage != -1 ){ return; }
 	DrawStageInfomationTop();
-	DrawStageInfomationBottomLeft();
 	if( m_nStageMusicIndex >= 0 && m_nFlanCount - m_nStageStartMusicTime <= 300 ){ DrawStageBGM(); }
 	if( m_nFlanCount - m_nItemPlayerPowerMax < 120 ){ DrawMaxPower(); }
 	if( IsReplay() ){
 		SetAlpha( 96 );
-		DrawTexTextOnCache( CL_TTH_STAGE_DEMO, 0, 0, GetCenterX() - 64, GetCenterY() + 36 );
+		if( m_bDemoPreRasterize ){
+			SetTexture( IMAGE_CL_WRITABLE_MID_NAME_LIST[ 1 ] );
+			SetGraphicRect( 0, 0, 128, 64 );
+			DrawGraphic( GetCenterX() - 12, GetCenterY() + 56 );
+		}
+		else{ DrawTexTextOnCache( CL_TTH_STAGE_DEMO, 0, 0, GetCenterX() - 64, GetCenterY() + 36 ); }
 		SetAlpha( 255 );
+		if( IsWritableTextureMidCreated( 1 ) && !m_bDemoPreRasterize ){
+			m_bDemoPreRasterize = true;
+			ClearRenderTarget( IMAGE_CL_WRITABLE_MID_NAME_LIST[ 1 ] );
+			m_szCLDefaultRenderSurface = SetRenderTarget( IMAGE_CL_WRITABLE_MID_NAME_LIST[ 1 ] );
+			DrawTexTextOnCache( CL_TTH_STAGE_DEMO, 0, 0, 10, 10 );
+			SetRenderTarget( m_szCLDefaultRenderSurface );
+		}
 	}
+	DrawStageInfomationBottomLeft();
 	if( length( m_aItemGetPoint ) > 0 ){ DrawStageGetPoint(); }
 }
 
@@ -269,27 +287,53 @@ function DrawStageInfomationTop(){
 *	ステージの各情報(左下)を絵画します。
 */
 function DrawStageInfomationBottomLeft(){
-	let nBaseX = GetClipMinX() + 16;
+	SetAlpha( m_nBottomLeftAlpha );
+	if( IsWritableTextureMidCreated( 0 ) ){
+		if( m_bRefreshInfomation ){
+			__DrawStageInfomationBottomLeft( false );
+			SetAlpha( 255 );
+			ClearRenderTarget( IMAGE_CL_WRITABLE_MID_NAME_LIST[ 0 ] );
+			m_szCLDefaultRenderSurface = SetRenderTarget( IMAGE_CL_WRITABLE_MID_NAME_LIST[ 0 ] );
+			__DrawStageInfomationBottomLeft( true );
+			SetRenderTarget( m_szCLDefaultRenderSurface );
+			m_bRefreshInfomation = false;
+		}
+		else{
+			SetGraphicRect( 0, 0, 128, 64 );
+			SetTexture( IMAGE_CL_WRITABLE_MID_NAME_LIST[ 0 ] );
+			DrawGraphic( GetClipMinX() + 70, GetClipMaxY() - 28 );
+		}
+	}
+	else{ __DrawStageInfomationBottomLeft( false ); }
+	SetAlpha( 255 );
+}
+
+/**
+*	ステージの各情報(左下)を絵画します。
+*/
+function __DrawStageInfomationBottomLeft( let bPreRender ){
+	let nBaseX = [ GetClipMinX() + 16, 10 ][ bPreRender ];
+	let nBaseY = [ GetClipMaxY() - 50, 10 ][ bPreRender ];
 	let nStage = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE, 1 );
 	let nTTHLevel =	CL_TTHBASE_LEVEL_MINI + GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_STAGE_LEVEL, 1 ) +
 					[ 0, CL_TTH_LEVELMINI_EXTRA ][ nStage >= 10 || ( nStage == 7 && m_nSpellPracticeBGStage >= 10 ) ];
 	if( nStage == 7 && m_nSpellPracticeBGStage >= 12 ){ nTTHLevel = CL_TTHBASE_LEVEL_MINI + CL_TTH_LEVELMINI_LASTWORD; }
-	SetAlpha( m_nBottomLeftAlpha );
 	SetColor( 255, 192, 192 );
-	DrawTexTextOnCache( nTTHLevel, -2, 0, nBaseX, GetClipMaxY() - 12 );
+	DrawTexTextOnCache( nTTHLevel, -2, 0, nBaseX, nBaseY + 38 );
 	if( m_bStagePractice ){
 		SetColor( 192, 255, 255 );
-		DrawTexTextOnCache( CL_TTHBASE_LEVEL_MINI + [ CL_TTH_LEVELMINI_PRACTICE, CL_TTH_LEVELMINI_PRACTICE_SPELL ][ nStage == 7 ], -2, 0, nBaseX, GetClipMaxY() - 24 );
+		DrawTexTextOnCache( CL_TTHBASE_LEVEL_MINI + [ CL_TTH_LEVELMINI_PRACTICE, CL_TTH_LEVELMINI_PRACTICE_SPELL ][ nStage == 7 ], -2, 0, nBaseX, nBaseY + 26 );
 	}
 	SetColor( 255, 255, 255 );
-	DrawTexTextOnCache( m_nTTHPower, -2, 0, nBaseX, GetClipMaxY() - 36 );
+	DrawTexTextOnCache( m_nTTHPower, -2, 0, nBaseX, nBaseY + 14 );
 	let nBrightR = [ 255, 128 ][ GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_PLAYER_INYAN_GAUGE, 255 ) > 254 ];
 	let nBrightB = [ 255, 96 ][ GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 ) >= GetHakureiNorm() ];
 	SetColor( nBrightR, 255, nBrightB );
-	DrawTexTextOnCache( m_nTTHHakurei, -2, 0, nBaseX, GetClipMaxY() - 50 );
+	DrawTexTextOnCache( m_nTTHHakurei, -2, 0, nBaseX, nBaseY );
+	
 	SetColor( 255, 255, 255 );
-	SetAlpha( 255 );
 }
+
 
 /**
 *	経過秒数を絵画します。
@@ -308,10 +352,11 @@ function DrawCount( let nBaseX ){
 *	アイテム取得時の点数を絵画します。
 */
 function DrawStageGetPoint(){
+	let bPreRender = GetCommonDataDefaultEx( CL_CDNS_CONFIG, CL_CD_CONFIG_FONT_PRERENDER, true );
 	ascent( let i in 0..length( m_aItemGetPoint ) ){
 		let anPointInfo = m_aItemGetPoint[ i ];
 		if( anPointInfo[ ITEM_GET_POINT_TEXTURE ] == -1 ){
-			if( !GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_BOSS_EVENT_ENABLE, false ) ){
+			if( !GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_BOSS_EVENT_ENABLE, false ) && bPreRender ){
 				ascent( let j in 0..length( m_abItemWritableTextureUsed ) ){
 					if( !m_abItemWritableTextureUsed[ j ] ){
 						m_abItemWritableTextureUsed[ j ] = true;
@@ -338,7 +383,10 @@ function DrawStageGetPoint(){
 				DrawTexTextOnCache( anPointInfo[ ITEM_GET_POINT_TTH ], 0, 0, anPointInfo[ ITEM_GET_POINT_X ], anPointInfo[ ITEM_GET_POINT_Y ] );
 			}
 			if( anPointInfo[ ITEM_GET_POINT_TEXTURE ] >= 0 ){
-				__DrawChrRect( IMAGE_CL_WRITABLE_MINI_NAME_LIST[ anPointInfo[ ITEM_GET_POINT_TEXTURE ] ], anPointInfo[ ITEM_GET_POINT_X ] + 8, anPointInfo[ ITEM_GET_POINT_Y ], 0, 0, 64, 16 );
+				SetGraphicRect( 0, 0, 64, 16 );
+				SetTexture( IMAGE_CL_WRITABLE_MINI_NAME_LIST[ anPointInfo[ ITEM_GET_POINT_TEXTURE ] ] );
+				DrawGraphic( anPointInfo[ ITEM_GET_POINT_X ] + 8, anPointInfo[ ITEM_GET_POINT_Y ] );
+
 			}
 		}
 	}

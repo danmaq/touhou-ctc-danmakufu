@@ -14,11 +14,8 @@
 //	定数(書換不可)
 //////////////////////////////////////////////////////////////////////
 
-/**	アイテム出現テーブルです。
-*	TODO : 後で本家を参照して完全な形にする
-*/
+/**	アイテム出現テーブルです。 */
 let ITEM_DEFAULT_TABLE = [
-//	ITEMEX_POWER_BIG, ITEMEX_POWER_BIG, ITEMEX_POWER_BIG, ITEMEX_POWER_BIG, ITEMEX_POWER_BIG, ITEMEX_POWER_BIG, ITEMEX_POWER_BIG, ITEMEX_POWER_BIG, ITEMEX_POWER_BIG, ITEMEX_POWER_BIG, ITEMEX_POWER_BIG, ITEMEX_POWER_BIG, 
 	ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER,
 	ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER_BIG, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER,
 	ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER, ITEMEX_SCORE, ITEMEX_POWER,
@@ -74,11 +71,10 @@ let m_aItemGetPoint = [];
 */
 task __PopItemQueueLoop(){
 	loop{
-		let aItem = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_QUEUE_CREATE, [] );
-		DeleteCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_QUEUE_CREATE );
+		let aItem = PopCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_QUEUE_CREATE, [] );
+		let nPower = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
 		ascent( let i in 0..length( aItem ) ){
 			let aItemInfo = aItem[ i ];
-			let nPower = GetCommonDataDefaultEx( FLAN_CDNS, FLAN_CD_PLAYER_POWER, 0 );
 			if( aItemInfo[ 0 ] == ITEMEX_DEFAULT ){
 				aItemInfo[ 0 ] = ITEM_DEFAULT_TABLE[ m_nItemDefaultIndex ];
 				m_nItemDefaultIndex = ( m_nItemDefaultIndex + 1 ) % length( ITEM_DEFAULT_TABLE );
@@ -262,7 +258,7 @@ function ItemGet( let nKind, let nX, let nY ){
 	case( ITEMEX_EXTEND ){ ExtendPlayerEx( 1 ); }
 	case( ITEMEX_HAKUREI ){
 		nScore = 0;
-		AddCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 1, 0 );
+		SetCommonDataEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_ITEM_HAKUREI, 0 ) + 1 );
 	}
 	if( nScore > 0 ){
 		AddScore( nScore );

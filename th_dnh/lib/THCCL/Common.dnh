@@ -223,6 +223,18 @@ function IsWritableTextureCreated( let nID ){
 *	@param nID テクスチャID
 *	@return 書き込み可能テクスチャが生成されている場合true
 */
+function IsWritableTextureMidCreated( let nID ){
+	let nTextureNum = length( IMAGE_CL_WRITABLE_MID_NAME_LIST );
+	let abWritableTextureCreated = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_WRITABLE_TEXTURE_MID_CREATED, CreateArray( nTextureNum, false ) );
+	return nID < nTextureNum && abWritableTextureCreated[ nID ];
+}
+
+/**
+*	書き込み可能テクスチャが生成されているかどうかを返します。
+*
+*	@param nID テクスチャID
+*	@return 書き込み可能テクスチャが生成されている場合true
+*/
 function IsWritableTextureMiniCreated( let nID ){
 	let nTextureNum = length( IMAGE_CL_WRITABLE_MINI_NAME_LIST );
 	let abWritableTextureCreated = GetCommonDataDefaultEx( CL_CDNS_TEMP, CL_CD_WRITABLE_TEXTURE_MINI_CREATED, CreateArray( nTextureNum, false ) );
