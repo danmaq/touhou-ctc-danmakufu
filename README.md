@@ -1,4 +1,4 @@
-# Touhou-Mutsuigeki (Concealed the Conclusion)
+# Touhou-Mutsuigeki (東方夢終劇 〜 Concealed the Conclusion)
 
 Concealed the Conclusion ORIGINAL VERSION for Touhou Danmakufu.
 
